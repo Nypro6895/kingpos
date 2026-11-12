@@ -14,6 +14,11 @@ export function ExperiencePageBoundary({ children, admin = false, renderRevision
   const query = useSearchParams().toString();
   const href = pathname + (query ? `?${query}` : "");
   const policy = getExperienceRoutePolicy(href);
+  // Settings sections are local History API navigation. Each section owns its
+  // reader and sensitive sections discard their forms when hidden. Refreshing
+  // the whole RSC tree for each section races that local navigation.
+  const lifecycleHref = pathname === "/settings" ? pathname : href;
+  const lifecyclePolicy = pathname === "/settings" ? getExperienceRoutePolicy(pathname) : policy;
   const scope = useExperienceScope();
   const contextScope = scope?.context.scope;
   const authenticated = scope?.context.authenticated;
@@ -25,6 +30,7 @@ export function ExperiencePageBoundary({ children, admin = false, renderRevision
   const shown = useRef(false);
   const renderedAt = useRef(0);
   const refreshPending = useRef(false);
+  const refreshGeneration = useRef(0);
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [failedRevision, setFailedRevision] = useState<string | null>(null);
   const refreshFailed = failedRevision === renderRevision;
@@ -34,25 +40,42 @@ export function ExperiencePageBoundary({ children, admin = false, renderRevision
   const checkingAuth = checkingAuthRevision !== null && (scope?.validationRevision ?? 0) <= checkingAuthRevision;
   const checking = checkingAuth || waitingRevision === renderRevision;
   const revision = useRef(renderRevision);
+  const cancelRefresh = useCallback(() => {
+    refreshGeneration.current++;
+    refreshPending.current = false;
+    if (refreshTimer.current) clearTimeout(refreshTimer.current);
+    refreshTimer.current = null;
+  }, []);
   useLayoutEffect(() => {
     // Activity re-runs layout effects on reveal. Only a NEW server render may
     // renew data age or acknowledge an unfinished refresh.
     if (!renderedAt.current || revision.current !== renderRevision) {
       revision.current = renderRevision;
       renderedAt.current = Date.now();
-      refreshPending.current = false;
-      if (refreshTimer.current) clearTimeout(refreshTimer.current);
+      cancelRefresh();
     }
-  }, [renderRevision]);
+  }, [renderRevision, cancelRefresh]);
+
+  useLayoutEffect(() => () => {
+    // A local Settings section change must abandon an unfinished page reveal
+    // refresh, without treating that section change as another page reveal.
+    cancelRefresh();
+    setWaitingRevision(null);
+    setFailedRevision(null);
+  }, [href, contextScope, cancelRefresh]);
 
   const refreshServerView = useCallback(() => {
     if (refreshPending.current || !navigator.onLine) { if (!navigator.onLine) setFailedRevision(revision.current); return; }
     refreshPending.current = true;
+    const generation = ++refreshGeneration.current;
+    const requestedRevision = revision.current;
     setFailedRevision(null);
     router.refresh();
     refreshTimer.current = setTimeout(() => {
+      if (generation !== refreshGeneration.current) return;
       refreshPending.current = false;
-      setFailedRevision(revision.current);
+      refreshTimer.current = null;
+      setFailedRevision(requestedRevision);
     }, 12_000);
   }, [router]);
 
@@ -63,14 +86,14 @@ export function ExperiencePageBoundary({ children, admin = false, renderRevision
     const root = container.current;
     let active = true;
     // Admin has its own grant provider/boundary. POS owns its operational state.
-    const delegated = policy.family === "pos" || (policy.family === "admin" && !admin);
+    const delegated = lifecyclePolicy.family === "pos" || (lifecyclePolicy.family === "admin" && !admin);
     if (returning && !delegated) {
-      if (policy.resetOnHide) {
+      if (lifecyclePolicy.resetOnHide) {
         // Activity reveal must hide stale action data before the browser paints.
         setWaitingRevision(revision.current);
         refreshServerView();
       } else {
-        const protectedView = policy.requiresAuth || Boolean(authenticated);
+        const protectedView = lifecyclePolicy.requiresAuth || Boolean(authenticated);
         const mustValidate = protectedView && checkedAt && Date.now() - checkedAt() >= 30_000;
         // Synchronous hiding prevents an unvalidated retained private view flashing.
         if (mustValidate) setCheckingAuthRevision(getValidationRevision?.() ?? 0);
@@ -79,21 +102,26 @@ export function ExperiencePageBoundary({ children, admin = false, renderRevision
           if (!active) return;
           setCheckingAuthRevision(null);
           const resourceView = RESOURCE_VIEWS.has(pathname);
-          if (!resourceView && policy.revalidateOnShow && elapsed >= policy.refreshAfterMs) refreshServerView();
+          if (!resourceView && lifecyclePolicy.revalidateOnShow && elapsed >= lifecyclePolicy.refreshAfterMs) refreshServerView();
         };
         void reconcile();
       }
     }
     return () => {
       active = false;
+      // Next may abandon a refresh when navigation/Activity takes priority.
+      // Its timer must never report a failure on a later navigation attempt.
+      cancelRefresh();
+      setWaitingRevision(null);
+      setFailedRevision(null);
       for (const media of root?.querySelectorAll<HTMLMediaElement>("video,audio") ?? []) media.pause();
       for (const dialog of root?.querySelectorAll<HTMLDialogElement>("dialog[open]") ?? []) dialog.close();
-      if (!delegated && policy.resetOnHide) setActivation(value => value + 1);
+      if (!delegated && lifecyclePolicy.resetOnHide) setActivation(value => value + 1);
     };
   // Hidden Activity routes clean this effect and restart it on the next reveal.
   // Query/path changes also represent a new view, not an old pending command.
-  }, [href, pathname, admin, contextScope, authenticated, validate, checkedAt, getValidationRevision, router,
-    policy.family, policy.resetOnHide, policy.requiresAuth, policy.revalidateOnShow, policy.refreshAfterMs, refreshServerView]);
+  }, [lifecycleHref, pathname, admin, contextScope, authenticated, validate, checkedAt, getValidationRevision, router,
+    lifecyclePolicy.family, lifecyclePolicy.resetOnHide, lifecyclePolicy.requiresAuth, lifecyclePolicy.revalidateOnShow, lifecyclePolicy.refreshAfterMs, refreshServerView, cancelRefresh]);
 
   return <div ref={container} className="contents" data-experience-view="" data-experience-family={policy.family} key={contextScope ?? "public"}>
     {refreshFailed ? <div role="status" className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3 text-sm">

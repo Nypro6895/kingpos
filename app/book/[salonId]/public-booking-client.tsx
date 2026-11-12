@@ -5,6 +5,7 @@ import { BookingRewardPending } from "@/components/rewardlumi/booking-reward-pen
 import { browserPublicOrigin } from "@/lib/browser-public-origin";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { SalonAddressLink } from "@/components/salon-address-link";
 import "@/components/booking-ui/public-booking.css";
 import { useExperienceScope } from "@/components/experience-scope";
 import { useScopedUiDraft } from "@/lib/use-scoped-ui-draft";
@@ -1386,6 +1387,14 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
       Boolean(customer.firstName.trim() && customer.lastName.trim())) &&
     (!signedInNeedsPhone || Boolean(customer.phone.trim())) &&
     (!signedInNeedsEmail || Boolean(customer.email.trim()));
+  // Display guidance only; required fields, validation and submission stay unchanged.
+  const contactDetailsGuidance = signedInNeedsPhone && !customer.phone.trim()
+    ? "Add your phone number to finish booking."
+    : signedInNeedsName && !(customer.firstName.trim() && customer.lastName.trim())
+      ? "Add your name to finish booking."
+      : signedInNeedsEmail && !customer.email.trim()
+        ? "Add your email to finish booking."
+        : "Review your contact details.";
   const guestDetailsComplete = Boolean(
     customer.firstName.trim() &&
       customer.lastName.trim() &&
@@ -1606,7 +1615,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
       value,
     };
   });
-  const salonLocation = [data.salon.city, data.salon.state].filter(Boolean).join(", ");
+  const salonLocation = [data.salon.addressLine1, data.salon.city, data.salon.state].filter(Boolean).join(", ");
   const bookingConfirmed = result?.confirmationStatus
     ? result.confirmationStatus === "confirmed"
     : result?.status === "confirmed";
@@ -1706,6 +1715,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         ) : null}<a href={`/explore/salons/${data.salon.salonId}`} className="hover:underline"><SalonName name={data.salon.name} salonId={data.salon.salonId}/></a></div>
         <a className={compact.icon} href="/explore" aria-label="Close booking">&times;</a>
       </header>}
+      {salonLocation ? <p className="px-4 py-2 text-xs text-zinc-600"><SalonAddressLink address={salonLocation} /></p> : null}
       {!embedded && step < STEP_DONE ? <nav className={compact.progress} aria-label="Booking progress" data-testid="public-booking-stepper">
         {STEPS.map((label, index) => <span key={label} className="inline-flex items-center gap-3"><button aria-current={step === index ? "step" : undefined} disabled={index > step || isPending} onClick={() => setStep(index)} type="button">{label}</button>{index < STEPS.length - 1 ? <span aria-hidden="true">&rsaquo;</span> : null}</span>)}
       </nav> : null}
@@ -1767,7 +1777,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         </section> : null}
         {isReview ? <section><h1>Review &amp; confirm</h1>
           <div className={compact.receipt}>
-            <div className={compact.receiptHeader}>{embedded ? <ReylumiIcon className="h-5 w-5 shrink-0" name="calendar" /> : null}<div><strong>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : "Choose a time"}{selectedSlot ? `\u2013${formatTime(selectedSlot.endAt, settings.timezoneIana)}` : ""}</strong><p className={compact.muted}><SalonName name={data.salon.name} salonId={data.salon.salonId}/> &middot; {salonLocation}</p></div></div>
+            <div className={compact.receiptHeader}>{embedded ? <ReylumiIcon className="h-5 w-5 shrink-0" name="calendar" /> : null}<div><strong>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : "Choose a time"}{selectedSlot ? `\u2013${formatTime(selectedSlot.endAt, settings.timezoneIana)}` : ""}</strong><p className={compact.muted}><SalonName name={data.salon.name} salonId={data.salon.salonId}/> &middot; <SalonAddressLink address={salonLocation} /></p></div></div>
             {embedded && step < STEP_DONE ? <div className={compact.selectionTitle}><strong>Services</strong>{addMoreButton}</div> : null}
             {summaryLines.map((line,index) => <div className={compact.receiptRow} key={line.key}><div><strong>{line.service.name}</strong><p className={compact.muted}>{selectedSlot?.lines[index]?.staffName ?? "Any available"} &middot; {minutes(selectedSlot?.lines[index]?.durationMinutes ?? line.service.durationMinutes)}{line.parentName ? ` \u00b7 Add-on for ${line.parentName}` : ""}</p></div><strong>{money(selectedSlot?.lines[index]?.unitPrice ?? line.service.basePrice)}</strong></div>)}
           {activeInspiration ? <details className={compact.notes}><summary>{embedded ? "Inspiration (optional)" : "Booked look & notes"}</summary><div className="flex gap-3">{activeInspiration.imageUrl ? (
@@ -1778,7 +1788,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
           </div>
           {signedIn && embedded ? <div className={compact.auth}>{data.currentUser?.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img className={compact.avatar} src={data.currentUser.avatarUrl} alt="" />) : <span className={compact.avatar}>{initialsFor(accountDisplayName)}</span>}<span className="flex-1"><strong>{accountDisplayName}</strong><small>Contact details saved</small></span><button type="button" className={compact.textLink} onClick={() => setEditDetails(value => !value)}>{editDetails ? "Done" : "Edit"}</button></div> : signedIn ? <div className={compact.auth}><span><strong>{accountDisplayName}</strong><span className="block text-xs">{[accountMaskedEmail, accountMaskedPhone].filter(Boolean).join(" \u00b7 ")}</span></span><span>Saved to your account</span></div> : <a className={compact.auth} href={signInHref} onClick={storeDraftForAuth}><strong>Sign in to autofill</strong><span>&rsaquo;</span></a>}
+            <img className={compact.avatar} src={data.currentUser.avatarUrl} alt="" />) : <span className={compact.avatar}>{initialsFor(accountDisplayName)}</span>}<span className="flex-1"><strong>{accountDisplayName}</strong><small>{contactDetailsGuidance}</small></span><button type="button" className={compact.textLink} onClick={() => setEditDetails(value => !value)}>{editDetails ? "Done" : "Edit"}</button></div> : signedIn ? <div className={compact.auth}><span><strong>{accountDisplayName}</strong><span className="block text-xs">{[accountMaskedEmail, accountMaskedPhone].filter(Boolean).join(" \u00b7 ")}</span></span><span>Saved to your account</span></div> : <a className={compact.auth} href={signInHref} onClick={storeDraftForAuth}><strong>Sign in to autofill</strong><span>&rsaquo;</span></a>}
           {!signedIn && !settings.guestBookingEnabled ? <p className={compact.muted}>Sign in to book this salon. <a className={compact.textLink} href={signupHref} onClick={storeDraftForAuth}>Create an account</a></p> : <>
             {step !== STEP_DONE && (editDetails || !signedIn || signedInNeedsName || signedInNeedsPhone || signedInNeedsEmail) ? <div className="mt-3 flex justify-between text-xs"><strong>Your details</strong><span className={compact.muted}>Required *</span></div> : null}
             <div className={compact.fields}>{(["firstName", "lastName", "phone", "email"] as const).filter(key => editDetails || !signedIn || (key === "firstName" || key === "lastName" ? signedInNeedsName : key === "phone" ? signedInNeedsPhone : signedInNeedsEmail)).map(key => <label key={key}><span>{{ firstName: "First name", lastName: "Last name", phone: "Phone", email: "Email" }[key]} <span className="text-red-600">*</span></span><input id={`public-booking-${key}`} className={compact.field} autoComplete={{firstName:"given-name",lastName:"family-name",phone:"tel",email:"email"}[key]} type={key === "phone" ? "tel" : key === "email" ? "email" : "text"} value={customer[key]} required aria-invalid={Boolean(fieldErrors[key])} aria-describedby={fieldErrors[key] ? `error-${key}` : undefined} onChange={event => { setCustomerField(key,event.target.value); if (!signedIn) setIdentityMode("guest"); }} />{fieldErrors[key] ? <span id={`error-${key}`} className={compact.error}>{fieldErrors[key]}</span> : null}</label>)}</div>

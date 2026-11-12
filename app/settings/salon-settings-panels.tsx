@@ -7,6 +7,8 @@ import {SettingsChildPage} from "@/app/settings/settings-child-pages";
 
 import {SettingsDetails} from "@/app/settings/settings-child-pages";
 
+import { SalonAddressLink } from "@/components/salon-address-link";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { BookingDepositSettings } from "./booking-deposit-settings";
 import { BookingRulesSettings, BookSmsSettings } from "./booking-plugin-settings";
@@ -172,7 +174,7 @@ export function SalonDetailsPanel({
         </label></SettingsChildPage>
         </SettingsFieldGroup>
         <SettingsChildPage id="salon-address" title={<WorkspaceText text="Address"/>} ><SettingsFieldGroup title="Salon address">
-        <Field name="address_line1" label={__vt("Address")} value={s.address_line1} />
+        <AddressAutocomplete defaultValue={s.address_line1} label={__vt("Address")} />
         <Field
           name="address_line2"
           label={__vt("Unit / suite")}
@@ -190,7 +192,7 @@ export function SalonDetailsPanel({
       {!data.mapLocation.providerConfigured || !process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ? null : <SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Map location" /></summary><div className="mt-3">
 
         <InlineForm disabled={!data.mapLocation.refreshEnabled} save={()=>refreshSettingsMap(data.salonId)} onSaved={onSaved} label={__vt("Update map from saved address")}>
-          <p className="text-sm">{[s.address_line1,s.city,s.state,s.postal_code].filter(Boolean).join(", ")}</p>
+          <p className="text-sm"><SalonAddressLink address={[s.address_line1,s.city,s.state,s.postal_code].filter(Boolean).join(", ")} /></p>
           {data.mapLocation.coordinates?<p className="text-xs text-zinc-500"><WorkspaceText text="Latitude" /> {data.mapLocation.coordinates.latitude} <WorkspaceText text="· Longitude" /> {data.mapLocation.coordinates.longitude}</p>:null}
           <p className="text-sm"><WorkspaceText text={data.mapLocation.statusDescription} /></p>
           <p className="text-sm text-zinc-600"><WorkspaceText text="Save your address above before updating the map." /></p>

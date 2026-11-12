@@ -1,4 +1,5 @@
 "use client";
+import { LanguageNotifications } from "@/components/salon-language-preferences";
 import { WorkspaceText } from "@/components/workspace-language";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -204,6 +205,7 @@ export function NotificationCenterClient({
             <WorkspaceText text="Settings" />
           </Link>
         </header>
+        <LanguageNotifications unreadOnly={filter === "unread"} />
         {actionItems.length > 0 && (
           <section className="border-b border-zinc-100 p-3">
             <h2 className="mb-2 text-sm font-bold">

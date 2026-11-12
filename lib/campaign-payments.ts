@@ -24,7 +24,7 @@ export async function createCreditCheckout(owner:Awaited<ReturnType<typeof requi
   if(order?.owner_id!==userId||order?.automatic||order?.credits!==credits)throw new Error("Another credit purchase is waiting. Finish it before starting a new one.");
   const {data:wallet}=await client.from("campaign_wallets").select("stripe_customer,payment_owner").eq("salon_id",salonId).single();
   const customer=wallet?.payment_owner===userId?wallet?.stripe_customer:null;
-  const form=new URLSearchParams({mode:"payment",success_url:new URL("/campaigns?payment=received&credit_session={CHECKOUT_SESSION_ID}",REYLUMI_METADATA_BASE).href.replace(/%7B/g,"{").replace(/%7D/g,"}"),cancel_url:new URL(`/campaigns?payment=cancelled&credit_order=${id}`,REYLUMI_METADATA_BASE).href,
+  const form=new URLSearchParams({mode:"payment",success_url:new URL(`/campaigns?payment=received&salon=${encodeURIComponent(owner.salonId)}&credit_session={CHECKOUT_SESSION_ID}`,REYLUMI_METADATA_BASE).href.replace(/%7B/g,"{").replace(/%7D/g,"}"),cancel_url:new URL(`/campaigns?payment=cancelled&salon=${encodeURIComponent(owner.salonId)}&credit_order=${id}`,REYLUMI_METADATA_BASE).href,
     "line_items[0][price_data][currency]":"usd","line_items[0][price_data][unit_amount]":String(order.amount_cents),"line_items[0][price_data][product_data][name]":`${formatCredits(credits)} Reylumi ad credits`,"line_items[0][quantity]":"1",
     "metadata[campaign_credit_order]":String(id),"payment_intent_data[metadata][campaign_credit_order]":String(id),"payment_method_types[0]":"card"});
   if(customer)form.set("customer",customer);else form.set("customer_creation","always");
@@ -198,8 +198,8 @@ export async function createCampaignCardSetup(owner: CampaignOwner) {
  const {error:recordError}=await client.from("campaign_card_setups").insert({id:setup,salon_id:salonId,owner_id:userId,payment_revision:wallet.payment_revision});
  if(recordError)throw new Error("Your card could not be prepared.");
  const form=new URLSearchParams({mode:"setup",customer,"payment_method_types[0]":"card",
- success_url:new URL("/campaigns?card_session={CHECKOUT_SESSION_ID}",REYLUMI_METADATA_BASE).href.replace(/%7B/g,"{").replace(/%7D/g,"}"),
- cancel_url:new URL("/campaigns?card=cancelled",REYLUMI_METADATA_BASE).href,
+ success_url:new URL(`/campaigns?salon=${encodeURIComponent(salonId)}&card_session={CHECKOUT_SESSION_ID}`,REYLUMI_METADATA_BASE).href.replace(/%7B/g,"{").replace(/%7D/g,"}"),
+ cancel_url:new URL(`/campaigns?card=cancelled&salon=${encodeURIComponent(salonId)}`, REYLUMI_METADATA_BASE).href,
  "metadata[campaign_card_setup]":setup,"metadata[campaign_salon]":salonId,"metadata[campaign_owner]":userId,
  "setup_intent_data[metadata][campaign_card_setup]":setup});
  return secureCheckoutUrl((await stripe("checkout/sessions",form,`campaign-card:${setup}`)).url);
@@ -245,4 +245,3 @@ export async function expireCreditCheckout(orderId:string){
  if(!/^[0-9a-f-]{36}$/i.test(orderId))return;
  await advertisingClient().from("campaign_credit_orders").update({status:"cancelled"}).eq("id",orderId).eq("automatic",false).eq("status","pending");
 }
-

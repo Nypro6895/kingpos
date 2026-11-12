@@ -467,7 +467,7 @@ function showcaseFeedItem(seed: ShowcaseSalonSeed): ExploreFeedItem {
       bookedCount: seed.tone === "trending" ? 128 : seed.rank * 7,
       eligible: true,
       href,
-      label: "Book",
+      label: "Book appointment",
       readiness: "sample",
       salonId,
       salonName: seed.name,

@@ -63,13 +63,13 @@ function HelpPage(props: AppLocalPageProps) {
   return <AppLocalHelp slug={url.pathname.startsWith("/help/") ? url.pathname.slice(6) : undefined} language={language} navigate={props.navigate} />;
 }
 function SupportPage(props: AppLocalPageProps) {
-  if (props.context?.context.authenticated) return <ReadView<AppLocalSupportData> {...props} name="page.support" title="Report / Contact">{data => <AppLocalSupport data={data} from={urlFor(props.path).searchParams.get("from") ?? undefined} />}</ReadView>;
+  if (props.context?.context.authenticated) return <ReadView<AppLocalSupportData> {...props} name="page.support" title="Support">{data => <AppLocalSupport data={data} from={urlFor(props.path).searchParams.get("from") ?? undefined} />}</ReadView>;
   return <AppLocalHelp support language={urlFor(props.path).searchParams.get("lang") === "vi" ? "vi" : "en"} navigate={href => {
     if (["/support", "/contact-support", "/account-recovery"].includes(urlFor(href).pathname)) void (props.host ?? getAppLocalHost()).openOnline(href);
     else props.navigate(href);
   }} />;
 }
-function SupportCasePage(props: AppLocalPageProps) { return <ReadView<AppLocalSupportCaseData> {...props} name="page.support-case" args={{ caseId: urlFor(props.path).pathname.split("/").at(-1)! }} title="Report / Contact">{(data, refresh) => <AppLocalSupportConversation data={data} refresh={refresh} />}</ReadView>; }
+function SupportCasePage(props: AppLocalPageProps) { return <ReadView<AppLocalSupportCaseData> {...props} name="page.support-case" args={{ caseId: urlFor(props.path).pathname.split("/").at(-1)! }} title="Support">{(data, refresh) => <AppLocalSupportConversation data={data} refresh={refresh} />}</ReadView>; }
 function MarketPage(props: AppLocalPageProps) {
   const browse = marketBrowseFromQuery(queryFor(props.path, ["q", "category"]));
   return <ReadView<MarketExperienceData> {...props} name="page.market" title="Market" publicView={scope => <MarketClient paymentsAvailable={false} experienceScope={scope} initialBrowse={browse} />} >{(data,refresh,feedback) => <AppLocalMarket data={data} refresh={refresh} verifiedAt={feedback.verifiedAt} returnSequence={urlFor(props.path).searchParams.get("marketReturn")} initialBrowse={browse} />}</ReadView>;
@@ -101,7 +101,7 @@ function BookingsPage(props: AppLocalPageProps) {
 }
 function ReceiptPage(props: AppLocalPageProps) { return <ReadView<AppLocalReceiptData> {...props} name="page.customer-receipt" args={{ ticketId: urlFor(props.path).pathname.split("/").at(-1)! }} title="Receipt">{data => <AppLocalCustomerReceipt {...data} />}</ReadView>; }
 function SavedPage(props: AppLocalPageProps) { return <ReadView<AppLocalSavedPostsData> {...props} name="customer.saved-posts" args={queryFor(props.path, ["filter", "page", "q"])} title="Saved posts">{data => <AppLocalSavedPosts data={data} />}</ReadView>; }
-function ReviewsPage(props: AppLocalPageProps) { return <ReadView<MyReviewsData> {...props} name="customer.reviews" args={queryFor(props.path,["page","experience"])} title="My Reviews">{data => <main className="mx-auto w-full max-w-3xl px-4 py-5"><MyReviewsList {...data} /></main>}</ReadView>; }
+function ReviewsPage(props: AppLocalPageProps) { return <ReadView<MyReviewsData> {...props} name="customer.reviews" args={queryFor(props.path,["page","experience"])} title="My reviews">{data => <main className="mx-auto w-full max-w-3xl px-4 py-5"><MyReviewsList {...data} /></main>}</ReadView>; }
 function FollowingPage(props: AppLocalPageProps) {
   const args = queryFor(props.path, ["filter", "page", "q"]);
   if (urlFor(props.path).pathname === "/more/favorite-shop") args.filter = "shop";
@@ -134,7 +134,7 @@ function StaffPage(props: AppLocalPageProps) {
   const identity = useStaffIdentity(props, view), params = queryFor(props.path, ["range", "status", "bookingId", "date", "quickId", "view", "tab", "payPeriodStart", "ticketDate", "profile", "error"]);
   const args = { ...queryFor(props.path, view === "schedule" ? ["range", "status", "bookingId", "date", "quickId", "view"] : view === "my-work" ? ["tab", "payPeriodStart", "ticketDate"] : []), staffId: identity.data?.staffId ?? "" };
   const state = useAppLocalResource<StaffMyWorkResource | StaffScheduleResource | StaffWorkdayResource>(identity.data?.resourceScope, view === "my-work" ? "staff.my-work" : `staff.${view}`, args, { enabled: Boolean(identity.data) });
-  if (!identity.data || !state.data) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">{view === "my-work" ? "My Work" : view === "schedule" ? "Appointments" : "Workday"}</h1>{identity.error || state.error ? <p role="alert">{identity.error ?? state.error}</p> : <p role="status">Opening…</p>}</main>;
+  if (!identity.data || !state.data) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">{view === "my-work" ? "My Work" : view === "schedule" ? "Bookings" : "Workday"}</h1>{identity.error || state.error ? <p role="alert">{identity.error ?? state.error}</p> : <p role="status">Opening…</p>}</main>;
   if (view === "my-work") return <StaffMyWorkView resource={state.data as StaffMyWorkResource} params={params as StaffMyWorkSearchParams} scope={identity.data.resourceScope} historyQuery={urlFor(props.path).search} relay={<AppLocalStaffRelay scope={identity.data.resourceScope} salonId={identity.data.salonId} staffId={identity.data.staffId}/>} />;
   if (view === "workday") return <StaffWorkdayView data={(state.data as StaffWorkdayResource).result} error={params.error} />;
   const schedule = state.data as StaffScheduleResource;
@@ -149,8 +149,8 @@ function OwnerAttentionPage(props: AppLocalPageProps) {
 const definitions = [
   {id:"personal.qr",title:"My QR",requiresContext:true,Component:PersonalQrPage,features:["original-guarded-checkin","spa-navigation"]},
   { id: "help.home", title: "Help", requiresContext: false, Component: HelpPage, features: ["complete-guides", "search", "role-filters", "illustrations", "en-vi"] },
-  { id: "support", title: "Report / Contact", requiresContext: false, Component: SupportPage, features: ["public-instructions", "original-request-form", "scoped-inbox", "guest-history-online"] },
-  { id: "support.case", title: "Report / Contact", requiresContext: true, Component: SupportCasePage, features: ["original-conversation", "original-replies", "original-evidence-upload"] },
+  { id: "support", title: "Support", requiresContext: false, Component: SupportPage, features: ["public-instructions", "original-request-form", "scoped-inbox", "guest-history-online"] },
+  { id: "support.case", title: "Support", requiresContext: true, Component: SupportCasePage, features: ["original-conversation", "original-replies", "original-evidence-upload"] },
   { id: "market", title: "Market", requiresContext: false, Component: MarketPage, features: ["full-catalog", "search", "categories", "original-feature-panels"] },
   { id: "market.booking-deposit", title: "Booking Deposit", requiresContext: false, Component: DepositPage, features: ["full-product", "original-checkout"] },
   { id: "settings.hub", title: "All Settings", requiresContext: true, Component: SettingsPage, features: ["original-settings-hub", "original-panels", "original-online-confirmations"] },
@@ -162,7 +162,7 @@ const definitions = [
   { id: "customer.receipt", title: "Receipt", requiresContext: true, Component: ReceiptPage, features: ["complete-services", "totals", "recorded-payments", "original-visit-review"] },
   { id: "customer.saved-posts", title: "Saved posts", requiresContext: true, Component: SavedPage, features: ["complete-list", "search", "filters", "pagination", "original-remove"] },
   { id: "customer.following", title: "Following", requiresContext: true, Component: FollowingPage, features: ["complete-list", "search", "filters", "pagination", "original-unfollow"] },
-  { id: "customer.reviews", title: "My Reviews", requiresContext: true, Component: ReviewsPage, features: ["own-reviews","salon-replies","pagination","original-customer-edit"] },
+  { id: "customer.reviews", title: "My reviews", requiresContext: true, Component: ReviewsPage, features: ["own-reviews","salon-replies","pagination","original-customer-edit"] },
   { id: "customer.favorites", title: "Your favorites", requiresContext: true, Component: FavoritesPage, features: ["salons", "inspiration", "original-favorite-controls"] },
   { id: "staff.work", title: "My Work", requiresContext: true, Component: StaffPage, features: ["original-daily", "pay", "analysis", "schedule", "workday", "original-commands"] },
   { id: "owner.today", title: "Today", requiresContext: true, Component: TodayPage, features: ["original-complete-dashboard", "today-only", "owner-money-attention", "original-shortcuts"] },

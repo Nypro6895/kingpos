@@ -563,7 +563,7 @@ export function PortableCheckInClient({
             <WorkspaceText text="Staff check-in is off" />
           </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
-            <WorkspaceText text="Enable staff check-in from POS Settings before using this Portable page." />
+            <WorkspaceText text="Enable staff check-in in POS Settings." />
           </p>
         </div>
       </section>

@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceNavigationIcon } from "@/components/workspace-navigation-icon";
 import { SalonName } from "@/components/salon-member-badge";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -7,7 +8,7 @@ import { SubmitButton } from "@/components/submit-button";
 import Image from "next/image";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { logoutPortablePosAction } from "@/app/pos/portable/actions";
 import { clearPortableLocalDrafts } from "@/app/pos/portable/use-portable-draft";
 import { usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
@@ -58,56 +59,8 @@ type PortableNavIconName =
   | "ticket";
 
 function PortableNavIcon({ name }: { name: PortableNavIconName }) {
-  let content: ReactNode;
-
-  if (name === "pos") {
-    content = <><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M8 21h8m-4-5v5M7 7h6m-6 4h3m6-4v5m-2-2h4"/></>;
-  } else if (name === "ticket") {
-    content = <path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Zm4 5h6m-6 4h6" />;
-  } else if (name === "book") {
-    content = (
-      <>
-        <path d="M7 2v3m10-3v3M4 9h16M6 4h12a2 2 0 0 1 2 2v14H4V6a2 2 0 0 1 2-2Z" />
-        <path d="M8 13h3v3H8z" />
-      </>
-    );
-  } else if (name === "checkIn") {
-    content = (
-      <>
-        <circle cx="9" cy="8" r="3" />
-        <path d="M3.5 20a5.5 5.5 0 0 1 11 0m1-7 2 2 4-4" />
-      </>
-    );
-  } else if (name === "report") {
-    content = (
-      <>
-        <path d="M4 20V10m6 10V4m6 16v-7m4 7V7" />
-        <path d="M2 20h20" />
-      </>
-    );
-  } else {
-    content = (
-      <>
-        <rect height="10" rx="2" width="14" x="5" y="11" />
-        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-      </>
-    );
-  }
-
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5 shrink-0"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="1.8"
-      viewBox="0 0 24 24"
-    >
-      {content}
-    </svg>
-  );
+  const icons = { book: "calendar", checkIn: "check", lock: "lock", pos: "store", report: "list", ticket: "receipt" } as const;
+  return <WorkspaceNavigationIcon name={icons[name]} className="h-5 w-5 shrink-0" />;
 }
 
 function SalonBrand({

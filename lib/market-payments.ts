@@ -80,8 +80,8 @@ export async function vietnameseCheckout(salonId: string, ownerId: string) {
     return vietnameseCheckout(salonId, ownerId);
   }
   const form = new URLSearchParams({ mode: "subscription",
-    success_url: new URL("/market?payment=received", REYLUMI_METADATA_BASE).href,
-    cancel_url: new URL("/market?payment=cancelled", REYLUMI_METADATA_BASE).href,
+    success_url: new URL(`/market?payment=received&salon=${encodeURIComponent(salonId)}`, REYLUMI_METADATA_BASE).href,
+    cancel_url: new URL(`/market?payment=cancelled&salon=${encodeURIComponent(salonId)}`,  REYLUMI_METADATA_BASE).href,
     "line_items[0][quantity]": "1", "line_items[0][price_data][currency]": "usd",
     "line_items[0][price_data][unit_amount]": String(VIETNAMESE_MONTHLY_CENTS),
     "line_items[0][price_data][recurring][interval]": "month",
@@ -134,4 +134,3 @@ export async function syncVietnameseSubscription(subscriptionId: string) {
   }).eq("salon_id", salonId);
   if (error) throw new Error("Subscription could not be recorded.");
 }
-

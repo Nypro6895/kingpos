@@ -58,7 +58,7 @@ test('billing portal checks current salon, original payer, provider account and 
   f.payer='owner_b'; assert.match((await manageCardSubscription('booksms')).error,/payer/); assert.equal(f.calls.length,0);
   f.payer='owner_a';f.account='acct_b';assert.match((await manageCardSubscription('booksms')).error,/payer/);assert.equal(f.calls.length,0);
   f.account='acct_a';assert.equal((await manageCardSubscription('booksms')).url,f.url);
-  assert.deepEqual(f.calls[0].form,{customer:'cus_a',return_url:'https://reylumi.com/market',configuration:'bpc_a'});
+  assert.deepEqual(f.calls[0].form,{customer:'cus_a',return_url:'https://reylumi.com/market?salon=salon_a',configuration:'bpc_a'});
   f.url='https://billing.stripe.com.evil.test/';assert.match((await manageCardSubscription('booksms')).error,/could not open/);
  }finally{delete globalThis.marketPortalFixture;}
 });

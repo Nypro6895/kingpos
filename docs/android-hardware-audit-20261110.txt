@@ -1,0 +1,63 @@
+ANDROID HARDWARE AND PERSONAL NAVIGATION QA - 2026-11-10 America/Chicago
+
+This update supplements android-parity-audit-20261110.txt. Its older permission
+and installation limitations describe the earlier revision, not this update.
+Overall Android/iOS parity audit remains open. No store or web release occurred.
+
+IMPLEMENTED
+- Owner-approved CAMERA and foreground coarse/fine location; no microphone or
+  background location. Trusted HTTPS origin and foreground checks; first web
+  permission prompt requires user activation. Navigation/background cancels
+  pending callbacks. Backgrounding stops video-element camera streams.
+- Image capture uses system camera and a cache-only FileProvider, retaining
+  ordinary file selection. No broad storage permission or automatic upload.
+- Branded offline screen with logo, centered message and rounded Retry button.
+- Hardware Back closes the QR camera before popovers/dialogs and page history.
+- Origin validation and navigation-policy regression coverage expanded.
+
+PHYSICAL GALAXY A16
+Updated debug package installed while retaining login. Camera permission allowed
+while using the app. Diagnostic used the rear camera and decoded exactly the
+non-business QR REYLUMI-ANDROID-QA. Owner confirmed success; CDP independently
+reported matched=true, detected=true and video srcObject=null after success.
+Diagnostic closed afterward. No camera frames were saved by this diagnostic.
+Production Staff Scan is disabled by the salon: no setting was changed, and
+successful diagnostic decoding does not establish production check-in acceptance.
+
+Global Location enabled by owner; app foreground precise location allowed.
+Physical getCurrentPosition requests still timed out. GPS remains unresolved.
+Emulator synthetic fix passed; this does not establish physical GPS acceptance.
+
+Personal More: hardware Back closed the visible popover (open count 1 to 0),
+remaining on /support. Correct personal booking route is /my-bookings; the
+earlier /bookings probe used a salon route and is not a personal booking failure.
+Account switching to Personal verified before the personal navigation audit.
+Twelve nested routes/tabs were loaded at 384 CSS px with scrollWidth=384 and
+no role=alert text at snapshot time: /my-bookings, its history tab, /more,
+/more/reviews, /more/saved-post, /more/following, /more/memberships, /gift-cards,
+/qr, /rewards, /beauty and /beauty/library. Memberships is an empty state,
+not a loading screen. These checks do not establish every interaction.
+Physical native share sheet opened and was cancelled without sending; system
+PrintActivity opened and was cancelled without submitting a print job.
+
+VALIDATION
+Gradle testDebugUnitTest lintDebug assembleDebug: passed, 4 tests / 0 failures.
+Lint: 0 errors, 2 existing icon/resource warnings. git diff --check passed.
+APK and immutable source snapshot retained under hardware evidence directory.
+
+EMULATOR CHECKS
+Camera denied/allowed, first automatic request rejected without user gesture,
+live camera stopping after background, location denied and synthetic precise
+fix, system photo capture returning JPEG to a diagnostic input and cancellation.
+No image upload, real check-in, booking, purchase, payment or post was submitted.
+
+EVIDENCE
+Local artifacts/android-hardware-20261110 contains build logs and hardware QA
+receipts. artifacts/android-parity-20261110 contains role route measurements.
+Screenshots may contain account information and are kept local, not in Git.
+
+STILL REQUIRED
+Full real form/IME interactions, production Scan when enabled through normal
+owner workflow, usable physical GPS fix, auth expiry/logout/account isolation,
+financial fixture validation, provider redirects and store purchase gating.
+No same-device iOS comparison or first-load performance benchmark was run.

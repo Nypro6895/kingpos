@@ -1,3 +1,4 @@
+import {withOwnedSalonPage} from "@/components/owned-salon-page";
 import { withExperiencePage } from "@/components/experience-page";
 import { campaignWalletAction } from "@/app/campaigns/credit-actions";
 import { ownerCampaignSettings } from "@/lib/owner-campaigns";
@@ -20,7 +21,7 @@ async function CampaignsPage({ searchParams }: { searchParams: Promise<CampaignQ
   return <CampaignWorkspace {...data.props}/>;
 }
 
-type CampaignQuery = { tab?: string; credits?: string; payment?: string; card_session?: string; card?: string; credit_session?: string; credit_order?: string };
+type CampaignQuery = { salon?:string; tab?: string; credits?: string; payment?: string; card_session?: string; card?: string; credit_session?: string; credit_order?: string };
 async function loadCampaignPage(query: CampaignQuery): Promise<{kind:"failed"}|{kind:"inactive"}|{kind:"ready";props:Parameters<typeof CampaignWorkspace>[0]}> {
   try {
     let message="";
@@ -39,4 +40,4 @@ async function loadCampaignPage(query: CampaignQuery): Promise<{kind:"failed"}|{
   }catch{return {kind:"failed"};}
 }
 
-export default withExperiencePage(CampaignsPage);
+export default withExperiencePage(withOwnedSalonPage(CampaignsPage));

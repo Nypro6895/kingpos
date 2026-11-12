@@ -1,4 +1,6 @@
 import { withExperiencePage } from "@/components/experience-page";
+import { MarketTargetAccessNotice } from "@/components/market-target-access-notice";
+import { resolveMarketTarget } from "@/lib/market-target-context";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { getRequestBusinessContext } from "@/lib/request-business-context";
@@ -6,21 +8,42 @@ import { marketPluginContext } from "@/lib/market-plugins";
 import { bookingDepositPurchaseState } from "@/lib/booking-deposit-market";
 import { BookingDepositProduct } from "@/app/market/booking-deposit-product";
 
-export const metadata: Metadata = { title: "Booking Deposit | Reylumi Market", description: "Collect a deposit or full payment when customers book online." };
+export const metadata: Metadata = {
+  title: "Booking Deposit | Reylumi Market",
+  description: "Collect a deposit or full payment when customers book online.",
+};
 
-async function BookingDepositPage({ searchParams }: { searchParams: Promise<{ cancelled?: string }> }) {
+async function BookingDepositPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cancelled?: string; salon?: string }>;
+}) {
   await connection();
-  const [context, query] = await Promise.all([getRequestBusinessContext(), searchParams]);
+  const query = await searchParams;
+  const context =
+    query.salon !== undefined
+      ? await resolveMarketTarget(query.salon).catch(() => null)
+      : await getRequestBusinessContext();
+  if (!context) return <MarketTargetAccessNotice />;
   let installed = false;
   if (context.currentSalon) {
     // The permission-checked read must succeed before reading paid entitlement.
     try {
-      const { salonId } = await marketPluginContext();
+      const { salonId } = await marketPluginContext(context.currentSalon.id);
       const purchase = await bookingDepositPurchaseState(salonId);
       installed = Boolean(purchase.installed && purchase.active);
-    } catch { /* Public product information remains available. Checkout rechecks permissions. */ }
+    } catch {
+      /* Public product information remains available. Checkout rechecks permissions. */
+    }
   }
-  return <BookingDepositProduct key={context.currentSalon?.id ?? "guest"} salonId={context.currentSalon?.id} installed={installed} cancelled={query.cancelled === "1"} />;
+  return (
+    <BookingDepositProduct
+      key={context.currentSalon?.id ?? "guest"}
+      salonId={context.currentSalon?.id}
+      installed={installed}
+      cancelled={query.cancelled === "1"}
+    />
+  );
 }
 
 export default withExperiencePage(BookingDepositPage);

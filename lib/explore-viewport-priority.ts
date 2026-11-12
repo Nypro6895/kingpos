@@ -1,6 +1,32 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
+import { canPrepareExploreAhead } from "@/lib/explore-ahead-buffer";
+
+export function exploreAheadDistance(viewportHeight: number, fallback: number, allowed: boolean) {
+  return allowed ? Math.max(fallback, viewportHeight * 2.5) : fallback;
+}
+
+/** First paint stays first; then prepare a bounded spatial buffer, even while idle. */
+export function useExploreAheadDistance() {
+  const fallback = useExplorePrefetchDistance();
+  const [distance, setDistance] = useState(0);
+  useEffect(() => {
+    const update = () => setDistance(firstScreenReady()
+      ? exploreAheadDistance(window.innerHeight, fallback, canPrepareExploreAhead()) : 0);
+    const network = (navigator as Navigator & { connection?: EventTarget }).connection;
+    update();
+    for (const event of ["reylumi:screen-ready", "reylumi:first-content-ready", "resize", "online", "offline"]) window.addEventListener(event, update);
+    document.addEventListener("visibilitychange", update);
+    network?.addEventListener("change", update);
+    return () => {
+      for (const event of ["reylumi:screen-ready", "reylumi:first-content-ready", "resize", "online", "offline"]) window.removeEventListener(event, update);
+      document.removeEventListener("visibilitychange", update);
+      network?.removeEventListener("change", update);
+    };
+  }, [fallback]);
+  return distance;
+}
 
 let observedLoadMs = 0;
 export function recordExploreLoadDuration(ms: number) {
@@ -32,8 +58,9 @@ export function useExplorePrefetchDistance() {
   }, []);
   return distance;
 }
-/** Optional collections start after the core has painted and their own region is visible. */
+/** Optional collections start after core paint and within the prepared buffer. */
 export function useExploreVisibleAfterFirstContent(ref: RefObject<HTMLElement | null>) {
+  const distance = useExploreAheadDistance();
   const [enabled, setEnabled] = useState(false);
   useLayoutEffect(() => {
     let activated = false;
@@ -41,18 +68,18 @@ export function useExploreVisibleAfterFirstContent(ref: RefObject<HTMLElement | 
       const node = ref.current;
       if (activated || !firstScreenReady() || !node?.getClientRects().length) return;
       const bounds = node.getBoundingClientRect();
-      if (bounds.bottom <= 0 || bounds.top >= innerHeight) return;
+      if (bounds.bottom <= 0 || bounds.top >= innerHeight + distance) return;
       activated = true;
       setEnabled(true);
     };
-    const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(update, { rootMargin: "0px" });
+    const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(update, { rootMargin: `${distance}px` });
     if (ref.current) observer?.observe(ref.current);
     update();
     window.addEventListener("reylumi:screen-ready", update);
     window.addEventListener("reylumi:first-content-ready", update);
-    window.addEventListener("scroll", update, { passive: true });
-    return () => { observer?.disconnect(); window.removeEventListener("reylumi:screen-ready", update); window.removeEventListener("reylumi:first-content-ready", update); window.removeEventListener("scroll", update); };
-  }, [ref]);
+    document.addEventListener("scroll", update, { capture: true, passive: true });
+    return () => { observer?.disconnect(); window.removeEventListener("reylumi:screen-ready", update); window.removeEventListener("reylumi:first-content-ready", update); document.removeEventListener("scroll", update, true); };
+  }, [ref, distance]);
   return enabled;
 }
 export function useExploreFirstContentPaint(ref: RefObject<HTMLElement | null>) {

@@ -17,4 +17,4 @@ export const APP_LOCAL_EXPLORE_READS = [
 export const APP_LOCAL_EXPLORE_COMMANDS = [
   { name: "http.explore.feed-events", path: "/api/explore/feed", method: "POST", mode: "events", argumentKeys: ["input"], replay: "never" },
 ] as const;
-export const APP_LOCAL_EXPLORE_QUERY_KEYS = ["browse", "category", "location", "page", "q", "scope", "sort", "type", "locationSource"] as const;
+export const APP_LOCAL_EXPLORE_QUERY_KEYS = ["browse", "category", "location", "page", "q", "scope", "sort", "type", "locationSource", "shape", "length", "color", "finish", "tone", "season", "maxPrice", "bookableOnly", "newOnly", "trendingOnly"] as const;

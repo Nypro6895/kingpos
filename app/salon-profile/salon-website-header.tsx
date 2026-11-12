@@ -46,21 +46,19 @@ export function SalonWebsiteHeader({ profile, layout, tabs, extraTabs, selectedT
         <div className={styles.logo}>{profile.logoImageUrl && failedLogo !== profile.logoImageUrl
           ? <img src={profile.logoImageUrl} alt={`${profile.name} logo`} onError={() => setFailedLogo(profile.logoImageUrl)}/>
           : <span aria-hidden="true">{initials}</span>}</div>
-        <div className={styles.name}><div><h2><SalonName name={profile.name} salonId={profile.salonId}/></h2>{verified}{canFollow ? <button type="button" className={styles.follow} aria-pressed={following} disabled={followPending} onClick={onFollow}><WorkspaceText text={following ? "✓ Following" : "+ Follow salon"} /></button> : null}</div>{locality ? <p>{locality}</p> : null}</div>
-      </div>
-      {tools ? <div className={styles.tools}>{tools}</div> : null}
-      <div className={styles.actions}>
-
-        {canBook ? <button type="button" className={styles.book} onClick={onBook}><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}
-      </div>
-    </div>
-    {trust || priceHint || (status && status.kind !== "hours_unset") ? <div className={styles.meta}>
+        <div className={styles.name}><div className={styles.nameRow}><h2><SalonName name={profile.name} salonId={profile.salonId}/></h2>{verified}{canFollow ? <button type="button" className={styles.follow} aria-pressed={following} disabled={followPending} onClick={onFollow}><WorkspaceText text={following ? "✓ Following" : "+ Follow salon"} /></button> : null}<div className={styles.tools}>{tools}</div></div>{locality ? <p>{locality}</p> : null}{trust || priceHint || (status && status.kind !== "hours_unset") ? <div className={styles.meta}>
       {trust ? <div className={styles.trust}>{trust}</div> : null}
       {priceHint ? <span className={styles.priceHint}>{priceHint}</span> : null}
       {status && status.kind !== "hours_unset" ? <button type="button" className={styles.status} data-open={status.isOpen} aria-label={__vt("View salon operating hours")} aria-haspopup="dialog" onClick={onHours}>
         <span aria-hidden="true" className={styles.dot}/><strong><WorkspaceText text={status.label} /></strong>{status.detail ? <><span aria-hidden="true">·</span><span><WorkspaceText text={status.detail} /></span></> : null}
       </button> : null}
-    </div> : null}
+    </div> : null}</div>
+      </div>
+      <div className={styles.actions}>
+
+        {canBook ? <button type="button" className={styles.book} onClick={onBook}><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}
+      </div>
+    </div>
     <div className={styles.navigation}>
       <div role="tablist" aria-label={__vt("Salon profile sections")} className={styles.tabs} onKeyDown={onTabKeyDown}>
         {[...tabs, ...extraTabs].map(tab => <button type="button" key={tab.id} id={`salon-profile-tab-${tab.id}`} role="tab" aria-controls={`salon-profile-${tab.id}`} aria-selected={selectedTab === tab.id} tabIndex={selectedTab === tab.id ? 0 : -1} onClick={() => onTab(tab.id)}>{tab.id === "discover" ? <WorkspaceText text="Overview" /> : tab.label}</button>)}

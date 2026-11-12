@@ -290,7 +290,6 @@ export async function updateAccountProfileAction(
     display_name: readActionOptionalString(input, "display_name"),
     first_name: readActionOptionalString(input, "first_name"),
     last_name: readActionOptionalString(input, "last_name"),
-    language: readActionOptionalString(input, "language") ?? "en",
     phone: normalizedPhone,
     timezone: readActionOptionalString(input, "timezone") ?? "America/Chicago",
   };

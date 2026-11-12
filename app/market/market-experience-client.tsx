@@ -1,4 +1,5 @@
 "use client";
+import { marketTargetHref } from "@/lib/market-target-url";
 import { useCallback, useEffect, useMemo } from "react";
 import { MarketClient } from "./market-client";
 import type { MarketExperienceData } from "@/types/market-experience";
@@ -18,7 +19,7 @@ export function MarketExperienceClient({ context, initial, transient = false, in
 }
 
 function CachedMarketExperience({ context, initial, initialBrowse }: { context: ExperienceContext; initial: LiveResourceSnapshot<MarketExperienceData>; initialBrowse?: MarketBrowse }) {
-  const fetcher = useMemo(() => fetchLiveExperienceResource<MarketExperienceData>("/api/experience/market", context.scope), [context.scope]);
+  const fetcher = useMemo(() => fetchLiveExperienceResource<MarketExperienceData>(marketTargetHref("/api/experience/market", context.salonId ?? undefined), context.scope), [context.scope, context.salonId]);
   const resource = useExperienceResource({ scope: context.scope, key: "market", initialData: initial,
     initialUpdatedAt: Date.parse(initial.updatedAt), initialEtag: `"${initial.revision}"`, freshForMs: 60_000, retainForMs: 30 * 60_000,
     tags: ["catalog", "settings", "market"], fetcher });

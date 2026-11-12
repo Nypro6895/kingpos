@@ -20,7 +20,7 @@ const tags: Record<TodayDashboardSection, readonly PosResource[]> = {
   waiting: ["waiting", "booking"], financials: ["tickets", "report", "staff", "settings"],
   extras: ["settings", "catalog"],
 };
-const titles: Record<TodayDashboardSection, string> = { staff: "Team", bookings: "Appointments", waiting: "Waiting", financials: "Performance", extras: "Quick access and notifications" };
+const titles: Record<TodayDashboardSection, string> = { staff: "Team", bookings: "Bookings", waiting: "Waiting", financials: "Performance", extras: "Quick access and notifications" };
 type PageData = { dashboard: TodayDashboard; isOwner: boolean };
 type Recovery = { run(): Promise<void>; busy: boolean; error: boolean };
 type ReaderProps = { scope: string; salonId: string; date: string; currentDate: string; section: TodayDashboardSection; initialReadPending?: boolean; accept: (section: TodayDashboardSection, dashboard: TodayDashboard) => void; fail: (section: TodayDashboardSection) => void; deny: () => void };

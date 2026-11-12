@@ -30,7 +30,7 @@ export const APP_LOCAL_REFERENCE_ASSETS = [...imagePaths].sort();
 
 /** Public instructions only; private support conversations are never bundled. */
 export const APP_LOCAL_SUPPORT_INSTRUCTIONS = {
-  version: APP_LOCAL_REFERENCE_VERSION, title: "Report / Contact",
+  version: APP_LOCAL_REFERENCE_VERSION, title: "Support",
   introduction: "Report an issue and continue conversations with our team.",
   sections: [
     { title: "Send a request", body: "Describe what you were doing, the intended salon, and what happened. Avoid passwords, passcodes and full payment details.", href: "/support" },

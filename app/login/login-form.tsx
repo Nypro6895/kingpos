@@ -362,7 +362,7 @@ export function LoginForm({
             </label>
             <Link
               className="text-sm font-extrabold text-brand-orange underline-offset-4 transition hover:text-brand-orange-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
-              href={`/forgot-password?next=${encodeURIComponent(nextPath)}`}
+              href={nextPath === "/tax" ? "/tax/forgot-password" : `/forgot-password?next=${encodeURIComponent(nextPath)}`}
             >
               <WorkspaceText text="Forgot password?" />
             </Link>

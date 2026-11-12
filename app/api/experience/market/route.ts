@@ -1,3 +1,5 @@
+import { resolveMarketTarget } from "@/lib/market-target-context";
+import { runInBusinessContext } from "@/lib/scoped-business-context";
 import { getRequestBusinessContext } from "@/lib/request-business-context";
 import { getExperienceContext } from "@/lib/experience-context";
 import { loadMarketExperienceData } from "@/lib/market-experience-data";
@@ -12,11 +14,12 @@ export async function GET(request: Request) {
     if ((await requestHeaders()).get("x-reylumi-auth-unavailable") === "1") {
       return Response.json({ error: "Authentication temporarily unavailable" }, { status: 503, headers });
     }
-    const context = await getRequestBusinessContext();
+    const targetSalonId = new URL(request.url).searchParams.get("salon");
+    const context = targetSalonId !== null ? await resolveMarketTarget(targetSalonId) : await getRequestBusinessContext();
     if (new URL(request.url).searchParams.get("scope") !== getExperienceContext(context).scope) {
       return Response.json({ error: "Workspace changed" }, { status: 409, headers });
     }
-    const data = await loadMarketExperienceData(context);
+    const data = await runInBusinessContext(context, () => loadMarketExperienceData(context));
     if (data.pluginLoadError) return Response.json({ error: "Temporarily unavailable" }, { status: 503, headers });
     return liveResourceResponse(request, createLiveResourceSnapshot(data));
   } catch {

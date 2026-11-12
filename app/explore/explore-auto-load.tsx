@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useExplorePrefetchDistance } from "@/lib/explore-viewport-priority";
+import { useExploreAheadDistance } from "@/lib/explore-viewport-priority";
 import { canPrepareExploreAhead, exploreAheadBudget } from "@/lib/explore-ahead-buffer";
 
 /** Mount with the rendered results, even when their data was ready earlier. */
@@ -13,7 +13,7 @@ export function ExploreAutoLoad({ enabled = true, onLoad, progressKey, distance,
   prepareAheadKey?: string;
 }) {
   const anchor = useRef<HTMLDivElement>(null);
-  const adaptiveDistance = useExplorePrefetchDistance();
+  const adaptiveDistance = useExploreAheadDistance();
   const margin = Math.min(distance ?? adaptiveDistance, adaptiveDistance);
   useEffect(() => {
     const node = anchor.current;
@@ -34,7 +34,7 @@ export function ExploreAutoLoad({ enabled = true, onLoad, progressKey, distance,
       const bounds = node.getBoundingClientRect();
       advance();
       const ahead = Boolean(prepareAheadKey && canPrepareExploreAhead());
-      const horizon = ahead ? Math.max(margin, window.innerHeight * 2.5) : margin;
+      const horizon = margin;
       if (bounds.top <= window.innerHeight + horizon && bounds.bottom >= -margin) {
         if (prepareAheadKey && !exploreAheadBudget(prepareAheadKey).take()) return;
         requested = true;

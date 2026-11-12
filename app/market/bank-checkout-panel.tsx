@@ -1,10 +1,12 @@
 "use client";
+import { marketTargetHref } from "@/lib/market-target-url";
+import { useScopedMarketActions } from "./scoped-market-client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { marketQuote } from "@/lib/market-commerce";
 import type { MarketBankBillingState, MarketBankOrder, MarketBankOrderStatus } from "@/types/market-bank-billing";
-import { cancelMarketBankOrder, createMarketBankOrder, refreshMarketBankBilling } from "./bank-payment-actions";
+
 import styles from "./market.module.css";
 
 const STATUS_LABELS: Record<MarketBankOrderStatus, string> = {
@@ -30,6 +32,8 @@ export type BankCheckoutPanelProps = {
 };
 
 export function BankCheckoutPanel({ pluginId, pluginName, billingState, hasActiveSubscription = false, paidUntil = null, onStateChange }: BankCheckoutPanelProps) {
+ const { cancelMarketBankOrder, createMarketBankOrder, refreshMarketBankBilling } = useScopedMarketActions(billingState.salon_id ?? undefined);
+
   const router = useRouter();
   const [local, setLocal] = useState({ source: billingState, state: billingState });
   // A refresh can switch salons or provide newly settled orders.
@@ -170,7 +174,7 @@ export function BankCheckoutPanel({ pluginId, pluginName, billingState, hasActiv
       {order.status === "cancelled" && <p>Do not transfer money using this cancelled reference.</p>}
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" className={styles.secondary} disabled={busy} onClick={refresh}>{busy ? "Updating…" : "Refresh payment status"}</button>
-        <a className={`${styles.secondary} inline-flex items-center`} href={`/market/orders/${order.id}`} target="_blank" rel="noopener">View invoice / receipt</a>
+        <a className={`${styles.secondary} inline-flex items-center`} href={marketTargetHref(`/market/orders/${order.id}`, billingState.salon_id ?? undefined)} target="_blank" rel="noopener">View invoice / receipt</a>
         {canCancel && !confirmCancel && <button type="button" className={styles.secondary} disabled={busy} onClick={() => { setConfirmCancel(true); setNotSent(false); }}>Cancel unpaid invoice</button>}
       </div>
       {canCancel && confirmCancel && <div className="mt-4 rounded-lg bg-[#fff4eb] p-3 text-sm">

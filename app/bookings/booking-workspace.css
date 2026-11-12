@@ -1051,7 +1051,7 @@
 .owner-schedule-menu { position: relative; }
 .owner-schedule-menu[open] { z-index: 60; }
 .owner-schedule-header:has(.owner-schedule-menu[open]) { position: relative; z-index: 60; }
-.owner-schedule-tabs > details:has([aria-current=page]) > summary { color: var(--booking-orange); border-bottom-color: currentColor; }
+.owner-schedule-tabs > details > summary[aria-current=page] { color: var(--booking-orange); border-bottom-color: currentColor; }
 .owner-settings-menu .booking-tab { border: 0; border-radius: 8px; width: 100%; text-align: left; }
 .owner-schedule-tabs:has(details[open]) > button[aria-current=page] { color: var(--booking-muted); border-bottom-color: transparent; }
 .owner-schedule-menu > summary::-webkit-details-marker, .owner-agenda-row::-webkit-details-marker { display: none; }

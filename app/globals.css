@@ -1963,3 +1963,10 @@ display:none!important}
 :root{--accent-primary:var(--brand-orange);--accent-secondary:var(--brand-teal)}
 button[aria-current="true"]:disabled{opacity:1;background:var(--brand-orange-soft);color:var(--text-primary)}
 :where(details>summary):has(svg,.chevron,.owner-agenda-chevron)::after{content:none}
+
+/* Booking actions share the toolbar icon baseline while their label wraps. */
+.post-action-toolbar:has([data-booking-action-label]) { align-items: stretch; }
+.post-action-toolbar:has([data-booking-action-label]) > :is(button,a),
+.post-action-toolbar:has([data-booking-action-label]) > span > :is(button,a),
+.post-action-toolbar:has([data-booking-action-label]) > span > span:first-child > button { justify-content: flex-start; }
+.post-action-toolbar :is(button,a) [data-booking-action-label] { white-space: normal; overflow-wrap: anywhere; max-width: 100%; text-align: center; }

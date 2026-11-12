@@ -1,4 +1,4 @@
-import { OWNER_MORE_GROUPS, ROLE_MORE_ITEMS, type RoleMoreItem, type RoleNavigationKind } from "@/app/role-navigation";
+import { PERSONAL_MORE_GROUPS, OWNER_MORE_GROUPS, ROLE_MORE_ITEMS, type RoleMoreItem, type RoleNavigationKind } from "@/app/role-navigation";
 
 export type RoleMoreGroup = { id: string; title: string; summary: string; items: RoleMoreItem[] };
 
@@ -8,12 +8,7 @@ export function roleMoreGroups(kind: RoleNavigationKind): RoleMoreGroup[] {
     { id: "work", title: "My work", summary: "Review your pay and performance.", ids: ["staff-payroll", "staff-statistics"] },
     { id: "saved", title: "Saved & following", summary: "Saved posts and followed profiles.", ids: ["staff-saved-post", "staff-following"] },
     { id: "support", title: "Workspace & support", summary: "Switch workplaces and get help.", ids: ["staff-my-place", "staff-help", "staff-support"] },
-  ] : [
-    { id: "activity", title: "Visits & activity", summary: "Your visits and reviews.", ids: ["personal-activity", "personal-reviews"] },
-    { id: "saved", title: "Saved & following", summary: "Saved posts and followed profiles.", ids: ["personal-saved-post", "personal-following"] },
-    { id: "gifts", title: "Memberships & gifts", summary: "Your memberships and gift cards.", ids: ["personal-memberships", "personal-gift-cards"] },
-    { id: "support", title: "Workspace & support", summary: "Switch workspaces and get help.", ids: ["personal-my-place", "personal-help", "personal-reports"] },
-  ];
+  ] : PERSONAL_MORE_GROUPS;
   const items = ROLE_MORE_ITEMS[kind];
   const used = new Set<string>();
   const groups = definitions.map(group => ({

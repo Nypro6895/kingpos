@@ -19,7 +19,7 @@ export async function setUserBlocked(userId: string, blocked: boolean) {
     if (!client) throw new Error('Sign in to manage blocked users.');
     const {error} = await client.rpc('set_user_block', {p_user_id: userId, p_blocked: blocked});
     if (error) throw new Error(error.message);
-    revalidatePath('/explore'); revalidatePath('/beauty'); revalidatePath('/salon-profile');
+    revalidatePath('/explore'); revalidatePath('/beauty'); revalidatePath('/salon-profile'); revalidatePath('/forum');
     return {error: null};
   } catch (error) {
     return {error: error instanceof Error ? error.message : 'Could not update blocked users.'};

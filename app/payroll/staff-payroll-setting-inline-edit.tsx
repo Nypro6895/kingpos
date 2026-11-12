@@ -15,6 +15,8 @@ import type { Staff } from "@/types/staff";
 import Link from "next/link";
 import type { KeyboardEvent, ReactNode } from "react";
 import { useRef, useState } from "react";
+import { payrollSettingPeriod, nextPayrollSettingPeriod } from "@/lib/payroll-setting-period";
+import type { SalonPayrollSetting } from "@/types/payroll";
 
 type ActiveField =
   | "bonusPayout"
@@ -320,6 +322,7 @@ function EditableSetting({
 }
 
 export function StaffPayrollSettingInlineEdit({
+  salonPayrollSetting,
   period,
   returnPath,
   setting,
@@ -327,6 +330,7 @@ export function StaffPayrollSettingInlineEdit({
   staffProfileAvatarUrl,
   staffProfileDisplayName,
 }: {
+  salonPayrollSetting: SalonPayrollSetting;
   period: PayrollPeriod;
   returnPath: string;
   setting: StaffPayrollSetting | null;
@@ -336,7 +340,6 @@ export function StaffPayrollSettingInlineEdit({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  const currentEffectiveFrom = setting?.effective_from ?? period.startDate;
   const [activeField, setActiveField] = useState<ActiveField>(null);
   const [payType, setPayType] = useState<StaffPayType>(
     setting?.pay_type ?? "commission",
@@ -361,7 +364,9 @@ export function StaffPayrollSettingInlineEdit({
   const [bonusPayout, setBonusPayout] = useState<PayrollPayoutMethod>(
     setting?.bonus_payout_method ?? "check",
   );
-  const [effectiveFrom, setEffectiveFrom] = useState(currentEffectiveFrom);
+  const periodStart = payrollSettingPeriod(salonPayrollSetting, period.startDate).startDate;
+  const nextPeriod = nextPayrollSettingPeriod(salonPayrollSetting, period.startDate);
+  const [effectiveFrom, setEffectiveFrom] = useState(nextPeriod.startDate);
   const legalName = getStaffLegalName(staff) ?? "";
   const settingRequestField = useRef<HTMLInputElement>(null);
 
@@ -374,11 +379,9 @@ export function StaffPayrollSettingInlineEdit({
       onSubmit={(event) => {
         if (settingRequestField.current && !settingRequestField.current.value) settingRequestField.current.value = crypto.randomUUID();
         if (
-          effectiveFrom === currentEffectiveFrom &&
+          effectiveFrom === periodStart &&
           !window.confirm(
-            __vt(`You are saving changes with the same effective date. This may update the current payroll setting from ${formatDateLabel(
-              currentEffectiveFrom,
-            )}. Continue?`),
+            __vt(`Apply these settings to the ENTIRE selected payroll period starting ${formatDateLabel(periodStart)}? Published statements remain unchanged until you publish an updated statement.`),
           )
         ) {
           event.preventDefault();
@@ -429,7 +432,7 @@ export function StaffPayrollSettingInlineEdit({
               >
                 <InlineDateInput
                   autoFocus
-                  onChange={setEffectiveFrom}
+                  onChange={(date) => { if (date) setEffectiveFrom(payrollSettingPeriod(salonPayrollSetting, date).startDate); }}
                   onDone={closeField}
                   value={effectiveFrom}
                 />
@@ -450,6 +453,13 @@ export function StaffPayrollSettingInlineEdit({
         </div>
       </div>
 
+      <div className="rounded border border-zinc-200 bg-zinc-50 p-3 text-sm">
+        <p>Settings apply to a whole payroll period. A date you choose is aligned to that period’s first day. Published statements do not change until an updated statement is published.</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button type="button" onClick={() => setEffectiveFrom(periodStart)} className="rounded border px-3 py-2">Entire selected period · {formatDateLabel(periodStart)}</button>
+          <button type="button" onClick={() => setEffectiveFrom(nextPeriod.startDate)} className="rounded border px-3 py-2">Next period · {formatDateLabel(nextPeriod.startDate)}</button>
+        </div>
+      </div>
       <div className="grid gap-5 md:grid-cols-3">
         <SettingGroup title={__vt("Compensation")}>
           <EditableSetting

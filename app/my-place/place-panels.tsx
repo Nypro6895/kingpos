@@ -1,6 +1,8 @@
 "use client";
 import { SalonName } from "@/components/salon-member-badge";
 
+import { SalonAddressLink } from "@/components/salon-address-link";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -57,11 +59,7 @@ function SalonFields({ salon }: { salon?: Location }) {
         maxLength={160}
       />
       <Field label={__vt("Phone")} name="phone" value={salon?.phone} type="tel" />
-      <Field
-        label={__vt("Street address")}
-        name="address_line1"
-        value={salon?.address_line1}
-      />
+      <AddressAutocomplete defaultValue={salon?.address_line1} label={__vt("Street address")} />
       <Field
         label={__vt("Suite / unit")}
         name="address_line2"
@@ -293,7 +291,7 @@ export function SalonDetailsPanel({
                   <div key={label}>
                     <dt className="text-xs text-zinc-500"><WorkspaceText text={label} /></dt>
                     <dd className="mt-1 break-words font-medium">
-                      <WorkspaceText text={value || "Not provided"} />
+                      {label === "Address" && value ? <SalonAddressLink address={value} /> : <WorkspaceText text={value || "Not provided"} />}
                     </dd>
                   </div>
                 ))}

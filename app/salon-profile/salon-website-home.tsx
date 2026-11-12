@@ -1,6 +1,9 @@
 "use client";
 import { SalonName } from "@/components/salon-member-badge";
 
+import { SalonLocationMap } from "@/components/salon-location-map";
+import { mapDirectionsUrl } from "@/lib/location/map-links";
+import { SalonAddressLink } from "@/components/salon-address-link";
 import { resolvePostIdentity } from "@/lib/post-identity";
 import { SalonIntroduction } from "@/components/salon-introduction";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -107,9 +110,9 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, rewards, 
   const servicePreview = preferences.show_services ? data.services.slice(0, 4) : [];
   const showServices = servicePreview.length > 0;
   const showTeam = preferences.show_team && data.staff.length > 0;
-  const address = [data.profile.addressLine1, data.profile.addressLine2, data.profile.city, data.profile.state, data.profile.postalCode].filter(Boolean).join(", ");
+  const address = [data.profile.addressLine1, data.profile.addressLine2, data.profile.city, data.profile.state, data.profile.postalCode, data.profile.country].filter(Boolean).join(", ");
   const locality = [data.profile.city, data.profile.state].filter(Boolean).join(", ");
-  const directions = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  const directions = mapDirectionsUrl(address);
   const hasHours = Boolean(data.operatingHours?.weeklyHours.length || data.operatingHours?.specialHours.length);
   const showVisit = Boolean(data.profile.addressLine1 || data.profile.phone || hasHours);
   const paragraphs = salonAboutParagraphs(data.profile);
@@ -197,7 +200,7 @@ export function SalonWebsiteHome({ data, preferences, posts, composer, rewards, 
     {showServices ? <section className={styles.services}>{heading("Services", onServices, "View all services")}<WebsiteServices services={servicePreview} posts={visiblePosts} canBook={canBook} onBook={onBook} salonId={data.profile.salonId} showPhotos={preferences.layout !== "portfolio"}/></section> : null}
     {rewards ? <div style={{gridArea: "rewards", minWidth: 0}}>{rewards}</div> : null}
     {showVisit ? <section className={styles.hours} data-wide={wideVisit}>{heading(visitTitle)}
-      {data.profile.addressLine1 ? <div className={styles.visitItem}><span aria-hidden="true">↗</span><div><p>{address}</p><a href={directions} target="_blank" rel="noreferrer"><WorkspaceText text="Get directions ↗" /></a></div></div> : null}
+      {data.profile.addressLine1 ? <div className={styles.visitItem}><span aria-hidden="true">↗</span><div><p><SalonAddressLink address={address} /></p><a href={directions} target="_blank" rel="noreferrer"><WorkspaceText text="Get directions ↗" /></a><SalonLocationMap key={address} address={address} name={data.profile.name} /></div></div> : null}
       {data.profile.phone ? <div className={styles.visitItem}><span aria-hidden="true">☎</span><div><p>{data.profile.phone}</p><a href={`tel:${data.profile.phone}`}><WorkspaceText text="Call salon" /></a></div></div> : null}
       {hasHours ? <div className={styles.schedule}><h4><WorkspaceText text="Opening hours" /></h4><OperatingHoursDisplay salonId={data.profile.salonId} initialSettings={data.operatingHours} compact/></div>
         : data.profile.phone ? <p className={styles.hoursHint}><WorkspaceText text="Call to confirm opening hours." /></p> : null}
@@ -244,7 +247,7 @@ export function WebsiteServices({ services, posts, canBook, onBook, salonId, sho
         <p className={styles.serviceMeta}><strong>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2, minimumFractionDigits: 0 }).format(service.basePrice)}</strong>{service.durationMinutes > 0 ? <span> · {service.durationMinutes} <WorkspaceText text="min" /></span> : null}</p>
         {service.description ? <p className={styles.clamp}>{service.description}</p> : null}
       </div>
-      {canBook ? <button aria-label={`Book ${service.name}`} className={styles.book} type="button" onPointerEnter={() => warm(salonId, "serviceId", service.id)} onFocus={() => warm(salonId, "serviceId", service.id)} onClick={() => onBook({ title: "Book service", serviceId: service.id })}><WorkspaceText text="Book" /> <span aria-hidden="true">→</span></button> : null}
+      {canBook ? <button aria-label={`Book ${service.name}`} className={styles.book} type="button" onPointerEnter={() => warm(salonId, "serviceId", service.id)} onFocus={() => warm(salonId, "serviceId", service.id)} onClick={() => onBook({ title: "Book service", serviceId: service.id })}><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}
     </article>;
   })}{!services.length ? <p className={styles.empty}><WorkspaceText text="No public services available." /></p> : null}</div>;
 }
@@ -263,7 +266,7 @@ export function WebsiteTeam({ members, canBook, onBook, onOpen, salonId }: {
       <span><strong>{member.displayName}</strong><small><WorkspaceText text={member.jobTitle || "Salon professional"} /></small>{member.specialties?.length ? <small className={styles.clamp}>{member.specialties.slice(0, 2).join(" · ")}</small> : null}</span>
     </button>
     <div className={styles.personActions}><button type="button" className={styles.profileLink} onClick={() => onOpen?.(member)}><WorkspaceText text="View profile" /></button>
-      {canBook && member.onlineBookingEnabled ? <button aria-label={__vt(`Book with ${member.displayName}`)} className={styles.book} type="button" onPointerEnter={() => warm(salonId, "staffId", member.id)} onFocus={() => warm(salonId, "staffId", member.id)} onClick={() => onBook({ title: "Book with professional", staffId: member.id })}><WorkspaceText text="Book" /> <span aria-hidden="true">→</span></button> : null}
+      {canBook && member.onlineBookingEnabled ? <button aria-label={__vt(`Book with ${member.displayName}`)} className={styles.book} type="button" onPointerEnter={() => warm(salonId, "staffId", member.id)} onFocus={() => warm(salonId, "staffId", member.id)} onClick={() => onBook({ title: "Book with professional", staffId: member.id })}><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}
     </div>
   </article>)}{!members.length ? <p className={styles.empty}><WorkspaceText text="No public team members available." /></p> : null}</div>;
 }

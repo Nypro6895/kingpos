@@ -29,7 +29,7 @@
 .catalog > li { min-width:0; border-bottom:1px solid var(--line); }
 .shell .catalogLink { display:flex; align-items:center; width:100%; min-width:0; gap:.8rem; padding:1rem 0; text-decoration:none; color:inherit; border-radius:.4rem; }
 .catalogLink:hover { background:#f6fafa; }
-.guideMark { display:flex; align-items:center; justify-content:center; flex:0 0 38px; height:38px; color:#b6540d; background:#fff2e7; border-radius:.75rem; }
+.guideMark { display:flex; align-items:center; justify-content:center; flex:0 0 44px; height:44px; color:var(--orange); background:#fff2e7; border-radius:.8rem; }
 .guideCopy { display:block; flex:1 1 0%; min-width:0; }
 .guideTitle,.summary { display:block; white-space:normal; overflow-wrap:break-word; }
 .guideTitle { font-weight:650; font-size:.98rem; line-height:1.4; }
@@ -53,7 +53,7 @@
 .section > h2 { margin-bottom:.6rem; }
 .steps { list-style:none; padding:0; margin:0; }
 .steps li { display:grid; grid-template-columns:1.75rem minmax(0,1fr); gap:.75rem; padding:.9rem 0; border-bottom:1px solid var(--line); }
-.stepNumber { display:flex; align-items:center; justify-content:center; width:1.75rem; height:1.75rem; border-radius:50%; background:#fff0e3; color:#a64b0b; font-size:.8rem; font-weight:650; }
+.stepNumber { display:flex; align-items:center; justify-content:center; width:1.75rem; height:1.75rem; border-radius:50%; background:#eff7f6; color:var(--teal); font-size:.8rem; font-weight:650; }
 .steps p { margin-top:.3rem; color:#566265; font-size:.925rem; }
 .walkthrough { border-bottom:1px solid var(--line); scroll-margin-top:6rem; }
 .walkthrough > summary { display:list-item; padding:1rem .25rem; min-height:48px; cursor:pointer; font-weight:650; font-size:.95rem; }
@@ -72,7 +72,7 @@
 .figure img { display:block; width:100%; height:auto; }
 .figure figcaption { padding:.8rem; border-top:1px solid var(--line); }
 .figure strong { display:block; margin-top:.35rem; font-size:.9rem; }
-.demoLabel { display:inline-block; border-radius:.3rem; padding:.15rem .4rem; color:#a64b0b; background:#fff0e3; font-size:.75rem; font-weight:650; }
+.demoLabel { display:inline-block; border-radius:.3rem; padding:.15rem .4rem; color:var(--teal); background:#eff7f6; font-size:.75rem; font-weight:650; }
 .imageLinks { display:flex; flex-wrap:wrap; gap:.2rem 1rem; margin-top:.5rem; font-size:.8rem; }
 .imageLinks a { min-height:44px; display:inline-flex; align-items:center; color:var(--teal); text-decoration:underline; }
 .articleFooter { display:grid; gap:1.5rem; padding-top:1rem; font-size:.9rem; }
@@ -80,5 +80,5 @@
 .related ul { list-style:none; margin:.5rem 0 0; padding:0; }
 .related a { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.75rem 0; min-height:44px; border-bottom:1px solid var(--line); text-decoration:none; }
 @media (min-width:900px) { .shell { padding-top:2rem; } .filters { max-width:32rem; } }
-@media (max-width:360px) { .filters { gap:.3rem; } .filters button { font-size:.8rem; } .guideMark { flex-basis:32px; height:36px; } .shell .catalogLink { gap:.65rem; } }
+@media (max-width:360px) { .filters { gap:.3rem; } .filters button { font-size:.75rem; padding-inline:.15rem; white-space:nowrap; } .guideMark { flex-basis:32px; height:36px; } .shell .catalogLink { gap:.65rem; } }
 @media (prefers-reduced-motion:reduce) { .shell { scroll-behavior:auto; } }

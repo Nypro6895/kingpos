@@ -7,6 +7,13 @@ import { marketPluginContext } from "@/lib/market-plugins";
 import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
 
+// Audited RPC branches return before DML. Other operations (including load/quote
+// commands that join a customer) keep the normal mutation invalidation.
+const PASSIVE_READS = new Set([
+  "personal:wallet", "personal:gift-load",
+  "owner:load", "owner:preview", "owner:report", "admin:load",
+]);
+
 export async function POST(request: NextRequest) {
   const headers = { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" };
   const origin = request.headers.get("origin");
@@ -16,6 +23,8 @@ export async function POST(request: NextRequest) {
   try {
     const { scope, op, args = {}, token } = JSON.parse(raw);
     if (typeof op !== "string" || !args || typeof args !== "object" || Array.isArray(args)) throw new Error("Invalid request.");
+    const successfulHeaders = (): Record<string, string> => PASSIVE_READS.has(`${scope}:${op}`)
+      ? { ...headers, "x-reylumi-experience-change": "none" } : headers;
     const auth = await createAuthenticatedSupabaseServerClient();
     const anon = createSupabaseServerClient();
     const db = auth ?? anon;
@@ -30,7 +39,7 @@ export async function POST(request: NextRequest) {
       if (op === "report") {
         const report = await context.client.rpc("reward_owner_report", { p_salon: context.salonId, p_day: args.day || null });
         if (report.error) throw new Error(report.error.message);
-        return Response.json(report.data, { headers });
+        return Response.json(report.data, { headers: successfulHeaders() });
       }
       if (op === "accept") {
         const invitation = await context.client.rpc("reward_owner_invitations", { p_salon: context.salonId, p_accept: args.id });
@@ -65,7 +74,7 @@ export async function POST(request: NextRequest) {
       if (!result.error && result.data?.ticketId) after(() => broadcastPosStaffChange(salon!, "pos"));
     } else throw new Error("Unknown reward action.");
     if (result.error) throw new Error(result.error.message);
-    return Response.json(result.data ?? {}, { headers });
+    return Response.json(result.data ?? {}, { headers: successfulHeaders() });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Reward action failed." }, { status: 400, headers });
   }

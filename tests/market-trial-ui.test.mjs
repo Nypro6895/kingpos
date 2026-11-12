@@ -2,17 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {build} from 'esbuild';
 import {chromium} from 'playwright-core';
-import {mkdirSync} from 'node:fs';
+import {mkdirSync,readFileSync} from 'node:fs';
 
 test('mobile owner trial: explicit start, duplicate-click guard, live refresh and scoped navigation', {timeout:60000},async()=>{
  const result=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`import React from 'react';import{createRoot}from'react-dom/client';import{MarketTrialPanel}from'./app/market/trial-panel';createRoot(document.getElementById('root')).render(<MarketTrialPanel pluginId="booksms" scope="owner:salon_a" salonId="salon_a"/>);`},bundle:true,write:false,platform:'browser',jsx:'automatic',plugins:[{name:'boundaries',setup(api){
+  const extraExports=[...readFileSync('app/market/scoped-market-actions.ts','utf8').matchAll(/export async function (\w+)/g)].map(m=>m[1]).filter(n=>n!=='marketTrialAction').map(n=>'export const '+n+'=async()=>{throw Error("Unexpected action")};').join('');
   const stubs={
    'next/navigation':`export function useRouter(){return {refresh(){window.refreshes++}}}`,
    '@/lib/experience-resource-cache':`export function invalidateExperienceResources(filter){window.invalidations.push(filter)}`,
-   './trial-actions':`export async function marketTrialAction(plugin,start=false){window.calls.push({plugin,start});if(start){await new Promise(r=>setTimeout(r,80));window.state={started:true,active:true,paid:false,endsAt:'2030-01-06T00:00:00Z'}}return {state:window.state}}`,
+   './scoped-market-actions':`export async function marketTrialAction(salon,plugin,start=false){if(salon!=="salon_a")throw Error("Wrong target");window.calls.push({plugin,start});if(start){await new Promise(r=>setTimeout(r,80));window.state={started:true,active:true,paid:false,endsAt:'2030-01-06T00:00:00Z'}}return {state:window.state}}`,
   };
   api.onResolve({filter:/.*/},a=>stubs[a.path]?{path:a.path,namespace:'stub'}:undefined);
-  api.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:stubs[a.path]}));
+  api.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:stubs[a.path]+(a.path==='./scoped-market-actions'?extraExports:'')}));
  }}]});
  const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
  try{

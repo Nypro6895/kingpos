@@ -1,6 +1,7 @@
 "use client";
 import { SalonName } from "@/components/salon-member-badge";
 
+import { SalonAddressLink } from "@/components/salon-address-link";
 import { useState } from "react";
 import Link from "next/link";
 import { ExploreViewportImage as Image } from "./explore-viewport-image";
@@ -37,7 +38,7 @@ export function ExploreSalonCard({ salon, compact = false, presentation = "card"
         </div>
         <ExploreSalonMenu salon={target}/>
       </div>
-      {address?<p className={styles.address}>{address}</p>:null}
+      {address?<p className={styles.address}><SalonAddressLink address={address} /></p>:null}
       <ExploreSocialActions salon={target} href={href}/>
     </div>
   </article>;

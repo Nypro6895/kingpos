@@ -51,7 +51,7 @@ export function ServiceMenu({services, canBook, bookingHref}: {
             {canBook ? <div className={styles.prompt}><span><WorkspaceText text="Book this service?" /></span>
               <a href={bookingHref(service.id)} className={styles.book} aria-label={`Book ${service.name}`}>
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-12 5 3 3 5-5"/></svg>
-                <span><WorkspaceText text="Book" /></span>
+                <span><WorkspaceText text="Book appointment" /></span>
               </a>
             </div> : <p><WorkspaceText text="Online booking is not available in this view." /></p>}
           </div> : null}

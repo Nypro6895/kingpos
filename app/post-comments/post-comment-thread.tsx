@@ -2,6 +2,7 @@
 import { SalonName } from "@/components/salon-member-badge";
 
 import {BlockUserButton} from "@/components/block-user-button";
+import { SocialTextReportButton } from "@/components/social-text-report-button";
 import { commentIdentityKey } from "@/lib/explore-comment-identity";
 import { InlineCommentComposer } from "./inline-comment-composer";
 import { CommentAvatar } from "./comment-avatar";
@@ -1092,6 +1093,7 @@ function CommentItem({
               </button>
             ) : null}
             {viewer.userId && comment.authorUserId && comment.authorUserId !== viewer.userId ? <BlockUserButton userId={comment.authorUserId}/> : null}
+            {viewer.userId && !comment.optimistic ? <SocialTextReportButton target={{kind:"comment",id:comment.id}}/> : null}
             {canEdit ? (
               <button
                 className={buttonClass()}

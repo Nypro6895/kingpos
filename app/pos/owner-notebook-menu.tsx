@@ -8,7 +8,7 @@ import { OwnerWindowsCompactMenu } from "./owner-windows-compact-menu";
 const pages: { id: string; label: string; icon: OwnerPosIconName; href: string }[] = [
  { id:"pos",label:"POS",icon:"pos",href:"/pos" },
  { id:"ticket",label:"Ticket",icon:"ticket",href:"/pos/ticket" },
- { id:"book",label:"Book",icon:"booking",href:"/pos/book" },
+ { id:"book",label:"Bookings",icon:"booking",href:"/pos/book" },
  { id:"checkIn",label:"Check In",icon:"checkin",href:"/pos/check-in" },
  { id:"report",label:"Report",icon:"report",href:"/pos/report" },
  { id:"settings",label:"Settings",icon:"settings",href:"/pos/settings" },

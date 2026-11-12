@@ -126,7 +126,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
 
     // Kept explicit so native tests can inspect the first shell independently.
     // Production reaches this once after its first visible display frame.
-    func initializeWebContentIfNeeded() {
+    func initializeWebContentIfNeeded(startNavigation: Bool = true) {
         loadViewIfNeeded()
         guard webView == nil else { return }
         cancelPendingWebStartup()
@@ -195,7 +195,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
             self?.progress.isHidden = self?.hasLoadedPage != true || webView.estimatedProgress >= 1
         }
         let request = pendingRequest ?? URLRequest(url: policy.origin.appendingPathComponent("explore"), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15)
-        loadRequest(request)
+        if startNavigation { loadRequest(request) }
     }
 
     override func viewDidLayoutSubviews() {
@@ -347,7 +347,13 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
             // Never launch external applications for hidden iframe navigations.
             guard action.targetFrame?.isMainFrame != false, action.navigationType == .linkActivated,
                   policy.isExternalAllowed(url) else { return }
-            if policy.isSafariPayment(url) {
+            if policy.isMapsDirections(url) {
+                // Only an explicit main-frame tap may open the user's Maps app.
+                UIApplication.shared.open(url, options: [:]) { [weak self] opened in
+                    if !opened { self?.alert("Maps could not open. Please try again.") }
+                }
+            }
+            else if policy.isSafariPayment(url) {
                 UIApplication.shared.open(url, options: [:]) { [weak self] opened in
                     if !opened { self?.alert("Secure payment could not open. Please try again.") }
                 }

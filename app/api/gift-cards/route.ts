@@ -9,6 +9,13 @@ import { connectGiftStripe, prepareGiftOnline, syncGiftOnline } from "@/lib/gift
 import { defaultGiftDesign, normalizeGiftDesign } from "@/types/gift-card";
 import { getCurrentSalonPosSettings } from "@/lib/pos-settings";
 
+// Explicit audited reads only: display/read may create a session, online/status
+// may fulfill a payment, and present/receive/sync change credentials or state.
+const PASSIVE_READS = new Set([
+  "owner:read", "wallet:list", "wallet:history", "public:read", "public:mobile",
+  "online:catalog", "pos:wallet", "pos:read",
+]);
+
 export async function POST(request: NextRequest) {
   // All stateful requests use JSON and same-origin requests; bearer secrets stay out of URLs/logs.
   const origin = request.headers.get("origin");
@@ -63,7 +70,9 @@ export async function POST(request: NextRequest) {
       result = await service.rpc("gift_card_online_receipt", { p_token: token });
     } else throw new Error("Unknown gift card action.");
     if (result.error) throw new Error(result.error.message);
-    return Response.json(result.data ?? {}, { headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
+    const headers: Record<string, string> = { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" };
+    if (PASSIVE_READS.has(`${scope}:${op}`)) headers["x-reylumi-experience-change"] = "none";
+    return Response.json(result.data ?? {}, { headers });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Gift card action failed." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }

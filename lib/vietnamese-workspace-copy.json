@@ -5543,5 +5543,13 @@
   "Value redeemed": "Giá trị đã sử dụng",
   "Outstanding balance": "Số dư còn lại",
   "Cards issued": "Số thẻ đã phát hành",
-  "Redemptions": "Lượt sử dụng"
+  "Redemptions": "Lượt sử dụng",
+  "Show service add-ons": "Hiện dịch vụ bổ sung",
+  "Only after selecting a main service": "Chỉ hiện sau khi chọn dịch vụ chính",
+  "Add-ons for": "Dịch vụ bổ sung cho",
+  "Service categories": "Nhóm dịch vụ",
+  "No matching services.": "Không có dịch vụ phù hợp.",
+  "Select staff and the main service before adding an add-on.": "Chọn nhân viên và dịch vụ chính trước khi thêm dịch vụ bổ sung.",
+  "Scan is available through active Check-in Receipt access or Phone Checkin. Phone Checkin is activated separately.": "Scan dùng được khi Check-in Receipt còn hiệu lực hoặc Phone Checkin đã được kích hoạt. Phone Checkin được kích hoạt riêng.",
+  "Owner access to this active salon is required. Choose a salon you own in All Settings.": "Bạn cần quyền chủ sở hữu của tiệm đang hoạt động này. Hãy chọn tiệm bạn sở hữu trong Tất cả cài đặt."
 }

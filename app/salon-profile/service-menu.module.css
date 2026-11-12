@@ -10,6 +10,7 @@
 .row:focus-visible, .book:focus-visible { outline: 2px solid var(--brand-orange,#f26f3d); outline-offset: 3px; }
 .confirmation { padding: 0 0 14px; font-size: 13px; color:var(--text-secondary); }
 .confirmation p { margin: 0 0 8px; line-height: 1.5; }
-.prompt { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.book { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 4px 8px; color: var(--brand-orange,#f26f3d); text-decoration: none; font-size: 13px; font-weight: 600; }
+.prompt { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.book { display: inline-flex; max-width: 100%; white-space: normal; align-items: center; gap: 6px; min-height: 44px; padding: 4px 8px; color: var(--brand-orange,#f26f3d); text-decoration: none; font-size: 13px; font-weight: 600; }
+.book svg { flex: 0 0 18px; }
 @media(max-width:640px) { .item { padding-inline: 16px; } .category { padding-inline: 16px; } }

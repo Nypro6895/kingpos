@@ -2,7 +2,7 @@
 
 import { Suspense, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { exploreFeedErrorMessage, requestExploreFeed } from "@/lib/explore-feed-client";
-import { recordExploreLoadDuration, useExplorePrefetchDistance, useExploreVisibleAfterFirstContent } from "@/lib/explore-viewport-priority";
+import { recordExploreLoadDuration, useExploreAheadDistance, useExploreVisibleAfterFirstContent } from "@/lib/explore-viewport-priority";
 import { ExploreFeed, ExploreFeedSkeleton } from "@/app/explore/explore-feed";
 import type { ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
 import type { ExploreDiscoveryResultKind, ExploreDiscoveryShortcut, ExploreFeedItem, ExploreFeedPage } from "@/types/explore";
@@ -105,7 +105,7 @@ function ExploreDiscoveryFeedContent({ commentLeadPosts, discovery, initialPage,
   const [page, setPage] = useState<ExploreFeedPage | null>(initialPage?.sessionCursor && !initialPage.error ? initialPage : null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
-  const distance = useExplorePrefetchDistance();
+  const distance = useExploreAheadDistance();
   useEffect(() => {
     if (page) return;
     let active = true;

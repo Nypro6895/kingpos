@@ -104,4 +104,13 @@ final class NavigationPolicyTests: XCTestCase {
             XCTAssertFalse(policy.isSecurityChallengeResponse(challengeResponse(url), isMainFrame: true, canShowMIMEType: true), url)
         }
     }
+
+    func testMapsDirectionsOnlyRecognizesExpectedDestinations() {
+        for value in ["https://maps.apple.com/?daddr=420%206th%20St", "https://www.google.com/maps/dir/?api=1&destination=42,-88"] {
+            XCTAssertTrue(policy.isMapsDirections(URL(string: value)!))
+        }
+        for value in ["http://maps.apple.com/?daddr=Test", "https://maps.apple.com.evil.test/?daddr=Test", "https://user@maps.apple.com/?daddr=Test", "https://maps.apple.com:8443/?daddr=Test", "https://maps.apple.com/?daddr=", "https://www.google.com/maps/dir/?destination=Test", "https://www.google.com/maps/search/?api=1&query=Test", "https://reylumi.com/?daddr=Test"] {
+            XCTAssertFalse(policy.isMapsDirections(URL(string: value)!))
+        }
+    }
 }

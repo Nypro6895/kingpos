@@ -84,7 +84,7 @@ export function BookingViews({ appointments, data, date, view, showDates, action
   return <>
     {view === "calendar" ? <BookingDayCalendar focusRequest={focusRequest} appointments={appointments} data={data} date={date} openingHours={openingHours} select={item=>{if(actions.edit && !item.ticketId && ["pending","scheduled","confirmed"].includes(item.status)) actions.edit(item);else setSelected(item);}} /> :
       <div className={styles.tableScroll}>
-        <table className={styles.table} aria-label={__vt("Appointments")}>
+        <table className={styles.table} aria-label={__vt("Bookings")}>
           <colgroup>
             <col className={styles.listTimeColumn} /><col className={styles.listStaffColumn} />
             <col /><col className={styles.listCustomerColumn} /><col className={styles.listTotalColumn} /><col className={styles.listActionsColumn} />

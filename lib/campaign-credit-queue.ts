@@ -16,8 +16,8 @@ export type CampaignQueueResult = {
 // Separate budgets reserve time for settlement even when a payment provider or
 // readiness check is unavailable. One item is claimed at a time; an interrupted
 // worker's lease expires, while the durable attempt order advances past poison rows.
-const phaseEnds:Record<Phase,number>={topup:60000,fund:105000,renew:140000,close:210000,pause_reminders:240000};
-const phases:Phase[]=["topup","fund","renew","close","pause_reminders"];
+const phaseEnds:Record<Phase,number>={close:45000,topup:105000,fund:150000,renew:210000,pause_reminders:240000};
+const phases:Phase[]=["close","topup","fund","renew","pause_reminders"];
 export async function runCampaignCreditQueue({client,paymentReady,topUp,now=Date.now}:{
   client:Client;paymentReady:()=>Promise<boolean>;topUp:(salonId:string,deadline:number)=>Promise<void>;now?:()=>number;
 }):Promise<CampaignQueueResult>{
@@ -39,6 +39,11 @@ export async function runCampaignCreditQueue({client,paymentReady,topUp,now=Date
   for(const phase of phases){
     const deadline=started+phaseEnds[phase];
     if(phase==="topup"){
+      // Never purchase against balances whose expired reservations have not
+      // finished settling. Retry next worker run rather than charge too early.
+      if(result.deferred.includes("close")||result.errors.some(error=>error.phase==="close")){
+        result.deferred.push(phase);continue;
+      }
       try {
         // Bound the read, without starting a payment if readiness times out.
         const ready=await readinessWithin(paymentReady,10000);

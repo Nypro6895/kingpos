@@ -1,3 +1,5 @@
+import { isSignupPhoneAvailable } from "@/lib/signup-phone-availability";
+import { DUPLICATE_SIGNUP_PHONE_MESSAGE } from "@/lib/signup-phone-policy";
 import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
 import { createSignupTicket, getAbuseErrorResponse } from "@/lib/abuse-server";
 import { recordAdvertisingSignup } from "@/lib/advertising-attribution";
@@ -107,6 +109,9 @@ export async function POST(request: Request) {
     });
   }
 
+  try {
+    if (!await isSignupPhoneAvailable(phone)) return signupErrorResponse(request, DUPLICATE_SIGNUP_PHONE_MESSAGE, 409, nextPath);
+  } catch { return signupErrorResponse(request, "Phone numbers could not be checked. Please try again later.", 503, nextPath); }
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -124,6 +129,7 @@ export async function POST(request: Request) {
   });
 
   if (error) {
+    try { if (!await isSignupPhoneAvailable(phone)) return signupErrorResponse(request, DUPLICATE_SIGNUP_PHONE_MESSAGE, 409, nextPath); } catch { /* Preserve original Auth error on a transient recheck failure. */ }
     const authError = getSupabaseAuthErrorResponse(
       error,
       "Unable to create account.",

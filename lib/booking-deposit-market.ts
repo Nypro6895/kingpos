@@ -18,7 +18,7 @@ export async function bookingDepositPurchaseState(salonId: string) {
 // A checkout return URL is only a navigation hint. Paid access comes from the
 // provider-verified subscription, scoped to the owner's current salon.
 export async function confirmBookingDepositPurchase(expectedSalonId: string) {
-  const { client, salonId } = await marketPluginContext();
+  const { client, salonId } = await marketPluginContext(expectedSalonId);
   if (!expectedSalonId || expectedSalonId !== salonId) throw new Error("Select the salon used for this purchase, then try again.");
   const service = marketServiceClient();
   const before = await bookingDepositPurchaseState(salonId);

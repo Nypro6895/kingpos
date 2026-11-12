@@ -25,7 +25,7 @@ export function getTodayDashboardSections(dashboard: Pick<TodayDashboard, "permi
 }
 
 const ERROR_AREAS: Record<TodayDashboardSection, TodayLoadError["area"][]> = {
-  staff: ["staff"], bookings: ["bookings"], waiting: ["waiting"],
+  staff: ["staff", "checkin_operations"], bookings: ["bookings"], waiting: ["waiting"],
   financials: ["reports", "financials", "business_hours"],
   extras: ["notifications", "quick_accesses"],
 };
@@ -102,6 +102,11 @@ export function mergeTodayDashboardSection(
     next.attention.push(...patch.attention.filter((item) => ownsAttention(item.id, section)));
     if (section === "staff") {
       next.summary.staff = patch.summary.staff;
+      next.checkinOperations = patch.checkinOperations;
+      if (patch.checkinOperations?.enabled) {
+        next.summary.customers = patch.summary.customers;
+        next.summary.waiting = patch.summary.waiting;
+      }
       const moneyById = new Map(base.team.map((member) => [member.id, member]));
       next.team = patch.team.map((member) => {
         const financial = moneyById.get(member.id);
@@ -110,17 +115,17 @@ export function mergeTodayDashboardSection(
           : base.permissions.canViewStaffFinancials && !base.pendingSections?.sections?.includes("financials") ? withoutFinancials(member) : member;
       });
     } else if (section === "bookings") {
-      next.summary.customers = patch.summary.customers;
+      if (!base.checkinOperations?.enabled) next.summary.customers = patch.summary.customers;
       next.rightNow.scheduleHref = patch.rightNow.scheduleHref;
       next.rightNow.upcomingBookings = patch.rightNow.upcomingBookings;
       next.performance.bookingStatus = patch.performance.bookingStatus;
       next.performance.statistics = mergeDayStatistics(base.performance.statistics, patch.performance.statistics, "visits");
     } else if (section === "waiting") {
-      next.summary.waiting = patch.summary.waiting;
+      if (!base.checkinOperations?.enabled) next.summary.waiting = patch.summary.waiting;
       next.rightNow.waitingClients = patch.rightNow.waitingClients;
     } else if (section === "financials") {
       next.summary.sales = patch.summary.sales;
-      if (!base.permissions.canViewBookings) next.summary.customers = patch.summary.customers;
+      if (!base.permissions.canViewBookings && !base.checkinOperations?.enabled) next.summary.customers = patch.summary.customers;
       next.businessHours = patch.businessHours;
       next.performance = { ...patch.performance, bookingStatus: base.performance.bookingStatus, statistics: mergeDayStatistics(base.performance.statistics, patch.performance.statistics, "tickets") };
       const financialById = new Map(patch.team.map((member) => [member.id, member]));
@@ -144,8 +149,8 @@ export function mergeTodayDashboardSection(
   }
   const metrics: Array<keyof TodayDashboard["summary"]> = [];
   if (pending.includes("staff")) metrics.push("staff");
-  if (pending.includes("waiting")) metrics.push("waiting");
-  if (pending.includes("bookings") || (!base.permissions.canViewBookings && base.permissions.canViewReports && pending.includes("financials"))) metrics.push("customers");
+  if (pending.includes("waiting") && !next.checkinOperations?.enabled) metrics.push("waiting");
+  if (!next.checkinOperations?.enabled && (pending.includes("bookings") || (!base.permissions.canViewBookings && base.permissions.canViewReports && pending.includes("financials")))) metrics.push("customers");
   if (base.permissions.canViewReports && pending.includes("financials")) metrics.push("sales");
   next.pendingSections = { sections: pending, metrics, details: pending.length > 0 };
   // Staff/queue assessment uses two independently fetched counts. Recompute only

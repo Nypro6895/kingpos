@@ -1,6 +1,7 @@
 "use client";
 import {useDialogViewport} from "@/components/use-dialog-viewport";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -151,10 +152,7 @@ function ExploreAreaDialog({ location, scopePolicy, locating, onApply, onCurrent
         <ReylumiIcon name="map-pin" className="size-4" />{locating ? "Locating…" : "Use current location"}
       </button>
       <form onSubmit={event => { event.preventDefault(); onApply(draftLocation.trim(), expand ? "expandable" : "fixed"); onClose(); }}>
-        <label htmlFor="explore-area-input" className="sr-only">City, state or ZIP</label>
-        <input id="explore-area-input" name="area" type="text" maxLength={160} value={draftLocation}
-          onChange={event => setDraftLocation(event.target.value)} placeholder="City, state or ZIP"
-          className="h-12 w-full rounded-xl border border-divider-subtle px-3 text-[16px] outline-none focus:border-brand-orange" />
+        <AddressAutocomplete id="explore-area-input" name="area" mode="area" label="City, state, ZIP or address" defaultValue={draftLocation} onValueChange={setDraftLocation} className="h-12 w-full rounded-xl border border-divider-subtle px-3 text-[16px] outline-none focus:border-brand-orange" />
         <label className="my-2 flex min-h-11 items-center gap-2 text-sm">
           <input type="checkbox" checked={expand} onChange={event => setExpand(event.target.checked)} />Include nearby areas
         </label>

@@ -330,3 +330,5 @@
  .owner-checkout[data-owner-reference] .owner-amount{min-height:360px;overflow:visible}
 }
 .owner-checkout[data-owner-reference] .owner-compact-toolbar [data-pos-saved-launcher]>span>span{display:block!important}
+
+.owner-checkout[data-owner-reference] .owner-compact-toolbar [data-pos-saved-save]{display:flex;flex:0 0 48px;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:44px;min-height:48px!important;padding:4px!important;border:0;border-right:1px solid #edf0f1;border-radius:0;background:transparent;box-shadow:none;color:#1d807c;font-size:11px;line-height:1.2}

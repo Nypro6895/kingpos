@@ -132,7 +132,7 @@ export function marketBankBillingError(error: { code?: string; message?: string 
 
 export async function marketBankBillingState(salonId?: string | null): Promise<MarketBankBillingState> {
   let context;
-  try { context = await marketPluginContext(); }
+  try { context = await marketPluginContext(salonId ?? undefined); }
   catch { return marketBankPublicCatalog(); }
   if (salonId && salonId !== context.salonId) {
     return unavailableMarketBankBilling("owner_required", "Choose the salon you want to manage in your Owner workspace.");

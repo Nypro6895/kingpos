@@ -1,5 +1,6 @@
 
 import { SalonName } from "@/components/salon-member-badge";
+import { SalonAddressLink } from "@/components/salon-address-link";
 import { withExperiencePage } from "@/components/experience-page";
 import {
   getCustomerActivityReceipt,
@@ -115,7 +116,7 @@ function SalonHeader({ receipt }: { receipt: CustomerActivityReceipt }) {
           </p>
           {place || receipt.salon.phone ? (
             <p className="mt-2 text-sm leading-6 text-text-secondary">
-              {[place, receipt.salon.phone].filter(Boolean).join(" / ")}
+              {place ? <SalonAddressLink address={place} /> : null}{place && receipt.salon.phone ? " / " : ""}{receipt.salon.phone}
             </p>
           ) : null}
         </div>

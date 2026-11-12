@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {spawn} from 'node:child_process';
+import {status,assertMarker,root,runtime,writeJson} from './common.mjs';
+assertMarker();const config=status();
+if(!fs.existsSync(path.join(runtime,'provider-token')))throw Error('Start QA providers first');
+const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>!/SUPABASE|STRIPE|TWILIO|RESEND|SMTP|OPENAI|MAPTILER|VERCEL|AWS_|S3_|REYLUMI|KINGPOS|ADVERTISING|NEXT_PUBLIC|NODE_OPTIONS/i.test(key)));
+Object.assign(env,{REYLUMI_QA_MODE:'local',NEXT_PUBLIC_APP_URL:'http://localhost:3117',NEXT_PUBLIC_SUPABASE_URL:config.API_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY:config.ANON_KEY,SUPABASE_SERVICE_ROLE_KEY:config.SERVICE_ROLE_KEY,REYLUMI_DISABLE_BACKGROUND_DISPATCH:'1',KINGPOS_DISABLE_BACKGROUND_DISPATCH:'1',NEXT_TELEMETRY_DISABLED:'1',BOOKING_STRIPE_SECRET_KEY:'sk_test_qa_local_only',CAMPAIGN_STRIPE_SECRET_KEY:'sk_test_qa_local_only',CAMPAIGN_STRIPE_WEBHOOK_SECRET:'whsec_qa_local_only',GIFT_CARD_STRIPE_WEBHOOK_SECRET:'whsec_qa_local_only',RESEND_API_KEY:'qa_local_capture_only',STAFF_INVITE_EMAIL_FROM:'Reylumi QA <qa@example.invalid>',BOOKING_EMAIL_FROM:'Reylumi QA <qa@example.invalid>',ADVERTISING_IP_HASH_SECRET:'qa-local-only-not-production',NODE_OPTIONS:'--import='+pathToFileURL(path.join(root,'qa/local/guard.mjs')).href});
+const child=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--webpack','--hostname','127.0.0.1','--port','3117'],{cwd:root,env,stdio:'inherit',windowsHide:true});
+writeJson('app-process.json',{pid:process.pid,childPid:child.pid,root,startedAt:new Date().toISOString()});
+child.on('exit',code=>process.exitCode=code||0);
+process.on('SIGINT',()=>child.kill('SIGINT'));

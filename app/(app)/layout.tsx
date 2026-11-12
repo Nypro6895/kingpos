@@ -1,3 +1,6 @@
+import { SalonLanguagePreferences, SalonLanguageConfiguration } from "@/components/salon-language-preferences";
+import { getSalonLanguage } from "@/lib/salon-language-server";
+import { PERSONAL_LANGUAGE } from "@/lib/salon-language";
 import { CampaignPluginConfiguration, CampaignPluginProvider } from "@/components/campaign-plugin-context";
 import { campaignWalletAction } from "@/app/campaigns/credit-actions";
 import { AbuseNotice } from "@/components/abuse-notice";
@@ -45,9 +48,10 @@ async function OptionalCampaignWallet({ context, scope }: { context: CurrentBusi
 async function OptionalLanguageConfiguration({ context, scope }: { context: CurrentBusinessContext; scope: string }) {
   const salonId = context.workspaceType === "salon" ? (context.salonMode === "staff" ? context.currentStaffSalon?.id : context.currentSalon?.id) : null;
   const languagePlugin = salonId ? await runReadWithDeadline(vietnamesePluginState(salonId), 8_000).catch(() => null) : null;
-  const enabled = Boolean(languagePlugin?.active && (context.salonMode === "manage" || (context.salonMode === "staff" && languagePlugin.staff_enabled)));
+  const languageState = await runReadWithDeadline(getSalonLanguage(), 8_000).catch(() => ({...PERSONAL_LANGUAGE, salonId: salonId ?? null, salonName: (context.salonMode === "staff" ? context.currentStaffSalon?.name : context.currentSalon?.name) ?? "", loadError: "Could not load language settings. Please try again."}));
+  const enabled = languageState.effective === "vi";
   const expiresAt = languagePlugin ? [languagePlugin.trial_ends_at, languagePlugin.paid_until].filter((value): value is string => Boolean(value)).sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null : null;
-  return <WorkspaceLanguageConfiguration scope={scope} enabled={enabled} portableEnabled={Boolean(languagePlugin?.active && languagePlugin.portable_enabled)} expiresAt={expiresAt} />;
+  return <><SalonLanguageConfiguration initial={languageState}/><WorkspaceLanguageConfiguration scope={scope} enabled={enabled} portableEnabled={Boolean(languagePlugin?.active && languagePlugin.portable_enabled)} expiresAt={expiresAt} /></>;
 }
 
 export default async function RootLayout({
@@ -64,7 +68,7 @@ export default async function RootLayout({
         <ServicesCatalogCacheLifecycle enabled={servicesCatalogPilotEnabled()} viewerId={experience.viewerId} accountId={context.currentAccount?.id ?? null} scope={experience.scope} />
         <ExperienceCacheLifecycle scope={experience.scope} viewerId={experience.viewerId} workspace={experience.workspaceId} permissionRevision={experience.permissionRevision} />
         <Suspense fallback={null}><ExperienceNavigation scope={experience.scope} /></Suspense>
-        <WorkspaceLanguageProvider scope={experience.scope} enabled={false} portableEnabled={false} expiresAt={null}>
+        <SalonLanguagePreferences key={experience.scope} initial={{...PERSONAL_LANGUAGE, salonId: context.workspaceType === "salon" ? (context.salonMode === "staff" ? context.currentStaffSalon?.id : context.currentSalon?.id) ?? null : null}}><WorkspaceLanguageProvider scope={experience.scope} enabled={false} portableEnabled={false} expiresAt={null}>
         <Suspense fallback={null}><OptionalLanguageConfiguration context={context} scope={experience.scope} /></Suspense>
         <AbuseNotice userId={context.user?.id ?? null} />
         <WindowsPosDownloadPrompt authenticated={Boolean(context.user)} />
@@ -73,7 +77,7 @@ export default async function RootLayout({
         <CampaignPluginProvider key={experience.scope} scope={experience.scope} installed={false}>
           {isOwner ? <Suspense fallback={null}><OptionalCampaignWallet context={context} scope={experience.scope} /></Suspense> : null}
           <ExploreAccountActionsProvider authenticated={Boolean(context.user)}><ExploreAdvertising audience={!context.user ? "guest" : context.workspaceType === "salon" ? context.salonMode === "staff" ? "staff" : "owner" : "personal"}><SalonSwitcher context={context}><StartupReady />{children}</SalonSwitcher></ExploreAdvertising><QuickBooking /></ExploreAccountActionsProvider>
-        </CampaignPluginProvider></WorkspaceLanguageProvider>
+        </CampaignPluginProvider></WorkspaceLanguageProvider></SalonLanguagePreferences>
     </ExperienceScopeProvider>
   );
 }

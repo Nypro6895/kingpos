@@ -37,7 +37,7 @@ export async function checkinReceiptPayment(salonId: string, ownerId: string, po
   if (error) throw new Error("Apply the Check-in Receipt database update first.");
   if (portal) {
     if (!row?.stripe_customer || row.payment_owner !== ownerId) throw new Error("Only the subscription payer can manage billing.");
-    const session = await marketStripe("billing_portal/sessions", new URLSearchParams({ customer: row.stripe_customer, return_url: new URL("/market", REYLUMI_METADATA_BASE).href }));
+    const session = await marketStripe("billing_portal/sessions", new URLSearchParams({ customer: row.stripe_customer, return_url: new URL(`/market?salon=${encodeURIComponent(salonId)}`, REYLUMI_METADATA_BASE).href }));
     if (typeof session.url !== "string" || new URL(session.url).hostname !== "billing.stripe.com") throw new Error("Billing portal could not open.");
     return session.url as string;
   }
@@ -62,8 +62,8 @@ export async function checkinReceiptPayment(salonId: string, ownerId: string, po
   }
   const { data: reservation, error: reservationError } = await client.from("checkin_receipt_subscriptions").select("checkout_reference").eq("salon_id", salonId).eq("payment_owner", ownerId).single();
   if (reservationError || !reservation?.checkout_reference) throw new Error("Checkout could not be prepared. Please retry.");
-  const form = new URLSearchParams({ mode: "subscription", success_url: new URL("/market?payment=received", REYLUMI_METADATA_BASE).href,
-    cancel_url: new URL("/market?payment=cancelled", REYLUMI_METADATA_BASE).href,
+  const form = new URLSearchParams({ mode: "subscription", success_url: new URL(`/market?payment=received&salon=${encodeURIComponent(salonId)}`, REYLUMI_METADATA_BASE).href,
+    cancel_url: new URL(`/market?payment=cancelled&salon=${encodeURIComponent(salonId)}`,  REYLUMI_METADATA_BASE).href,
     "line_items[0][quantity]": "1", "line_items[0][price_data][currency]": "usd", "line_items[0][price_data][unit_amount]": String(CHECKIN_RECEIPT_MONTHLY_CENTS),
     "line_items[0][price_data][recurring][interval]": "month", "line_items[0][price_data][product_data][name]": "Reylumi Check-in Receipt",
     "subscription_data[metadata][reylumi_plugin]": CHECKIN_RECEIPT_PLUGIN, "subscription_data[metadata][salon_id]": salonId, "subscription_data[metadata][owner_id]": ownerId });

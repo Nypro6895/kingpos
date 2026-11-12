@@ -7,7 +7,10 @@ import { useIPhoneGlassNav } from "@/components/use-iphone-glass-nav";
 import { handleExploreLogoClick } from "@/lib/explore-entry-navigation";
 import { ExploreHeaderSearchSlot } from "@/app/explore/explore-header-search-slot";
 
-import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import {
+  WorkspaceText,
+  useWorkspaceTranslation,
+} from "@/components/workspace-language";
 import { WorkspaceNavigationIcon as Icon } from "@/components/workspace-navigation-icon";
 import { RoleMoreContent } from "@/components/role-more-content";
 
@@ -36,7 +39,12 @@ import {
 import { navigateToWorkspace } from "@/lib/workspace-navigation";
 import Image from "next/image";
 import Link, { NavigationProgress } from "@/components/feedback-link";
-import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
+import {
+  NavigationForm,
+  NavigationSubmitButton,
+} from "@/components/navigation-form";
+import { DetailsPortal } from "@/components/details-portal";
+import { popoverContains } from "@/lib/dismissible-popovers";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type {
   CurrentWorkspaceAction,
@@ -55,7 +63,11 @@ import {
 } from "react";
 import { routes } from "@/lib/routes";
 import { installMobileViewport } from "@/lib/mobile-viewport";
-import { markAllCenterViewed, NOTIFICATIONS_REFRESH, useNotificationSummary } from "@/lib/notification-client";
+import {
+  markAllCenterViewed,
+  NOTIFICATIONS_REFRESH,
+  useNotificationSummary,
+} from "@/lib/notification-client";
 
 type NavigationSalon = {
   id: string;
@@ -68,12 +80,7 @@ type SearchParamsReader = {
   get(name: string): string | null;
 };
 
-type RouteWorkspaceKind =
-  | "manage"
-  | "personal"
-  | "salon"
-  | "shared"
-  | "staff";
+type RouteWorkspaceKind = "manage" | "personal" | "salon" | "shared" | "staff";
 
 type NavigationShellProps = {
   accountAvatarUrl: string | null;
@@ -164,12 +171,14 @@ function isRoleMoreActive(
   pathname: string,
   searchParams: SearchParamsReader,
 ) {
-  if (pathname === "/rewards" && searchParams.get("from") === "beauty") return false;
+  if (pathname === "/rewards" && searchParams.get("from") === "beauty")
+    return false;
   if (isCustomerMoreRoute(pathname)) {
     return true;
   }
 
-  if (roleKind === "staff" && pathname.startsWith("/staff/my-work")) return false;
+  if (roleKind === "staff" && pathname.startsWith("/staff/my-work"))
+    return false;
 
   if (roleKind === "owner") {
     if (pathname === "/staff/today") {
@@ -195,7 +204,8 @@ function customerWorkspaceLabel(
   }
 
   if (workspace.type === "salon") {
-    if (workspace.salonMode === "staff") return workspace.staffDisplayName || "Staff";
+    if (workspace.salonMode === "staff")
+      return workspace.staffDisplayName || "Staff";
     return workspace.salonName ?? workspace.businessName ?? workspace.label;
   }
 
@@ -252,7 +262,9 @@ function personalOpenAction(): CurrentWorkspaceAction {
 function isOwnerAccountWorkspace(workspace: CurrentWorkspaceOption) {
   return (
     workspace.type === "account" &&
-    workspace.menuActions.some((action) => action.href === routes.salons.create())
+    workspace.menuActions.some(
+      (action) => action.href === routes.salons.create(),
+    )
   );
 }
 
@@ -268,8 +280,9 @@ function findCreateSalonTarget(input: {
     accounts[0] ??
     null;
   const action =
-    workspace?.menuActions.find((item) => item.href === routes.salons.create()) ??
-    null;
+    workspace?.menuActions.find(
+      (item) => item.href === routes.salons.create(),
+    ) ?? null;
 
   return workspace && action ? { action, workspace } : null;
 }
@@ -285,6 +298,11 @@ function customerWorkspaceGroups(
   );
 
   return [
+    {
+      id: "tax",
+      label: "Tax",
+      options: workspaceOptions.filter((workspace) => workspace.type === "tax"),
+    },
     { id: "staff", label: "Staff", options: staffOptions },
     { id: "owner", label: "Owner", options: ownerOptions },
   ].filter((group) => group.options.length > 0);
@@ -320,8 +338,12 @@ function AppNotificationInvalidation({ userId }: { userId: string | null }) {
 
       refreshTimerRef.current = window.setTimeout(() => {
         refreshTimerRef.current = null;
-        window.dispatchEvent(new CustomEvent(NOTIFICATIONS_REFRESH,{detail:{force:true,newItems:hasNewItemsRef.current}}));
-        hasNewItemsRef.current=false;
+        window.dispatchEvent(
+          new CustomEvent(NOTIFICATIONS_REFRESH, {
+            detail: { force: true, newItems: hasNewItemsRef.current },
+          }),
+        );
+        hasNewItemsRef.current = false;
       }, delay);
     }
 
@@ -336,9 +358,11 @@ function AppNotificationInvalidation({ userId }: { userId: string | null }) {
           schema: "public",
           table: "app_notifications",
         },
-        (payload) => refreshSoon(250,payload.eventType === "INSERT"),
+        (payload) => refreshSoon(250, payload.eventType === "INSERT"),
       )
-      .subscribe((status) => { if (status === "SUBSCRIBED") refreshSoon(250); });
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") refreshSoon(250);
+      });
 
     return () => {
       if (refreshTimerRef.current !== null) {
@@ -510,8 +534,10 @@ function isLinkActive(
   pathname: string,
   searchParams: SearchParamsReader,
 ) {
-  if (searchParams.get("from") === "library" && pathname.includes("/posts/")) return link.id === "beauty-library";
-  if (pathname === "/rewards" && searchParams.get("from") === "beauty") return link.id === "beauty";
+  if (searchParams.get("from") === "library" && pathname.includes("/posts/"))
+    return link.id === "beauty-library";
+  if (pathname === "/rewards" && searchParams.get("from") === "beauty")
+    return link.id === "beauty";
   const [linkPath, linkQuery = ""] = link.href.split("?");
 
   if (linkPath === "/beauty") {
@@ -608,12 +634,23 @@ function WorkspaceAvatar({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  if (workspace?.type === "personal" || (workspace?.type === "salon" && workspace.salonMode === "staff")) {
+  if (
+    workspace?.type === "personal" ||
+    (workspace?.type === "salon" && workspace.salonMode === "staff")
+  ) {
     return (
       <AccountAvatar
-        avatarUrl={workspace?.salonMode === "staff" ? workspace.staffAvatarUrl ?? null : accountAvatarUrl}
+        avatarUrl={
+          workspace?.salonMode === "staff"
+            ? (workspace.staffAvatarUrl ?? null)
+            : accountAvatarUrl
+        }
         className={className}
-        label={__vt(workspace?.salonMode === "staff" ? workspace.staffDisplayName || "Staff" : accountLabel)}
+        label={__vt(
+          workspace?.salonMode === "staff"
+            ? workspace.staffDisplayName || "Staff"
+            : accountLabel,
+        )}
       />
     );
   }
@@ -697,9 +734,10 @@ function CustomerWorkspaceRow({
   const isSelected = workspace.id === currentWorkspaceId;
   const label = customerWorkspaceLabel(workspace, accountLabel);
   const subtitle = customerWorkspaceSubtitle(workspace);
-  const action = workspace.type === "personal"
-    ? personalOpenAction()
-    : workspaceOpenAction(workspace);
+  const action =
+    workspace.type === "personal"
+      ? personalOpenAction()
+      : workspaceOpenAction(workspace);
   const isPending = pendingKey === actionKey(workspace, action);
 
   return (
@@ -712,9 +750,8 @@ function CustomerWorkspaceRow({
           ? "bg-brand-orange-soft text-text-primary"
           : "text-text-primary hover:bg-surface-muted",
       ].join(" ")}
-      aria-disabled={isSelected || undefined}
       disabled={Boolean(pendingKey)}
-      onClick={() => { if (!isSelected) onRunAction(workspace, action); }}
+      onClick={() => onRunAction(workspace, action)}
       type="button"
     >
       <WorkspaceAvatar
@@ -725,9 +762,19 @@ function CustomerWorkspaceRow({
         workspace={workspace}
       />
       <span className="min-w-0">
-        <span className="block truncate text-sm font-bold"><WorkspaceMemberName workspace={workspace} name={label}/></span>
+        <span className="block truncate text-sm font-bold">
+          <WorkspaceMemberName workspace={workspace} name={label} />
+        </span>
         <span className="mt-0.5 block truncate text-xs font-semibold text-text-secondary">
-          {isPending ? <WorkspaceText text="Opening..."/> : <WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>}
+          {isPending ? (
+            <WorkspaceText text="Opening..." />
+          ) : (
+            <WorkspaceMemberName
+              workspace={workspace}
+              name={subtitle}
+              subtitle
+            />
+          )}
         </span>
       </span>
       {isSelected ? (
@@ -765,18 +812,31 @@ function useWorkspaceNavigationFeedback() {
     if (!routePending && pendingKind.current === "route") reset();
   }, [reset, routePending]);
 
-  function run(key: string, documentNavigation: boolean, navigate: () => void, onError: () => void) {
+  function run(
+    key: string,
+    documentNavigation: boolean,
+    navigate: () => void,
+    onError: () => void,
+  ) {
     if (!active.current || pendingKind.current) return;
     pendingKind.current = documentNavigation ? "document" : "route";
     setPendingKey(key);
     setDocumentPending(documentNavigation);
     startTransition(() => {
-      try { navigate(); }
-      catch { reset(); onError(); }
+      try {
+        navigate();
+      } catch {
+        reset();
+        onError();
+      }
     });
   }
 
-  return { pendingKey, pending: pendingKey !== null && (routePending || documentPending), run };
+  return {
+    pendingKey,
+    pending: pendingKey !== null && (routePending || documentPending),
+    run,
+  };
 }
 
 function CustomerContextSheet({
@@ -872,31 +932,41 @@ function CustomerContextSheet({
   }
 
   const runAction: RunWorkspaceAction = (workspace, action) => {
-    navigation.run(actionKey(workspace, action), workspace.id !== currentWorkspaceId, () => {
-      setError(null);
-      if (workspace.id === currentWorkspaceId) {
+    navigation.run(
+      actionKey(workspace, action),
+      workspace.id !== currentWorkspaceId,
+      () => {
+        setError(null);
+        if (workspace.id === currentWorkspaceId) {
+          closeAndFocus();
+          router.push(action.href);
+          router.refresh();
+          return;
+        }
+        navigateToWorkspace(workspace.id, action.href);
         closeAndFocus();
-        router.push(action.href);
-        router.refresh();
-        return;
-      }
-      navigateToWorkspace(workspace.id, action.href);
-      closeAndFocus();
-    }, () => setError(WORKSPACE_SWITCH_ERROR));
+      },
+      () => setError(WORKSPACE_SWITCH_ERROR),
+    );
   };
 
   const runWorkspaceSwitch: RunWorkspaceAction = (workspace, action) => {
-    navigation.run(actionKey(workspace, action), workspace.id !== currentWorkspaceId, () => {
-      setError(null);
-      if (workspace.id === currentWorkspaceId) {
+    navigation.run(
+      actionKey(workspace, action),
+      workspace.id !== currentWorkspaceId,
+      () => {
+        setError(null);
+        if (workspace.id === currentWorkspaceId) {
+          closeAndFocus();
+          router.push(action.href);
+          router.refresh();
+          return;
+        }
+        navigateToWorkspace(workspace.id);
         closeAndFocus();
-        router.push(action.href);
-        router.refresh();
-        return;
-      }
-      navigateToWorkspace(workspace.id);
-      closeAndFocus();
-    }, () => setError(WORKSPACE_SWITCH_ERROR));
+      },
+      () => setError(WORKSPACE_SWITCH_ERROR),
+    );
   };
 
   return (
@@ -997,7 +1067,6 @@ function CustomerContextSheet({
               </div>
             </section>
           ))}
-
         </div>
 
         <div className="shrink-0 border-t border-border-subtle bg-surface px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
@@ -1007,12 +1076,17 @@ function CustomerContextSheet({
                 className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
                 disabled={Boolean(pendingKey)}
                 onClick={() =>
-                  runAction(createSalonTarget.workspace, createSalonTarget.action)
+                  runAction(
+                    createSalonTarget.workspace,
+                    createSalonTarget.action,
+                  )
                 }
                 type="button"
               >
                 <Icon name="plus" />
-                <span><WorkspaceText text="Create Salon" /></span>
+                <span>
+                  <WorkspaceText text="Create Salon" />
+                </span>
               </button>
             ) : null}
             <Link
@@ -1021,13 +1095,35 @@ function CustomerContextSheet({
               onClick={closeAndFocus}
             >
               <Icon name="gear" />
-              <span><WorkspaceText text="All Settings" /></span>
+              <span>
+                <WorkspaceText text="All Settings" />
+              </span>
             </Link>
-            <Link href="/support" onClick={closeAndFocus} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
-        <Link href="/help" onClick={closeAndFocus} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
+            <Link
+              href="/support"
+              onClick={closeAndFocus}
+              className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"
+            >
+              <Icon name="message" />
+              <span>
+                <WorkspaceText text="Support" />
+              </span>
+            </Link>
+            <Link
+              href="/help"
+              onClick={closeAndFocus}
+              className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"
+            >
+              <Icon name="book" />
+              <span>
+                <WorkspaceText text="Help" />
+              </span>
+            </Link>
             <LogoutButton className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
-              <span><WorkspaceText text="Log out" /></span>
+              <span>
+                <WorkspaceText text="Log out" />
+              </span>
             </LogoutButton>
           </div>
         </div>
@@ -1085,11 +1181,15 @@ function useDismissibleDetails() {
       const detailsElement = detailsRef.current;
       const target = event.target;
 
-      if (!detailsElement || !(target instanceof Node) || !detailsElement.open) {
+      if (
+        !detailsElement ||
+        !(target instanceof Node) ||
+        !detailsElement.open
+      ) {
         return;
       }
 
-      if (!detailsElement.contains(target)) {
+      if (!popoverContains(detailsElement, target)) {
         closeDetails(detailsElement);
       }
     }
@@ -1128,35 +1228,51 @@ function RoleMorePanel({
   searchParams: SearchParamsReader;
   variant: "desktop" | "mobile" | "rail" | "sidebar";
 }) {
-  const activeItemIds = ROLE_MORE_ITEMS[roleKind].filter(item => isLinkActive(moreItemAsNavigationLink(item), pathname, searchParams)).map(item => item.id);
-  const panelRef = useRef<HTMLDivElement | null>(null);
+  const activeItemIds = ROLE_MORE_ITEMS[roleKind]
+    .filter((item) =>
+      isLinkActive(moreItemAsNavigationLink(item), pathname, searchParams),
+    )
+    .map((item) => item.id);
+  const hostRef = useRef<HTMLDivElement | null>(null);
+
+  function moreDetails() {
+    return hostRef.current?.closest("details");
+  }
 
   function closeMoreMenu() {
-    const detailsElement = panelRef.current?.closest("details");
+    const detailsElement = moreDetails();
     if (detailsElement) {
-      queueMicrotask(() => { if (detailsElement.isConnected) detailsElement.open = false; });
+      queueMicrotask(() => {
+        if (detailsElement.isConnected) detailsElement.open = false;
+      });
     }
   }
 
   return (
-    <div
-      ref={panelRef}
-      className="role-more-panel"
-      data-more-variant={variant}
-      role="region"
-      aria-label="More"
-    >
-      <RoleMoreContent
-        roleKind={roleKind}
-        activeItemIds={activeItemIds}
-        onNavigate={closeMoreMenu}
-        onClose={() => {
-          const detailsElement = panelRef.current?.closest("details");
-          closeMoreMenu();
-          detailsElement?.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true });
-        }}
-      />
-    </div>
+    <>
+      <div hidden ref={hostRef} />
+      <DetailsPortal>
+        <div
+          className="role-more-panel"
+          data-more-variant={variant}
+          role="region"
+          aria-label="More"
+        >
+          <RoleMoreContent
+            roleKind={roleKind}
+            activeItemIds={activeItemIds}
+            onNavigate={closeMoreMenu}
+            onClose={() => {
+              const detailsElement = moreDetails();
+              closeMoreMenu();
+              detailsElement
+                ?.querySelector<HTMLElement>("summary")
+                ?.focus({ preventScroll: true });
+            }}
+          />
+        </div>
+      </DetailsPortal>
+    </>
   );
 }
 
@@ -1173,7 +1289,11 @@ function CustomerDesktopMoreMenu({
   const isActive = isRoleMoreActive(navigation.kind, pathname, searchParams);
 
   return (
-    <details data-dismissible-popover className="group/more relative z-30" ref={detailsRef}>
+    <details
+      data-dismissible-popover
+      className="group/more relative z-30"
+      ref={detailsRef}
+    >
       <summary
         aria-current={isActive ? "page" : undefined}
         className={[
@@ -1190,7 +1310,9 @@ function CustomerDesktopMoreMenu({
         >
           <Icon name="more" />
         </span>
-        <span className="truncate"><WorkspaceText text="More" /></span>
+        <span className="truncate">
+          <WorkspaceText text="More" />
+        </span>
         <span className="grid h-7 w-7 place-items-center rounded-full text-text-secondary transition group-open/more:rotate-180">
           <Icon name="chevron-down" />
         </span>
@@ -1221,7 +1343,11 @@ function SidebarMoreMenu({
   const isActive = isRoleMoreActive(roleKind, pathname, searchParams);
 
   return (
-    <details data-dismissible-popover className="relative z-30" ref={detailsRef}>
+    <details
+      data-dismissible-popover
+      className="relative z-30"
+      ref={detailsRef}
+    >
       <summary
         aria-current={isActive ? "page" : undefined}
         className={[
@@ -1232,7 +1358,9 @@ function SidebarMoreMenu({
         title={__vt(link.label)}
       >
         <Icon name={link.icon} />
-        <span className="truncate"><WorkspaceText text={link.label} /></span>
+        <span className="truncate">
+          <WorkspaceText text={link.label} />
+        </span>
       </summary>
       <RoleMorePanel
         pathname={pathname}
@@ -1401,35 +1529,46 @@ function CustomerDesktopWorkspaceSwitcher({
   }, [closeMenu, isOpen]);
 
   const runAction: RunWorkspaceAction = (workspace, action) => {
-    navigation.run(actionKey(workspace, action), workspace.id !== currentWorkspaceId, () => {
-      setError(null);
-      if (workspace.id === currentWorkspaceId) {
-        router.push(action.href);
-        router.refresh();
+    navigation.run(
+      actionKey(workspace, action),
+      workspace.id !== currentWorkspaceId,
+      () => {
+        setError(null);
+        if (workspace.id === currentWorkspaceId) {
+          router.push(action.href);
+          router.refresh();
+          setOpen(false);
+          return;
+        }
+        navigateToWorkspace(workspace.id, action.href);
         setOpen(false);
-        return;
-      }
-      navigateToWorkspace(workspace.id, action.href);
-      setOpen(false);
-    }, () => setError(WORKSPACE_SWITCH_ERROR));
+      },
+      () => setError(WORKSPACE_SWITCH_ERROR),
+    );
   };
 
   const runWorkspaceSwitch: RunWorkspaceAction = (workspace, action) => {
-    navigation.run(actionKey(workspace, action), workspace.id !== currentWorkspaceId, () => {
-      setError(null);
-      if (workspace.id === currentWorkspaceId) {
-        router.push(action.href);
-        router.refresh();
+    navigation.run(
+      actionKey(workspace, action),
+      workspace.id !== currentWorkspaceId,
+      () => {
+        setError(null);
+        if (workspace.id === currentWorkspaceId) {
+          router.push(action.href);
+          router.refresh();
+          setOpen(false);
+          return;
+        }
+        navigateToWorkspace(workspace.id);
         setOpen(false);
-        return;
-      }
-      navigateToWorkspace(workspace.id);
-      setOpen(false);
-    }, () => setError(WORKSPACE_SWITCH_ERROR));
+      },
+      () => setError(WORKSPACE_SWITCH_ERROR),
+    );
   };
 
   const workspaceRows = [
     ...(personalWorkspace ? [personalWorkspace] : []),
+    ...workspaceOptions.filter((workspace) => workspace.type === "tax"),
     ...staffWorkspaces,
     ...ownerWorkspaces,
   ];
@@ -1461,7 +1600,10 @@ function CustomerDesktopWorkspaceSwitcher({
         />
         <span className="min-w-0">
           <span className="block truncate text-sm font-bold text-text-primary">
-            <WorkspaceMemberName workspace={currentWorkspace} name={currentLabel}/>
+            <WorkspaceMemberName
+              workspace={currentWorkspace}
+              name={currentLabel}
+            />
           </span>
           {accountEmail ? (
             <span className="mt-0.5 block truncate text-[11px] font-normal text-text-secondary">
@@ -1510,10 +1652,9 @@ function CustomerDesktopWorkspaceSwitcher({
                       ? "bg-brand-orange-soft text-text-primary"
                       : "hover:bg-surface-muted",
                   ].join(" ")}
-                  aria-disabled={isSelected || undefined}
                   disabled={Boolean(pendingKey)}
                   key={workspace.id}
-                  onClick={() => { if (!isSelected) runWorkspaceSwitch(workspace, action); }}
+                  onClick={() => runWorkspaceSwitch(workspace, action)}
                   type="button"
                 >
                   <WorkspaceAvatar
@@ -1525,10 +1666,18 @@ function CustomerDesktopWorkspaceSwitcher({
                   />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-bold">
-                      <WorkspaceMemberName workspace={workspace} name={label}/>
+                      <WorkspaceMemberName workspace={workspace} name={label} />
                     </span>
                     <span className="mt-0.5 block truncate text-xs font-normal text-text-secondary">
-                      {isPending ? <WorkspaceText text="Opening..."/> : <WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>}
+                      {isPending ? (
+                        <WorkspaceText text="Opening..." />
+                      ) : (
+                        <WorkspaceMemberName
+                          workspace={workspace}
+                          name={subtitle}
+                          subtitle
+                        />
+                      )}
                     </span>
                   </span>
                   {isSelected ? (
@@ -1547,12 +1696,17 @@ function CustomerDesktopWorkspaceSwitcher({
                 className="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-left text-sm font-medium text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
                 disabled={Boolean(pendingKey)}
                 onClick={() =>
-                  runAction(createSalonTarget.workspace, createSalonTarget.action)
+                  runAction(
+                    createSalonTarget.workspace,
+                    createSalonTarget.action,
+                  )
                 }
                 type="button"
               >
                 <Icon name="plus" />
-                <span><WorkspaceText text="Create Salon" /></span>
+                <span>
+                  <WorkspaceText text="Create Salon" />
+                </span>
               </button>
             ) : null}
             <Link
@@ -1560,13 +1714,35 @@ function CustomerDesktopWorkspaceSwitcher({
               href="/settings"
             >
               <Icon name="gear" />
-              <span><WorkspaceText text="All Settings" /></span>
+              <span>
+                <WorkspaceText text="All Settings" />
+              </span>
             </Link>
-            <Link href="/support" onClick={closeMenu} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
-        <Link href="/help" onClick={closeMenu} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
+            <Link
+              href="/support"
+              onClick={closeMenu}
+              className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"
+            >
+              <Icon name="message" />
+              <span>
+                <WorkspaceText text="Support" />
+              </span>
+            </Link>
+            <Link
+              href="/help"
+              onClick={closeMenu}
+              className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"
+            >
+              <Icon name="book" />
+              <span>
+                <WorkspaceText text="Help" />
+              </span>
+            </Link>
             <LogoutButton className="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
-              <span><WorkspaceText text="Log out" /></span>
+              <span>
+                <WorkspaceText text="Log out" />
+              </span>
             </LogoutButton>
           </div>
         </div>
@@ -1605,10 +1781,9 @@ function CustomerDesktopNavigation({
         <WorkspaceText text="Navigation" />
       </p>
       {navigation.links.map((link) => {
-        const isActive =
-          isMoreLink(link)
-            ? isRoleMoreActive(navigation.kind, pathname, searchParams)
-            : isLinkActive(link, pathname, searchParams);
+        const isActive = isMoreLink(link)
+          ? isRoleMoreActive(navigation.kind, pathname, searchParams)
+          : isLinkActive(link, pathname, searchParams);
 
         if (isMoreLink(link)) {
           return (
@@ -1631,15 +1806,21 @@ function CustomerDesktopNavigation({
             <span
               className={[
                 "grid h-9 w-9 place-items-center rounded-full",
-                isActive ? "bg-white" : "bg-brand-orange-soft text-brand-orange",
+                isActive
+                  ? "bg-white"
+                  : "bg-brand-orange-soft text-brand-orange",
               ].join(" ")}
             >
               <Icon name={link.icon} />
             </span>
-            <span className="truncate"><WorkspaceText text={link.label} /></span>
+            <span className="truncate">
+              <WorkspaceText text={link.label} />
+            </span>
             {link.id === "notifications" && notificationSummary.total > 0 ? (
               <span className="grid min-h-5 min-w-5 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-none text-white">
-                {notificationSummary.total > 9 ? "9+" : notificationSummary.total}
+                {notificationSummary.total > 9
+                  ? "9+"
+                  : notificationSummary.total}
               </span>
             ) : null}
           </Link>
@@ -1720,7 +1901,9 @@ function CustomerDesktopSidebar({
       />
       <ExploreAdSlot desktop />
       <div className="mt-auto">
-        {currentWorkspace?.salonMode !== "staff" && <CustomerDesktopMembershipCard />}
+        {currentWorkspace?.salonMode !== "staff" && (
+          <CustomerDesktopMembershipCard />
+        )}
       </div>
     </aside>
   );
@@ -1739,18 +1922,32 @@ function NotificationDropdown({
 }) {
   const __vt = useWorkspaceTranslation();
 
-  const [error,setError]=useState("");
-  const [marking,setMarking]=useState(false);
-  useEffect(()=>{const show=(event:Event)=>setError((event as CustomEvent<string>).detail); window.addEventListener("kingpos:notifications-error",show); return ()=>window.removeEventListener("kingpos:notifications-error",show);},[]);
+  const [error, setError] = useState("");
+  const [marking, setMarking] = useState(false);
+  useEffect(() => {
+    const show = (event: Event) =>
+      setError((event as CustomEvent<string>).detail);
+    window.addEventListener("kingpos:notifications-error", show);
+    return () =>
+      window.removeEventListener("kingpos:notifications-error", show);
+  }, []);
   const detailsRef = useDismissibleDetails();
   const displaySummary = notificationSummary;
   const previewItems = displaySummary.previewItems;
   const hasUnreadAppNotifications = displaySummary.bookingNotifications > 0;
 
   return (
-    <details data-dismissible-popover
+    <details
+      data-dismissible-popover
       className={bottom ? "relative min-w-0" : "relative"}
-      onToggle={event => { if (event.currentTarget.open) window.dispatchEvent(new CustomEvent(NOTIFICATIONS_REFRESH,{detail:{force:false}})); }}
+      onToggle={(event) => {
+        if (event.currentTarget.open)
+          window.dispatchEvent(
+            new CustomEvent(NOTIFICATIONS_REFRESH, {
+              detail: { force: false },
+            }),
+          );
+      }}
       ref={detailsRef}
     >
       <summary
@@ -1759,7 +1956,13 @@ function NotificationDropdown({
         data-app-notification-trigger="true"
         className={[triggerClassName, "cursor-pointer list-none"].join(" ")}
       >
-        <span className={bottom ? "relative grid h-7 w-7 shrink-0 place-items-center" : "relative"}>
+        <span
+          className={
+            bottom
+              ? "relative grid h-7 w-7 shrink-0 place-items-center"
+              : "relative"
+          }
+        >
           <Icon name="bell" />
           {displaySummary.total > 0 ? (
             <span className="absolute -right-2 -top-2 grid min-h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-black leading-none text-white">
@@ -1767,53 +1970,107 @@ function NotificationDropdown({
             </span>
           ) : null}
         </span>
-        {bottom ? <span className="max-w-full truncate"><WorkspaceText text="Notifications" /></span> : null}
+        {bottom ? (
+          <span className="max-w-full truncate">
+            <WorkspaceText text="Notifications" />
+          </span>
+        ) : null}
       </summary>
-      <div className={`fixed right-2 ${bottom ? "workspace-mobile-panel bottom-[calc(5rem+env(safe-area-inset-bottom))]" : "top-[calc(4.75rem+env(safe-area-inset-top))]"} z-[70] flex max-h-[calc(100dvh-7rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-[min(24rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-950 shadow-2xl sm:right-4`}>
-        <header className="px-4 pb-3 pt-4">
-          <div className="flex items-center gap-3">
-            <h2 className="min-w-0 flex-1 text-xl font-bold"><WorkspaceText text="Notifications" /></h2>
-            <Link aria-label={__vt("Notification settings")} prefetch={false} href="/settings?section=notifications" className="rounded-md p-2 text-zinc-500 hover:bg-zinc-100"><Icon name="gear" /></Link>
-            {hasUnreadAppNotifications ? (
+      <DetailsPortal>
+        <div
+          className={`fixed right-2 ${bottom ? "workspace-mobile-panel bottom-[calc(5rem+env(safe-area-inset-bottom))]" : "top-[calc(4.75rem+env(safe-area-inset-top))]"} z-[70] flex max-h-[calc(100dvh-7rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-[min(24rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-950 shadow-2xl sm:right-4`}
+        >
+          <header className="px-4 pb-3 pt-4">
+            <div className="flex items-center gap-3">
+              <h2 className="min-w-0 flex-1 text-xl font-bold">
+                <WorkspaceText text="Notifications" />
+              </h2>
+              <Link
+                aria-label={__vt("Notification settings")}
+                prefetch={false}
+                href="/settings?section=notifications"
+                className="rounded-md p-2 text-zinc-500 hover:bg-zinc-100"
+              >
+                <Icon name="gear" />
+              </Link>
+              {hasUnreadAppNotifications ? (
                 <button
                   disabled={marking}
-                  onClick={()=>{setMarking(true);void markAllCenterViewed().catch(e=>setError(e.message)).finally(()=>setMarking(false));}}
-                  className="inline-flex min-h-8 items-center justify-center rounded-full px-2.5 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                  onClick={() => {
+                    setMarking(true);
+                    void markAllCenterViewed()
+                      .catch((e) => setError(e.message))
+                      .finally(() => setMarking(false));
+                  }}
+                  className="inline-flex min-h-8 items-center justify-center rounded-full px-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                   type="button"
                 >
                   <WorkspaceText text="Mark all viewed" />
                 </button>
-            ) : null}
+              ) : null}
+            </div>
+          </header>
+          {error && (
+            <p
+              role="alert"
+              className="mx-3 rounded-md bg-red-50 p-2 text-xs text-red-700"
+            >
+              <WorkspaceText text={error} />{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setError("");
+                  window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH));
+                }}
+                className="inline-flex min-h-8 items-center justify-center rounded-full px-2.5 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+
+              >
+                <WorkspaceText text="Retry" />
+              </button>
+            </p>
+          )}
+          <div className="flex items-center gap-3 px-4 pb-1">
+            <p className="min-w-0 flex-1 text-base font-bold">
+              <WorkspaceText text="Recent updates" />
+            </p>
+            <Link
+              className="text-sm font-semibold text-blue-700 transition hover:text-blue-800"
+              href="/notifications"
+            >
+              <WorkspaceText text="View all" />
+            </Link>
           </div>
-        </header>
-        {error && <p role="alert" className="mx-3 rounded-md bg-red-50 p-2 text-xs text-red-700"><WorkspaceText text={error} /> <button type="button" className="font-semibold underline" onClick={()=>{setError("");window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH));}}><WorkspaceText text="Retry" /></button></p>}
-        <div className="flex items-center gap-3 px-4 pb-1">
-          <p className="min-w-0 flex-1 text-base font-bold"><WorkspaceText text="Recent updates" /></p>
-          <Link
-            className="text-sm font-semibold text-blue-700 transition hover:text-blue-800"
-            href="/notifications"
-          >
-            <WorkspaceText text="See all" />
-          </Link>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <NotificationFeedList
+              compact
+              emptyLabel="No notifications yet."
+              items={previewItems
+                .filter((item) => item.source === "app")
+                .slice(0, 5)}
+            />
+          </div>
+          {previewItems.some((item) => item.source !== "app") && (
+            <section className="max-h-40 overflow-y-auto border-t border-zinc-100 p-3">
+              <h3 className="mb-2 text-sm font-bold">
+                <WorkspaceText text="Needs action" />
+              </h3>
+              <NotificationFeedList
+                compact
+                items={previewItems.filter((item) => item.source !== "app")}
+              />
+            </section>
+          )}
+          <footer className="border-t border-zinc-100 p-3">
+            <Link
+              className="inline-flex min-h-10 w-full items-center justify-center rounded-md bg-zinc-200 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+              href="/notifications"
+              prefetch={false}
+            >
+              <WorkspaceText text="View notification center" />
+            </Link>
+          </footer>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <NotificationFeedList
-            compact
-            emptyLabel="No notifications yet."
-            items={previewItems.filter(item=>item.source === "app").slice(0,5)}
-          />
-        </div>
-        {previewItems.some(item=>item.source !== "app") && <section className="max-h-40 overflow-y-auto border-t border-zinc-100 p-3"><h3 className="mb-2 text-sm font-bold"><WorkspaceText text="Needs action" /></h3><NotificationFeedList compact items={previewItems.filter(item=>item.source !== "app")} /></section>}
-        <footer className="border-t border-zinc-100 p-3">
-          <Link
-            className="inline-flex min-h-10 w-full items-center justify-center rounded-md bg-zinc-200 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
-            href="/notifications"
-            prefetch={false}
-          >
-            <WorkspaceText text="View notification center" />
-          </Link>
-        </footer>
-      </div>
+      </DetailsPortal>
     </details>
   );
 }
@@ -1842,18 +2099,25 @@ function CustomerDesktopHeader({
   const [nearYouPending, setNearYouPending] = useState(false);
   useEffect(() => {
     function updateLocationState(event: Event) {
-      const state = (event as CustomEvent<{ enabled: boolean; pending: boolean }>).detail;
+      const state = (
+        event as CustomEvent<{ enabled: boolean; pending: boolean }>
+      ).detail;
       setNearYouEnabled(state.enabled);
       setNearYouPending(state.pending);
     }
-    window.addEventListener("kingpos:explore-location-state", updateLocationState);
+    window.addEventListener(
+      "kingpos:explore-location-state",
+      updateLocationState,
+    );
     window.dispatchEvent(new Event("kingpos:explore-request-location-state"));
-    return () => window.removeEventListener("kingpos:explore-location-state", updateLocationState);
+    return () =>
+      window.removeEventListener(
+        "kingpos:explore-location-state",
+        updateLocationState,
+      );
   }, [pathname]);
   const exploreQuery =
-    pathname === "/explore"
-      ? searchParams.get("q") ?? ""
-      : "";
+    pathname === "/explore" ? (searchParams.get("q") ?? "") : "";
   const router = useRouter();
   const accountSubtitle =
     currentWorkspace?.type === "personal"
@@ -1866,63 +2130,123 @@ function CustomerDesktopHeader({
       return;
     }
 
-    window.dispatchEvent(new CustomEvent(nearYouEnabled || nearYouPending
-      ? "kingpos:explore-clear-current-location"
-      : "kingpos:explore-use-current-location"));
+    window.dispatchEvent(
+      new CustomEvent(
+        nearYouEnabled || nearYouPending
+          ? "kingpos:explore-clear-current-location"
+          : "kingpos:explore-use-current-location",
+      ),
+    );
   }
 
   return (
     <header
-      className={compactStaffHeader || exploreHeader ? "sticky top-0 z-30 border-b border-zinc-100 bg-white/95 px-6 py-3 backdrop-blur-sm" : "sticky top-0 z-30 bg-white/92 px-7 py-4 backdrop-blur-sm"}
+      className={
+        compactStaffHeader || exploreHeader
+          ? "sticky top-0 z-30 border-b border-zinc-100 bg-white/95 px-6 py-3 backdrop-blur-sm"
+          : "sticky top-0 z-30 bg-white/92 px-7 py-4 backdrop-blur-sm"
+      }
       data-testid="customer-desktop-header"
     >
-      <div className={exploreHeader ? "flex items-center justify-end gap-4" : compactStaffHeader ? "flex items-center justify-between gap-4" : "grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5"}>
+      <div
+        className={
+          exploreHeader
+            ? "flex items-center justify-end gap-4"
+            : compactStaffHeader
+              ? "flex items-center justify-between gap-4"
+              : "grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5"
+        }
+      >
         {exploreHeader ? <ExploreHeaderSearchSlot /> : null}
-        {compactStaffHeader ? <span className="text-sm text-zinc-500"><WorkspaceText text="Staff workspace" /></span> : null}
-        {!compactStaffHeader && !exploreHeader && <NavigationForm action="/explore" className="relative" role="search"
-          onSubmit={(event) => {
-            if (!nearYouEnabled || pathname !== "/explore") return;
-            event.preventDefault();
-            const query = String(new FormData(event.currentTarget).get("q") ?? "");
-            window.dispatchEvent(new CustomEvent("kingpos:explore-search-current-location", { detail: { query } }));
-          }}>
-          <input name="location" type="hidden" value="" />
-          <label className="sr-only" htmlFor="customer-desktop-search">
-            <WorkspaceText text="Search salons, services, or locations" />
-          </label>
-          <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-text-secondary">
-            <Icon name="search" />
+        {compactStaffHeader ? (
+          <span className="text-sm text-zinc-500">
+            <WorkspaceText text="Staff workspace" />
           </span>
-          <input
-            className="h-14 w-full rounded-full bg-surface-elevated pl-12 pr-64 text-sm font-normal text-text-primary shadow-[0_12px_30px_rgba(35,25,22,0.045)] outline-none ring-1 ring-divider-subtle/85 transition placeholder:font-normal placeholder:text-text-secondary/80 focus:ring-4 focus:ring-brand-orange/15"
-            defaultValue={exploreQuery}
-            id="customer-desktop-search"
-            key={exploreQuery}
-            name="q"
-            placeholder={__vt("Search salons, services, designs, city, or ZIP...")}
-            type="search"
-          />
-          <button
-            aria-label={__vt(nearYouEnabled || nearYouPending ? "Turn off nearby search" : "Turn on nearby search")}
-            aria-pressed={nearYouEnabled}
-            title={__vt(nearYouEnabled || nearYouPending ? "Click to search any location" : "Click to search near your current location")}
-            className="absolute right-24 top-1/2 inline-flex min-h-10 -translate-y-1/2 items-center gap-1.5 rounded-full bg-brand-teal-soft px-3 text-xs font-semibold text-brand-teal transition hover:bg-white hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal"
-            onClick={requestExploreLocation}
-            type="button"
+        ) : null}
+        {!compactStaffHeader && !exploreHeader && (
+          <NavigationForm
+            action="/explore"
+            className="relative"
+            role="search"
+            onSubmit={(event) => {
+              if (!nearYouEnabled || pathname !== "/explore") return;
+              event.preventDefault();
+              const query = String(
+                new FormData(event.currentTarget).get("q") ?? "",
+              );
+              window.dispatchEvent(
+                new CustomEvent("kingpos:explore-search-current-location", {
+                  detail: { query },
+                }),
+              );
+            }}
           >
-            <Icon name="compass" />
-            <span><WorkspaceText text={nearYouPending ? "Locating… ×" : nearYouEnabled ? "Near you · On ×" : "Any location"} /></span>
-          </button>
-          <NavigationSubmitButton
-            className="absolute right-2 top-1/2 inline-flex min-h-10 -translate-y-1/2 items-center justify-center rounded-full bg-brand-orange px-5 text-xs font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            pendingLabel="Searching…"
-            type="submit"
-          >
-            <WorkspaceText text="Search" />
-          </NavigationSubmitButton>
-        </NavigationForm>}
+            <input name="location" type="hidden" value="" />
+            <label className="sr-only" htmlFor="customer-desktop-search">
+              <WorkspaceText text="Search salons, services, or locations" />
+            </label>
+            <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-text-secondary">
+              <Icon name="search" />
+            </span>
+            <input
+              className="h-14 w-full rounded-full bg-surface-elevated pl-12 pr-64 text-sm font-normal text-text-primary shadow-[0_12px_30px_rgba(35,25,22,0.045)] outline-none ring-1 ring-divider-subtle/85 transition placeholder:font-normal placeholder:text-text-secondary/80 focus:ring-4 focus:ring-brand-orange/15"
+              defaultValue={exploreQuery}
+              id="customer-desktop-search"
+              key={exploreQuery}
+              name="q"
+              placeholder={__vt(
+                "Search salons, services, designs, city, or ZIP...",
+              )}
+              type="search"
+            />
+            <button
+              aria-label={__vt(
+                nearYouEnabled || nearYouPending
+                  ? "Turn off nearby search"
+                  : "Turn on nearby search",
+              )}
+              aria-pressed={nearYouEnabled}
+              title={__vt(
+                nearYouEnabled || nearYouPending
+                  ? "Click to search any location"
+                  : "Click to search near your current location",
+              )}
+              className="absolute right-24 top-1/2 inline-flex min-h-10 -translate-y-1/2 items-center gap-1.5 rounded-full bg-brand-teal-soft px-3 text-xs font-semibold text-brand-teal transition hover:bg-white hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal"
+              onClick={requestExploreLocation}
+              type="button"
+            >
+              <Icon name="compass" />
+              <span>
+                <WorkspaceText
+                  text={
+                    nearYouPending
+                      ? "Locating… ×"
+                      : nearYouEnabled
+                        ? "Near you · On ×"
+                        : "Any location"
+                  }
+                />
+              </span>
+            </button>
+            <NavigationSubmitButton
+              className="absolute right-2 top-1/2 inline-flex min-h-10 -translate-y-1/2 items-center justify-center rounded-full bg-brand-orange px-5 text-xs font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              pendingLabel="Searching…"
+              type="submit"
+            >
+              <WorkspaceText text="Search" />
+            </NavigationSubmitButton>
+          </NavigationForm>
+        )}
         <div className="flex items-center gap-3">
-          {compactStaffHeader && <Link href="/explore" aria-label={__vt("Search salons and services")} className={customerDesktopSoftButtonClass()}><Icon name="search" /></Link>}
+          {compactStaffHeader && (
+            <Link
+              href="/explore"
+              aria-label={__vt("Search salons and services")}
+              className={customerDesktopSoftButtonClass()}
+            >
+              <Icon name="search" />
+            </Link>
+          )}
           <NotificationDropdown
             notificationSummary={notificationSummary}
             triggerClassName={customerDesktopSoftButtonClass()}
@@ -1935,18 +2259,30 @@ function CustomerDesktopHeader({
             <Icon name="message" />
           </Link>
           <Link
-            aria-label={__vt(staffWorkspace ? "Open Staff Profile" : "All settings")}
+            aria-label={__vt(
+              staffWorkspace ? "Open Staff Profile" : "All settings",
+            )}
             className="grid min-h-12 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-full bg-surface-elevated py-1 pl-1.5 pr-4 text-left shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/85 transition hover:ring-brand-orange/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
             href={staffWorkspace ? "/staff/my-work?profile=1" : "/settings"}
           >
             <AccountAvatar
-              avatarUrl={staffWorkspace ? currentWorkspace?.staffAvatarUrl ?? null : accountAvatarUrl}
+              avatarUrl={
+                staffWorkspace
+                  ? (currentWorkspace?.staffAvatarUrl ?? null)
+                  : accountAvatarUrl
+              }
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
-              label={__vt(staffWorkspace ? currentWorkspace?.staffDisplayName || "Staff" : accountLabel)}
+              label={__vt(
+                staffWorkspace
+                  ? currentWorkspace?.staffDisplayName || "Staff"
+                  : accountLabel,
+              )}
             />
             <span className="min-w-0">
               <span className="block max-w-32 truncate text-sm font-semibold text-text-primary">
-                {staffWorkspace ? currentWorkspace?.staffDisplayName || "Staff" : accountLabel}
+                {staffWorkspace
+                  ? currentWorkspace?.staffDisplayName || "Staff"
+                  : accountLabel}
               </span>
               <span className="block text-xs font-normal text-text-secondary">
                 {accountSubtitle}
@@ -2018,11 +2354,16 @@ function CustomerMobileHeader({
             />
             <span className="min-w-0">
               <span className="block truncate text-xs font-bold text-text-primary min-[430px]:text-sm">
-                <WorkspaceMemberName workspace={currentWorkspace} name={label}/>
+                <WorkspaceMemberName
+                  workspace={currentWorkspace}
+                  name={label}
+                />
               </span>
               {currentWorkspace?.type === "salon" && (
                 <span className="mt-0.5 block truncate text-[10px] font-normal leading-tight text-text-secondary min-[430px]:text-xs">
-                  <WorkspaceText text={customerWorkspaceSubtitle(currentWorkspace)} />
+                  <WorkspaceText
+                    text={customerWorkspaceSubtitle(currentWorkspace)}
+                  />
                 </span>
               )}
             </span>
@@ -2034,7 +2375,9 @@ function CustomerMobileHeader({
             notificationSummary={notificationSummary}
             triggerClassName="grid h-11 w-11 place-items-center rounded-full bg-surface-elevated text-text-secondary shadow-[var(--shadow-soft)] ring-1 ring-divider-subtle/80 transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           />
-          <span className="shrink-0 [&_img]:w-[104px] [&_img]:max-w-[26vw]"><ReylumiLogo /></span>
+          <span className="shrink-0 [&_img]:w-[104px] [&_img]:max-w-[26vw]">
+            <ReylumiLogo />
+          </span>
         </div>
       </header>
       <CustomerContextSheet
@@ -2077,8 +2420,6 @@ function WorkspaceOptionButton({
             ? "bg-brand-orange-soft text-text-primary"
             : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950",
         ].join(" ")}
-        aria-disabled={isCurrent || undefined}
-        onClick={event => { if (isCurrent) event.preventDefault(); }}
         type="submit"
       >
         <WorkspaceAvatar
@@ -2094,14 +2435,20 @@ function WorkspaceOptionButton({
           workspace={workspace}
         />
         <span className="min-w-0">
-          <span className="block truncate font-semibold"><WorkspaceMemberName workspace={workspace} name={label}/></span>
+          <span className="block truncate font-semibold">
+            <WorkspaceMemberName workspace={workspace} name={label} />
+          </span>
           <span
             className={[
               "block truncate text-xs",
               isCurrent ? "text-text-secondary" : "text-zinc-500",
             ].join(" ")}
           >
-            <WorkspaceMemberName workspace={workspace} name={subtitle} subtitle/>
+            <WorkspaceMemberName
+              workspace={workspace}
+              name={subtitle}
+              subtitle
+            />
           </span>
         </span>
       </NavigationSubmitButton>
@@ -2114,7 +2461,9 @@ function groupWorkspaceOptions(workspaceOptions: CurrentWorkspaceOption[]) {
     {
       id: "personal",
       label: "Personal",
-      options: workspaceOptions.filter((workspace) => workspace.type === "personal"),
+      options: workspaceOptions.filter(
+        (workspace) => workspace.type === "personal",
+      ),
     },
     {
       id: "staff",
@@ -2146,7 +2495,8 @@ function ModeSwitch({
 
   const modeOptions = workspaceOptions.filter(
     (workspace) =>
-      workspace.type === "salon" && workspace.salonId === currentWorkspace.salonId,
+      workspace.type === "salon" &&
+      workspace.salonId === currentWorkspace.salonId,
   );
 
   if (modeOptions.length <= 1) {
@@ -2156,7 +2506,9 @@ function ModeSwitch({
   return (
     <div className="grid grid-cols-2 gap-1 rounded-lg bg-zinc-100 p-1">
       {(["staff", "manage"] as const).map((mode) => {
-        const option = modeOptions.find((workspace) => workspace.salonMode === mode);
+        const option = modeOptions.find(
+          (workspace) => workspace.salonMode === mode,
+        );
         const isActive = currentWorkspace.salonMode === mode;
 
         if (!option) {
@@ -2165,7 +2517,11 @@ function ModeSwitch({
               className="rounded-md px-3 py-1.5 text-center text-sm font-semibold text-zinc-400"
               key={mode}
             >
-              {mode === "staff" ? <WorkspaceText text="Staff" /> : <WorkspaceText text="Owner" />}
+              {mode === "staff" ? (
+                <WorkspaceText text="Staff" />
+              ) : (
+                <WorkspaceText text="Owner" />
+              )}
             </span>
           );
         }
@@ -2184,7 +2540,11 @@ function ModeSwitch({
               disabled={isActive}
               type="submit"
             >
-              {mode === "staff" ? <WorkspaceText text="Staff" /> : <WorkspaceText text="Owner" />}
+              {mode === "staff" ? (
+                <WorkspaceText text="Staff" />
+              ) : (
+                <WorkspaceText text="Owner" />
+              )}
             </NavigationSubmitButton>
           </NavigationForm>
         );
@@ -2222,7 +2582,10 @@ function WorkspaceSwitcher({
         />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold text-zinc-950">
-            <WorkspaceMemberName workspace={currentWorkspace} name={currentLabel}/>
+            <WorkspaceMemberName
+              workspace={currentWorkspace}
+              name={currentLabel}
+            />
           </span>
           <span className="block truncate text-xs text-zinc-500">
             {customerWorkspaceSubtitle(currentWorkspace)}
@@ -2283,7 +2646,10 @@ function AppRail({
       >
         <ReylumiMark className="h-10 w-10 text-lg" />
       </Link>
-      <nav aria-label={__vt("Personal app")} className="mt-6 grid justify-center gap-2">
+      <nav
+        aria-label={__vt("Personal app")}
+        className="mt-6 grid justify-center gap-2"
+      >
         {PERSONAL_LINKS.map((link) => {
           const isActive = isLinkActive(link, pathname, searchParams);
 
@@ -2315,12 +2681,17 @@ function AppRail({
           );
         })}
         <button
-          aria-current={matchesPath(pathname, WORKSPACE_PANEL_LINK.href) ? "page" : undefined}
+          aria-current={
+            matchesPath(pathname, WORKSPACE_PANEL_LINK.href)
+              ? "page"
+              : undefined
+          }
           aria-expanded={isWorkspacePanelOpen}
           aria-label={__vt(WORKSPACE_PANEL_LINK.label)}
           className={railLinkClass(
             matchesPath(pathname, WORKSPACE_PANEL_LINK.href),
-            isWorkspacePanelOpen && !matchesPath(pathname, WORKSPACE_PANEL_LINK.href),
+            isWorkspacePanelOpen &&
+              !matchesPath(pathname, WORKSPACE_PANEL_LINK.href),
           )}
           onClick={(event) => onOpenWorkspacePanel(event.currentTarget)}
           title={__vt(WORKSPACE_PANEL_LINK.label)}
@@ -2391,7 +2762,9 @@ function WorkspaceNavigation({
                   title={__vt(link.label)}
                 >
                   <Icon name={link.icon} />
-                  <span className="truncate"><WorkspaceText text={link.label} /></span>
+                  <span className="truncate">
+                    <WorkspaceText text={link.label} />
+                  </span>
                 </Link>
               );
             })}
@@ -2437,9 +2810,25 @@ function ProfileMenu({
           <Icon name="user" />
           <WorkspaceText text="All Settings" />
         </Link>
-        <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
-        <Link href="/help" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
-            <LogoutButton />
+        <Link
+          href="/support"
+          className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"
+        >
+          <Icon name="message" />
+          <span>
+            <WorkspaceText text="Support" />
+          </span>
+        </Link>
+        <Link
+          href="/help"
+          className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"
+        >
+          <Icon name="book" />
+          <span>
+            <WorkspaceText text="Help" />
+          </span>
+        </Link>
+        <LogoutButton />
       </div>
     </details>
   );
@@ -2552,7 +2941,11 @@ function MobileHeader({
           currentWorkspace={currentWorkspace}
           workspaceOptions={workspaceOptions}
         />
-        <details data-dismissible-popover className="relative ml-auto" ref={workspaceNavigationDetailsRef}>
+        <details
+          data-dismissible-popover
+          className="relative ml-auto"
+          ref={workspaceNavigationDetailsRef}
+        >
           <summary
             aria-label={__vt("Open workspace navigation")}
             className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-md border border-zinc-200 text-zinc-700"
@@ -2602,7 +2995,11 @@ function MobileMoreMenu({
   const detailsRef = useDismissibleDetails();
 
   return (
-    <details data-dismissible-popover className="relative min-w-0" ref={detailsRef}>
+    <details
+      data-dismissible-popover
+      className="relative min-w-0"
+      ref={detailsRef}
+    >
       <summary
         aria-current={isActive ? "page" : undefined}
         className={[
@@ -2613,12 +3010,12 @@ function MobileMoreMenu({
         ].join(" ")}
         data-more-menu-target="true"
       >
-        <span
-          className="relative grid h-7 w-7 shrink-0 place-items-center"
-        >
+        <span className="relative grid h-7 w-7 shrink-0 place-items-center">
           <Icon name={link.icon} />
         </span>
-        <span className="max-w-full truncate"><WorkspaceText text={link.label} /></span>
+        <span className="max-w-full truncate">
+          <WorkspaceText text={link.label} />
+        </span>
       </summary>
       <RoleMorePanel
         pathname={pathname}
@@ -2657,14 +3054,21 @@ function MobileBottomNav({
       style={{ gridTemplateColumns: `repeat(${links.length}, minmax(0, 1fr))` }}
     >
       {links.map((originalLink) => {
-        const link: NavigationLink = roleKind === "owner" && originalLink.href === "/notifications"
-          ? { href: "/reports", icon: "list", id: "owner-reports", label: "Reports" }
-          : originalLink;
-        const isOwnerReportsActive = roleKind === "owner" && customerRouteMatches(pathname, "/reports");
-        const isActive =
-          isMoreLink(link)
-            ? !isOwnerReportsActive && isRoleMoreActive(roleKind, pathname, searchParams)
-            : isLinkActive(link, pathname, searchParams);
+        const link: NavigationLink =
+          roleKind === "owner" && originalLink.href === "/notifications"
+            ? {
+                href: "/reports",
+                icon: "list",
+                id: "owner-reports",
+                label: "Reports",
+              }
+            : originalLink;
+        const isOwnerReportsActive =
+          roleKind === "owner" && customerRouteMatches(pathname, "/reports");
+        const isActive = isMoreLink(link)
+          ? !isOwnerReportsActive &&
+            isRoleMoreActive(roleKind, pathname, searchParams)
+          : isLinkActive(link, pathname, searchParams);
 
         if (isMoreLink(link)) {
           return (
@@ -2688,7 +3092,9 @@ function MobileBottomNav({
               notificationSummary={notificationSummary}
               triggerClassName={[
                 "flex min-h-[58px] w-full flex-col items-center justify-center gap-1 rounded-xl px-1 text-center text-[9px] font-bold leading-none transition focus-visible:outline-2 focus-visible:outline-brand-orange min-[360px]:text-[10px] min-[390px]:text-[11px] [&::-webkit-details-marker]:hidden",
-                isActive ? "bg-brand-orange-soft text-brand-orange" : "text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+                isActive
+                  ? "bg-brand-orange-soft text-brand-orange"
+                  : "text-text-secondary hover:bg-surface-muted hover:text-text-primary",
               ].join(" ")}
             />
           );
@@ -2706,16 +3112,18 @@ function MobileBottomNav({
             href={link.href}
             key={link.id}
           >
-            <span
-              className="relative grid h-7 w-7 shrink-0 place-items-center"
-            >
+            <span className="relative grid h-7 w-7 shrink-0 place-items-center">
               <Icon name={link.icon} />
               {link.id === "notifications" && notificationSummary.total > 0 ? (
                 <span
-                  aria-label={__vt(notificationBadgeLabel(notificationSummary.total))}
+                  aria-label={__vt(
+                    notificationBadgeLabel(notificationSummary.total),
+                  )}
                   className="absolute -right-2 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white"
                 >
-                  {notificationSummary.total > 9 ? "9+" : notificationSummary.total}
+                  {notificationSummary.total > 9
+                    ? "9+"
+                    : notificationSummary.total}
                 </span>
               ) : null}
             </span>
@@ -2744,7 +3152,11 @@ export function NavigationShell({
   workspaceSections,
   workspaceType,
 }: NavigationShellProps) {
-  const notificationSummary = useNotificationSummary(initialNotificationSummary, `${currentUserId}:${currentWorkspace?.id ?? "personal"}`, !passive);
+  const notificationSummary = useNotificationSummary(
+    initialNotificationSummary,
+    `${currentUserId}:${currentWorkspace?.id ?? "personal"}`,
+    !passive,
+  );
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isWorkspacePanelOpen, setWorkspacePanelOpen] = useState(false);
@@ -2759,28 +3171,68 @@ export function NavigationShell({
   }, []);
 
   // The hosted Owner forum owns its compact navigation and profile header.
-  if (pathname === "/forum") return <>
-    {!passive ? <AppNotificationInvalidation userId={currentUserId} /> : null}
-    <CustomerShellContextProvider isCustomerShell notificationSummary={notificationSummary}>
-      <div className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0">{children}</div>
-      <MobileBottomNav ariaLabel={ROLE_NAVIGATION.owner.ariaLabel} links={ROLE_NAVIGATION.owner.links} notificationSummary={notificationSummary} pathname={pathname} roleKind="owner" searchParams={searchParams} />
-    </CustomerShellContextProvider>
-  </>;
+  if (pathname === "/forum")
+    return (
+      <>
+        {!passive ? (
+          <AppNotificationInvalidation userId={currentUserId} />
+        ) : null}
+        <CustomerShellContextProvider
+          isCustomerShell
+          notificationSummary={notificationSummary}
+        >
+          <div className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0">
+            {children}
+          </div>
+          <MobileBottomNav
+            ariaLabel={ROLE_NAVIGATION.owner.ariaLabel}
+            links={ROLE_NAVIGATION.owner.links}
+            notificationSummary={notificationSummary}
+            pathname={pathname}
+            roleKind="owner"
+            searchParams={searchParams}
+          />
+        </CustomerShellContextProvider>
+      </>
+    );
 
   if (isShelllessPath(pathname)) {
-    return <><ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" /></>;
+    return (
+      <>
+        <ExploreAdSlot position="page-top" />
+        {children}
+        <ExploreAdSlot position="page-bottom" />
+      </>
+    );
   }
 
-  const isOwnerPosRoute = pathname === "/pos" || /^\/pos\/(ticket|book|check-in|report|settings|more)(\/|$)/.test(pathname);
+  const isOwnerPosRoute =
+    pathname === "/pos" ||
+    /^\/pos\/(ticket|book|check-in|report|settings|more)(\/|$)/.test(pathname);
   // Operational POS pages own their navigation and viewport. Settings retains
   // the shared shell; checkout/tab changes must not add a second header.
-  const isOperationalPosRoute = pathname === "/pos" || /^\/pos\/(ticket|book|check-in|report)(\/|$)/.test(pathname);
-  if (isOperationalPosRoute) return <>
-    {!passive ? <AppNotificationInvalidation userId={currentUserId} /> : null}
-    <CustomerShellContextProvider isCustomerShell notificationSummary={notificationSummary}>
-      <div data-owner-pos-shell="true" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>{children}</div>
-    </CustomerShellContextProvider>
-  </>;
+  const isOperationalPosRoute =
+    pathname === "/pos" ||
+    /^\/pos\/(ticket|book|check-in|report)(\/|$)/.test(pathname);
+  if (isOperationalPosRoute)
+    return (
+      <>
+        {!passive ? (
+          <AppNotificationInvalidation userId={currentUserId} />
+        ) : null}
+        <CustomerShellContextProvider
+          isCustomerShell
+          notificationSummary={notificationSummary}
+        >
+          <div
+            data-owner-pos-shell="true"
+            style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+          >
+            {children}
+          </div>
+        </CustomerShellContextProvider>
+      </>
+    );
   const routeWorkspaceKind = getRouteWorkspaceKind(pathname);
   const routeNavigation = routeNavigationForWorkspaceKind({
     routeWorkspaceKind,
@@ -2826,43 +3278,100 @@ export function NavigationShell({
     : "pb-0";
 
   if (routeNavigation) {
-    const desktopDisplay = desktopShellBreakpoint === "lg" ? "hidden lg:block" : "hidden xl:block";
-    const mobileDisplay = desktopShellBreakpoint === "lg" ? "lg:hidden" : "xl:hidden";
-    const gridClass = desktopShellBreakpoint === "lg"
-      ? "lg:grid lg:grid-cols-[16.25rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,1fr)]"
-      : routeCurrentWorkspace?.salonMode === "staff"
-        ? "xl:grid xl:grid-cols-[14rem_minmax(0,1fr)] 2xl:grid-cols-[15rem_minmax(0,1fr)]"
-        : "xl:grid xl:grid-cols-[16.25rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,1fr)]";
-    return <>
-      {!passive ? <AppNotificationInvalidation userId={currentUserId} /> : null}
-      <CustomerShellContextProvider isCustomerShell notificationSummary={notificationSummary}>
-        <div className={`min-h-screen bg-white text-text-primary ${gridClass}`} data-testid="customer-desktop-shell" data-owner-pos-shell={isOwnerPosRoute ? "true" : undefined}>
-          <div className={desktopDisplay} data-desktop-sidebar-slot>
-            <CustomerDesktopSidebar accountAvatarUrl={accountAvatarUrl} accountEmail={accountEmail}
-              accountLabel={accountLabel} currentWorkspace={routeCurrentWorkspace} navigation={routeNavigation}
-              notificationSummary={notificationSummary} pathname={pathname} searchParams={searchParams} workspaceOptions={workspaceOptions} />
+    const desktopDisplay =
+      desktopShellBreakpoint === "lg" ? "hidden lg:block" : "hidden xl:block";
+    const mobileDisplay =
+      desktopShellBreakpoint === "lg" ? "lg:hidden" : "xl:hidden";
+    const gridClass =
+      desktopShellBreakpoint === "lg"
+        ? "lg:grid lg:grid-cols-[16.25rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,1fr)]"
+        : routeCurrentWorkspace?.salonMode === "staff"
+          ? "xl:grid xl:grid-cols-[14rem_minmax(0,1fr)] 2xl:grid-cols-[15rem_minmax(0,1fr)]"
+          : "xl:grid xl:grid-cols-[16.25rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,1fr)]";
+    return (
+      <>
+        {!passive ? (
+          <AppNotificationInvalidation userId={currentUserId} />
+        ) : null}
+        <CustomerShellContextProvider
+          isCustomerShell
+          notificationSummary={notificationSummary}
+        >
+          <div
+            className={`min-h-screen bg-white text-text-primary ${gridClass}`}
+            data-testid="customer-desktop-shell"
+            data-owner-pos-shell={isOwnerPosRoute ? "true" : undefined}
+          >
+            <div className={desktopDisplay} data-desktop-sidebar-slot>
+              <CustomerDesktopSidebar
+                accountAvatarUrl={accountAvatarUrl}
+                accountEmail={accountEmail}
+                accountLabel={accountLabel}
+                currentWorkspace={routeCurrentWorkspace}
+                navigation={routeNavigation}
+                notificationSummary={notificationSummary}
+                pathname={pathname}
+                searchParams={searchParams}
+                workspaceOptions={workspaceOptions}
+              />
+            </div>
+            <div
+              className="min-w-0"
+              data-owner-pos-shell={isOwnerPosRoute ? "true" : undefined}
+            >
+              <div className={desktopDisplay}>
+                <CustomerDesktopHeader
+                  accountAvatarUrl={accountAvatarUrl}
+                  accountLabel={accountLabel}
+                  currentWorkspace={routeCurrentWorkspace}
+                  notificationSummary={notificationSummary}
+                  pathname={pathname}
+                  searchParams={searchParams}
+                />
+              </div>
+              <div
+                className={`${mobileDisplay} [&>header]:!block ${pathname === "/pos/settings" ? "sticky top-0 z-50" : ""}`}
+              >
+                <MobileHeader
+                  accountAvatarUrl={accountAvatarUrl}
+                  accountEmail={accountEmail}
+                  accountLabel={accountLabel}
+                  currentWorkspace={routeCurrentWorkspace}
+                  isCustomerShell
+                  notificationSummary={notificationSummary}
+                  pathname={pathname}
+                  searchParams={searchParams}
+                  workspaceOptions={workspaceOptions}
+                  workspaceSections={[]}
+                />
+              </div>
+              <div
+                data-salon-manage-gutters={
+                  isSalonManageRoute && !pathname.startsWith("/pos")
+                    ? "true"
+                    : undefined
+                }
+                className={`customer-desktop-content min-w-0 ${desktopShellBreakpoint === "lg" ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0" : "pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:pb-0"}`}
+              >
+                <ExploreAdSlot position="page-top" />
+                {children}
+                <ExploreAdSlot position="page-bottom" />
+              </div>
+              <div className={`${mobileDisplay} [&>nav]:!grid`}>
+                <MobileBottomNav
+                  ariaLabel={routeNavigation.ariaLabel}
+                  links={routeNavigation.links}
+                  notificationSummary={notificationSummary}
+                  pathname={pathname}
+                  roleKind={routeNavigation.kind}
+                  searchParams={searchParams}
+                />
+              </div>
+            </div>
           </div>
-          <div className="min-w-0" data-owner-pos-shell={isOwnerPosRoute ? "true" : undefined}>
-            <div className={desktopDisplay}>
-              <CustomerDesktopHeader accountAvatarUrl={accountAvatarUrl} accountLabel={accountLabel}
-                currentWorkspace={routeCurrentWorkspace} notificationSummary={notificationSummary} pathname={pathname} searchParams={searchParams} />
-            </div>
-            <div className={`${mobileDisplay} [&>header]:!block ${pathname === "/pos/settings" ? "sticky top-0 z-50" : ""}`}>
-              <MobileHeader accountAvatarUrl={accountAvatarUrl} accountEmail={accountEmail} accountLabel={accountLabel}
-                currentWorkspace={routeCurrentWorkspace} isCustomerShell notificationSummary={notificationSummary}
-                pathname={pathname} searchParams={searchParams} workspaceOptions={workspaceOptions} workspaceSections={[]} />
-            </div>
-            <div data-salon-manage-gutters={isSalonManageRoute && !pathname.startsWith("/pos") ? "true" : undefined} className={`customer-desktop-content min-w-0 ${desktopShellBreakpoint === "lg" ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0" : "pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:pb-0"}`}>
-              <ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" />
-            </div>
-            <div className={`${mobileDisplay} [&>nav]:!grid`}>
-              <MobileBottomNav ariaLabel={routeNavigation.ariaLabel} links={routeNavigation.links}
-                notificationSummary={notificationSummary} pathname={pathname} roleKind={routeNavigation.kind} searchParams={searchParams} />
-            </div>
-          </div>
-        </div>
-      </CustomerShellContextProvider>
-    </>;
+        </CustomerShellContextProvider>
+      </>
+    );
   }
 
   return (
@@ -2874,10 +3383,7 @@ export function NavigationShell({
       >
         <div
           data-owner-pos-shell={isOwnerPosRoute ? "true" : undefined}
-          className={[
-            "min-h-screen bg-white",
-            baseShellPaddingClass,
-          ].join(" ")}
+          className={["min-h-screen bg-white", baseShellPaddingClass].join(" ")}
         >
           <AppRail
             accountAvatarUrl={accountAvatarUrl}
@@ -2920,21 +3426,38 @@ export function NavigationShell({
             pathname={pathname}
             searchParams={searchParams}
             workspaceOptions={workspaceOptions}
-            workspaceSections={showWorkspaceContextSidebar ? workspaceSections : []}
+            workspaceSections={
+              showWorkspaceContextSidebar ? workspaceSections : []
+            }
           />
           <div className={["min-h-screen", contentPaddingClass].join(" ")}>
-            <ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" />
+            <ExploreAdSlot position="page-top" />
+            {children}
+            <ExploreAdSlot position="page-bottom" />
           </div>
-
         </div>
       </CustomerShellContextProvider>
-
-
     </>
   );
 }
 
-
-
-
-function WorkspaceMemberName({workspace,name,subtitle=false}:{workspace:CurrentWorkspaceOption|null;name:string;subtitle?:boolean}) { const salon=workspace?.type==="salon" && (subtitle?workspace.salonMode==="staff":workspace.salonMode!=="staff"); return salon ? <SalonName name={name} salonId={workspace.salonId}/> : <WorkspaceText text={name}/>; }
+function WorkspaceMemberName({
+  workspace,
+  name,
+  subtitle = false,
+}: {
+  workspace: CurrentWorkspaceOption | null;
+  name: string;
+  subtitle?: boolean;
+}) {
+  const salon =
+    workspace?.type === "salon" &&
+    (subtitle
+      ? workspace.salonMode === "staff"
+      : workspace.salonMode !== "staff");
+  return salon ? (
+    <SalonName name={name} salonId={workspace.salonId} />
+  ) : (
+    <WorkspaceText text={name} />
+  );
+}

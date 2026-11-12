@@ -4,6 +4,10 @@ import { SalonName } from "@/components/salon-member-badge";
 import { VisitReplyControls } from "@/app/activity/visit-reply-controls";
 import { salonProfileAnchor } from "@/lib/salon-profile-anchor";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { SalonLocationMap } from "@/components/salon-location-map";
+import { mapDirectionsUrl } from "@/lib/location/map-links";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
+import { SalonAddressLink } from "@/components/salon-address-link";
 import { compressImageCanvas } from "@/lib/image-upload-client";
 import { useSalonProfilePages } from "@/lib/use-salon-profile-pages";
 import { PublicationPanel } from "./publication-panel";
@@ -27,6 +31,7 @@ import { useHiddenPosts, postIdentity } from "@/components/post-safety";
 import { usePostCaption } from "@/components/post-change-state";
 import { PostActions } from "./post-actions";
 import { BlockUserButton } from "@/components/block-user-button";
+import { SocialTextReportButton } from "@/components/social-text-report-button";
 import { SalonReportDialog } from "@/components/salon-report-dialog";
 import { ServiceMenu } from "./service-menu";
 import { TeamMenu } from "./team-menu";
@@ -450,9 +455,7 @@ function displayWebsite(value: string | null) {
 }
 
 function directionsUrl(address: string) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    address,
-  )}`;
+  return mapDirectionsUrl(address);
 }
 
 function joinMeta(parts: Array<string | null | undefined>) {
@@ -1421,11 +1424,7 @@ function ProfileEditor({
         </div>
         <Field defaultValue={setting.website} label={__vt("Website")} name="website" />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            defaultValue={setting.address_line1}
-            label={__vt("Address line 1")}
-            name="address_line1"
-          />
+          <AddressAutocomplete defaultValue={setting.address_line1} label={__vt("Address line 1")} />
           <Field
             defaultValue={setting.address_line2}
             label={__vt("Address line 2")}
@@ -2158,7 +2157,7 @@ function FeedCard({
               title={__vt(item.contentType === "look" ? "Book look" : "Book inspiration")}
               tone="primary"
             >
-              <WorkspaceText text="Book" />
+              <span data-booking-action-label><WorkspaceText text="Book appointment" /></span>
             </TimelineActionButton>
           ) : null}
         </div>
@@ -2359,7 +2358,7 @@ function BeautyTransformationsSection({
                     {bookingHref ? (
                       <a
                         aria-label={__vt([
-                          booking?.label ?? "Book",
+                          booking?.label ?? "Book appointment",
                           bookedCount !== null
                             ? beautyBookedCountLabel(bookedCount)
                             : null,
@@ -2368,10 +2367,10 @@ function BeautyTransformationsSection({
                           .join(", "))}
                         className="inline-flex min-h-11 min-w-11 max-w-full flex-none items-center justify-center gap-1.5 px-2 py-2 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
                         href={bookingHref}
-                        title={__vt(booking?.label ?? "Book")}
+                        title={__vt(booking?.label ?? "Book appointment")}
                       >
                         <TimelineActionIcon name="book" />
-                        <span className="min-w-0 whitespace-normal break-words"><WorkspaceText text="Book" /></span>
+                        <span className="min-w-0 whitespace-normal break-words"><span data-booking-action-label><WorkspaceText text="Book appointment" /></span></span>
                       </a>
                     ) : null}
                   </div>
@@ -2536,6 +2535,7 @@ function ExperienceCard({
             {quick ? <span className="font-normal text-zinc-600"><WorkspaceText text={experienceStateLabel(experience)} /></span> : null}
           </p>
           {viewerId && experience.authorUserId && viewerId !== experience.authorUserId ? <BlockUserButton userId={experience.authorUserId} /> : null}
+          {viewerId ? <SocialTextReportButton target={{kind:experience.source === "legacy_review" ? "review" : "experience",id:experience.id,salonId:experience.salonId}}/> : null}
           {!quick && meta ? <p className="mt-1 text-sm text-zinc-500">{meta}</p> : null}
             {!quick && experience.editedAt ? <p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Edited" /></p> : null}
         </div>
@@ -2571,6 +2571,7 @@ function ExperienceCard({
             <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-700">
             {experience.replyBody}
           </p>
+            {viewerId && experience.replyId ? <SocialTextReportButton target={{kind:experience.source === "legacy_review" ? "review_reply" : "experience_reply",id:experience.replyId,salonId:experience.salonId}}/> : null}
             {experience.replyCreatedAt ? <p className="mt-2 text-xs text-zinc-500">{timeAgo(experience.replyCreatedAt)}</p> : null}
         </div>
       ) : canReplyToExperience ? (
@@ -2757,7 +2758,7 @@ function LookDetailDialog({
                 title={__vt("Book exact look")}
                 tone="primary"
               >
-                <WorkspaceText text="Book" />
+                <span data-booking-action-label><WorkspaceText text="Book appointment" /></span>
               </TimelineActionButton>
             </div>
             <div className="flex">
@@ -2948,7 +2949,7 @@ function FeedPostDetailDialog({
                 title={__vt(item.contentType === "look" ? "Book look" : "Book inspiration")}
                 tone="primary"
               >
-                <WorkspaceText text="Book" />
+                <span data-booking-action-label><WorkspaceText text="Book appointment" /></span>
               </TimelineActionButton>
             </div>
             <div id={commentsPanelId}>
@@ -4282,7 +4283,7 @@ export function SalonProfileView({
               {address ? (
                 <div>
                   <p className="font-semibold text-zinc-950"><WorkspaceText text="Address" /></p>
-                  <p className="mt-1 leading-6">{address}</p>
+                  <p className="mt-1 leading-6"><SalonAddressLink address={address} /></p>
                   <a
                     className="mt-2 inline-flex font-semibold text-zinc-950 underline-offset-4 hover:underline"
                     href={directionsUrl(address)}
@@ -4291,6 +4292,7 @@ export function SalonProfileView({
                   >
                     <WorkspaceText text="Directions" />
                   </a>
+                  <SalonLocationMap key={address} address={address} name={profile.name} />
                 </div>
               ) : null}
               {phone ? (
@@ -4448,7 +4450,7 @@ export function SalonProfileView({
               </button>
           </div>
           <a href={`/gift-cards?salon=${profile.salonId}`} className="mx-3 mb-2 inline-flex min-h-9 items-center rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800">Gift cards</a>
-          {canShowBook ? <div className={`flex items-center justify-end gap-3 px-3 pb-3 sm:px-5 ${capabilities.canEditProfile ? "sm:pr-20" : ""}`}>{canShowBook ? <button type="button" onClick={() => openBooking({ title: "Book now" })} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-orange px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover"><WorkspaceText text="Book appointment" /> <span aria-hidden="true">→</span></button> : null}</div> : null}
+          {canShowBook ? <div className={`flex items-center justify-end gap-3 px-3 pb-3 sm:px-5 ${capabilities.canEditProfile ? "sm:pr-20" : ""}`}>{canShowBook ? <button type="button" onClick={() => openBooking({ title: "Book now" })} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-orange px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover"><span data-booking-action-label><WorkspaceText text="Book appointment" /></span> <span aria-hidden="true">→</span></button> : null}</div> : null}
           <div className="relative flex min-w-0 items-center border-t border-zinc-100 px-2 sm:px-4">
             <div aria-label={__vt("Salon profile sections")} className="flex min-w-0 flex-1 flex-wrap" onKeyDown={onTabKeyDown} role="tablist">
               {visibleTabs.map((tab) => <button aria-controls={`salon-profile-${tab.id}`} aria-selected={effectiveTab === tab.id} className={`min-h-11 min-w-[5.5rem] flex-1 border-b-2 px-1 text-xs font-semibold sm:text-sm ${effectiveTab === tab.id ? "border-brand-orange text-brand-orange" : "border-transparent text-zinc-500 hover:text-zinc-950"}`} id={`salon-profile-tab-${tab.id}`} key={tab.id} onClick={() => changeTab(tab.id)} role="tab" tabIndex={effectiveTab === tab.id ? 0 : -1} type="button"><WorkspaceText text={tab.label} />{tab.id === "gallery" && sortedLooks.length ? <span className="ml-1 text-[10px] text-zinc-400">{sortedLooks.length}</span> : null}</button>)}
@@ -4541,7 +4543,7 @@ export function SalonProfileView({
               title={__vt("Book exact look")}
               tone="primary"
             >
-              <WorkspaceText text="Book" />
+              <span data-booking-action-label><WorkspaceText text="Book appointment" /></span>
             </TimelineActionButton>
           </div>
         </div>

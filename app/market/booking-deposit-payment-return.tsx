@@ -1,5 +1,6 @@
 "use client";
 
+import { marketTargetHref } from "@/lib/market-target-url";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -45,6 +46,6 @@ export function BookingDepositPaymentReturn({ salonId }: { salonId: string }) {
     <h1>Booking Deposit</h1>
     <p className={styles.settingsIntro} role="status" aria-live="polite">{t(waiting ? "Confirming your payment…" : message)}</p>
     {!waiting && <button className={styles.primary} type="button" onClick={() => { setWaiting(true); setMessage(""); setAttempt(value => value + 1); }}>{t("Check again")}</button>}
-    <Link className={styles.back} href="/market/booking-deposit">← {t("Back to plugin")}</Link>
+    <Link className={styles.back} href={marketTargetHref("/market/booking-deposit", salonId)}>← {t("Back to plugin")}</Link>
   </main>;
 }

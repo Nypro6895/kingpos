@@ -13,3 +13,6 @@
 /supabase/.temp/
 /tsconfig.tsbuildinfo
 /public/experience-build-assets.json
+# Isolated QA runtime: local keys, generated SQL, dummy credentials and data.
+/qa/runtime/
+/artifacts/qa-local-20261111/

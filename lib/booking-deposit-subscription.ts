@@ -30,7 +30,7 @@ export async function bookingDepositPayment(salonId: string, ownerId: string, po
   if (error) throw new Error("Apply the Booking Deposit database update first.");
   if (portal) {
     if (!row?.stripe_customer || row.payment_owner !== ownerId) throw new Error("Only the subscription payer can manage billing.");
-    const session = await marketStripe("billing_portal/sessions", new URLSearchParams({ customer: row.stripe_customer, return_url: new URL("/market", REYLUMI_METADATA_BASE).href }));
+    const session = await marketStripe("billing_portal/sessions", new URLSearchParams({ customer: row.stripe_customer, return_url: new URL(`/market?salon=${encodeURIComponent(salonId)}`, REYLUMI_METADATA_BASE).href }));
     if (typeof session.url !== "string" || new URL(session.url).hostname !== "billing.stripe.com") throw new Error("Billing portal could not open.");
     return session.url as string;
   }
@@ -56,7 +56,7 @@ export async function bookingDepositPayment(salonId: string, ownerId: string, po
   const { data: reservation, error: reservationError } = await client.from("booking_deposit_subscriptions").select("checkout_reference").eq("salon_id", salonId).eq("payment_owner", ownerId).single();
   if (reservationError || !reservation?.checkout_reference) throw new Error("Checkout could not be prepared. Please retry.");
   const form = new URLSearchParams({ mode: "subscription", success_url: new URL(`/market/booking-deposit/payment?salon=${encodeURIComponent(salonId)}`, REYLUMI_METADATA_BASE).href,
-    cancel_url: new URL("/market/booking-deposit?cancelled=1", REYLUMI_METADATA_BASE).href,
+    cancel_url: new URL(`/market/booking-deposit?cancelled=1&salon=${encodeURIComponent(salonId)}`, REYLUMI_METADATA_BASE).href,
     "line_items[0][quantity]": "1", "line_items[0][price_data][currency]": "usd", "line_items[0][price_data][unit_amount]": String(BOOKING_DEPOSIT_MONTHLY_CENTS),
     "line_items[0][price_data][recurring][interval]": "month", "line_items[0][price_data][product_data][name]": "Reylumi Booking Deposit",
     "subscription_data[metadata][reylumi_plugin]": BOOKING_DEPOSIT_PLUGIN, "subscription_data[metadata][salon_id]": salonId, "subscription_data[metadata][owner_id]": ownerId });
@@ -66,4 +66,3 @@ export async function bookingDepositPayment(salonId: string, ownerId: string, po
   if (saveError) throw new Error("Checkout could not be saved. Please retry.");
   return session.url as string;
 }
-

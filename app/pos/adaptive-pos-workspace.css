@@ -12,6 +12,30 @@
 [data-pos-service-tile]>small{display:block;font-size:max(11px,.85em);margin-top:3px}
 [data-pos-service-tile][aria-pressed=true]{outline:2px solid #f26f3d;outline-offset:-2px}
 [data-pos-service-tile]:disabled{opacity:.5}
+
+/* Portable catalog: one toolbar, independently scrollable main grid, and
+   contextual extras kept in view even when the main catalog is long. */
+[data-pos-service-workspace]:has([data-pos-compact-catalog]){display:flex;flex-direction:column}
+[data-pos-compact-catalog]{display:flex;flex:1;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
+.pos-catalog-toolbar{display:flex;align-items:center;gap:8px;min-height:36px;flex-shrink:0;margin-bottom:6px}
+.pos-catalog-toolbar h2{font-size:14px;font-weight:650;flex-shrink:0;margin:0}
+.pos-catalog-categories{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:thin}
+.pos-catalog-categories button{flex-shrink:0;min-height:34px;border:1px solid #e4e4e7;border-radius:8px;padding:4px 10px;background:white;font-size:12px}
+.pos-catalog-categories button[aria-pressed=true]{background:#00877f;color:#fff;border-color:#00877f}
+.pos-catalog-icon{display:grid;place-items:center;flex-shrink:0;width:36px;height:36px;border:1px solid #e4e4e7;border-radius:8px;background:white;font-size:22px}
+.pos-catalog-icon[hidden]{display:none}
+.pos-catalog-toolbar input{min-width:0;width:100%;height:36px;border:1px solid #d4d4d8;border-radius:8px;padding:5px 10px;font-size:14px;background:white}
+.pos-catalog-scroll{flex:0 1 auto;min-height:60px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+[data-pos-compact-catalog] [data-pos-service-tiles], [data-adaptive-pos] [data-pos-compact-catalog] [data-pos-service-tiles]{grid-template-columns:repeat(auto-fill,minmax(min(112px,100%),1fr));grid-auto-rows:minmax(54px,auto);max-height:none;overflow:visible;gap:6px;align-content:start}
+[data-pos-compact-catalog] [data-pos-service-tile], [data-adaptive-pos] [data-pos-compact-catalog] [data-pos-service-tile]{min-height:54px;font-size:13px;padding:6px 8px}
+[data-pos-compact-catalog] [data-pos-service-tile]>span{display:block;overflow:visible;white-space:normal;overflow-wrap:anywhere;-webkit-line-clamp:unset}
+[data-pos-custom-service]{min-height:54px;border:1px dashed #a1a1aa;border-radius:8px;padding:6px 8px;background:#fafafa;color:#52525b;font-size:13px;font-weight:600;text-align:left}
+.pos-catalog-addons{flex-shrink:0;min-height:0;max-height:40%;overflow:auto;overscroll-behavior:contain;margin-top:8px;border:1px solid #f3d9bd;border-top:2px solid #e99b4d;border-radius:8px;padding:0 6px 6px;background:#fffaf3}
+.pos-catalog-addons h3{position:sticky;top:0;z-index:1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px;margin:0;padding:6px 2px;background:#fffaf3;font-size:12px}
+.pos-catalog-addons h3 small{margin-left:auto;color:#78716c;font-size:11px;font-weight:400}
+.pos-catalog-empty{font-size:12px;color:#71717a;padding:8px}
+[data-pos-compact-catalog] button:focus-visible{outline:2px solid #00877f;outline-offset:-2px}
+[data-pos-compact-catalog] button:disabled{opacity:.5}
 .owner-checkout[data-owner-reference] [data-adaptive-pos] .owner-services{min-height:0;overflow:hidden;flex:1}
 
 /* Portable: preserve tile styling while allowing complete service/staff labels. */
@@ -21,3 +45,5 @@
 [data-portable-pos-shell] [data-adaptive-pos] [data-pos-staff-grid]>button{height:auto;min-height:var(--pos-staff-height)}
 
 [data-pos-service-folder]{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;min-width:0;min-height:44px;border:1px dashed #a1a1aa;border-radius:8px;background:#fafafa;color:#52525b;padding:6px 8px;text-align:center;font-size:13px}[data-pos-service-folder]>small{font-variant-numeric:tabular-nums}.pos-addon-dialog{position:fixed;inset:0;margin:auto;width:min(560px,calc(100dvw - 32px));max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #e4e4e7;border-radius:14px;padding:18px;background:#fff;color:#18181b;box-shadow:0 16px 60px #0003}.pos-addon-dialog::backdrop{background:#0005}.pos-addon-dialog>header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.pos-addon-dialog h2{font-size:16px;font-weight:600}.pos-addon-dialog>header>button{width:36px;height:36px;border-radius:8px;font-size:22px}.pos-addon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}.pos-addon-grid [data-pos-service-tile]>span{-webkit-line-clamp:unset;display:block;overflow:visible}
+
+[data-portable-pos-shell] [data-adaptive-pos] [data-pos-compact-catalog] [data-pos-service-tiles]{grid-auto-rows:minmax(54px,auto)}

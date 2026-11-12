@@ -1,9 +1,12 @@
 "use client";
+import {useScopedMarketActions} from "@/app/market/scoped-market-client";
 import { WorkspaceText } from "@/components/workspace-language";
 import { useState } from "react";
-import { downloadPayrollData } from "./data-download-actions";
+
 
 export function DataDownloadPanel({ salonId, startDate, endDate }: { salonId: string; startDate: string; endDate: string }) {
+ const {downloadPayrollData}=useScopedMarketActions(salonId);
+
   const [start, setStart] = useState(startDate);
   const [end, setEnd] = useState(endDate);
   const [categories, setCategories] = useState(["financial", "staff", "customers"]);

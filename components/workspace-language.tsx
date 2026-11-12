@@ -1,4 +1,6 @@
 "use client";
+import { useSalonLanguage } from "@/components/salon-language-context";
+
 import { createContext, createElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore, type ElementType, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { loadWorkspaceTranslator, type WorkspaceTranslator } from "@/lib/workspace-translator-client";
@@ -35,7 +37,8 @@ export function WorkspaceLanguageProvider({ enabled, portableEnabled, expiresAt,
   // Match server HTML even when another hydrated view has already loaded copy.
   const [translator, setTranslator] = useState<WorkspaceTranslator | null>(null);
   const personalRoutes = ["/admin", "/explore", "/book/", "/beauty", "/my-bookings", "/activity"];
-  const eligible = (pathname.startsWith("/pos/portable") ? current.portableEnabled : current.enabled) && !expired && !personalRoutes.some(route => pathname.startsWith(route));
+  const preference = useSalonLanguage();
+  const eligible = (pathname.startsWith("/pos/portable") ? current.portableEnabled : (preference ? preference.effective === "vi" : current.enabled)) && !expired && !personalRoutes.some(route => pathname.startsWith(route));
   useEffect(() => {
     if (!eligible || current.expiresAt && Date.now() >= Date.parse(current.expiresAt)) return;
     let active = true;

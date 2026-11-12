@@ -11,6 +11,8 @@ import { EXPLORE_PAGE_SIZE, getExploreWorkspaceLocation, searchExploreSalons, em
 import { emptyFeedPage } from "./explore-feed";
 import { resolveExploreQueryRouting } from "./explore-query-routing";
 import { getExploreHomeContent, emptyHomeContent } from "./explore-home";
+import { scopeExploreHomeContent } from "./explore-home-scope";
+import { readExploreFilterParams } from "./explore-filter-state";
 import { enrichExploreShowcaseContent } from "./explore-showcase-content";
 import { prepareExploreStartupFeed } from "./explore-startup-feed-server";
 import { exploreCommentIdentity } from "./explore-comment-identity";
@@ -49,7 +51,7 @@ function queryArgs(args: Record<string, unknown>) {
   query.delete("page"); query.sort(); return query;
 }
 function explicitSearch(params: URLSearchParams) {
-  return Boolean((params.get("q") ?? "").trim() || (params.get("location") ?? "").trim() && params.get("browse") !== "1" || (params.get("category") ?? "").trim() || ["posts", "salons"].includes(params.get("type") ?? ""));
+  return Boolean(Object.keys(readExploreFilterParams(params)).length || (params.get("q") ?? "").trim() || (params.get("location") ?? "").trim() && params.get("browse") !== "1" || (params.get("category") ?? "").trim() || ["posts", "salons"].includes(params.get("type") ?? ""));
 }
 const emptyUtility = (): ExploreUtilityContent => ({ bookingLoadError: false, notificationLoadError: false, notifications: [], unreadNotificationCount: 0, upcomingBooking: null });
 const startupRoutingKey = Symbol("explore-initial-routing");
@@ -71,11 +73,12 @@ async function explorePage(context: Awaited<ReturnType<typeof getRequestBusiness
   const marks:Record<string,number>={};
   const measure = async<T>(name:string,work:()=>Promise<T>)=>{const began=performance.now();try{return await work();}finally{marks[name]=Math.round(performance.now()-began);}};
   const hiddenPromise = measure("hidden",()=>readHiddenPostIdentities()).catch(()=>undefined);
-  const homePromise = explicitSearch(params) ? Promise.resolve(emptyHomeContent()) : measure("home",()=>runReadWithDeadline(getExploreHomeContent({ initial: true }), 8_000)).catch(() => emptyHomeContent());
   const { explicit, hasLocationParam, workspaceLocation, routing, sort } = await measure("routing",()=>startupRouting(context, params));
+  const homePromise = explicit || routing.location ? Promise.resolve(emptyHomeContent()) : measure("home",()=>runReadWithDeadline(getExploreHomeContent({ initial: true }), 8_000)).catch(() => emptyHomeContent());
   const homeSearchPending=params.size===0;
   const pendingSearch={...emptyExploreSearchResponse({category:routing.category,location:routing.location,page:1,pageSize:4,query:routing.query}),displayQuery:routing.displayQuery,locationOrigin:routing.locationOrigin,locationSource:routing.locationSource,requiresGps:routing.requiresGps};
-  const [searchResponse, homeContent, initialHiddenPosts] = await Promise.all([homeSearchPending?Promise.resolve(pendingSearch):measure("search",()=>searchExploreSalons({ category: routing.category, location: routing.location, page: 1, pageSize: explicit ? EXPLORE_PAGE_SIZE : 4, query: routing.query, scopePolicy: routing.scopePolicy, sort, target: routing.target, locationSource: routing.locationSource }, { routing })), homePromise, hiddenPromise]);
+  const [searchResponse, loadedHomeContent, initialHiddenPosts] = await Promise.all([homeSearchPending?Promise.resolve(pendingSearch):measure("search",()=>searchExploreSalons({ filters: readExploreFilterParams(params), category: routing.category, location: routing.location, page: 1, pageSize: explicit ? EXPLORE_PAGE_SIZE : 4, query: routing.query, scopePolicy: routing.scopePolicy, sort, target: routing.target, locationSource: routing.locationSource }, { routing })), homePromise, hiddenPromise]);
+  const homeContent = scopeExploreHomeContent(loadedHomeContent, searchResponse);
   console.info("Explore initial page timing",marks);
   const initialFeed = emptyFeedPage(), utilityContent = emptyUtility();
   const discoveryContent = buildExploreDiscoveryContent({ homeContent, initialFeed, searchResponse, utilityContent, workspaceLocation });
@@ -84,13 +87,17 @@ async function explorePage(context: Awaited<ReturnType<typeof getRequestBusiness
 }
 async function exploreExtras(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, params: URLSearchParams): Promise<AppLocalExploreExtras> {
   const explicit = explicitSearch(params);
+  const { routing } = await startupRouting(context, params);
   const homeSearch = params.size===0 ? startupRouting(context,params).then(({routing,sort})=>searchExploreSalons({category:routing.category,location:routing.location,page:1,pageSize:4,query:routing.query,scopePolicy:routing.scopePolicy,sort,target:routing.target,locationSource:routing.locationSource},{routing})) : Promise.resolve(undefined);
-  const [homeContent, utilityContent, quickActions, homeSearchResponse] = await Promise.all([
-    explicit ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent(), 10_000).catch(() => emptyHomeContent()),
+  const [loadedHomeContent, utilityContent, quickActions, homeSearchResponse] = await Promise.all([
+    explicit || routing.location ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent(), 10_000).catch(() => emptyHomeContent()),
     explicit ? Promise.resolve(emptyUtility()) : runReadWithDeadline(getExploreUtilityContent(context), 10_000).catch(() => emptyUtility()),
     runReadWithDeadline(buildQuickActions(context), 10_000).catch(() => []),
     homeSearch,
   ]);
+  // A browse URL reuses its core search on the client. A default launch receives
+  // the already-deferred search here; neither needs a second regional query.
+  const homeContent = homeSearchResponse ? scopeExploreHomeContent(loadedHomeContent, homeSearchResponse) : loadedHomeContent;
   return { homeContent, utilityContent, quickActions, homeSearchResponse };
 }
 async function exploreFeed(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, params: URLSearchParams) {

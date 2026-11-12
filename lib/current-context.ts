@@ -35,6 +35,7 @@ import type { Role } from "@/types/role";
 import type { SalonMembership } from "@/types/salon-membership";
 import type { KingUser } from "@/types/user";
 import { cookies } from "next/headers";
+import { taxWorkspaceOption } from "@/lib/tax-role";
 
 export const CURRENT_ACCOUNT_COOKIE = "kingpos-current-account-id";
 export const LEGACY_CURRENT_SALON_COOKIE = "kingpos-current-salon-id";
@@ -51,7 +52,7 @@ export const ROLE_SELECT =
   "id, account_id, name, code, description, is_system, created_at, updated_at";
 
 
-export type WorkspaceType = "account" | "personal" | "salon";
+export type WorkspaceType = "account" | "personal" | "salon" | "tax";
 export type SalonMode = "manage" | "staff";
 
 export type CurrentWorkspaceAction = {
@@ -1697,8 +1698,11 @@ async function buildCurrentBusinessContext(auth: Awaited<ReturnType<typeof getCu
       ];
     }),
   );
+  // Missing migration keeps existing roles usable; Tax appears only after opt-in.
+  const taxProfile = await supabase.from("tax_profiles").select("user_id").eq("user_id",user.id).maybeSingle();
   const workspaceOptions = dedupeWorkspaces([
     personalWorkspace,
+    ...(!taxProfile.error && taxProfile.data ? [taxWorkspaceOption()] : []),
     ...accountOptions,
     ...manageWorkspaceOptions,
     ...staffLinkedContext.workspaceOptions,
@@ -1834,7 +1838,7 @@ export function writeNormalizedWorkspaceContextCookies(
     cookieStore.delete(CURRENT_ACCOUNT_COOKIE);
   }
 
-  if (workspace.type === "personal" || workspace.type === "account") {
+  if (workspace.type === "personal" || workspace.type === "account" || workspace.type === "tax") {
     cookieStore.delete(CURRENT_MANAGE_SALON_COOKIE);
     cookieStore.delete(CURRENT_STAFF_SALON_COOKIE);
     cookieStore.delete(LEGACY_CURRENT_SALON_COOKIE);

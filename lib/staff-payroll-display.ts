@@ -4,8 +4,8 @@ import { moneyCents } from "@/lib/payroll-live-money";
 /** Split existing final payouts for presentation; never recalculate earnings/tax. */
 export function staffTakeHomeDisplay(line: PayrollStaffLineWithDailyTotals) {
   return {
-    check: (moneyCents(line.final_check_amount) - moneyCents(line.tip_check_amount)) / 100,
-    cash: (moneyCents(line.final_cash_amount) - moneyCents(line.tip_cash_amount)) / 100,
+    check: moneyCents(line.final_check_amount) / 100,
+    cash: moneyCents(line.final_cash_amount) / 100,
     tip: (moneyCents(line.tip_check_amount) + moneyCents(line.tip_cash_amount)) / 100,
     net: line.final_staff_income,
   };

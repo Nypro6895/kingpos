@@ -4,6 +4,7 @@ import { readAuthResponse } from "@/lib/auth-response";
 import { AUTH_OFFLINE_MESSAGE } from "@/lib/supabase/auth-errors";
 import { SecurityChallenge, type SecurityChallengeHandle } from "@/components/security-challenge";
 import Link from "next/link";
+import { DUPLICATE_SIGNUP_PHONE_MESSAGE, SIGNUP_PHONE_SUPPORT_PATH } from "@/lib/signup-phone-policy";
 import { useRouter } from "next/navigation";
 import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 
@@ -154,7 +155,7 @@ export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?:
           id="signup-form-error"
           role="alert"
         >
-          {error}
+          {error}{error === DUPLICATE_SIGNUP_PHONE_MESSAGE ? <Link href={SIGNUP_PHONE_SUPPORT_PATH} className="mt-3 flex min-h-11 w-fit items-center rounded-full border border-red-300 px-4 font-bold underline">Contact support</Link> : null}
         </p>
       ) : null}
 

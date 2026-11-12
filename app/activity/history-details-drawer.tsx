@@ -3,6 +3,7 @@ import { SalonName } from "@/components/salon-member-badge";
 
 import { BookingRewardPending } from "@/components/rewardlumi/booking-reward-pending";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { SalonAddressLink } from "@/components/salon-address-link";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
@@ -90,8 +91,6 @@ export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChan
   const duration = booking ? Math.round((new Date(booking.end_at).getTime() - new Date(booking.start_at).getTime()) / 60000) : null;
   const canChange = Boolean(booking && !receipt && !booking.historyEvidence?.ticket && ["confirmed", "scheduled", "pending"].includes(booking.status) && new Date(booking.start_at).getTime() > now);
   const status = receipt ? "Visited" : booking ? historyBookingLabel(booking.status, booking.start_at, booking.historyEvidence, now) ?? bookingStatusLabel(booking.status, booking.no_show_kind) : activity.type === "visit" ? "Checked in" : "";
-  const address = receipt ? [receipt.salon.addressLine1, receipt.salon.addressLine2].filter(Boolean).join(", ") : [booking?.salon?.address_line1, booking?.salon?.address_line2].filter(Boolean).join(", ");
-  const city = receipt ? [receipt.salon.city, receipt.salon.state, receipt.salon.postalCode].filter(Boolean).join(", ") : booking ? [booking.salon?.city, booking.salon?.state, booking.salon?.postal_code].filter(Boolean).join(", ") : location;
   const logo = booking?.salon?.logoUrl ?? activity.salon.imageUrl;
   const canViewSalon = Boolean(booking?.salon?.publicDiscoveryEnabled || receipt);
   return portalHost ? createPortal(<dialog ref={dialog} aria-labelledby="history-details-title" onCancel={event => { if (event.target !== event.currentTarget) event.stopPropagation(); }} onClose={event => { if (event.target === event.currentTarget) onClose(); }}
@@ -111,7 +110,7 @@ export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChan
             ) : activity.salon.name.slice(0, 2)}
           </span>
           <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="text-lg font-semibold leading-6"><SalonName name={activity.salon.name} salonId={activity.salon.id}/></h3><span className="pt-1 text-[11px] font-normal text-text-secondary">{status}</span></div>
-            <div className="mt-1 text-xs leading-5 text-text-secondary">{address ? <p>{address}</p> : null}{city ? <p>{city}</p> : null}</div>
+            <div className="mt-1 text-xs leading-5 text-text-secondary">{location ? <p><SalonAddressLink address={location} /></p> : null}</div>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-brand-teal">
               {phone ? <a href={`tel:${phone.replace(/[^\d+]/g, "")}`}>Call salon</a> : null}
               {canViewSalon ? <Link prefetch={false} href={`/explore/salons/${activity.salon.id}`}>View salon</Link> : null}

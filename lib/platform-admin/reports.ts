@@ -35,6 +35,7 @@ export type PlatformAdminReportDetail = {
     summary: string;
     description: string | null;
     source: string;
+    social_content_report?: boolean;
     reporter_user_id: string | null;
     subject_user_id: string | null;
     subject_organization_id: string | null;

@@ -278,6 +278,7 @@ async function PayrollTaxCompanyPage({
               <WorkspaceText text={data.period.label} /> - <WorkspaceText text={statementLabel} />
             </p>
           </div>
+          <Link href="/payroll/tax-company/workspace" className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">Open Tax plugin workspace</Link>
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800"
             href={getPayrollHref(data.period)}

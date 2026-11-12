@@ -16,7 +16,7 @@ export const LEGAL_ROUTE_PATHS = [
 ] as const;
 
 export const LEGAL_FOOTER_LINKS = [
-  { href: "/support", label: "Report / Contact" },
+  { href: "/support", label: "Support" },
   { href: "/help", label: "Help" },
   { href: "/terms", label: "Terms" },
   { href: "/privacy", label: "Privacy" },

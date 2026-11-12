@@ -6,6 +6,8 @@ const PASSIVE_POST = new Set([
   "/api/explore/search", "/api/explore/feed", "/api/explore/area",
   "/api/explore/advertising", "/api/public-booking/inspiration-times",
   "/api/pos/windows-download", "/api/campaigns/delivery",
+  // Badge batches and large native read filters use POST for read transport.
+  "/api/membership/salon-badges", "/api/app-local/read",
 ]);
 
 /** A cache hint, never an authorization decision. Server authorization remains mandatory. */
@@ -21,6 +23,9 @@ export function classifyExperienceResponse(pathname: string, method: string, req
     const revalidated = response.get("x-action-revalidated");
     return revalidated === "1" || revalidated === "2" ? "data" : "none";
   }
+  // Mixed command endpoints identify authorized pure reads in their response.
+  // Caller headers never exempt writes, and action revalidation remains above.
+  if (explicit === "none") return "none";
   if (method === "POST" && PASSIVE_POST.has(pathname)) return "none";
   return ["POST", "PATCH", "PUT", "DELETE"].includes(method) ? "data" : "none";
 }

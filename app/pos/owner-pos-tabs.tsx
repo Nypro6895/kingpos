@@ -13,10 +13,10 @@ import { OwnerNotebookMenu } from "./owner-notebook-menu";
 
 const shortcuts: { id: string; href: string; label: string; icon: OwnerPosIconName }[] = [
   { id: "pos", href: "/pos", label: "POS", icon: "pos" },
-  { id: "ticket", href: "/pos/ticket", label: "Ticket", icon: "ticket" },
-  { id: "book", href: "/pos/book", label: "Book", icon: "booking" },
+  { id: "ticket", href: "/pos/ticket", label: "Tickets", icon: "ticket" },
+  { id: "book", href: "/pos/book", label: "Bookings", icon: "booking" },
   { id: "checkIn", href: "/pos/check-in", label: "Check In", icon: "checkin" },
-  { id: "report", href: "/pos/report", label: "Report", icon: "report" },
+  { id: "report", href: "/pos/report", label: "Reports", icon: "report" },
   { id: "settings", href: "/pos/settings", label: "Settings", icon: "settings" },
 ];
 

@@ -1,3 +1,4 @@
+import { POST_PHONE_REQUIRED_MESSAGE } from "@/lib/signup-phone-policy";
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { getSafetyContext } from "@/lib/abuse-context";
@@ -38,6 +39,12 @@ export async function assertAbuseRequest(action: "post" | "comment" | "report" |
   const context = await getSafetyContext();
   const social = ["post", "comment", "report"].includes(action);
   const user = ["signup", "login", "recovery"].includes(action) ? null : await getCurrentKingUser();
+  if (action === "post") {
+    if (!user) throw new Error("Sign in before posting.");
+    const verification = await abuseServiceClient().rpc("account_has_verified_post_phone", { p_user_id: user.id });
+    if (verification.error) throw new Error("Phone verification could not be checked. Please try again later.");
+    if (verification.data !== true) throw new Error(POST_PHONE_REQUIRED_MESSAGE);
+  }
   const { data, error } = await abuseServiceClient().rpc("abuse_preflight", {
     p_action: action, p_user_id: user?.id ?? null, p_device: context.deviceHash,
     p_ip: context.ipHash || null, p_country: context.country || null,

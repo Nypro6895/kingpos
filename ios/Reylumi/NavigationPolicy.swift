@@ -65,6 +65,21 @@ struct NavigationPolicy {
             && url.port == nil && url.user == nil && url.password == nil
     }
 
+    func isMapsDirections(_ url: URL) -> Bool {
+        guard url.scheme == "https", url.port == nil, url.user == nil, url.password == nil,
+              let parts = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return false }
+        let query = parts.queryItems ?? []
+        let host = url.host?.lowercased() ?? ""
+        if host == "maps.apple.com", url.path.isEmpty || url.path == "/" {
+            return query.contains { $0.name == "daddr" && !($0.value?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true) }
+        }
+        if ["www.google.com", "google.com"].contains(host), ["/maps/dir", "/maps/dir/"].contains(url.path) {
+            return query.contains { $0.name == "api" && $0.value == "1" }
+                && query.contains { $0.name == "destination" && !($0.value?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true) }
+        }
+        return false
+    }
+
     static func isMarketReturn(_ url: URL) -> Bool {
         url.scheme == "reylumi" && url.host == "market" && url.path.isEmpty
             && url.query == nil && url.fragment == nil && url.user == nil && url.password == nil && url.port == nil

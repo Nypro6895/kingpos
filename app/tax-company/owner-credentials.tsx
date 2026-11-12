@@ -1,9 +1,12 @@
 "use client";
+import {useScopedMarketActions} from "@/app/market/scoped-market-client";
 import { useState } from "react";
-import { updateTaxSettings } from "./actions";
+
 import styles from "./tax-company.module.css";
 
 export function OwnerTaxCredentials({ loginId, active, enabled }: { loginId: string | null; active: boolean; enabled: boolean }) {
+ const {updateTaxSettings}=useScopedMarketActions();
+
   const [editing, setEditing] = useState(!loginId || !enabled);
   const [copied, setCopied] = useState("");
   return <div className={styles.panelBody}>

@@ -21,7 +21,7 @@ export async function loadPluginMarketStatusAction(salonId: string, group: "salo
       { name: "Check-in Receipt", label: "Print check-in receipts", read: async () => ({ active: (await checkinReceiptSubscription(salonId)).active }) },
       { name: "Phone Checkin", label: "Check in customers by phone", read: async () => ({ active: await serviceRelayInstalled(salonId) }) },
     ] : group === "payroll" ? [
-      { name: "Payroll Data Download", label: "Download payroll data", read: async () => ({ active: await payrollDataPluginInstalled(), settingsHref: "/payroll?tab=download" }) },
+      { name: "Payroll Data Download", label: "Download payroll data", read: async () => ({ active: await payrollDataPluginInstalled(), settingsHref: "/market/payroll-data" }) },
       { name: "Tax Company", label: "Connect your tax company", read: async () => ({ active: (await taxCompanySubscription(salonId)).active, settingsHref: "/payroll/tax-company/settings" }) },
     ] : group === "salon" ? [
       { name: "Campaigns", label: "Run ads for your salon", read: async () => ({ active: (await campaignWalletAction()).installed, settingsHref: "/campaigns" }) },
@@ -32,4 +32,3 @@ export async function loadPluginMarketStatusAction(salonId: string, group: "salo
     });
   } catch (error) { return { error: error instanceof Error ? error.message : "Plugin settings could not load." }; }
 }
-

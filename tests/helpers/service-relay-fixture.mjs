@@ -40,7 +40,7 @@ export async function fixture() {
  insert into customer_visit_services(visit_id,service_id,sort_order) values('${id(30)}','${id(20)}',1),('${id(30)}','${id(21)}',2);
  insert into pos_live_drafts values('display-a','${id(1)}','draft');
  `);
- await db.exec(fs.readFileSync("supabase/migrations/20261009150031_service_relay.sql", "utf8"));
+ await db.exec(fs.readFileSync("supabase/migrations/20261009150031_service_relay.sql", 'utf8').replace(/\r\n/g,'\n'));
  await db.exec(`
  create function pos_workspace_staff_snapshot(uuid,uuid,uuid[]) returns jsonb language sql as $$select jsonb_build_object('staff',jsonb_agg(jsonb_build_object('id',s.id,'turns',jsonb_build_object('queueTurns',w.queue_turn_count,'largeTurns',w.queue_turn_count,'totalTurns',w.queue_turn_count)))) from staff s join staff_workdays w on w.staff_id=s.id where s.salon_id=$1$$;
  create function get_pos_portable_desk_data(uuid,text,date) returns jsonb language sql as $$select pos_workspace_staff_snapshot(pos_portable_access_salon_id($1,$2),$1,null)$$;
@@ -48,12 +48,12 @@ export async function fixture() {
  create function resolve_customer_display_check_in(text,text,text,text) returns jsonb language sql as $$select jsonb_build_object('ok',true,'visit',jsonb_build_object('id','${id(30)}'))$$;
  create function update_customer_visit_requested_services(text,uuid,uuid[]) returns jsonb language sql as $$select jsonb_build_object('ok',true)$$;
  `);
- await db.exec(fs.readFileSync("supabase/migrations/20261009150032_service_relay_phone_checkin.sql", "utf8"));
- await db.exec(fs.readFileSync("supabase/migrations/20261009150033_service_relay_pos_projection.sql", "utf8"));
+ await db.exec(fs.readFileSync("supabase/migrations/20261009150032_service_relay_phone_checkin.sql", 'utf8').replace(/\r\n/g,'\n'));
+ await db.exec(fs.readFileSync("supabase/migrations/20261009150033_service_relay_pos_projection.sql", 'utf8').replace(/\r\n/g,'\n'));
  await db.exec(`create table users(id uuid primary key,auth_user_id uuid);insert into users values('${id(10)}','${id(10)}'),('${id(11)}','${id(11)}');create table app_notifications(salon_id uuid,recipient_user_id uuid,recipient_kind text,notification_type text,title text,body text,href text,event_key text,read_at timestamptz);`);
- await db.exec(fs.readFileSync("supabase/migrations/20261009150034_service_relay_notifications.sql", "utf8"));
- await db.exec(fs.readFileSync("supabase/migrations/20261009150035_service_relay_pos_guard.sql", "utf8"));
- await db.exec(fs.readFileSync("supabase/migrations/20261009150036_service_relay_receipt_visit.sql", "utf8"));
+ await db.exec(fs.readFileSync("supabase/migrations/20261009150034_service_relay_notifications.sql", 'utf8').replace(/\r\n/g,'\n'));
+ await db.exec(fs.readFileSync("supabase/migrations/20261009150035_service_relay_pos_guard.sql", 'utf8').replace(/\r\n/g,'\n'));
+ await db.exec(fs.readFileSync("supabase/migrations/20261009150036_service_relay_receipt_visit.sql", 'utf8').replace(/\r\n/g,'\n'));
  await db.exec(`insert into salon_market_plugins values('${id(1)}','service-relay');`);
  return db;
 }

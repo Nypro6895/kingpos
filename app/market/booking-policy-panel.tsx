@@ -1,12 +1,15 @@
 "use client";
+import { useScopedMarketActions } from "./scoped-market-client";
 import {openMarketPayment} from "@/lib/open-market-payment";
 import { ActionFeedback } from "@/components/action-feedback";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BOOKING_POLICY_TEMPLATE, type BookingPolicyState } from "@/types/booking-policy";
-import { saveBookingPolicy, bookingPolicyPaymentAction } from "./booking-policy-actions";
+
 import styles from "./market.module.css";
 export function BookingPolicyPanel({ state, paymentsAvailable = true, bankCheckout = false, monthlyPrice = "$0.99 / month" }: { state: BookingPolicyState; paymentsAvailable?: boolean; bankCheckout?: boolean; monthlyPrice?: string }) {
+ const { saveBookingPolicy, bookingPolicyPaymentAction } = useScopedMarketActions();
+
  const [content,setContent]=useState(state.content || BOOKING_POLICY_TEMPLATE);
  const [published,setPublished]=useState(state.published);
  const [message,setMessage]=useState("");

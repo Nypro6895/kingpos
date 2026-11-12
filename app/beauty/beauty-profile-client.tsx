@@ -74,6 +74,7 @@ type BeautyProfileClientProps = {
   appointment?: ReactNode;
   favorites?: ReactNode;
   home?: boolean;
+  libraryPage?: boolean;
   initialSection?: "overview" | "posts" | "library";
   commentViewer: PostCommentViewer;
   initialTimeline: BeautyTimelinePage;
@@ -868,7 +869,7 @@ function PostCard({
             {savedState ? <SavePostButton size="toolbar" initialSaved={savedState.saved} saveCount={savedState.count} onSavedChange={saved => onSavedChange(post.id, saved)} isAuthenticated={commentViewer.isAuthenticated} target={{ sourceId: post.id, sourceType: "beauty_post" }} /> : <span className="beauty-action text-text-muted" aria-label="Loading Love status"><ReylumiIcon name="heart" /></span>}
             <button type="button" className="beauty-action" aria-label={`Comments (${commentCount})`} aria-haspopup="dialog" aria-expanded={commentsOpen} onClick={() => { setCommentsLoaded(true); setCommentsOpen(true); }}><ReylumiIcon name="message" /><span>Comment</span><span data-post-action-count className="text-xs">{commentCount || ""}</span></button>
             <SharePostAction post={{ ...post, caption: caption ?? null }} />
-            {post.bookingAction ? <Link aria-label="Book" className="beauty-action text-brand-teal" href={canManage ? `/book/${post.bookingAction.salonId}` : post.bookingAction.href}><ReylumiIcon name="calendar" /><span>Book</span></Link> : null}
+            {post.bookingAction ? <Link aria-label="Book appointment" className="beauty-action text-brand-teal" href={canManage ? `/book/${post.bookingAction.salonId}` : post.bookingAction.href}><ReylumiIcon name="calendar" /><span data-booking-action-label>Book appointment</span></Link> : null}
           </div>
         ) : null}
         <ContentViewer open={commentsOpen} onClose={() => setCommentsOpen(false)} aria-labelledby={`comments-title-${post.id}`} className="place-items-end sm:place-items-center"><div className="w-full max-w-[560px] overflow-y-auto rounded-t-2xl bg-surface text-text-primary shadow-xl sm:rounded-2xl">
@@ -888,6 +889,7 @@ export function BeautyProfileClient({
   appointment,
   favorites,
   home = false,
+  libraryPage = false,
   initialSection = "overview",
   commentViewer,
   initialTimeline,
@@ -1840,8 +1842,9 @@ export function BeautyProfileClient({
         {home ? <BeautyHome profile={profile} posts={posts} viewerId={commentViewer.userId} appointment={appointment} favorites={favorites} onCompose={photo => {
           flushSync(() => openComposer("regular"));
           if (photo) normalFileInputRef.current?.click();
-        }}/> : <>        <BeautyProfileHeader profile={profile} actions={profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="grid size-11 place-items-center rounded-full bg-surface text-text-primary shadow-sm" ref={profileEditButtonRef} onClick={openProfileEditor}><SettingsIcon /></button> : null} />
-        <nav className="beauty-sections" aria-label="Beauty sections">{(["overview", "posts", "library"] as const).map(id => <button key={id} type="button" aria-pressed={section === id} onClick={() => { setOverviewContinuation(false); setSection(id); }}>{id === "overview" ? "Overview" : id === "posts" ? "My posts" : "Library"}</button>)}</nav>
+        }}/> : <>
+        {libraryPage ? <header><Link href="/beauty" className="inline-flex min-h-11 items-center text-sm text-brand-teal">← Beauty</Link><h1 className="text-xl font-semibold">Library</h1></header> : <><BeautyProfileHeader profile={profile} actions={profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="grid size-11 place-items-center rounded-full bg-surface text-text-primary shadow-sm" ref={profileEditButtonRef} onClick={openProfileEditor}><SettingsIcon /></button> : null} />
+        <nav className="beauty-sections" aria-label="Beauty sections">{(["overview", "posts", "library"] as const).map(id => <button key={id} type="button" aria-pressed={section === id} onClick={() => { setOverviewContinuation(false); setSection(id); }}>{id === "overview" ? "Overview" : id === "posts" ? "My posts" : "Library"}</button>)}</nav></>}
         {section !== "library" && profile.isSelf ? <button type="button" className="beauty-composer" onClick={() => openComposer("regular")}><ProfileAvatar profile={profile} /><span className="flex-1 text-left text-sm text-text-secondary">Share a beauty moment…</span><ReylumiIcon name="image" /></button> : null}
         {section === "library" ? <section aria-label="Your photo library"><BeautyLibrary posts={posts} />{hasMore ? <button type="button" className="beauty-action mt-3" disabled={loadingMore} onClick={() => void loadMorePosts()}>{loadingMore ? "Loading…" : "Load more photos"}</button> : null}{timelineError ? <p role="alert" className="text-sm text-red-700">{timelineError}</p> : null}</section> : null}
         </>}

@@ -292,6 +292,9 @@
       "loadBlockedUsers",
       "setUserBlocked"
     ],
+    "app/post-moderation/text-report-actions.ts": [
+      "reportSocialText"
+    ],
     "app/salon-profile/operating-hours-actions.ts": [
       "loadProfileOperatingHours",
       "loadVisibleProfileHours",

@@ -10,6 +10,7 @@ import { EXPLORE_PAGE_SIZE, getExploreWorkspaceLocation, searchExploreSalons } f
 import { emptyFeedPage } from "@/lib/explore-feed";
 import { resolveExploreQueryRouting } from "@/lib/explore-query-routing";
 import { getExploreHomeContent, emptyHomeContent } from "@/lib/explore-home";
+import { scopeExploreHomeContent } from "@/lib/explore-home-scope";
 import { enrichExploreShowcaseContent } from "@/lib/explore-showcase-content";
 import { redirect } from "next/navigation";
 import type { ExploreUtilityContent, ExploreLocationSource } from "@/types/explore";
@@ -43,8 +44,6 @@ async function ExploreCorePage({ searchParams }: ExplorePageProps) {
     rawQuery || (requestedLocation && stringParam(params.browse) !== "1") || category || target !== "auto" || Object.keys(filters).length > 0 || page > 1,
   );
   const contextPromise = getCurrentBusinessContext();
-  const homeContentPromise = hasExplicitSearchParams ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent(), 10_000).catch(() => emptyHomeContent());
-  const initialHomePromise = hasExplicitSearchParams ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent({ initial: true }), 8_000).catch(() => emptyHomeContent());
   const context = await contextPromise;
   const workspaceLocationPromise = runReadWithDeadline(getExploreWorkspaceLocation(context), 8_000);
   const quickActionsPromise = buildQuickActions(context).catch(() => []);
@@ -62,6 +61,11 @@ async function ExploreCorePage({ searchParams }: ExplorePageProps) {
   const queryLocation = routing.locationOrigin === "query" ? routing.location : "";
   const query = routing.query;
   const effectiveLocation = routing.location;
+  // A selected area already has one bounded search. Do not start global home
+  // reads, including the optional full-home read, for this regional request.
+  const skipGlobalHome = hasExplicitSearchParams || Boolean(effectiveLocation);
+  const homeContentPromise = skipGlobalHome ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent(), 10_000).catch(() => emptyHomeContent());
+  const initialHomePromise = skipGlobalHome ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent({ initial: true }), 8_000).catch(() => emptyHomeContent());
   const locationSource: ExploreLocationSource = routing.locationSource;
   const scopePolicy = routing.scopePolicy;
   const requestedSort = stringParam(params.sort);
@@ -69,7 +73,7 @@ async function ExploreCorePage({ searchParams }: ExplorePageProps) {
   const feedPromise = !hasExplicitSearchParams && !hasLocationParam && !queryLocation
     ? runReadWithDeadline(prepareExploreStartupFeed(context, { category: routing.category, location: effectiveLocation }), 6_000).catch(() => null)
     : undefined;
-  const [searchResponse, homeContent] = await Promise.all([searchExploreSalons({
+  const [searchResponse, initialHomeContent] = await Promise.all([searchExploreSalons({
         category: routing.category,
         filters,
         location: effectiveLocation,
@@ -81,9 +85,11 @@ async function ExploreCorePage({ searchParams }: ExplorePageProps) {
         target: routing.target,
         locationSource,
       }, { routing }), initialHomePromise]);
+  const homeContent = scopeExploreHomeContent(initialHomeContent, searchResponse);
   const initialFeed = emptyFeedPage();
   const utilityContent: ExploreUtilityContent = { bookingLoadError: false, notificationLoadError: false, notifications: [], unreadNotificationCount: 0, upcomingBooking: null };
-  const extras = Promise.all([homeContentPromise, utilityContentPromise, quickActionsPromise]).then(([homeContent, utilityContent, quickActions]) => {
+  const extras = Promise.all([homeContentPromise, utilityContentPromise, quickActionsPromise]).then(([loadedHomeContent, utilityContent, quickActions]) => {
+    const homeContent = scopeExploreHomeContent(loadedHomeContent, searchResponse);
     const discoveryContent = buildExploreDiscoveryContent({ homeContent, initialFeed, searchResponse, utilityContent, workspaceLocation });
     const enriched = enrichExploreShowcaseContent({ discoveryContent, homeContent, initialFeed, searchResponse });
     return { discoveryContent: enriched.discoveryContent, homeContent: enriched.homeContent, quickActions };

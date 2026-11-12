@@ -103,6 +103,7 @@ async function AccountPage() {
               <WorkspaceText text="Admin" />
             </Link>
           ) : null}
+          <Link className="mt-2 flex min-h-10 items-center rounded-md border border-zinc-200 px-2.5 py-2 text-sm font-semibold" href="/account/tax-documents"><WorkspaceText text="My documents · Current & Archive" /></Link>
         </aside>
 
         <div className="grid gap-5">

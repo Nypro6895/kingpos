@@ -15,6 +15,7 @@ import { fetchExploreSearchPage } from "@/lib/explore-search-client";
 import { referenceLoveStatesAction } from "@/app/explore/account-actions";
 import type { ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
 import type { ExploreSearchResult } from "@/types/explore";
+import { useExploreAheadDistance } from "@/lib/explore-viewport-priority";
 import { ExploreAutoLoad } from "@/app/explore/explore-auto-load";
 import { rankRelatedNailLooks } from "@/lib/explore-reference-recommendations";
 import { NAIL_INTEREST_EVENT, nailInterestStorageKey, normalizeNailViews, personalizeNailLooks, readNailViews, recordNailLookView, type NailLookView } from "@/lib/nail-inspiration-personalization";
@@ -119,6 +120,7 @@ export function NailInspirationCard({ look, salon, location = "", initialSaved, 
 }
 
 export function useNailInspiration(discovery: ExploreFeedDiscoveryOptions, filters: NailFilters, viewerId: string | null | undefined, anchor: RefObject<HTMLDivElement | null>, suppliedSalons?: ExploreSearchResult[], initialCount = 6, enabled = true) {
+  const aheadDistance = useExploreAheadDistance();
   const [seed, setSeed] = useState("reylumi");
   const [salonSnapshot, setSalonSnapshot] = useState<{ key: string; salons: ExploreSearchResult[] }>({ key: "", salons: [] });
   const [savedSnapshot, setSavedSnapshot] = useState<{ viewerId?: string | null; keys: string[] }>({ keys: [] });
@@ -210,10 +212,10 @@ export function useNailInspiration(discovery: ExploreFeedDiscoveryOptions, filte
         setSalonSnapshot({ key: salonInputKey, salons: response.results.filter(salon => nailSalonEligible(salon, config)) }); setStatus("ready");
       } catch (cause) { if (!controller.signal.aborted) { setError(cause instanceof Error ? cause.message : "Nearby salons could not be loaded."); setStatus("error"); } }
     };
-    const observer = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) void load(); }, { rootMargin: "600px" }) : null;
+    const observer = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) void load(); }, { rootMargin: `${aheadDistance}px` }) : null;
     if (observer && anchor.current) observer.observe(anchor.current); else void load();
     return () => { controller.abort(); observer?.disconnect(); };
-  }, [salonInputKey, attempt, canLoad, anchor, suppliedSalons]);
+  }, [salonInputKey, attempt, canLoad, anchor, suppliedSalons, aheadDistance]);
   const loadMore = () => setSelection(value => value.key === selectionKey ? { ...value, limit: Math.max(value.limit, current.limit + 6) } : value);
   const posts = visibleSuggestions.map(({ look, salon }) => <NailInspirationCard key={salon.id} look={look} salon={salon} location={discovery.location} initialSaved={savedKeys.includes(`look:nail-${look.id}`)} onOpen={() => recordNailLookView(look.id, viewerId)} />);
   const footer = supported ? <div className="grid justify-items-center gap-2 py-3 text-center text-sm text-text-secondary" data-testid="nail-inspiration-status">

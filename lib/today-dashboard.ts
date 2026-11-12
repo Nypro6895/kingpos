@@ -1,5 +1,5 @@
 import { appointmentSummary } from "@/lib/appointment-state";
-import {withDashboardDeadline} from "@/lib/dashboard-deadline";
+import { withDashboardDeadline } from "@/lib/dashboard-deadline";
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import { backlogTone, waitingAssessment } from "@/lib/today-metric-assessment";
 import {
@@ -7,12 +7,18 @@ import {
   isTodayDashboardSection,
   type TodayDashboardSection,
 } from "@/lib/today-dashboard-sections";
+import {
+  parseTodayCheckinOperations,
+  type TodayCheckinOperations,
+} from "@/lib/today-checkin-operations";
 import "server-only";
 import { loadTodayStatistics } from "@/lib/today-statistics-server";
 import { buildDayStatistics, type DayStatistics } from "@/lib/today-statistics";
-import { getReadAbortSignal, getReadRequestTiming } from "@/lib/read-context-scope";
+import {
+  getReadAbortSignal,
+  getReadRequestTiming,
+} from "@/lib/read-context-scope";
 import type { ReadStage } from "@/lib/read-request-timing";
-
 
 import {
   BOOKING_LINE_SELECT,
@@ -63,13 +69,21 @@ import type { CustomerVisitQueueItem } from "@/types/customer-visit";
 import type { DailyPosReport } from "@/types/pos-daily-closing";
 import type { StaffWorkdayStatus } from "@/types/staff-workday";
 
-function measureTodayRead<T>(stage: ReadStage, read: () => Promise<T>): Promise<T> {
+function measureTodayRead<T>(
+  stage: ReadStage,
+  read: () => Promise<T>,
+): Promise<T> {
   const timing = getReadRequestTiming();
   // Financial stages are complete, permission-checked report pipelines, not a
   // single optional widget read. Their dependent SELECTs routinely outlive the
   // 1.8s decorative-section budget; cutting them there made every retry fail.
   // Clock (8s) + financial stage (10s) remain below native's 20s resource limit.
-  const deadline = stage === "clock" ? 8000 : stage === "financial_report" || stage === "financial_compare" ? 10000 : 1800;
+  const deadline =
+    stage === "clock"
+      ? 8000
+      : stage === "financial_report" || stage === "financial_compare"
+        ? 10000
+        : 1800;
   const bounded = () => withDashboardDeadline(read(), deadline);
   return timing ? timing.measure(stage, bounded) : bounded();
 }
@@ -89,6 +103,7 @@ export type TodayClientPresence = {
 };
 
 export type TodayDashboard = {
+  checkinOperations?: TodayCheckinOperations | null;
   /** Missing groups remain pending; a failed group is settled with loadErrors. */
   pendingSections?: {
     metrics: Array<keyof TodayDashboard["summary"]>;
@@ -138,6 +153,7 @@ export type TodayLoadError = {
     | "business_hours"
     | "financials"
     | "notifications"
+    | "checkin_operations"
     | "quick_accesses"
     | "reports"
     | "staff"
@@ -212,6 +228,7 @@ export type TodayAttentionItem = {
 };
 
 export type TodayTeamMember = {
+  operationalState?: "busy" | "available" | "offDuty";
   checkInAt: string | null;
   checkOutAt: string | null;
   displayName: string;
@@ -460,7 +477,9 @@ async function loadBusinessClock(
       if (!salonId) return null;
       const supabase = await createAuthenticatedSupabaseServerClient();
       if (!supabase) return null;
-      const read = supabase.rpc("get_salon_business_date", { p_salon_id: salonId });
+      const read = supabase.rpc("get_salon_business_date", {
+        p_salon_id: salonId,
+      });
       const signal = getReadAbortSignal();
       return await (signal ? read.abortSignal(signal) : read);
     })(),
@@ -585,14 +604,18 @@ async function loadStaffDashboardData(input: {
   }>
 > {
   try {
-    const board = await measureTodayRead("staff_board", () => getCurrentSalonStaffTodayBoard(input.context, {
-      workDate: input.date,
-    }));
+    const board = await measureTodayRead("staff_board", () =>
+      getCurrentSalonStaffTodayBoard(input.context, {
+        workDate: input.date,
+      }),
+    );
     const staffIds = board.staff.map((member) => member.id);
     const activityByStaffId = input.canViewFinancials
-      ? await measureTodayRead("staff_activity", () => getCurrentSalonStaffActivitySummaries(staffIds, input.context, {
-          workDate: input.date,
-        }))
+      ? await measureTodayRead("staff_activity", () =>
+          getCurrentSalonStaffActivitySummaries(staffIds, input.context, {
+            workDate: input.date,
+          }),
+        )
       : new Map<string, StaffDailyActivitySummary>();
 
     return {
@@ -615,6 +638,35 @@ async function loadStaffDashboardData(input: {
         area: "staff",
         message: errorMessage(error),
       },
+    };
+  }
+}
+
+async function loadCheckinOperations(
+  context: CurrentBusinessContext,
+  date: string,
+): Promise<DashboardData<TodayCheckinOperations>> {
+  try {
+    const supabase = await createAuthenticatedSupabaseServerClient();
+    if (!supabase || !context.currentSalon?.id)
+      throw new Error("Check-in activity could not be loaded.");
+    const result = await withDashboardDeadline(
+      Promise.resolve(
+        supabase.rpc("phone_checkin_operations", {
+          p_salon: context.currentSalon.id,
+          p_date: date,
+        }),
+      ),
+    );
+    if (result.error) throw new Error(result.error.message);
+    return {
+      data: parseTodayCheckinOperations(result.data, date),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: { area: "checkin_operations", message: errorMessage(error) },
     };
   }
 }
@@ -645,11 +697,18 @@ async function loadReportDashboardData(input: {
   date: string;
   readContext?: DailyPosReadContext;
   timeZone?: string;
-  businessHours?: SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null>;
+  businessHours?:
+    SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null>;
 }): Promise<DashboardData<DailyPosReport>> {
   try {
     return {
-      data: await measureTodayRead("financial_report", () => getDailyPosReport(input.date, input.context, input.readContext, {includeCorrectionDetails: false,timeZone:input.timeZone,businessHours:input.businessHours})),
+      data: await measureTodayRead("financial_report", () =>
+        getDailyPosReport(input.date, input.context, input.readContext, {
+          includeCorrectionDetails: false,
+          timeZone: input.timeZone,
+          businessHours: input.businessHours,
+        }),
+      ),
       error: null,
     };
   } catch (error) {
@@ -678,13 +737,15 @@ async function loadFinancialDashboardData(input: {
 }): Promise<DashboardData<DailyPosTodayFinancialData>> {
   try {
     return {
-      data: await measureTodayRead("financial_compare", () => getDailyPosTodayFinancialData({
-        businessHours: input.businessHours,
-        context: input.context,
-        reportDate: input.date,
-        timeZone: input.timezone,
-        readContext: input.readContext,
-      })),
+      data: await measureTodayRead("financial_compare", () =>
+        getDailyPosTodayFinancialData({
+          businessHours: input.businessHours,
+          context: input.context,
+          reportDate: input.date,
+          timeZone: input.timezone,
+          readContext: input.readContext,
+        }),
+      ),
       error: null,
     };
   } catch (error) {
@@ -728,7 +789,6 @@ async function loadQuickAccessDashboardData(
     };
   }
 }
-
 
 function customerDisplayName(booking: TodayBookingRow) {
   return (
@@ -930,12 +990,29 @@ function buildTeam(input: {
   );
 }
 
-function summarizeBookings(bookings: TodayBookingRow[], nowIso: string, _isCurrentDate: boolean) {
+function summarizeBookings(
+  bookings: TodayBookingRow[],
+  nowIso: string,
+  _isCurrentDate: boolean,
+) {
   void _isCurrentDate;
   const states = appointmentSummary(bookings, Date.parse(nowIso));
-  const active = bookings.filter(booking => isActiveBookingStatus(normalizeBookingStatus(booking.status))).length;
-  const pending = bookings.filter(booking => normalizeBookingStatus(booking.status) === "pending" || booking.confirmation_status === "requested").length;
-  return {active, pending, ...states, statisticsUpcoming: states.upcoming, other: 0, total: bookings.length};
+  const active = bookings.filter((booking) =>
+    isActiveBookingStatus(normalizeBookingStatus(booking.status)),
+  ).length;
+  const pending = bookings.filter(
+    (booking) =>
+      normalizeBookingStatus(booking.status) === "pending" ||
+      booking.confirmation_status === "requested",
+  ).length;
+  return {
+    active,
+    pending,
+    ...states,
+    statisticsUpcoming: states.upcoming,
+    other: 0,
+    total: bookings.length,
+  };
 }
 
 function buildHourlyMetricPoints(input: {
@@ -1142,8 +1219,7 @@ function buildCustomerMetric(input: {
   report: DailyPosReport | null;
 }) {
   if (input.canViewBookings && input.bookingSummary) {
-    const appointmentCount =
-      input.bookingSummary.total;
+    const appointmentCount = input.bookingSummary.total;
 
     return {
       chart: input.bookingChart,
@@ -1312,7 +1388,6 @@ function buildWaitingMetric(input: {
     value: `${input.waitingClients.length}${input.waitingClients.length >= 25 ? "+" : ""}`,
   } satisfies TodayMetric;
 }
-
 
 function buildPerformance(input: {
   bookingSummary: ReturnType<typeof summarizeBookings> | null;
@@ -1488,13 +1563,21 @@ export async function getTodayDashboard(
   const core = options.phase === "core";
   const section = isTodayDashboardSection(options.phase) ? options.phase : null;
   const progressive = options.phase === "shell" || section !== null;
-  const readStaff = !progressive || section === "staff" || section === "financials";
+  const readStaff =
+    !progressive || section === "staff" || section === "financials";
   const readBookings = !progressive || section === "bookings";
   const readWaiting = !progressive || section === "waiting";
   const readFinancials = !core && (!progressive || section === "financials");
   const readExtras = !core && (!progressive || section === "extras");
-  const readHours = !core && (!progressive || section === "staff" || section === "bookings" || section === "financials");
-  const currentClock = await measureTodayRead("clock", () => loadBusinessClock(context));
+  const readHours =
+    !core &&
+    (!progressive ||
+      section === "staff" ||
+      section === "bookings" ||
+      section === "financials");
+  const currentClock = await measureTodayRead("clock", () =>
+    loadBusinessClock(context),
+  );
   const dayView = buildDayView({
     currentDate: currentClock.date,
     selectedDateInput: undefined,
@@ -1538,14 +1621,22 @@ export async function getTodayDashboard(
     });
   }
 
-  const businessHoursRead: Promise<DashboardData<SalonBusinessHoursWindow>> = !readHours ? Promise.resolve({ data: unavailableBusinessHours, error: null }) : measureTodayRead("hours", () => loadBusinessHoursDashboardData({
-    context,
-    date: clock.date,
-    timezone: clock.timezone,
-  }));
+  const businessHoursRead: Promise<DashboardData<SalonBusinessHoursWindow>> =
+    !readHours
+      ? Promise.resolve({ data: unavailableBusinessHours, error: null })
+      : measureTodayRead("hours", () =>
+          loadBusinessHoursDashboardData({
+            context,
+            date: clock.date,
+            timezone: clock.timezone,
+          }),
+        );
   // Operations do not need business hours until their chart is assembled. Start
   // both reads together; the financial loader still receives resolved hours.
-  let businessHoursResult: DashboardData<SalonBusinessHoursWindow> = { data: unavailableBusinessHours, error: null };
+  let businessHoursResult: DashboardData<SalonBusinessHoursWindow> = {
+    data: unavailableBusinessHours,
+    error: null,
+  };
   let businessHours =
     businessHoursResult.data ??
     unavailableSalonBusinessHours({
@@ -1554,8 +1645,12 @@ export async function getTodayDashboard(
       timeZone: clock.timezone,
     });
   const waitingSalonId = context.currentSalon?.id ?? null;
-  const financialReads = readFinancials && permissions.canViewReports && permissions.canViewStaffFinancials
-    ? createDailyPosReadContext(context) : undefined;
+  const financialReads =
+    readFinancials &&
+    permissions.canViewReports &&
+    permissions.canViewStaffFinancials
+      ? createDailyPosReadContext(context)
+      : undefined;
   const [
     staffResult,
     bookingsResult,
@@ -1565,12 +1660,17 @@ export async function getTodayDashboard(
     notificationsResult,
     quickAccessResult,
     statisticsResult,
+    operationsResult,
   ] = await Promise.all([
-    readStaff && (section !== "financials" || permissions.canViewStaffFinancials) ? loadStaffDashboardData({
-      canViewFinancials: readFinancials && permissions.canViewStaffFinancials,
-      context,
-      date: clock.date,
-    }) : Promise.resolve({ data: null, error: null }),
+    readStaff &&
+    (section !== "financials" || permissions.canViewStaffFinancials)
+      ? loadStaffDashboardData({
+          canViewFinancials:
+            readFinancials && permissions.canViewStaffFinancials,
+          context,
+          date: clock.date,
+        })
+      : Promise.resolve({ data: null, error: null }),
     readBookings && permissions.canViewBookings
       ? loadBookingDashboardData({
           context,
@@ -1578,7 +1678,10 @@ export async function getTodayDashboard(
           timezone: clock.timezone,
         })
       : Promise.resolve({ data: [] as TodayBookingRow[], error: null }),
-    readWaiting && permissions.canViewBookings && dayView.isCurrentDate && waitingSalonId
+    readWaiting &&
+    permissions.canViewBookings &&
+    dayView.isCurrentDate &&
+    waitingSalonId
       ? (async () => {
           const supabase = await createAuthenticatedSupabaseServerClient();
 
@@ -1594,11 +1697,13 @@ export async function getTodayDashboard(
 
           try {
             return {
-              data: await measureTodayRead("waiting", () => getCustomerVisitQueueForSalon({
-                limit: 25,
-                salonId: waitingSalonId,
-                supabase,
-              })),
+              data: await measureTodayRead("waiting", () =>
+                getCustomerVisitQueueForSalon({
+                  limit: 25,
+                  salonId: waitingSalonId,
+                  supabase,
+                }),
+              ),
               error: null,
             };
           } catch (error) {
@@ -1619,11 +1724,19 @@ export async function getTodayDashboard(
           error: null,
         }),
     readFinancials && permissions.canViewReports
-      ? loadReportDashboardData({ context, date: clock.date, readContext: financialReads, timeZone:clock.timezone, businessHours:businessHoursRead.then(result=>result.data) })
+      ? loadReportDashboardData({
+          context,
+          date: clock.date,
+          readContext: financialReads,
+          timeZone: clock.timezone,
+          businessHours: businessHoursRead.then((result) => result.data),
+        })
       : Promise.resolve({ data: null, error: null }),
     readFinancials && permissions.canViewStaffFinancials
       ? loadFinancialDashboardData({
-          businessHours: businessHoursRead.then(result=>result.data ?? businessHours),
+          businessHours: businessHoursRead.then(
+            (result) => result.data ?? businessHours,
+          ),
           context,
           date: clock.date,
           timezone: clock.timezone,
@@ -1631,16 +1744,43 @@ export async function getTodayDashboard(
         })
       : Promise.resolve({ data: null, error: null }),
     Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
-    readExtras ? measureTodayRead("extras", () => loadQuickAccessDashboardData(context)) : Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }),
-    !core && (readBookings || readFinancials) ? loadTodayStatistics(context, clock.date, clock.timezone, { visits: readBookings, tickets: readFinancials }).then(data => ({ data })).catch(() => ({ data: buildDayStatistics({ date: clock.date, timeZone: clock.timezone, now: new Date().toISOString(), visits: null, tickets: null, errors: [readFinancials ? "Service statistics could not be loaded." : "Check-ins could not be loaded."] }) })) : Promise.resolve({ data: null }),
+    readExtras
+      ? measureTodayRead("extras", () => loadQuickAccessDashboardData(context))
+      : Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }),
+    !core && (readBookings || readFinancials)
+      ? loadTodayStatistics(context, clock.date, clock.timezone, {
+          visits: readBookings,
+          tickets: readFinancials,
+        })
+          .then((data) => ({ data }))
+          .catch(() => ({
+            data: buildDayStatistics({
+              date: clock.date,
+              timeZone: clock.timezone,
+              now: new Date().toISOString(),
+              visits: null,
+              tickets: null,
+              errors: [
+                readFinancials
+                  ? "Service statistics could not be loaded."
+                  : "Check-ins could not be loaded.",
+              ],
+            }),
+          }))
+      : Promise.resolve({ data: null }),
+    !progressive || section === "staff"
+      ? loadCheckinOperations(context, clock.date)
+      : Promise.resolve({ data: null, error: null }),
   ]);
   if (readHours) {
     businessHoursResult = await businessHoursRead;
-    businessHours = businessHoursResult.data ?? unavailableSalonBusinessHours({
-      date: clock.date,
-      fallbackReason: "Salon business hours could not be resolved.",
-      timeZone: clock.timezone,
-    });
+    businessHours =
+      businessHoursResult.data ??
+      unavailableSalonBusinessHours({
+        date: clock.date,
+        fallbackReason: "Salon business hours could not be resolved.",
+        timeZone: clock.timezone,
+      });
   }
   const loadErrors = [
     businessHoursResult.error,
@@ -1651,11 +1791,15 @@ export async function getTodayDashboard(
     financialResult.error,
     notificationsResult.error,
     quickAccessResult.error,
-  ].filter((error): error is TodayLoadError => Boolean(error)).map((error) =>
-    section ? { ...error, section } : error,
-  );
+    operationsResult.error,
+  ]
+    .filter((error): error is TodayLoadError => Boolean(error))
+    .map((error) => (section ? { ...error, section } : error));
   const financialData = financialResult.data;
-  const team = staffResult.data
+  const checkinOperations = operationsResult.data?.enabled
+    ? operationsResult.data
+    : null;
+  const team: TodayTeamMember[] = staffResult.data
     ? buildTeam({
         activityByStaffId: staffResult.data.activityByStaffId,
         canViewFinancials: readFinancials && permissions.canViewStaffFinancials,
@@ -1665,23 +1809,28 @@ export async function getTodayDashboard(
     : [];
   const bookings = bookingsResult.data ?? [];
   const nowIso = new Date().toISOString();
-  const bookingSummary = readBookings && permissions.canViewBookings
-    ? summarizeBookings(bookings, nowIso, dayView.isCurrentDate)
-    : null;
-  const bookingChart = !core && readBookings && permissions.canViewBookings
-    ? buildBookingMetricChart({
-        businessHours,
-        bookings,
-        date: clock.date,
-        timeZone: clock.timezone,
-      })
-    : null;
-  const staffChart = core || !readStaff ? null : buildStaffMetricChart({
-    businessHours,
-    date: clock.date,
-    team,
-    timeZone: clock.timezone,
-  });
+  const bookingSummary =
+    readBookings && permissions.canViewBookings
+      ? summarizeBookings(bookings, nowIso, dayView.isCurrentDate)
+      : null;
+  const bookingChart =
+    !core && readBookings && permissions.canViewBookings
+      ? buildBookingMetricChart({
+          businessHours,
+          bookings,
+          date: clock.date,
+          timeZone: clock.timezone,
+        })
+      : null;
+  const staffChart =
+    core || !readStaff
+      ? null
+      : buildStaffMetricChart({
+          businessHours,
+          date: clock.date,
+          team,
+          timeZone: clock.timezone,
+        });
   const waitingClients =
     permissions.canViewBookings && dayView.isCurrentDate
       ? mapWaitingVisits(waitingVisitsResult.data ?? [], clock.date)
@@ -1696,11 +1845,27 @@ export async function getTodayDashboard(
     : [];
   const report = reportResult.data;
 
+  // Workday attendance and an active service are different facts. Keep both.
+  if (checkinOperations?.currentDay) {
+    const states = new Map(
+      checkinOperations.staffStates.map((row) => [row.staffId, row.state]),
+    );
+    for (const member of team) member.operationalState = states.get(member.id);
+  }
+
   const dashboard: TodayDashboard = {
-    pendingSections: { metrics: core ? [
-      ...(permissions.canViewReports ? ["sales" as const] : []),
-      ...(!permissions.canViewBookings && permissions.canViewReports ? ["customers" as const] : []),
-    ] : [], details: core },
+    checkinOperations,
+    pendingSections: {
+      metrics: core
+        ? [
+            ...(permissions.canViewReports ? ["sales" as const] : []),
+            ...(!permissions.canViewBookings && permissions.canViewReports
+              ? ["customers" as const]
+              : []),
+          ]
+        : [],
+      details: core,
+    },
     attention: [],
     businessHours,
     date: clock.date,
@@ -1709,13 +1874,16 @@ export async function getTodayDashboard(
     greetingName: getGreetingName(context),
     loadErrors,
     noAccess: false,
-    performance: { ...buildPerformance({
-      bookingSummary,
-      businessHours,
-      financialData,
-      report,
-      team,
-    }), statistics: statisticsResult.data },
+    performance: {
+      ...buildPerformance({
+        bookingSummary,
+        businessHours,
+        financialData,
+        report,
+        team,
+      }),
+      statistics: statisticsResult.data,
+    },
     permissions,
     quickAccesses: quickAccessResult.data ?? emptyQuickAccessConfiguration(),
     rightNow: {
@@ -1776,11 +1944,97 @@ export async function getTodayDashboard(
     dashboard.summary.waiting = unavailable(dashboard.summary.waiting);
   if (staffResult.error)
     dashboard.summary.staff = unavailable(dashboard.summary.staff);
+  if (checkinOperations) {
+    dashboard.pendingSections!.metrics =
+      dashboard.pendingSections!.metrics.filter((key) => key !== "customers");
+    dashboard.summary.customers = {
+      chart: null,
+      detail:
+        "Visits checked in on this business date; each visit counts once.",
+      href: permissions.canViewTickets ? "/pos/check-in" : null,
+      label: "Checked in",
+      value: String(checkinOperations.counts.checkedIn),
+    };
+    dashboard.summary.waiting = {
+      chart: null,
+      detail: dayView.isCurrentDate
+        ? "Checked-in clients waiting to start service"
+        : "Current state of visits checked in on this date",
+      href: permissions.canViewTickets ? "/pos" : null,
+      label: "Waiting",
+      value: String(checkinOperations.counts.waiting),
+      tone:
+        checkinOperations.counts.waiting > 0 &&
+        checkinOperations.staff?.available === 0
+          ? "warning"
+          : "default",
+    };
+    if (
+      checkinOperations.currentDay &&
+      dayView.isCurrentDate &&
+      checkinOperations.staff
+    ) {
+      dashboard.summary.staff = {
+        chart: null,
+        detail: `${checkinOperations.staff.busy} busy · ${checkinOperations.staff.offDuty} off duty`,
+        href: "/staff",
+        label: "Staff available",
+        value: String(checkinOperations.staff.available),
+        tone:
+          checkinOperations.staff.available > 0
+            ? "good"
+            : checkinOperations.counts.waiting > 0
+              ? "warning"
+              : "default",
+      };
+    }
+    dashboard.attention = dashboard.attention.filter(
+      (item) => item.id !== "waiting-clients",
+    );
+    if (dayView.isCurrentDate && checkinOperations.counts.waiting > 0) {
+      dashboard.attention = dashboard.attention.filter(
+        (item) => item.id !== "all-good",
+      );
+      dashboard.attention.unshift({
+        id: "waiting-clients",
+        label: `${checkinOperations.counts.waiting} waiting clients`,
+        detail:
+          "Checked-in visits waiting for service. Staff Stand by remains in service.",
+        count: checkinOperations.counts.waiting,
+        tone: "warning",
+        href: permissions.canViewTickets ? "/pos" : null,
+      });
+    }
+  }
+  if (operationsResult.error) {
+    dashboard.summary.customers = unavailable({
+      ...dashboard.summary.customers,
+      label: "Checked in",
+      restricted: false,
+    });
+    dashboard.summary.waiting = unavailable({
+      ...dashboard.summary.waiting,
+      restricted: false,
+    });
+    if (dayView.isCurrentDate)
+      dashboard.summary.staff = unavailable({
+        ...dashboard.summary.staff,
+        label: "Staff available",
+      });
+    dashboard.pendingSections!.metrics =
+      dashboard.pendingSections!.metrics.filter((key) => key !== "customers");
+  }
   if (reportResult.error)
     dashboard.summary.sales = unavailable(dashboard.summary.sales);
   if (
     loadErrors.some((error) =>
-      ["bookings", "waiting", "reports", "notifications"].includes(error.area),
+      [
+        "bookings",
+        "waiting",
+        "reports",
+        "notifications",
+        "checkin_operations",
+      ].includes(error.area),
     )
   ) {
     dashboard.attention = dashboard.attention.filter(
@@ -1799,16 +2053,29 @@ export async function getTodayDashboard(
     const pending = TODAY_DASHBOARD_SECTIONS.filter((item) => {
       if (item === section) return false;
       if (item === "bookings") return permissions.canViewBookings;
-      if (item === "waiting") return permissions.canViewBookings && dayView.isCurrentDate;
-      if (item === "financials") return permissions.canViewReports || permissions.canViewStaffFinancials;
+      if (item === "waiting")
+        return permissions.canViewBookings && dayView.isCurrentDate;
+      if (item === "financials")
+        return permissions.canViewReports || permissions.canViewStaffFinancials;
       return true;
     });
     const metrics: Array<keyof TodayDashboard["summary"]> = [];
     if (pending.includes("staff")) metrics.push("staff");
-    if (pending.includes("waiting")) metrics.push("waiting");
-    if (pending.includes("bookings") || (!permissions.canViewBookings && permissions.canViewReports && pending.includes("financials"))) metrics.push("customers");
-    if (permissions.canViewReports && pending.includes("financials")) metrics.push("sales");
-    dashboard.pendingSections = { sections: [...pending], metrics, details: pending.length > 0 };
+    if (pending.includes("waiting") && !checkinOperations?.enabled) metrics.push("waiting");
+    if (
+      !checkinOperations?.enabled && (pending.includes("bookings") ||
+      (!permissions.canViewBookings &&
+        permissions.canViewReports &&
+        pending.includes("financials")))
+    )
+      metrics.push("customers");
+    if (permissions.canViewReports && pending.includes("financials"))
+      metrics.push("sales");
+    dashboard.pendingSections = {
+      sections: [...pending],
+      metrics,
+      details: pending.length > 0,
+    };
     for (const metric of metrics) {
       dashboard.summary[metric] = {
         ...unavailable(dashboard.summary[metric]),
@@ -1817,7 +2084,9 @@ export async function getTodayDashboard(
       };
     }
     // An unread source is unknown, never an empty/zero or an "All good" result.
-    dashboard.attention = dashboard.attention.filter((item) => item.id !== "all-good");
+    dashboard.attention = dashboard.attention.filter(
+      (item) => item.id !== "all-good",
+    );
     if (!readFinancials) dashboard.performance.emptyLabel = null;
   }
   return dashboard;

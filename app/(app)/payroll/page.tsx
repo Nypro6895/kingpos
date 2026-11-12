@@ -720,6 +720,7 @@ function SettingsStaffCard({
   history,
   isEditing,
   period,
+  salonPayrollSetting,
   returnPath,
   setting,
   staff,
@@ -731,6 +732,7 @@ function SettingsStaffCard({
   inputChanges?: PayrollLiveChange[];
   isEditing: boolean;
   period: PayrollPeriod;
+  salonPayrollSetting: SalonPayrollSetting;
   returnPath: string;
   setting: StaffPayrollSetting | null;
   staff: StaffPayrollSettingWithStaff["staff"];
@@ -741,7 +743,7 @@ function SettingsStaffCard({
     <PayrollDisclosure initiallyOpen={isEditing} className={`${styles.staffCard} ${inputChanges.length?inlineStyles.edited:""}`} summary={<div><strong>{staffProfileDisplayName}</strong>{inputChanges.length>0&&<span className={inlineStyles.badge}><WorkspaceText text="Edited"/> · {inputChanges.length}</span>}<p className={styles.context}>{settingPayTypeLabel(setting)} · <WorkspaceText text="Effective from" /> <WorkspaceText text={formatSettingDate(setting?.effective_from)} /></p></div>}>
       <div className="grid gap-4 p-4">
       {isEditing ? (
-        <StaffPayrollSettingInlineEdit
+        <StaffPayrollSettingInlineEdit salonPayrollSetting={salonPayrollSetting}
           period={period}
           returnPath={returnPath}
           setting={setting}
@@ -851,7 +853,7 @@ function SettingsTab({
               const isEditing = canManage && editStaffId === staff.id;
 
               return (
-                <SettingsStaffCard canManage={canManage}
+                <SettingsStaffCard salonPayrollSetting={salonPayrollSetting} canManage={canManage}
                   history={history}
                   inputChanges={financialHistoryForObject(changes,{staffId:staff.id,sourceKinds:["payroll_settings","staff_payroll_settings"]})}
                   isEditing={isEditing}

@@ -1,8 +1,11 @@
 'use client';
+import { useScopedMarketActions } from "./scoped-market-client";
 import {useState,useTransition} from 'react';
-import {saveBookSms} from './booksms-actions';
+
 import {EMPTY_BOOKSMS,type BookSmsState} from '@/types/booksms';
 export function BookSmsPanel({initial=EMPTY_BOOKSMS,plannedLimit=0}:{initial?:BookSmsState;plannedLimit?:number}) {
+ const { saveBookSms } = useScopedMarketActions();
+
  const [state,setState]=useState(initial),[message,setMessage]=useState(''),[pending,start]=useTransition();
  return <section className="mt-5 min-w-0 border-t border-zinc-200 py-5"><h3 className="font-semibold">BookSMS settings</h3><p className="my-3 text-sm">{state.active?'Access is active for this salon.':'Start a free trial or review the BookSMS plan in Market.'}</p>
  <p className="mb-3 text-sm">{plannedLimit>0?`Plan allowance: ${plannedLimit} SMS per calendar month (UTC).`:"Price and SMS allowance are pending approval. Purchases are closed."}</p>

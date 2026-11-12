@@ -107,6 +107,17 @@
     min-height: 2.5rem !important;
   }
 
+  .engine :global([data-pos-service-workspace] > [data-pos-compact-catalog]) {
+    flex: 1 1 auto;
+    margin-bottom: 0 !important;
+  }
+
+  .engine :global([data-pos-compact-catalog] [data-pos-service-tiles]) {
+    overflow: visible !important;
+    grid-auto-rows: minmax(54px, auto) !important;
+    padding-bottom: 2px;
+  }
+
   .engine :global([data-pos-service-picker]) {
     max-height: min(88dvh, 46rem) !important;
     margin-top: auto !important;

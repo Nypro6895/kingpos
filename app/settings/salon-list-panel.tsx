@@ -1,6 +1,7 @@
 "use client";
 import { SalonName } from "@/components/salon-member-badge";
 
+import { SalonAddressLink } from "@/components/salon-address-link";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
@@ -345,15 +346,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                   <div className="min-w-0">
                     <h3 className="font-semibold"><a href={`/settings?section=${encodeURIComponent(`salon-${salon.id}-salon-profile`)}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange"><SalonName name={salon.name} salonId={salon.salon_id}/></a></h3>
                     <p className="mt-1 text-sm text-zinc-500">
-                      {[
-                        salon.address_line1,
-                        salon.address_line2,
-                        salon.city,
-                        salon.state,
-                        salon.postal_code,
-                      ]
-                        .filter(Boolean)
-                        .join(", ")}
+                      <SalonAddressLink address={[salon.address_line1,salon.address_line2,salon.city,salon.state,salon.postal_code].filter(Boolean).join(", ")} />
                     </p>
                     <div className="mt-2 flex gap-2 text-xs">
                       <span className="rounded-md bg-zinc-100 px-2 py-1 capitalize">

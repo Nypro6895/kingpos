@@ -1,5 +1,6 @@
 import statisticsCopy from "@/lib/vietnamese-today-statistics.json";
 import checkWriterCopy from "@/lib/vietnamese-check-writer.json";
+import terminologyCopy from "@/lib/vietnamese-terminology-copy.json";
 import helpCopy from "@/lib/vietnamese-help-copy.json";
 import salonSetupCopy from "@/lib/vietnamese-salon-setup.json";
 import payrollMobileCopy from "@/lib/vietnamese-payroll-mobile.json";
@@ -28,6 +29,8 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Save customer contact settings": "Lưu cài đặt thông tin liên lạc khách",
   "Customer contact settings could not load. Please reload.": "Không tải được cài đặt thông tin liên lạc khách. Vui lòng tải lại.",
   "Enter the full phone number to find a customer": "Nhập đầy đủ số điện thoại để tìm khách",
+  "City, state, ZIP or address": "Thành phố, tiểu bang, mã ZIP hoặc địa chỉ",
+  "Address suggestions are unavailable. You can still enter your address manually.": "Chưa tải được gợi ý địa chỉ. Bạn vẫn có thể tự nhập đầy đủ địa chỉ.",
   "Payroll update": "Cập nhật thu nhập",
   "Payroll updated": "Thu nhập đã cập nhật",
   "Updated by": "Người cập nhật:",
@@ -148,7 +151,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "This salon is no longer available.": "Tiệm này không còn khả dụng.",
   "Check In": "Điểm danh", Report: "Báo cáo", POS: "Bán hàng",
   Owner: "Chủ tiệm", Staff: "Nhân viên", Today: "Hôm nay", Schedule: "Lịch làm việc",
-  Book: "Đặt lịch", Bookings: "Lịch hẹn", Profile: "Trang cá nhân", Post: "Bài đăng",
+  Book: "Đặt lịch", Bookings: "Lịch hẹn", Profile: "Hồ sơ", Post: "Bài đăng",
   Notifications: "Thông báo", More: "Thêm", "My Place": "Không gian của tôi",
   Payroll: "Lương", Reports: "Báo cáo", Customers: "Khách hàng", Services: "Dịch vụ",
   Settings: "Cài đặt", Market: "Market", Campaigns: "Chiến dịch",
@@ -182,7 +185,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Check out": "Thanh toán", Checkout: "Thanh toán", "Check in": "Điểm danh",
   "Check-in": "Điểm danh", "Check out staff": "Kết thúc ca", "Walk-in": "Khách không hẹn",
   Appointment: "Lịch hẹn", Appointments: "Lịch hẹn", Customer: "Khách hàng", Service: "Dịch vụ",
-  "New appointment": "Lịch hẹn mới", "Book appointment": "Đặt lịch hẹn",
+  "New appointment": "Thêm lịch hẹn", "Book appointment": "Đặt lịch hẹn",
   "No appointments": "Chưa có lịch hẹn", "No customers found": "Không tìm thấy khách hàng",
   "No staff found": "Không tìm thấy nhân viên", "No results": "Không có kết quả",
   "Start time": "Giờ bắt đầu", "End time": "Giờ kết thúc", "Working hours": "Giờ làm việc",
@@ -296,6 +299,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "About these metrics": "Giải thích chỉ số",
   "Closing Inputs": "Nhập tiền chốt ngày",
 
+  ...terminologyCopy,
 };
 // JSX decodes entities before text reaches the translator. Alias only known
 // dictionary keys, without decoding or otherwise rewriting user-entered values.

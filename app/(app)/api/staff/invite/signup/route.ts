@@ -24,6 +24,10 @@ import { initializeStaffProfileDefaultsForStaffId } from "@/lib/staff-profile";
 import { getKingUserForAuthUser } from "@/lib/users/current-user";
 import { NextResponse } from "next/server";
 import type { StaffConnectionRpcResult } from "@/types/staff-salon-connection";
+import { normalizePhoneForIdentity } from "@/lib/phone-normalization";
+import { isSignupPhoneAvailable } from "@/lib/signup-phone-availability";
+import { DUPLICATE_SIGNUP_PHONE_MESSAGE } from "@/lib/signup-phone-policy";
+import { signupPhonePath } from "@/lib/signup-phone-routing";
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -44,6 +48,7 @@ export async function POST(request: Request) {
   const token = readString(formData, "token");
   const email = readString(formData, "email").toLowerCase();
   const password = readString(formData, "password");
+  const phone = normalizePhoneForIdentity(readString(formData, "phone"));
 
   if (!supabase) {
     return jsonError(
@@ -55,6 +60,7 @@ export async function POST(request: Request) {
   if (!token || !email || !password) {
     return jsonError("Invitation token, email, and password are required.");
   }
+  if (!phone) return jsonError("Enter a valid phone number.");
 
   let invite: Awaited<ReturnType<typeof getStaffInviteByToken>>;
 
@@ -116,6 +122,11 @@ export async function POST(request: Request) {
 
   let signupTicket: string;
   try { signupTicket = await createSignupTicket(email); } catch (error) { return jsonError(error instanceof Error ? error.message : "Please try again later.", 429); }
+  try {
+    if (!await isSignupPhoneAvailable(phone)) return jsonError(DUPLICATE_SIGNUP_PHONE_MESSAGE, 409);
+  } catch {
+    return jsonError("Phone numbers could not be checked. Please try again later.", 503);
+  }
 
   const { data: signupData, error: signupError } = await supabase.auth.signUp({
     email,
@@ -124,6 +135,8 @@ export async function POST(request: Request) {
       data: {
         abuse_signup_ticket: signupTicket,
         display_name: invite.staff.display_name,
+        signup_phone: phone,
+        signup_phone_complete: false,
         staff_invite_request_id: invite.request_id,
         staff_invite_salon_id: invite.salon.id,
       },
@@ -131,6 +144,9 @@ export async function POST(request: Request) {
   });
 
   if (signupError) {
+    try {
+      if (!await isSignupPhoneAvailable(phone)) return jsonError(DUPLICATE_SIGNUP_PHONE_MESSAGE, 409);
+    } catch { /* Preserve the original Auth failure. */ }
     const authError = getSupabaseAuthErrorResponse(
       signupError,
       "Unable to create staff account.",
@@ -209,7 +225,7 @@ export async function POST(request: Request) {
 
   const response = NextResponse.json({
     redirectTo:
-      "/staff/connections?connection_notice=Invitation accepted. Your staff account is connected.",
+      signupPhonePath("/staff/connections?connection_notice=Invitation accepted. Your staff account is connected."),
   });
 
   response.cookies.set(

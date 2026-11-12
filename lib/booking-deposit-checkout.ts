@@ -12,7 +12,7 @@ export async function prepareBookingDepositCheckout(expectedSalonId: string) {
   const config = await paymentConfig();
   if (!config.enabled || config.mode !== "live" || !config.webhookSecret) throw new Error("Payment is unavailable. Please try again later.");
   const successUrl = new URL(`/market/booking-deposit/payment?salon=${encodeURIComponent(salonId)}`, REYLUMI_METADATA_BASE).href;
-  const cancelUrl = new URL("/market/booking-deposit?cancelled=1", REYLUMI_METADATA_BASE).href;
+  const cancelUrl = new URL(`/market/booking-deposit?cancelled=1&salon=${encodeURIComponent(salonId)}`, REYLUMI_METADATA_BASE).href;
   for (let attempt = 0; attempt < 3; attempt++) {
     // The existing reservation locks salon/plugin access and freezes price/tax.
     // No new schema or changes to checkout for other plugins are required.

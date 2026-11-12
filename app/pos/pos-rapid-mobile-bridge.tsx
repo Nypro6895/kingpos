@@ -173,6 +173,8 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
 
   const serviceFromButton = useCallback(
     (button: HTMLButtonElement) => {
+      const catalogId = button.dataset.posServiceId;
+      if (catalogId) return services.find(service => service.id === catalogId) ?? null;
       const label = text(button.textContent).toLowerCase();
       return (
         services.find((service) => {
@@ -200,6 +202,9 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
 
       const service = serviceFromButton(button);
       if (!service) return;
+      // Contextual extras already belong to the main line's technician.
+      // Let the catalog add them directly without opening a new staff picker.
+      if (service.booking_parent_service_id) return;
 
       if (allowServiceClickRef.current) {
         allowServiceClickRef.current = false;

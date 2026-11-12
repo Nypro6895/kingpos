@@ -8,7 +8,11 @@ final class SecurityChallengeWebViewTests: XCTestCase {
     func testProviderDocumentIsVisibleAtCommitWithoutAppReadinessOrDidFinish() throws {
         let controller = ReylumiViewController()
         controller.loadViewIfNeeded()
-        controller.initializeWebContentIfNeeded()
+        controller.initializeWebContentIfNeeded(startNavigation: false)
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true; window.rootViewController = nil }
         let webView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
         let launch = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? ReylumiLaunchView }.first)
         webView.stopLoading()
@@ -24,7 +28,11 @@ final class SecurityChallengeWebViewTests: XCTestCase {
             <button id="action" onclick="document.getElementById('result').textContent='Responding'">Continue</button>
             <output id="result"></output></body></html>
             """, baseURL: URL(string: "https://reylumi.com/security-check"))
-        wait(for: [loaded], timeout: 15)
+        // Cold WebKit processes on CI took 14.5s before document navigation.
+        // This is fixture readiness, not a product performance measurement.
+        guard XCTWaiter.wait(for: [loaded], timeout: 60) == .completed else {
+            XCTFail("Provider fixture did not render"); webView.stopLoading(); return
+        }
         XCTAssertTrue(delegate.revealedAtCommit, "Provider UI must be revealed before window load completes")
         XCTAssertEqual(launch.alpha, 0, accuracy: 0.001)
         let interactive = expectation(description: "Provider fixture accepts interaction")
@@ -42,7 +50,7 @@ final class SecurityChallengeWebViewTests: XCTestCase {
     func testOrdinaryErrorStillCancelsAndCannotRevealThroughLateCompletion() throws {
         let controller = ReylumiViewController()
         controller.loadViewIfNeeded()
-        controller.initializeWebContentIfNeeded()
+        controller.initializeWebContentIfNeeded(startNavigation: false)
         let webView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
         let launch = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? ReylumiLaunchView }.first)
         webView.stopLoading()
@@ -82,6 +90,10 @@ private final class ChallengeFixtureDelegate: NSObject, WKNavigationDelegate {
         revealedAtCommit = launch.alpha == 0
     }
 
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        guard navigation === expectedNavigation else { return }
+        XCTFail("Provider fixture failed: \(error)"); loaded.fulfill()
+    }
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         guard navigation === expectedNavigation else { return }
         // Deliberately omit the controller's didFinish fallback. Its overlay

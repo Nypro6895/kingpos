@@ -259,7 +259,7 @@ export function SettingsFieldGroup({title,description,children}:{title:string;de
 }
 
 export function SettingsSwitch({label,description,checked,disabled,onChange}:{label:string;description?:string;checked:boolean;disabled?:boolean;onChange:()=>void}) {
-  return <button type="button" role="switch" aria-checked={checked} disabled={disabled} onClick={onChange} className="settings-switch"><span className="settings-switch-copy"><span className="settings-switch-title"><WorkspaceText text={label}/></span>{description?<span className="settings-switch-description"><WorkspaceText text={description}/></span>:null}</span><span aria-hidden="true" className="settings-switch-track"><span className="settings-switch-thumb"/></span></button>;
+  return <button type="button" role="switch" aria-label={label} aria-checked={checked} disabled={disabled} onClick={onChange} className="settings-switch"><span className="settings-switch-copy"><span className="settings-switch-title"><WorkspaceText text={label}/></span>{description?<span className="settings-switch-description"><WorkspaceText text={description}/></span>:null}</span><span aria-hidden="true" className="settings-switch-track"><span className="settings-switch-thumb"/></span></button>;
 }
 
 const SettingsEditingContext=createContext<((saved?:boolean)=>void)|null>(null);

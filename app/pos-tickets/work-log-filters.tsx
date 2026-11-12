@@ -16,7 +16,7 @@ export function WorkLogFilters({
   todayHref: string;
 }) {
   return (
-    <WorkspaceToolbar title="POS Tickets">
+    <WorkspaceToolbar title="POS tickets">
       <WorkspaceElement as="span" className={toolbarStyles.summary} title={query || selectedDate}>{selectedDate}{query ? ` · ${query}` : ""}</WorkspaceElement>
       <div className="ml-auto flex shrink-0 items-center gap-2">
       <CompactFilters label="Work log filters" active={Boolean(query)}>

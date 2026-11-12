@@ -1,5 +1,6 @@
 import {SettingsChildPage} from "@/app/settings/settings-child-pages";
 import {SettingsDetails} from "@/app/settings/settings-child-pages";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { withExperiencePage } from "@/components/experience-page";
 import { CompactSettingsWorkspace, CompactSettingsPane, CompactSaveBar } from "@/app/settings/compact-settings-workspace";
 export const metadata = { title: "Salon settings | Reylumi" };
@@ -617,12 +618,7 @@ function SalonSettingsForm({
               name="website"
               type="url"
             />
-            <SettingsDetails className="salon-address-details sm:col-span-2"><summary><WorkspaceText text="Address" /> <span className="text-xs text-zinc-500">{[setting.city,setting.state].filter(Boolean).join(", ")}</span></summary><Field
-              autoComplete="address-line1"
-              defaultValue={setting.address_line1}
-              label="Address line 1"
-              name="address_line1"
-            />
+            <SettingsDetails className="salon-address-details sm:col-span-2"><summary><WorkspaceText text="Address" /> <span className="text-xs text-zinc-500">{[setting.city,setting.state].filter(Boolean).join(", ")}</span></summary><AddressAutocomplete defaultValue={setting.address_line1} label="Address line 1" />
             <Field
               autoComplete="address-line2"
               defaultValue={setting.address_line2}

@@ -36,6 +36,10 @@
 .split > div + div { border-left: 1px solid #e6eaee; padding-left: 16px; }
 .split dt, .stats dt { font-size: 12px; color: #63717c; }
 .split dd, .stats dd { font-weight: 650; font-size: 20px; margin: 2px 0 0; font-variant-numeric: tabular-nums; }
+.extras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: -16px 0 16px; padding: 12px 16px; border-bottom: 1px solid #e6eaee; }
+.extras > div + div { border-left: 1px solid #e6eaee; padding-left: 16px; }
+.extras dt { font-size: 12px; color: #63717c; }
+.extras dd { font-weight: 650; font-size: 20px; margin: 2px 0 0; font-variant-numeric: tabular-nums; }
 .columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; }
 .columns > section { min-width: 0; }
 .portal h2 { font-size: 15px; font-weight: 650; margin: 0 0 8px; }
@@ -75,10 +79,3 @@
   .period { gap: 8px; font-size: 11px; }
   .stats dd { font-size: 19px; }
 }
-.servicesMain dt { font-weight: 650; color: #19252d; }
-.servicesMain dd { font-size: 18px; }
-.split { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding-inline: 14px; }
-.split > div + div { padding-left: 10px; }
-.split dd { font-size: clamp(16px, 4.4vw, 22px); overflow-wrap: anywhere; }
-
-.bar{position:relative;min-width:20px}.bar>span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%) rotate(-40deg);transform-origin:center;font-size:10px;white-space:nowrap;color:var(--text-secondary,#71717a)}.bars{padding-top:38px;overflow-x:auto}

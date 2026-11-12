@@ -32,11 +32,11 @@ export function BeautyHome({ profile, posts, viewerId, appointment, favorites, o
     </div>
     <BeautyRewardSummary key={viewerId ?? "guest"} viewerId={viewerId}/>
     <section className="beauty-home-bookings" aria-labelledby="beauty-bookings-title">
-      <div className="beauty-home-section-heading"><h2 id="beauty-bookings-title">My Bookings</h2><Link href="/my-bookings">See all</Link></div>
+      <div className="beauty-home-section-heading"><h2 id="beauty-bookings-title">My Bookings</h2><Link href="/my-bookings">View all</Link></div>
       {appointment}
     </section>
     <section aria-labelledby="beauty-favorites-title">
-      <div className="beauty-home-section-heading"><h2 id="beauty-favorites-title">My Favorites</h2><Link href="/more/saved-post">See all</Link></div>
+      <div className="beauty-home-section-heading"><h2 id="beauty-favorites-title">My Favorites</h2><Link href="/more/saved-post">View all</Link></div>
       {favorites}
     </section>
     <Link href="/beauty/library" className="beauty-home-library">

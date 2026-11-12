@@ -1,10 +1,12 @@
 "use client";
+import { scopeExploreHomeContent } from "@/lib/explore-home-scope";
 import { SalonName } from "@/components/salon-member-badge";
 
 import { OwnerSponsoredPost } from "@/components/owner-sponsored-post";
 import { useExploreEditorialFeed } from "./use-explore-editorial-feed";
 import { selectExploreEditorialPosts } from "@/lib/explore-post-presentation";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { SalonAddressLink } from "@/components/salon-address-link";
 import { SalonPostPreview } from "@/components/salon-post-preview";
 import { ExploreInspirationPost } from "./explore-inspiration-post";
 import { ExploreSalonCard } from "./explore-salon-card";
@@ -32,9 +34,10 @@ import { useExperienceScope } from "@/components/experience-scope";
 import { ExploreEditorialHeading } from "./explore-editorial";
 import { ExploreLookEditorial, ExploreSalonDirectory, ExploreBookingEditorial } from "./explore-editorial-sections";
 import { exploreEditorialHref } from "@/lib/explore-editorial";
-import { NailInspirationFilters } from "@/app/explore/nail-inspiration";
+import { ExploreSearchFilters } from "./explore-search-filters";
+import { exploreFilterParams } from "@/lib/explore-filter-state";
 import { useExploreSearchMedia } from "@/lib/use-explore-search-media";
-import type { NailFilters } from "@/lib/nail-inspiration-catalog";
+import type { ExploreSearchFilters as SearchFilters } from "@/types/explore";
 import { ExploreSearchOnwardActions, ExploreSearchRecommendations } from "@/app/explore/explore-search-recommendations";
 import { ExploreSearchContext } from "@/app/explore/explore-search-context";
 import { ExploreIntroHeadline, ExploreSalonPreview } from "@/app/explore/explore-intro";
@@ -1356,7 +1359,7 @@ function mapSalonToMapSalon(salon: ExploreSearchResult): ExploreMapSalon | null 
         : null,
     id: salon.id,
     latitude: salon.latitude,
-    locationLabel: formatSalonLocation(salon),
+    locationLabel: [salon.addressLine1,salon.addressLine2,salon.city,salon.state,salon.postalCode].filter(Boolean).join(", ") || formatSalonLocation(salon),
     longitude: salon.longitude,
     name: salon.name,
     operatingStatus: salon.operatingStatus,
@@ -1396,13 +1399,6 @@ function hasMeasuredDistance(results: ExploreSearchResult[]) {
 }
 
 type SearchOrderMode = ReylumiExploreSearchOrder;
-
-type SearchShortcut = {
-  category?: string;
-  label: string;
-  location?: string;
-  query?: string;
-};
 
 function quotedQuery(query: string) {
   const trimmedQuery = query.trim();
@@ -1541,94 +1537,17 @@ function SearchRecommendationSections({ results, location, renderCards }: {
   ));
 }
 
-function SearchRefinementBar({
-  children,
-  category,
-  location,
-  mode,
-  onModeChange,
-  onClear,
-  onShortcut,
-  query,
-  workspaceLocation,
-}: {
-  children?: ReactNode;
-  category: string;
-  location: string;
-  mode: SearchOrderMode;
-  onModeChange: (mode: SearchOrderMode) => void;
-  onClear: () => void;
-  onShortcut: (input: {
-    category?: string;
-    location?: string;
-    query?: string;
-  }) => void;
-  query: string;
-  workspaceLocation: ExploreInitialLocation;
+function SearchRefinementBar({category, location, mode, onModeChange, filters, styleSearch, onApply}: {
+  category: string; location: string; mode: SearchOrderMode; filters: SearchFilters; styleSearch: boolean;
+  onModeChange: (mode: SearchOrderMode) => void; onApply: (category: string, filters: SearchFilters) => void;
 }) {
-  const displayLocation = formatDisplayLocation(
-    location.trim() || workspaceLocation.label,
-  );
-  const locationName = displayLocation.split(",")[0]?.trim();
-  const normalizedCategory = cleanCategory(category);
-  const shortcutLocation = displayLocation || workspaceLocation.label;
-  const shortcutQuery = query.trim();
-  const ordering: { label: string; mode: SearchOrderMode }[] = [
-    { label: "Best match", mode: "relevance" },
-    { label: "Trusted first", mode: "trusted" },
-    { label: "Open booking", mode: "bookable" },
-    { label: "Closest", mode: "closest" },
-  ];
-  const shortcutCandidates: Array<SearchShortcut | null> = [
-    normalizedCategory
-      ? null
-      : { category: "Nails", label: "Nails" },
-    shortcutQuery.toLowerCase() === "full-set"
-      ? null
-      : { label: "Full-set", query: "Full-Set" },
-    shortcutLocation
-      ? {
-          label: locationName ? `Near ${locationName}` : "Near this area",
-          location: shortcutLocation,
-        }
-      : null,
-    shortcutQuery || normalizedCategory
-      ? { label: "Clear term", query: "", category: "All" }
-      : null,
-  ];
-  const shortcuts = shortcutCandidates.filter(
-    (shortcut): shortcut is SearchShortcut => Boolean(shortcut),
-  );
-
-  return (
-    <section
-      aria-label="Search refinement"
-      className="flex flex-wrap items-start gap-2"
-      data-testid="explore-search-refinement"
-    >
-      {children}
-      <select aria-label="Sort results" value={mode} onChange={event => onModeChange(event.target.value as SearchOrderMode)}
-        className="min-h-11 rounded-full bg-surface-elevated px-3 text-sm font-medium text-text-primary outline-none ring-1 ring-divider-subtle focus:ring-brand-orange">
-        {ordering.map(item => <option key={item.mode} value={item.mode}>{item.label}</option>)}
-      </select>
-        <details className="min-w-0 flex-1">
-          <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center rounded-full bg-surface-elevated px-4 text-sm font-medium text-text-primary ring-1 ring-divider-subtle">Filters</summary>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-          <button type="button" onClick={onClear} className="min-h-11 rounded-full bg-white px-3 text-xs font-semibold text-text-primary ring-1 ring-divider-subtle hover:text-brand-orange">Clear filters</button>
-          {shortcuts.map((shortcut) => (
-            <button
-              className="min-h-11 rounded-full bg-white px-3 text-xs font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              key={`${shortcut.label}:${shortcut.query ?? ""}:${shortcut.location ?? ""}:${shortcut.category ?? ""}`}
-              onClick={() => onShortcut(shortcut)}
-              type="button"
-            >
-              {shortcut.label}
-            </button>
-          ))}
-          </div>
-        </details>
-    </section>
-  );
+  return <section aria-label="Search refinement" className="flex flex-wrap items-center gap-2" data-testid="explore-search-refinement">
+    <select aria-label="Sort results" value={mode} onChange={event => onModeChange(event.target.value as SearchOrderMode)}
+      className="min-h-11 rounded-full bg-surface-elevated px-3 text-sm font-medium text-text-primary outline-none ring-1 ring-divider-subtle focus:ring-brand-orange">
+      <option value="relevance">Best match</option><option value="trusted">Trusted first</option><option value="bookable">Online booking first</option><option value="closest">Closest</option>
+    </select>
+    <ExploreSearchFilters category={category} location={location} filters={filters} styleSearch={styleSearch} onApply={onApply} />
+  </section>;
 }
 
 function InspirationPreview({ item, onClose }: { item: ExploreInspirationItem; onClose: () => void }) {
@@ -2490,7 +2409,6 @@ function DesktopProgressiveSections({
   sessionKey: string;
 }) {
   const [visibleSectionCount, setVisibleSectionCount] = useState(1);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     try {
       const count = Number(window.sessionStorage.getItem(`explore-sections:${sessionKey}`));
@@ -2505,36 +2423,6 @@ function DesktopProgressiveSections({
     catch { /* Optional navigation cache. */ }
   }, [sessionKey, visibleSectionCount]);
 
-  useEffect(() => {
-    const node = loadMoreRef.current;
-
-    if (!node || visibleSectionCount >= sections.length) {
-      return;
-    }
-
-    if (typeof IntersectionObserver === "undefined") {
-      const timeout = window.setTimeout(() => {
-        setVisibleSectionCount(sections.length);
-      }, 0);
-
-      return () => window.clearTimeout(timeout);
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setVisibleSectionCount((current) =>
-            Math.min(sections.length, current + 1),
-          );
-        }
-      },
-      { rootMargin: "520px 0px" },
-    );
-
-    observer.observe(node);
-
-    return () => observer.disconnect();
-  }, [sections.length, visibleSectionCount]);
 
   return (
     <div className="grid gap-12">
@@ -2543,10 +2431,10 @@ function DesktopProgressiveSections({
       ))}
       {visibleSectionCount < sections.length ? (
         <>
+          <ExploreAutoLoad progressKey={visibleSectionCount} onLoad={() => setVisibleSectionCount(current => Math.min(sections.length, current + 1))} />
           <DesktopSectionSkeleton
             title={sections[visibleSectionCount]?.title ?? "more discovery"}
           />
-          <div ref={loadMoreRef} />
         </>
       ) : null}
     </div>
@@ -3026,7 +2914,7 @@ function SearchContinuationFeedReady({ response, coordinates, viewerId, onChoose
   const renderSalon = (salon: ExploreSearchResult) => <div key={salon.id} className="space-y-3">
     <div className="flex items-center gap-3 px-1">
       <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-surface-muted"><SalonLogoContent salon={salon} size={40} /></div>
-      <div><p className="font-semibold text-text-primary"><SalonName name={salon.name} salonId={salon.id}/></p><p className="text-sm text-text-secondary">{formatSalonLocation(salon)}</p></div>
+      <div><p className="font-semibold text-text-primary"><SalonName name={salon.name} salonId={salon.id}/></p><p className="text-sm text-text-secondary"><SalonAddressLink address={[salon.addressLine1,salon.addressLine2,salon.city,salon.state,salon.postalCode].filter(Boolean).join(", ")} /></p></div>
     </div>
     <SalonCard featured rankAriaLabel={isExplorePrimarySearchResult(salon) ? "Search match" : "Discover this salon"} rankLabel={isExplorePrimarySearchResult(salon) ? "Match" : "Discover"} salon={salon} />
   </div>;
@@ -3214,6 +3102,8 @@ export function ExploreClient({
   const searchMode = explicitSearchMode || gpsActive;
   const activeResponse: ExploreSearchResponse =
     gpsActive && gpsResponse ? gpsResponse : sessionResponse;
+  // Late startup extras must not reintroduce an older/global salon collection.
+  const scopedHomeContent = useMemo(() => scopeExploreHomeContent(homeContent, activeResponse), [homeContent, activeResponse]);
   const committedSearch = useMemo(() => buildExploreCommittedSearchContext(activeResponse, {
     viewerId: commentViewer.userId,
     gpsContext: committedGpsContext,
@@ -3238,11 +3128,6 @@ export function ExploreClient({
   const referenceResults = activeResults.filter(salon => !isExplorePrimarySearchResult(salon));
   const hasPrimaryResults = activeResults.some(isExplorePrimarySearchResult);
   const onward = exploreSearchOnwardLink(activeResponse);
-  const [nailFilterSelection, setNailFilterSelection] = useState<{ sessionKey: string; filters: NailFilters }>({ sessionKey: committedSearch.sessionKey, filters: {} });
-  const nailFilters = nailFilterSelection.sessionKey === committedSearch.sessionKey ? { ...activeResponse.filters, ...nailFilterSelection.filters } : activeResponse.filters ?? {};
-  if (nailFilterSelection.sessionKey !== committedSearch.sessionKey) {
-    setNailFilterSelection({ sessionKey: committedSearch.sessionKey, filters: {} });
-  }
   const hasBestMatches = activeSections.bestMatches.length > 0;
   const hasNearbyResults = activeSections.nearby.length > 0;
   const hasRecommendedResults = activeSections.recommended.length > 0;
@@ -3641,33 +3526,6 @@ export function ExploreClient({
     };
   });
 
-  function clearFilters() {
-    try { window.sessionStorage.setItem(GPS_PREFERENCE_KEY, "off"); } catch { /* Optional preference. */ }
-    if (commentViewer.isAuthenticated) void rememberExplorePreferenceAction({ location: "" }).catch(() => {});
-    gpsRequestVersion.current += 1;
-    gpsRequest.current?.abort();
-    typedRequest.current = null;
-    setTypedSearchFailure(null);
-    setCommittedGpsContext(null);
-    setGpsStatus("idle");
-    setQuery("");
-    setLocation("");
-    setCategory("All");
-    setGpsResponse(null);
-    setGpsCoordinates(null);
-    setNearYouSalons([]);
-    setGpsStatus("idle");
-    setGpsMessage(null);
-    setExplicitSearchMode(false);
-    setActiveDiscoveryResult(null);
-    setLocationSource("none");
-    try { window.localStorage.removeItem(SAVED_LOCATION_KEY); } catch { /* Storage may be unavailable. */ }
-
-    startTransition(() => {
-      router.push(`${pathname}?location=`, { scroll: false });
-    });
-  }
-
   function selectCategory(value: string) {
     prepareSearchTransition();
     if (commentViewer.isAuthenticated) void rememberExplorePreferenceAction({ category: value }).catch(() => {});
@@ -3789,25 +3647,22 @@ export function ExploreClient({
     });
   }
 
-  function applyNailFilters(filters: NailFilters) {
-    setNailFilterSelection({ sessionKey: committedSearch.sessionKey, filters });
-    const nextFilters = { ...activeResponse.filters };
-    for (const key of ["shape", "length", "color", "finish", "tone", "season"] as const) {
-      if (filters[key]) nextFilters[key] = filters[key]; else delete nextFilters[key];
-    }
-    if (committedSearch.coordinates) {
-      void runGpsSearch(committedSearch.coordinates, 1, committedSearch.displayQuery, committedSearch.appliedSort, committedSearch.category, "salons", activeResponse.scope?.policy, nextFilters);
-      return;
-    }
+  function applySearchFilters(nextCategory: string, nextFilters: SearchFilters) {
     prepareSearchTransition();
     gpsRequestVersion.current += 1; gpsRequest.current?.abort();
     typedRequest.current = null;
     setGpsStatus("idle");
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("page"); params.delete("cursor"); params.set("type", "salons");
-    for (const key of ["shape", "length", "color", "finish", "tone", "season"] as const) {
-      if (filters[key]) params.set(key, filters[key]); else params.delete(key);
+    if (committedSearch.coordinates) {
+      setCategory(nextCategory);
+      void runGpsSearch(committedSearch.coordinates, 1, committedSearch.displayQuery, committedSearch.appliedSort, cleanCategory(nextCategory), "salons", committedSearch.scopePolicy, nextFilters);
+      return;
     }
+    const params = exploreFilterParams(new URLSearchParams(searchParams.toString()), nextCategory, nextFilters);
+    // A location inferred from the typed query is still the committed area.
+    params.set("location", committedSearch.location);
+    params.set("locationSource", activeResponse.locationSource ?? (committedSearch.location ? "manual" : "none"));
+    params.set("scope", committedSearch.scopePolicy);
+    params.set("sort", committedSearch.appliedSort);
     startTransition(() => router.push(pathname + "?" + params, { scroll: false }));
   }
 
@@ -3969,8 +3824,8 @@ export function ExploreClient({
             </div>
             {homeMode ? (
               <DesktopExploreLanding
-                content={homeContent}
-                salons={[...nearYouSalons, ...activeResults]}
+                content={scopedHomeContent}
+                salons={activeResponse.location.trim() ? scopedHomeContent.recommendedSalons : [...nearYouSalons, ...activeResults]}
               />
             ) : null}
           </section>
@@ -3984,7 +3839,7 @@ export function ExploreClient({
                 <ExploreHomeSections
                   activeDiscoveryResult={activeDiscoveryResult}
                   commentViewer={commentViewer}
-                  content={homeContent}
+                  content={scopedHomeContent}
                   discoveryShortcuts={discoveryContent.shortcuts}
                   initialFeed={initialFeed}
                   initialFeedPromise={initialFeedPromise}
@@ -4000,12 +3855,12 @@ export function ExploreClient({
                 />
               </div>
               <DesktopDiscoveryMarketplace
-                activeResults={activeResults}
+                activeResults={activeResponse.location.trim() ? scopedHomeContent.recommendedSalons : activeResults}
                 activeDiscoveryResult={activeDiscoveryResult}
                 discoveryShortcuts={discoveryContent.shortcuts}
                 onDiscoveryShortcutSelect={selectDiscoveryShortcut}
                 commentViewer={commentViewer}
-                content={homeContent}
+                content={scopedHomeContent}
                 gpsCoordinates={gpsCoordinates}
                 rewardCoordinates={locationSource === "gps" ? gpsCoordinates : null}
                 location={location}
@@ -4020,7 +3875,7 @@ export function ExploreClient({
             </>
           ) : discoveryResultMode && activeDiscoveryResult ? (
             <ExploreDiscoveryResults
-              content={homeContent}
+              content={scopedHomeContent}
               commentViewer={commentViewer}
               selectedCategory={selectedCategory}
               location={location}
@@ -4057,20 +3912,10 @@ export function ExploreClient({
                     location={committedSearch.location}
                     mode={committedSearch.appliedSort}
                     onModeChange={changeSearchOrder}
-                    onClear={clearFilters}
-                    onShortcut={applySearchShortcut}
-                    query={committedSearch.displayQuery}
-                    workspaceLocation={workspaceLocation}
-                  >
-                    {!isSearching && !searchUnavailable && !requiresGps && hasAnyResults ? (
-                      <NailInspirationFilters
-                        key={committedSearch.sessionKey}
-                        filters={nailFilters}
-                        onChange={applyNailFilters}
-                        search={{ salons: activeResults, discovery: { ...committedSearch.discovery, query: activeResponse.query } }}
-                      />
-                    ) : null}
-                  </SearchRefinementBar>
+                    filters={activeResponse.filters ?? {}}
+                    styleSearch={activeResponse.queryKind === "style"}
+                    onApply={applySearchFilters}
+                  />
                 ) : null}
                 {committedSearch.fallbackMessage && !isSearching && !searchUnavailable ? <p className="text-sm text-text-secondary" role="status">{committedSearch.fallbackMessage}</p> : null}
 

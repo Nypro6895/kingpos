@@ -1,0 +1,58 @@
+ANDROID IOS-PARITY AUDIT — 2026-11-10 America/Chicago
+Scope: Android native host and hosted Reylumi. This is an ongoing audit, not full acceptance.
+
+FIXED IN THIS REVISION
+1. Removed duplicate Back / Reylumi / Share native toolbar. Physical Galaxy A16 screenshot verified.
+2. Back dismisses keyboard, dismissible popovers or dialogs before WebView history.
+   Emulator real Book dialog: visible dialogs 1 -> hardware Back -> 0, route unchanged /explore.
+3. Cold start restores trusted path only; query/fragment credentials are never persisted.
+   Emulator /help -> force-stop -> relaunch -> /help. Logout/auth routes reset to Explore.
+4. Android share sheet via trusted main-frame message bridge. Sheet opened; dismissed without sending.
+5. Android print preview via window.print. Preview opened and cancelled; no printer job committed.
+6. Same-origin and blob exports up to 10 MB via system Save as. Emulator QA blob saved;
+   /sdcard/Download/Reylumi-QA.txt read back exactly 'Reylumi Android QA export'.
+   No storage permission, cookie forwarding, redirect following, or cross-origin downloads.
+7. Orientation changes keep the WebView alive. Help landscape 866px, scrollWidth 866px.
+   Draft field persistence was not accepted: scripted input did not establish a real typed draft.
+8. Normalized dot/encoded-dot path segments before native blocked-route evaluation.
+9. Message listener restricted to https://reylumi.com and main frame, without a wildcard bridge.
+   Same-origin iframe could see message object but its share request did not open native UI.
+
+PHYSICAL OWNER SCREEN CHECK
+Galaxy A16 5G, reported Android 17, width 384 CSS px. 18 routes opened and screenshots saved.
+All 18 had scrollWidth=384 and no role=alert text at snapshot time. This does NOT establish
+completion of forms, financial accuracy, all tab/filter states or permission behavior.
+Routes: /staff/today, /bookings, /salon-profile, /reports, /pos, /pos-tickets,
+/customers, /payroll, /staff, /services, /forum, /campaigns, /reward-system,
+/gift-cards/manage, /my-place, /support, /help, /settings.
+POS screenshot verified dedicated POS layout without shared web header.
+Detailed measurements: owner-audit.json. Screenshots: owner-*.png (local, account data).
+Earlier physical smoke: Personal Bookings/More, Staff Today, Owner Today and role switching;
+authentication survived force-stop and background/resume. No real transactions or posts.
+
+VALIDATION
+Final Gradle testDebugUnitTest lintDebug assembleDebug passed; 3 unit tests, 0 failures.
+Lint: 0 errors, 2 pre-existing icon/resource-folder warnings. git diff --check passed.
+Build output/log: build-final.log. File download was QA-generated text, not a financial export.
+No iOS binary, hosted web deployment, Google Play upload, signing identity or schema changed.
+
+OPEN / REQUIRED BEFORE COMPLETE PARITY
+- Physical USB disconnected during audit; toolbar-only revision installed on phone.
+  Later bridge/resume/export revision tested on emulator, not yet installed/accepted on phone.
+- Camera/QR and foreground location: explicit permission choice pending owner response.
+  Neither permission has been added; geolocation and camera remain unsupported in this revision.
+- Personal/Staff nested navigation, real typed forms/IME, mobile More Back, portrait/landscape,
+  photo picker cancel/selection, physical exports and print/share remain to verify comprehensively.
+- Authentication expiry, logout/account separation, long background and provider OAuth returns.
+- Actual QR decoding and GPS; do not count permission prompts as successful function tests.
+- POS calculations and saved tickets, booking validation, payroll/report filters and exports:
+  use safe fixtures/local source and preserve authorization; no live financial writes to prove QA.
+- Android Market/subscription server recognition and payment flow gate remain store blockers.
+  Native top-level navigation filtering does not gate SPA/fetch or establish Play compliance.
+- Native app links need confirmed package/signing identity and domain association; not configured.
+- No same-device iOS A/B or performance benchmark was run. This revision does not claim full iOS parity.
+
+NEXT RESUME
+Reconnect authorized Galaxy A16; install APK from this evidence directory, retain login.
+Finish Personal and Staff matrix, physical regression and approved hardware permissions.
+Journal ios channel is compatibility metadata only because journal schema lacks Android.

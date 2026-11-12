@@ -5,7 +5,7 @@ import { WorkspaceNavigationIcon } from "@/components/workspace-navigation-icon"
 
 export type OwnerPosIconName = "more" | "checkin" | "pos" | "ticket" | "report" | "booking" | "settings" | "services" | "employees" | "tip" | "discount" | "backspace";
 const navigationIcons: Partial<Record<OwnerPosIconName, NavigationIcon>> = {
-  more: "more", checkin: "check", pos: "store", ticket: "receipt", report: "list", booking: "book", settings: "gear", employees: "people",
+  more: "more", checkin: "check", pos: "store", ticket: "receipt", report: "list", booking: "calendar", settings: "gear", employees: "people",
 };
 
 export function OwnerPosIcon({ name }: { name: OwnerPosIconName }) {

@@ -1,5 +1,6 @@
 
 import { SalonName } from "@/components/salon-member-badge";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { WorkspaceText } from "@/components/workspace-language";
 
@@ -103,12 +104,7 @@ function SalonForm({ createRequestKey, draft }: { createRequestKey: string; draf
         />
       </div>
       <InputField autoComplete="tel" label="Phone" name="phone" defaultValue={value('phone')} />
-      <InputField
-        autoComplete="address-line1"
-        label="Address line 1"
-        name="address_line1"
-        defaultValue={value('address_line1')}
-      />
+      <AddressAutocomplete defaultValue={value("address_line1")} label="Address line 1" />
       <InputField
         autoComplete="address-line2"
         label="Address line 2"

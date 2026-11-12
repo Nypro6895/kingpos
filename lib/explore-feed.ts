@@ -866,7 +866,7 @@ function mapRecommendationFeedItem(
     bookedCount: 0,
     eligible: salon.bookingEnabled === true && Boolean(salon.bookingHref),
     href: salon.bookingEnabled ? salon.bookingHref : null,
-    label: "Book",
+    label: "Book appointment",
     readiness: null,
     salonId: salon.id,
     salonName: salon.name,

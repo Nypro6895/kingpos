@@ -1,11 +1,10 @@
 "use client";
 import {WorkspaceText} from "@/components/workspace-language";
-import {SettingsIconShape} from "@/components/settings-icon";
-import {PERSONAL_MORE_GROUPS,ROLE_MORE_ITEMS,type RoleMoreIcon,type RoleMoreItem,type RoleNavigationKind} from "@/app/role-navigation";
+import { WorkspaceNavigationIcon } from "@/components/workspace-navigation-icon";
+import {PERSONAL_MORE_GROUPS,ROLE_MORE_ITEMS,type RoleMoreItem,type RoleNavigationKind} from "@/app/role-navigation";
 import Link from "next/link";
-import type{ReactNode}from"react";
+
 import type{AppLocalMoreData}from"@/lib/app-local-platform-types";
-type MoreIconName = RoleMoreIcon;
 type MoreItem = RoleMoreItem;
 type MoreSection = {
   id: string;
@@ -18,96 +17,7 @@ type MoreContent = {
   sections: MoreSection[];
 };
 
-function MoreIcon({ name }: { name: MoreIconName }) {
-  const common = {
-    "aria-hidden": true,
-    className: "h-5 w-5",
-    fill: "none",
-    stroke: "currentColor",
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    strokeWidth: 2,
-    viewBox: "0 0 24 24",
-  };
-  const paths: Record<MoreIconName, ReactNode> = {
-    qr: <><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h2v2h-2zM21 14v3h-2M14 21h3v-2M20 20h1v1"/></>,
-    badge: (
-      <>
-        <path d="M12 3 4 7v6c0 4 3.2 7.4 8 8 4.8-.6 8-4 8-8V7z" />
-        <path d="m9 12 2 2 4-5" />
-      </>
-    ),
-    book: (
-      <>
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z" />
-      </>
-    ),
-    cash: (
-      <>
-        <rect height="12" rx="2" width="18" x="3" y="6" />
-        <path d="M8 12h.01M16 12h.01M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
-      </>
-    ),
-    flag: (
-      <>
-        <path d="M5 21V4" />
-        <path d="M5 4h11l-1 4 1 4H5" />
-      </>
-    ),
-    gift: (
-      <>
-        <rect height="13" rx="2" width="18" x="3" y="8" />
-        <path d="M12 8v13M3 12h18M7.5 8A2.5 2.5 0 1 1 12 6a2.5 2.5 0 1 1 4.5 2" />
-      </>
-    ),
-    gear: <SettingsIconShape />,
-    grid: (
-      <>
-        <rect height="7" rx="1.5" width="7" x="3" y="3" />
-        <rect height="7" rx="1.5" width="7" x="14" y="3" />
-        <rect height="7" rx="1.5" width="7" x="3" y="14" />
-        <rect height="7" rx="1.5" width="7" x="14" y="14" />
-      </>
-    ),
-    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />,
-    list: (
-      <>
-        <path d="M8 6h13M8 12h13M8 18h13" />
-        <path d="M3 6h.01M3 12h.01M3 18h.01" />
-      </>
-    ),
-    receipt: (
-      <>
-        <path d="M4 2v20l3-2 3 2 3-2 3 2 3-2V2z" />
-        <path d="M8 7h8M8 12h8M8 17h5" />
-      </>
-    ),
-    scissors: (
-      <>
-        <circle cx="6" cy="6" r="3" />
-        <circle cx="6" cy="18" r="3" />
-        <path d="M20 4 8.1 15.9M8.1 8.1 20 20" />
-      </>
-    ),
-    star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z" />,
-    store: (
-      <>
-        <path d="M4 10h16l-1-6H5z" />
-        <path d="M5 10v10h14V10M9 20v-6h6v6" />
-      </>
-    ),
-    users: (
-      <>
-        <path d="M16 21v-2a4 4 0 0 0-8 0v2" />
-        <circle cx="12" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-      </>
-    ),
-  };
 
-  return <svg {...common}>{paths[name]}</svg>;
-}
 
 function pickMoreItems(
   items: readonly MoreItem[],
@@ -208,7 +118,7 @@ function MoreItemLink({ item }: { item: MoreItem }) {
       href={item.href}
     >
       <span className="grid h-11 w-11 place-items-center rounded-lg bg-brand-orange-soft text-brand-orange transition group-hover:bg-brand-orange group-hover:text-white">
-        <MoreIcon name={item.icon} />
+        <WorkspaceNavigationIcon name={item.navigationIcon} className="h-5 w-5" />
       </span>
       <span className="min-w-0">
         <span className="block truncate text-sm font-extrabold text-text-primary">

@@ -127,7 +127,7 @@ function directionsHref(booking: CustomerBookingDetail) {
     return null;
   }
 
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
 }
 
 function contactLinks(booking: CustomerBookingDetail) {

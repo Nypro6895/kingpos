@@ -1,0 +1,18 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {build} from 'esbuild';import {createServer} from 'node:http';import {chromium} from 'playwright-core';
+
+test('Idle saves before clearing, failures retain input, slow/failed switches protect work and lock input',{timeout:30000},async()=>{
+ const contents=`import React,{useState}from'react';import{createRoot}from'react-dom/client';import{PortableDraftControls}from'./app/pos/portable/portable-draft-controls';
+ window.calls=[];window.fail=false;window.mode='local';
+ function App(){const[value,setValue]=useState('current');window.value=value;return <><input aria-label="Working input" value={value} onChange={e=>setValue(e.target.value)}/><PortableDraftControls scope="audit" label="Current" active={!!value} activity={value} value={value} idleMinutes={100} warningSeconds={0} reset={async()=>{window.calls.push('reset');setValue('');return true}} restore={v=>{window.calls.push('restore');setValue(v);return true}} parkShared={async()=>{window.calls.push('save');if(window.fail)return false;return window.mode==='shared'?true:null}} sharedTickets={open=><button onClick={()=>open(()=>new Promise((resolve,reject)=>{window.resolve=resolve;window.reject=reject}))}>Open remote</button>}/></>};createRoot(document.getElementById('root')).render(<App/>);`;
+ const built=await build({bundle:true,write:false,jsx:'automatic',stdin:{contents,resolveDir:process.cwd(),loader:'tsx'},plugins:[{name:'boundaries',setup(b){b.onResolve({filter:/workspace-language$/},()=>({path:'language',namespace:'stub'}));b.onLoad({filter:/.*/,namespace:'stub'},()=>({loader:'js',contents:'export const WorkspaceText=({text})=>text;export const useWorkspaceTranslation=()=>s=>s;'}));}}]});
+ const server=createServer((req,res)=>res.end(`<div id="root"></div><script>${built.outputFiles[0].text}</script>`));await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ try{const page=await browser.newPage();await page.clock.install();await page.goto(`http://127.0.0.1:${server.address().port}`);await page.getByRole('textbox').waitFor();
+  await page.clock.runFor(100*60000+300);await page.waitForFunction(()=>window.value==='');assert.deepEqual(await page.evaluate(()=>window.calls),['save','reset']);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('kingpos:parked-tickets:v1:audit'))[0].value),'current');
+  await page.getByRole('textbox').fill('unsaved');await page.evaluate(()=>{window.mode='shared';window.fail=true;window.calls=[]});await page.clock.runFor(100*60000+300);await page.clock.runFor(1000);assert.equal(await page.getByRole('textbox').inputValue(),'unsaved');assert.deepEqual(await page.evaluate(()=>window.calls),['save']);
+  await page.evaluate(()=>{window.fail=false;window.calls=[]});await page.getByRole('button',{name:/Saved tickets/}).click();await page.getByRole('button',{name:'Open remote'}).click();await page.getByRole('dialog',{name:'Saving and opening ticket'}).waitFor();
+  await page.keyboard.type('999');assert.equal(await page.getByRole('textbox').inputValue(),'');
+  await page.evaluate(()=>window.reject(Error('Network failed')));await page.getByRole('dialog',{name:'Saving and opening ticket'}).waitFor({state:'detached'});assert.equal(await page.getByRole('textbox').inputValue(),'unsaved');
+  await page.getByRole('button',{name:'Open remote'}).click();await page.waitForFunction(()=>window.value==='');await page.evaluate(()=>window.resolve('remote'));await page.waitForFunction(()=>window.value==='remote');
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});

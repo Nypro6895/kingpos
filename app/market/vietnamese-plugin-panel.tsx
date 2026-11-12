@@ -1,13 +1,16 @@
 "use client";
+import { useScopedMarketActions } from "./scoped-market-client";
 import {openMarketPayment} from "@/lib/open-market-payment";
 import { ActionFeedback } from "@/components/action-feedback";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { setVietnamesePlugin, vietnamesePaymentAction } from "./vietnamese-actions";
+
 import type { VietnamesePluginState } from "@/types/vietnamese-plugin";
 import styles from "./market.module.css";
 
 export function VietnamesePluginPanel({ initialState, onChange, paymentsAvailable = true, bankCheckout = false, monthlyPrice = "$3.99 / tháng" }: { initialState: VietnamesePluginState; onChange: (state: VietnamesePluginState) => void; paymentsAvailable?: boolean; bankCheckout?: boolean; monthlyPrice?: string }) {
+ const { setVietnamesePlugin, vietnamesePaymentAction } = useScopedMarketActions();
+
   const router = useRouter();
   const [state, setState] = useState(initialState);
   const [staff, setStaff] = useState(state.staff_enabled);
@@ -47,8 +50,9 @@ export function VietnamesePluginPanel({ initialState, onChange, paymentsAvailabl
     <h3>Tiếng Việt cho tiệm của bạn</h3>
     <p>{monthlyPrice} USD / tiệm · Dùng thử 5 ngày. Tùy chọn nhân viên và Portable đã bao gồm trong giá.</p>
     <p>Giao diện chủ tiệm: điều hướng, lịch hẹn, nhân viên, dịch vụ, khách hàng, bán hàng, lương và báo cáo. Tên, ghi chú và nội dung do người dùng nhập được giữ nguyên.</p>
+    <p>Kích hoạt gói không tự đổi ngôn ngữ. Bạn chọn trong Settings → Language; nhân viên được mời chuyển khi mở app và có thể đổi trực tiếp từ thông báo.</p>
     <fieldset disabled={busy} className={styles.languageOptions}>
-      <label><input type="checkbox" checked={staff} onChange={event => setStaff(event.target.checked)} />Áp dụng cho nhân viên của tiệm: lịch hẹn, lịch làm việc, lương và các yêu cầu với chủ tiệm.</label>
+      <label><input type="checkbox" checked={staff} onChange={event => setStaff(event.target.checked)} />Cho phép nhân viên chọn Tiếng Việt cho lịch hẹn, lịch làm việc, lương và các yêu cầu với chủ tiệm.</label>
       <label><input type="checkbox" checked={portable} onChange={event => setPortable(event.target.checked)} />Áp dụng cho Portable (ứng dụng POS trên máy tính của tiệm).</label>
     </fieldset>
     {state.installed && <p>{state.paid ? "Quyền truy cập trả phí đang hoạt động." : state.active ? trial ? `Dùng thử đến ${new Date(state.trial_ends_at!).toLocaleString("vi-VN")}.` : "Plugin đang hoạt động." : "Dùng thử đã kết thúc. Đăng ký để tiếp tục sử dụng."}</p>}

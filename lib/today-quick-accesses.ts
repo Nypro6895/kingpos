@@ -111,10 +111,10 @@ const QUICK_ACCESS_SOURCES: readonly TodayQuickAccessSource[] = [
   },
   {
     id: "settings",
+    href: "/settings",
+    icon: "gear",
     label: "Settings",
     permissionCodes: ["salon_settings.view"],
-    href: "/salon-settings",
-    icon: "gear",
     description: "Profile, discovery, ownership, and setup for the current salon.",
   },
   {

@@ -1,6 +1,7 @@
 "use client";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 
+import { marketTargetHref } from "@/lib/market-target-url";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { useWorkspaceTranslation } from "@/components/workspace-language";
@@ -8,29 +9,29 @@ import styles from "./booking-deposit-settings.module.css";
 import rowStyles from "./plugin-settings-row.module.css";
 import { PluginActivationDialog } from "./plugin-activation-dialog";
 
-export function PluginActivationPrompt({ pluginName, label = pluginName }: { pluginName: string; label?: string }) {
-  return <PluginSettingsRow label={label} pluginName={pluginName} marketHref={`/market?q=${encodeURIComponent(pluginName)}`} installed={false} enabled={false} onToggle={() => {}} />;
+export function PluginActivationPrompt({ pluginName, label = pluginName, salonId }: { pluginName: string; label?: string; salonId?: string }) {
+  return <PluginSettingsRow label={label} pluginName={pluginName} marketHref={marketTargetHref(`/market?q=${encodeURIComponent(pluginName)}`, salonId)} installed={false} enabled={false} onToggle={() => {}} />;
 }
 
-export function PluginActivationButton({ pluginName, label, buttonLabel = "Activate" }: { pluginName: string; label: string; buttonLabel?: string }) {
+export function PluginActivationButton({ pluginName, label, buttonLabel = "Activate", salonId }: { pluginName: string; label: string; buttonLabel?: string; salonId?: string }) {
   const t = useWorkspaceTranslation();
   const [activation, setActivation] = useState(false);
   useTransientOverlay(() => setActivation(false), activation);
   return <section className={styles.panel} aria-label={t(label)}>
     <div className={styles.header}><span className={styles.title}>{t(label)}</span><button type="button" className={styles.save} onClick={() => setActivation(true)}>{t(buttonLabel)}</button></div>
-    <PluginActivationDialog open={activation} onClose={() => setActivation(false)} pluginName={pluginName} marketHref={`/market?q=${encodeURIComponent(pluginName)}`} />
+    <PluginActivationDialog open={activation} onClose={() => setActivation(false)} pluginName={pluginName} marketHref={marketTargetHref(`/market?q=${encodeURIComponent(pluginName)}`, salonId)} />
   </section>;
 }
 
-export function PluginMarketStatus({ pluginName, label = pluginName, active, settingsHref, children }: { pluginName: string; label?: string; active: boolean; settingsHref?: string; children?: ReactNode }) {
+export function PluginMarketStatus({ pluginName, label = pluginName, active, settingsHref, children, salonId }: { pluginName: string; label?: string; active: boolean; settingsHref?: string; children?: ReactNode; salonId?: string }) {
   const t = useWorkspaceTranslation();
   if (!active) return pluginName === "Payroll Data Download"
-    ? <PluginActivationButton pluginName={pluginName} label={label} buttonLabel="Download" />
-    : <PluginActivationPrompt pluginName={pluginName} label={label} />;
+    ? <PluginActivationButton salonId={salonId} pluginName={pluginName} label={label} buttonLabel="Download" />
+    : <PluginActivationPrompt salonId={salonId} pluginName={pluginName} label={label} />;
   return <section className={styles.panel} aria-label={pluginName}>
     <div className={styles.header}><span className={styles.title}>{t(label)}</span><span className={rowStyles.active}>{t("Active")}</span>
       <span className={rowStyles.links}>
-        {settingsHref && <Link href={settingsHref} prefetch={false}>{t(pluginName === "Payroll Data Download" ? "Download" : "Open")}</Link>}
+        {settingsHref && <Link href={marketTargetHref(settingsHref, salonId)} prefetch={false}>{t(pluginName === "Payroll Data Download" ? "Download" : "Open")}</Link>}
       </span>
     </div>
     {children}

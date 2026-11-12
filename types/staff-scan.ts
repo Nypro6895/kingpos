@@ -12,3 +12,7 @@ export type StaffScanWorkspace = {
 };
 export type ScanEntryLine = { id: string; serviceId: string; amount: string };
 export type ScanDeskLine = ScanEntryLine & { staffId: string };
+export type HoldPosDraftInput = { note?: string; requestId: string; customerId: string; visitId?: string | null; lines: ScanDeskLine[]; tip: number; discount: number };
+export type HeldTicketLink = { visitId: string; revision: number };
+export type HeldVisitState = { visitId: string; revision: number | null; status: string; ticketId: string | null; completed: boolean; cancelled: boolean };
+export type UpdatePosHeldTicketInput = HeldTicketLink & { note?: string; lines: ScanDeskLine[]; tip: number; discount: number; finalize: boolean };

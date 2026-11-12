@@ -7,12 +7,13 @@ export type AuthRouteWorkspaceKind =
   | "personal"
   | "salon"
   | "shared"
-  | "staff";
+  | "staff"
+  | "tax";
 
 export type AuthWorkspaceSummary = {
   id: string;
   salonMode: "manage" | "staff" | null;
-  type: "account" | "personal" | "salon";
+  type: "account" | "personal" | "salon" | "tax";
 };
 
 export type PostAuthRouteDecision = {
@@ -29,8 +30,13 @@ const AUTH_FORM_PATHS = [
   "/login",
   "/reset-password",
   "/signup",
+  "/tax/login",
+  "/tax/signup",
+  "/tax/forgot-password",
 ] as const;
 const SHELLLESS_NEUTRAL_PREFIXES = [
+  "/tax",
+  "/tax-company",
   "/book",
   "/booking/manage",
   "/pos/customer-display",
@@ -133,6 +139,7 @@ export function loginHrefForReturnPath(path: string) {
 
 export function getAuthRouteWorkspaceKind(path: string): AuthRouteWorkspaceKind {
   const pathname = pathnameFromInternalPath(sanitizeAuthReturnPath(path));
+  if (matchesAuthPath(pathname,"/tax") || matchesAuthPath(pathname,"/tax-company")) return "tax";
 
   if (pathname === "/" || pathMatchesAny(pathname, SHARED_CONTEXT_PREFIXES)) {
     return "shared";
@@ -187,6 +194,7 @@ function workspaceCanRestoreRoute(
   workspace: AuthWorkspaceSummary,
   routeKind: AuthRouteWorkspaceKind,
 ) {
+  if (routeKind === "tax") return workspace.type === "tax";
   if (routeKind === "manage") {
     return workspace.type === "salon" && workspace.salonMode === "manage";
   }
@@ -253,7 +261,7 @@ export function resolvePostAuthRoute(input: {
   }
 
   return {
-    redirectTo: routeKind === "neutral" ? redirectTo : PERSONAL_HOME_PATH,
+    redirectTo: routeKind === "neutral" || routeKind === "tax" ? redirectTo : PERSONAL_HOME_PATH,
     routeKind,
     workspaceId: personal?.id ?? null,
   };

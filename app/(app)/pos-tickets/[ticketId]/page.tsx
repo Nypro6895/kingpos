@@ -602,7 +602,7 @@ async function PosTicketDetailPage({
       <div className="border-b border-zinc-200 pb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-medium text-zinc-950 underline" href={returnTo && /^\/(reports|pos\/report)\?(?!.*[\\\r\n]).*$/.test(returnTo) ? returnTo : "/pos-tickets"}>
-          <WorkspaceText text={returnTo && /^\/(reports|pos\/report)\?/.test(returnTo) ? "Back to Reports" : "Back to POS Tickets"} />
+          <WorkspaceText text={returnTo && /^\/(reports|pos\/report)\?/.test(returnTo) ? "Back to Reports" : "Back to POS tickets"} />
           </Link>
           <div className="flex items-center gap-3"><StatusBadge status={ticket.status} /><ContextualSupport /></div>
         </div>

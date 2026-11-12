@@ -1,44 +1,198 @@
 "use server";
 import { closingPayload } from "@/lib/daily-closing-input";
-import { ticketAdjustmentEventAction, type TicketAdjustmentEventAction } from "@/lib/pos-ticket-adjustment-history";
+import {
+  ticketAdjustmentEventAction,
+  type TicketAdjustmentEventAction,
+} from "@/lib/pos-ticket-adjustment-history";
 import type { RelayWorkspace } from "@/types/service-relay";
-import type { ScanDeskLine } from "@/types/staff-scan";
-import type {PayrollLiveChange} from "@/types/payroll-live-history";
+import type {
+  HeldVisitState,
+  ScanDeskLine,
+  HoldPosDraftInput,
+  UpdatePosHeldTicketInput,
+} from "@/types/staff-scan";
+import type { RelayTicket } from "@/types/service-relay";
 
-export async function portableLoadServiceRelay(): Promise<{ data?: RelayWorkspace; error?: string }> {
+export async function portableUpdatePosHeldTicket(
+  input: UpdatePosHeldTicketInput,
+): Promise<{
+  ticket?: RelayTicket;
+  ticketId?: string;
+  alreadyClosed?: boolean;
+  error?: string;
+}> {
   try {
-    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
-    const { data, error } = await supabase.rpc("service_relay_workspace", { p_salon: portableSession.salon_id, p_desk: true, p_key: keyId, p_signature: signature });
+    const { keyId, signature, portableSession, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { data, error } = await supabase.rpc(
+      "phone_checkin_update_pos_ticket",
+      {
+        p_salon: portableSession.salon_id,
+        p_visit: input.visitId,
+        p_expected: input.revision,
+        p_lines: input.lines,
+        p_tip: input.tip,
+        p_discount: input.discount,
+        p_note: input.note ?? "",
+        p_finalize: input.finalize,
+        p_key: keyId,
+        p_signature: signature,
+      },
+    );
+    if (error) throw new Error(error.message);
+    await broadcastPosStaffChange(portableSession.salon_id, "pos");
+    return data;
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Could not update held ticket.",
+    };
+  }
+}
+
+export async function portableHoldPosDraft(input: HoldPosDraftInput) {
+  try {
+    const { keyId, signature, portableSession, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { data, error } = await supabase.rpc("phone_checkin_hold_pos_draft", {
+      p_salon: portableSession.salon_id,
+      p_note: input.note ?? "",
+      p_request: input.requestId,
+      p_customer: input.customerId,
+      p_visit: input.visitId ?? null,
+      p_lines: input.lines,
+      p_tip: input.tip,
+      p_discount: input.discount,
+      p_key: keyId,
+      p_signature: signature,
+    });
+    if (error) throw new Error(error.message);
+    await broadcastPosStaffChange(portableSession.salon_id, "pos");
+    return { shared: Boolean(data), ticket: data as RelayTicket | null };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Could not save shared ticket.",
+    };
+  }
+}
+import type { PayrollLiveChange } from "@/types/payroll-live-history";
+
+export async function portableLoadServiceRelay(): Promise<{
+  data?: RelayWorkspace;
+  error?: string;
+}> {
+  try {
+    const { keyId, signature, portableSession, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { data, error } = await supabase.rpc("service_relay_workspace", {
+      p_salon: portableSession.salon_id,
+      p_desk: true,
+      p_key: keyId,
+      p_signature: signature,
+    });
     if (error) throw new Error(error.message);
     return { data: data as RelayWorkspace };
-  } catch (error) { return { error: error instanceof Error ? error.message : "Could not load service tickets." }; }
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Could not load service tickets.",
+    };
+  }
 }
-export async function portableSubmitServiceRelay(input: { visitId: string; revision: number; tip: number; discount: number }) {
+export async function portableSubmitServiceRelay(input: {
+  visitId: string;
+  revision: number;
+  tip: number;
+  discount: number;
+}) {
   try {
-    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
-    const { data, error } = await supabase.rpc("service_relay_submit", { p_salon: portableSession.salon_id, p_visit: input.visitId, p_expected: input.revision, p_tip: input.tip, p_discount: input.discount, p_key: keyId, p_signature: signature });
+    const { keyId, signature, portableSession, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { data, error } = await supabase.rpc("service_relay_submit", {
+      p_salon: portableSession.salon_id,
+      p_visit: input.visitId,
+      p_expected: input.revision,
+      p_tip: input.tip,
+      p_discount: input.discount,
+      p_key: keyId,
+      p_signature: signature,
+    });
     if (error) throw new Error(error.message);
     await broadcastPosStaffChange(portableSession.salon_id, "pos");
     return { ok: true, ticketId: String(data.ticketId) };
-  } catch (error) { return { error: error instanceof Error ? error.message : "Could not submit service ticket." }; }
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Could not submit service ticket.",
+    };
+  }
 }
-export async function portableSaveServiceRelayAtDesk(input: { visitId: string; revision: number; lines: ScanDeskLine[] }) {
+export async function portableSaveServiceRelayAtDesk(input: {
+  visitId: string;
+  revision: number;
+  lines: ScanDeskLine[];
+}) {
   try {
-    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
-    const { error } = await supabase.rpc("staff_scan_desk_save", { p_salon: portableSession.salon_id, p_visit: input.visitId, p_expected: input.revision, p_lines: input.lines, p_key: keyId, p_signature: signature });
+    const { keyId, signature, portableSession, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { error } = await supabase.rpc("staff_scan_desk_save", {
+      p_salon: portableSession.salon_id,
+      p_visit: input.visitId,
+      p_expected: input.revision,
+      p_lines: input.lines,
+      p_key: keyId,
+      p_signature: signature,
+    });
     if (error) throw new Error(error.message);
     await broadcastPosStaffChange(portableSession.salon_id, "pos");
     return { ok: true };
-  } catch (error) { return { error: error instanceof Error ? error.message : "Could not save service ticket." }; }
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Could not save service ticket.",
+    };
+  }
 }
-export async function portableNotifyPersonalReady(input: { visitId: string; staffId: string | null; chair: string; requestId: string }) {
+export async function portableNotifyPersonalReady(input: {
+  visitId: string;
+  staffId: string | null;
+  chair: string;
+  requestId: string;
+}) {
   try {
-    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
-    const { error } = await supabase.rpc("personal_qr_notify_ready", { p_salon: portableSession.salon_id, p_visit: input.visitId, p_staff: input.staffId, p_chair: input.chair, p_request: input.requestId, p_key: keyId, p_signature: signature });
+    const { keyId, signature, portableSession, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { error } = await supabase.rpc("personal_qr_notify_ready", {
+      p_salon: portableSession.salon_id,
+      p_visit: input.visitId,
+      p_staff: input.staffId,
+      p_chair: input.chair,
+      p_request: input.requestId,
+      p_key: keyId,
+      p_signature: signature,
+    });
     if (error) throw new Error(error.message);
     await broadcastPosStaffChange(portableSession.salon_id, "waiting");
     return { ok: true };
-  } catch (error) { return { error: error instanceof Error ? error.message : "Could not notify this customer." }; }
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Could not notify this customer.",
+    };
+  }
 }
 
 import { revalidatePath } from "next/cache";
@@ -46,7 +200,13 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { cache } from "react";
-import { createHash, createPublicKey, pbkdf2, privateDecrypt, constants as cryptoConstants } from "node:crypto";
+import {
+  createHash,
+  createPublicKey,
+  pbkdf2,
+  privateDecrypt,
+  constants as cryptoConstants,
+} from "node:crypto";
 import { getPosLiveDraft } from "@/app/pos/actions";
 import { withPortableServiceAddOns } from "@/lib/pos-service-catalog-server";
 import { marketServiceClient } from "@/lib/market-payments";
@@ -93,8 +253,7 @@ import type {
 
 const PORTABLE_POS_KEY_ID_COOKIE = "kingpos-portable-pos-key-id";
 const PORTABLE_POS_SIGNATURE_COOKIE = "kingpos-portable-pos-session";
-const PORTABLE_POS_REMEMBERED_ID_COOKIE =
-  "kingpos-portable-pos-remembered-id";
+const PORTABLE_POS_REMEMBERED_ID_COOKIE = "kingpos-portable-pos-remembered-id";
 const CUSTOMER_DISPLAY_COMPLETED_RESET_SECONDS = 30;
 
 type ActionResult<T> =
@@ -322,7 +481,21 @@ export type PortableTicketData = {
   timezone: string;
 };
 
-export type PortableBookingSlot = { startAt: string; label: string; endAt?: string; staffName?: string; lines?: {serviceId: string; serviceName: string; staffId: string; staffName: string; startAt: string; endAt: string; price?: number}[] };
+export type PortableBookingSlot = {
+  startAt: string;
+  label: string;
+  endAt?: string;
+  staffName?: string;
+  lines?: {
+    serviceId: string;
+    serviceName: string;
+    staffId: string;
+    staffName: string;
+    startAt: string;
+    endAt: string;
+    price?: number;
+  }[];
+};
 
 export type PortableBookAppointment = {
   noShowKind?: import("@/lib/booking-no-show").NoShowKind;
@@ -332,8 +505,21 @@ export type PortableBookAppointment = {
   noShowHistory?: import("@/lib/booking-no-show").NoShowHistoryItem[];
   notes?: string | null;
   total?: number;
-  customerId?: string; customerEmail?: string | null; serviceIds?: string[]; updatedAt?: string; ticketId?: string | null;
-  lines?: { id: string; serviceId: string; serviceName: string; staffId: string; staffName?: string; startAt?: string; endAt?: string; price: number }[];
+  customerId?: string;
+  customerEmail?: string | null;
+  serviceIds?: string[];
+  updatedAt?: string;
+  ticketId?: string | null;
+  lines?: {
+    id: string;
+    serviceId: string;
+    serviceName: string;
+    staffId: string;
+    staffName?: string;
+    startAt?: string;
+    endAt?: string;
+    price: number;
+  }[];
   notificationStatus?: string;
   staffId?: string | null;
   customerName: string | null;
@@ -348,7 +534,12 @@ export type PortableBookAppointment = {
 
 export type PortableBookData = {
   openingHours?: import("@/lib/booking-calendar-window").BookingOpeningHours;
-  staffServiceAssignments?: {serviceId: string; staffId: string; from: string | null; through: string | null}[];
+  staffServiceAssignments?: {
+    serviceId: string;
+    staffId: string;
+    from: string | null;
+    through: string | null;
+  }[];
   canCreateTicket?: boolean;
   notificationSetup?: string;
   bookingPolicy?: BookingTimePolicy;
@@ -435,7 +626,9 @@ function cookieOptions(maxAge?: number) {
   };
 }
 
-function normalizePortableCapabilities(value: unknown): PortablePosCapability[] {
+function normalizePortableCapabilities(
+  value: unknown,
+): PortablePosCapability[] {
   if (!Array.isArray(value)) {
     return [...DEFAULT_PORTABLE_POS_CAPABILITIES];
   }
@@ -455,7 +648,8 @@ function normalizePortableSession(value: unknown): PortablePosSession | null {
   }
 
   const payload = value as Record<string, unknown>;
-  const accessId = typeof payload.access_id === "string" ? payload.access_id : "";
+  const accessId =
+    typeof payload.access_id === "string" ? payload.access_id : "";
   const keyId = typeof payload.key_id === "string" ? payload.key_id : "";
   const salonId = typeof payload.salon_id === "string" ? payload.salon_id : "";
   const salonName =
@@ -563,10 +757,7 @@ function normalizePortableDeskTurns(value: unknown): PosDeskStaff["turns"] {
       ["receiptLargeTurns", "receipt_large_turns"],
       largeTurns,
     ),
-    smallTurns: readPortableNumberField(payload, [
-      "smallTurns",
-      "small_turns",
-    ]),
+    smallTurns: readPortableNumberField(payload, ["smallTurns", "small_turns"]),
     totalTurns: readPortableNumberField(
       payload,
       ["totalTurns", "total_turns"],
@@ -575,9 +766,7 @@ function normalizePortableDeskTurns(value: unknown): PosDeskStaff["turns"] {
   };
 }
 
-function normalizePortableDeskStaffAvatarUrl(
-  payload: Record<string, unknown>,
-) {
+function normalizePortableDeskStaffAvatarUrl(payload: Record<string, unknown>) {
   const directAvatarUrl = safeAccountAvatarUrl(
     normalizePortableNullableString(payload.avatarUrl ?? payload.avatar_url),
   );
@@ -616,8 +805,7 @@ function normalizePortableDeskStaffRow(value: unknown): PosDeskStaff | null {
     return null;
   }
 
-  const checkInSequence =
-    payload.check_in_sequence ?? payload.checkInSequence;
+  const checkInSequence = payload.check_in_sequence ?? payload.checkInSequence;
   const isActive = payload.is_active ?? payload.isActive;
 
   return {
@@ -667,9 +855,7 @@ function normalizePortableRequestedService(
   }
 
   return {
-    basePrice: normalizePortableNumber(
-      payload.basePrice ?? payload.base_price,
-    ),
+    basePrice: normalizePortableNumber(payload.basePrice ?? payload.base_price),
     category: normalizePortableNullableString(payload.category),
     durationMinutes: normalizePortableNumber(
       payload.durationMinutes ?? payload.duration_minutes,
@@ -691,9 +877,8 @@ function normalizePortableRequestedServices(
   return Array.isArray(value)
     ? value
         .map(normalizePortableRequestedService)
-        .filter(
-          (service): service is CustomerVisitRequestedService =>
-            Boolean(service),
+        .filter((service): service is CustomerVisitRequestedService =>
+          Boolean(service),
         )
     : [];
 }
@@ -755,7 +940,9 @@ function normalizePortableWaitingVisit(
       payload.appointmentStartAt,
     ),
     assignedStaffId: normalizePortableNullableString(payload.assignedStaffId),
-    assignedStaffName: normalizePortableNullableString(payload.assignedStaffName),
+    assignedStaffName: normalizePortableNullableString(
+      payload.assignedStaffName,
+    ),
     checkedInAt,
     customerId,
     customerName,
@@ -859,9 +1046,8 @@ function normalizePortableTicketTurnPart(
     normalizePortableString(payload.createdAt ?? payload.created_at) ||
     fallback.createdAt;
   const ticketItemId =
-    normalizePortableString(
-      payload.ticketItemId ?? payload.ticket_item_id,
-    ) || fallback.itemId;
+    normalizePortableString(payload.ticketItemId ?? payload.ticket_item_id) ||
+    fallback.itemId;
   const ticketId =
     normalizePortableString(payload.ticketId ?? payload.ticket_id) ||
     fallback.ticketId;
@@ -899,9 +1085,9 @@ function normalizePortableTicketItem(
 
   const payload = value as Record<string, unknown>;
   const id = normalizePortableString(payload.id);
-  const serviceName = normalizePortableString(
-    payload.serviceName ?? payload.service_name,
-  ) || "Service";
+  const serviceName =
+    normalizePortableString(payload.serviceName ?? payload.service_name) ||
+    "Service";
 
   if (!id) {
     return null;
@@ -955,9 +1141,7 @@ function normalizePortableTicketItem(
               workDate: fallback.workDate,
             }),
           )
-          .filter(
-            (part): part is PortableTicketTurnPart => Boolean(part),
-          )
+          .filter((part): part is PortableTicketTurnPart => Boolean(part))
       : [],
   };
 }
@@ -987,9 +1171,7 @@ function normalizePortableTicketStaffEarning(
             payload.manualTipAmount ?? payload.manual_tip_amount,
           ),
     staffId,
-    tipAmount: normalizePortableNumber(
-      payload.tipAmount ?? payload.tip_amount,
-    ),
+    tipAmount: normalizePortableNumber(payload.tipAmount ?? payload.tip_amount),
     tipIsManual: Boolean(payload.tipIsManual ?? payload.tip_is_manual),
   };
 }
@@ -1002,12 +1184,18 @@ function normalizePortableTicketAdjustment(
   }
 
   const payload = value as Record<string, unknown>;
-  const eventAction = ticketAdjustmentEventAction(payload.eventAction ?? payload.event_action);
+  const eventAction = ticketAdjustmentEventAction(
+    payload.eventAction ?? payload.event_action,
+  );
   if (eventAction === "draft" || eventAction === "created") return null;
-  const financialBefore = payload.financialInputBeforeValues ?? payload.financial_input_before_values;
-  const financialAfter = payload.financialInputAfterValues ?? payload.financial_input_after_values;
+  const financialBefore =
+    payload.financialInputBeforeValues ?? payload.financial_input_before_values;
+  const financialAfter =
+    payload.financialInputAfterValues ?? payload.financial_input_after_values;
   const id = normalizePortableString(payload.id);
-  const ticketId = normalizePortableString(payload.ticketId ?? payload.ticket_id);
+  const ticketId = normalizePortableString(
+    payload.ticketId ?? payload.ticket_id,
+  );
   const rawAction = normalizePortableString(payload.action);
   const createdAt = normalizePortableString(
     payload.createdAt ?? payload.created_at,
@@ -1030,9 +1218,21 @@ function normalizePortableTicketAdjustment(
   return {
     action: rawAction as PortableTicketAdjustmentRow["action"],
     eventAction,
-    financialInputEventId: normalizePortableNullableString(payload.financialInputEventId ?? payload.financial_input_event_id),
-    financialInputBeforeValues: financialBefore !== null && typeof financialBefore === "object" && !Array.isArray(financialBefore) ? financialBefore as Record<string, unknown> : null,
-    financialInputAfterValues: financialAfter !== null && typeof financialAfter === "object" && !Array.isArray(financialAfter) ? financialAfter as Record<string, unknown> : null,
+    financialInputEventId: normalizePortableNullableString(
+      payload.financialInputEventId ?? payload.financial_input_event_id,
+    ),
+    financialInputBeforeValues:
+      financialBefore !== null &&
+      typeof financialBefore === "object" &&
+      !Array.isArray(financialBefore)
+        ? (financialBefore as Record<string, unknown>)
+        : null,
+    financialInputAfterValues:
+      financialAfter !== null &&
+      typeof financialAfter === "object" &&
+      !Array.isArray(financialAfter)
+        ? (financialAfter as Record<string, unknown>)
+        : null,
     afterSnapshot: payload.afterSnapshot ?? payload.after_snapshot ?? {},
     beforeSnapshot: payload.beforeSnapshot ?? payload.before_snapshot ?? {},
     createdAt,
@@ -1062,7 +1262,9 @@ function normalizePortableTicket(value: unknown): PortableTicketRow | null {
 
   const payload = value as Record<string, unknown>;
   const id = normalizePortableString(payload.id);
-  const openedAt = normalizePortableString(payload.openedAt ?? payload.opened_at);
+  const openedAt = normalizePortableString(
+    payload.openedAt ?? payload.opened_at,
+  );
   const workDate =
     normalizePortableString(payload.workDate ?? payload.work_date) ||
     openedAt.slice(0, 10);
@@ -1075,14 +1277,16 @@ function normalizePortableTicket(value: unknown): PortableTicketRow | null {
     adjustments: Array.isArray(payload.adjustments)
       ? payload.adjustments
           .map(normalizePortableTicketAdjustment)
-          .filter(
-            (adjustment): adjustment is PortableTicketAdjustmentRow =>
-              Boolean(adjustment),
+          .filter((adjustment): adjustment is PortableTicketAdjustmentRow =>
+            Boolean(adjustment),
           )
       : [],
-    closedAt: normalizePortableNullableString(payload.closedAt ?? payload.closed_at),
+    closedAt: normalizePortableNullableString(
+      payload.closedAt ?? payload.closed_at,
+    ),
     createdAt:
-      normalizePortableString(payload.createdAt ?? payload.created_at) || openedAt,
+      normalizePortableString(payload.createdAt ?? payload.created_at) ||
+      openedAt,
     customerEmail: normalizePortableNullableString(
       payload.customerEmail ?? payload.customer_email,
     ),
@@ -1126,17 +1330,15 @@ function normalizePortableTicket(value: unknown): PortableTicketRow | null {
     sourceBookingId: normalizePortableNullableString(
       payload.sourceBookingId ?? payload.source_booking_id,
     ),
-    staffEarnings: (
-      Array.isArray(payload.staffEarnings)
-        ? payload.staffEarnings
-        : Array.isArray(payload.staff_earnings)
-          ? payload.staff_earnings
-          : []
+    staffEarnings: (Array.isArray(payload.staffEarnings)
+      ? payload.staffEarnings
+      : Array.isArray(payload.staff_earnings)
+        ? payload.staff_earnings
+        : []
     )
       .map(normalizePortableTicketStaffEarning)
-      .filter(
-        (earning): earning is PortableTicketStaffEarningRow =>
-          Boolean(earning),
+      .filter((earning): earning is PortableTicketStaffEarningRow =>
+        Boolean(earning),
       ),
     status: normalizePortableTicketStatus(payload.status),
     subtotal: normalizePortableNumber(payload.subtotal),
@@ -1157,10 +1359,15 @@ function normalizePortableTicket(value: unknown): PortableTicketRow | null {
 
 function normalizePortableReportClosingInputs(value: unknown) {
   const payload =
-    value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : {};
 
   return {
-    tipInput: payload.tipInput == null ? null : normalizePortableNumber(payload.tipInput),
+    tipInput:
+      payload.tipInput == null
+        ? null
+        : normalizePortableNumber(payload.tipInput),
     entered: payload.entered === true,
     cashAmount: normalizePortableNumber(payload.cashAmount),
     creditCardAmount: normalizePortableNumber(payload.creditCardAmount),
@@ -1172,7 +1379,9 @@ function normalizePortableReportClosingInputs(value: unknown) {
 
 function normalizePortableReportLock(value: unknown) {
   const payload =
-    value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : {};
 
   return {
     isLocked: Boolean(payload.isLocked),
@@ -1187,10 +1396,6 @@ function normalizePortableReconciliationStatus(
     ? value
     : "short";
 }
-
-
-
-
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -1288,7 +1493,9 @@ function normalizeLiveDraftCustomer(
   };
 }
 
-function normalizeLiveDraft(value: PosLiveDraftView | null): PosLiveDraftView | null {
+function normalizeLiveDraft(
+  value: PosLiveDraftView | null,
+): PosLiveDraftView | null {
   if (!value) {
     return null;
   }
@@ -1318,8 +1525,7 @@ function normalizeLiveDraft(value: PosLiveDraftView | null): PosLiveDraftView | 
     token: value.token,
     total,
     total_before_tip:
-      Number(value.total_before_tip ?? Number.NaN) ||
-      Math.max(0, total - tip),
+      Number(value.total_before_tip ?? Number.NaN) || Math.max(0, total - tip),
     updated_at: value.updated_at,
     version: Number(value.version ?? 0),
   };
@@ -1327,10 +1533,10 @@ function normalizeLiveDraft(value: PosLiveDraftView | null): PosLiveDraftView | 
 
 async function readPortablePosCookieSession() {
   const cookieStore = await cookies();
-  if (cookieStore.get("kingpos-portable-local-lock")?.value === "1") return null;
+  if (cookieStore.get("kingpos-portable-local-lock")?.value === "1")
+    return null;
   const keyId = cookieStore.get(PORTABLE_POS_KEY_ID_COOKIE)?.value ?? "";
-  const signature =
-    cookieStore.get(PORTABLE_POS_SIGNATURE_COOKIE)?.value ?? "";
+  const signature = cookieStore.get(PORTABLE_POS_SIGNATURE_COOKIE)?.value ?? "";
 
   if (!keyId || !signature) {
     return null;
@@ -1386,7 +1592,9 @@ export async function signInPortablePosAction(
   const supabase = createSupabaseServerClient();
 
   if (!supabase) {
-    return { error: "This feature is temporarily unavailable. Please try again later." };
+    return {
+      error: "This feature is temporarily unavailable. Please try again later.",
+    };
   }
 
   const requestHeaders = await headers();
@@ -1407,11 +1615,7 @@ export async function signInPortablePosAction(
   const result = data as PortablePosSignInResult;
   const cookieStore = await cookies();
   cookieStore.delete("kingpos-portable-local-lock");
-  cookieStore.set(
-    PORTABLE_POS_KEY_ID_COOKIE,
-    result.key_id,
-    cookieOptions(),
-  );
+  cookieStore.set(PORTABLE_POS_KEY_ID_COOKIE, result.key_id, cookieOptions());
   cookieStore.set(
     PORTABLE_POS_SIGNATURE_COOKIE,
     result.signature,
@@ -1458,10 +1662,13 @@ export async function getCurrentPortablePosSession() {
     return null;
   }
 
-  const { data, error } = await supabase.rpc("get_pos_portable_access_context", {
-    p_key_id: session.keyId,
-    p_session_signature: session.signature,
-  });
+  const { data, error } = await supabase.rpc(
+    "get_pos_portable_access_context",
+    {
+      p_key_id: session.keyId,
+      p_session_signature: session.signature,
+    },
+  );
 
   if (error || !data) {
     return null;
@@ -1480,7 +1687,9 @@ async function requirePortablePosSession() {
   const supabase = createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("This feature is temporarily unavailable. Please try again later.");
+    throw new Error(
+      "This feature is temporarily unavailable. Please try again later.",
+    );
   }
 
   return {
@@ -1489,35 +1698,42 @@ async function requirePortablePosSession() {
   };
 }
 
-const requirePortablePosSessionContext = cache(async function requirePortablePosSessionContext() {
-  const session = await readPortablePosCookieSession();
+const requirePortablePosSessionContext = cache(
+  async function requirePortablePosSessionContext() {
+    const session = await readPortablePosCookieSession();
 
-  if (!session) {
-    throw new Error("Portable POS is logged out.");
-  }
+    if (!session) {
+      throw new Error("Portable POS is logged out.");
+    }
 
-  const supabase = createSupabaseServerClient();
+    const supabase = createSupabaseServerClient();
 
-  if (!supabase) {
-    throw new Error("This feature is temporarily unavailable. Please try again later.");
-  }
+    if (!supabase) {
+      throw new Error(
+        "This feature is temporarily unavailable. Please try again later.",
+      );
+    }
 
-  const { data, error } = await supabase.rpc("get_pos_portable_access_context", {
-    p_key_id: session.keyId,
-    p_session_signature: session.signature,
-  });
-  const portableSession = normalizePortableSession(data);
+    const { data, error } = await supabase.rpc(
+      "get_pos_portable_access_context",
+      {
+        p_key_id: session.keyId,
+        p_session_signature: session.signature,
+      },
+    );
+    const portableSession = normalizePortableSession(data);
 
-  if (error || !portableSession) {
-    throw new Error("Portable POS session expired. Log in again.");
-  }
+    if (error || !portableSession) {
+      throw new Error("Portable POS session expired. Log in again.");
+    }
 
-  return {
-    ...session,
-    portableSession,
-    supabase,
-  };
-});
+    return {
+      ...session,
+      portableSession,
+      supabase,
+    };
+  },
+);
 
 async function requirePortableCapability(capability: PortablePosCapability) {
   const context = await requirePortablePosSessionContext();
@@ -1526,7 +1742,9 @@ async function requirePortableCapability(capability: PortablePosCapability) {
     if (capability === PORTABLE_POS_CAPABILITIES.turnAdjust) {
       throw new Error(PORTABLE_TURN_ADJUST_DISABLED_MESSAGE);
     }
-    throw new Error("This Portable POS device is not allowed to open that area.");
+    throw new Error(
+      "This Portable POS device is not allowed to open that area.",
+    );
   }
 
   return context;
@@ -1588,24 +1806,33 @@ async function loadPortablePosDeskData(): Promise<{
   const payload = data as PortableDeskRpcData;
   const settings = normalizePosSettingsPayload(payload.settings);
 
-  const deviceId=(await cookies()).get('kingpos-workspace-device')?.value;
-  if(deviceId){
-    const bound=await supabase.rpc('get_pos_workspace_draft',{p_key:keyId,p_signature:signature,p_device:deviceId});
-    if(bound.error)throw new Error(bound.error.message);
-    payload.liveDraft=bound.data;
+  const deviceId = (await cookies()).get("kingpos-workspace-device")?.value;
+  if (deviceId) {
+    const bound = await supabase.rpc("get_pos_workspace_draft", {
+      p_key: keyId,
+      p_signature: signature,
+      p_device: deviceId,
+    });
+    if (bound.error) throw new Error(bound.error.message);
+    payload.liveDraft = bound.data;
   }
 
   return {
     defaults: getPosDeskDefaults(settings),
     salonId: portableSession.salon_id,
     liveDraft: normalizeLiveDraft(
-      (payload.liveDraft ?? payload.live_draft ?? null) as PosLiveDraftView | null,
+      (payload.liveDraft ??
+        payload.live_draft ??
+        null) as PosLiveDraftView | null,
     ),
     salonLogoUrl: settings.salonLogoUrl,
     salonName:
       normalizePortableString(payload.salonName ?? payload.salon_name) ||
       portableSession.salon_name,
-    services: await withPortableServiceAddOns(payload.services ?? [], portableSession.salon_id),
+    services: await withPortableServiceAddOns(
+      payload.services ?? [],
+      portableSession.salon_id,
+    ),
     staff: normalizePortableDeskStaffRows(payload.staff),
     today,
     waitingVisits: normalizePortableWaitingVisits(
@@ -1618,9 +1845,7 @@ async function loadPortableReferenceData(input: {
   keyId: string;
   salonName: string;
   signature: string;
-  supabase: NonNullable<
-    Awaited<ReturnType<typeof createSupabaseServerClient>>
-  >;
+  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>;
 }) {
   const { data, error } = await input.supabase.rpc(
     "get_pos_portable_reference_data",
@@ -1631,7 +1856,9 @@ async function loadPortableReferenceData(input: {
   );
 
   if (error || !data) {
-    throw new Error(error?.message ?? "Portable reference data is unavailable.");
+    throw new Error(
+      error?.message ?? "Portable reference data is unavailable.",
+    );
   }
 
   const payload = data as PortableDeskRpcData;
@@ -1657,18 +1884,28 @@ export async function getPortablePosDeskData(): Promise<{
   today: string;
   waitingVisits: CustomerVisitQueueItem[];
 }> {
-  const { portableSession } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+  const { portableSession } = await requirePortableCapability(
+    PORTABLE_POS_CAPABILITIES.posUse,
+  );
   return {
-    ...await loadPortablePosDeskData(),
-    canAdjustStaffTurn: hasPortableCapability(portableSession, PORTABLE_POS_CAPABILITIES.turnAdjust),
+    ...(await loadPortablePosDeskData()),
+    canAdjustStaffTurn: hasPortableCapability(
+      portableSession,
+      PORTABLE_POS_CAPABILITIES.turnAdjust,
+    ),
   };
 }
 
-export async function getPortableWorkspaceStaff(ids?:string[]) {
-  const {keyId,signature,supabase}=await requirePortablePosSessionContext();
-  const {data,error}=await supabase.rpc('get_pos_workspace_staff',{p_key:keyId,p_signature:signature,p_ids:ids??null});
-  if(error||!data)throw new Error('Unable to refresh staff');
-  return {...data,staff:normalizePortableDeskStaffRows(data.staff)};
+export async function getPortableWorkspaceStaff(ids?: string[]) {
+  const { keyId, signature, supabase } =
+    await requirePortablePosSessionContext();
+  const { data, error } = await supabase.rpc("get_pos_workspace_staff", {
+    p_key: keyId,
+    p_signature: signature,
+    p_ids: ids ?? null,
+  });
+  if (error || !data) throw new Error("Unable to refresh staff");
+  return { ...data, staff: normalizePortableDeskStaffRows(data.staff) };
 }
 
 export async function getPortableTodayData(): Promise<PortableTodayData> {
@@ -1692,7 +1929,9 @@ export async function getPortableTodayData(): Promise<PortableTodayData> {
   };
 }
 
-function normalizePortableCheckInRow(value: unknown): PortableCheckInStaffRow | null {
+function normalizePortableCheckInRow(
+  value: unknown,
+): PortableCheckInStaffRow | null {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -1730,8 +1969,15 @@ function normalizePortableCheckInRow(value: unknown): PortableCheckInStaffRow | 
     isPasscodeDefault: Boolean(payload.isPasscodeDefault),
     jobTitle: normalizePortableNullableString(payload.jobTitle),
     queueTurnCount: normalizePortableNumber(payload.queueTurnCount),
-    leaveCohortStaffIds: Array.isArray(payload.leaveCohortStaffIds) ? payload.leaveCohortStaffIds.filter((id): id is string => typeof id === "string") : undefined,
-    leaveBaselineTurnCount: payload.leaveBaselineTurnCount == null ? null : normalizePortableNumber(payload.leaveBaselineTurnCount),
+    leaveCohortStaffIds: Array.isArray(payload.leaveCohortStaffIds)
+      ? payload.leaveCohortStaffIds.filter(
+          (id): id is string => typeof id === "string",
+        )
+      : undefined,
+    leaveBaselineTurnCount:
+      payload.leaveBaselineTurnCount == null
+        ? null
+        : normalizePortableNumber(payload.leaveBaselineTurnCount),
     status: normalizePortableString(payload.status) || "not_checked_in",
   };
 }
@@ -1795,7 +2041,9 @@ export async function getPortableCheckInData(): Promise<PortableCheckInData> {
     });
 
     if (!settingsResult.error) {
-      salonLogoUrl = normalizePosSettingsPayload(settingsResult.data).salonLogoUrl;
+      salonLogoUrl = normalizePosSettingsPayload(
+        settingsResult.data,
+      ).salonLogoUrl;
     }
   }
 
@@ -1806,7 +2054,9 @@ export async function getPortableCheckInData(): Promise<PortableCheckInData> {
     salonName:
       normalizePortableString(payload.salonName) || portableSession.salon_name,
     staff,
-    today: normalizePortableString(payload.today) || getTodayDate(portableSession.salon_timezone),
+    today:
+      normalizePortableString(payload.today) ||
+      getTodayDate(portableSession.salon_timezone),
     timezone: normalizePortableString(payload.timezone) || "America/Chicago",
   };
 }
@@ -1855,19 +2105,24 @@ export async function portableSubmitAttendanceEvent(
     }
 
     revalidatePath("/pos/portable/check-in");
-    after(() => broadcastPosStaffChange(portableSession.salon_id, "attendance"));
+    after(() =>
+      broadcastPosStaffChange(portableSession.salon_id, "attendance"),
+    );
 
     return {
       data: {
         checkInSequence:
-          payload.checkInSequence === null || payload.checkInSequence === undefined
+          payload.checkInSequence === null ||
+          payload.checkInSequence === undefined
             ? null
             : normalizePortableNumber(payload.checkInSequence),
         isPasscodeDefault: Boolean(payload.isPasscodeDefault),
         queueTurnCount: normalizePortableNumber(payload.queueTurnCount),
         staffId,
         status: normalizePortableString(payload.status) || "not_checked_in",
-        today: normalizePortableString(payload.today) || getTodayDate(portableSession.salon_timezone),
+        today:
+          normalizePortableString(payload.today) ||
+          getTodayDate(portableSession.salon_timezone),
       },
       ok: true,
     };
@@ -1927,25 +2182,26 @@ export async function correctPortableClosedPosTicketInline(formData: FormData) {
 
     salonId = portableSession.salon_id;
 
-    const { data, error } = await supabase.rpc(
-      "save_pos_ticket_inputs",
-      {
-        p_added_items: addedItems,
-        p_item_parts: itemParts,
-        p_item_updates: itemUpdates,
-        p_key: keyId,
-        p_salon: null,
-        p_expected: readString(formData,"expected_revision") ? Number(readString(formData,"expected_revision")) : null,
-        p_reason: reason,
-        p_signature: signature,
-        p_staff_tip_overrides: staffTipOverrides,
-        p_ticket: ticketId,
-        p_tip_total: tipTotal,
-        p_discount_type: readString(formData,"discount_type") || null,
-        p_discount_value: readString(formData,"discount_value") ? Number(readString(formData,"discount_value")) : null,
-        p_request: readString(formData,"request_id") || null,
-      },
-    );
+    const { data, error } = await supabase.rpc("save_pos_ticket_inputs", {
+      p_added_items: addedItems,
+      p_item_parts: itemParts,
+      p_item_updates: itemUpdates,
+      p_key: keyId,
+      p_salon: null,
+      p_expected: readString(formData, "expected_revision")
+        ? Number(readString(formData, "expected_revision"))
+        : null,
+      p_reason: reason,
+      p_signature: signature,
+      p_staff_tip_overrides: staffTipOverrides,
+      p_ticket: ticketId,
+      p_tip_total: tipTotal,
+      p_discount_type: readString(formData, "discount_type") || null,
+      p_discount_value: readString(formData, "discount_value")
+        ? Number(readString(formData, "discount_value"))
+        : null,
+      p_request: readString(formData, "request_id") || null,
+    });
 
     if (error) {
       throw new Error(error.message);
@@ -2040,8 +2296,7 @@ export async function getPortableTicketData(
     payload.isBusinessDateLocked ?? payload.is_business_date_locked,
   );
   let canEdit =
-    canUsePortablePos &&
-    date === getTodayDate(portableSession.salon_timezone);
+    canUsePortablePos && date === getTodayDate(portableSession.salon_timezone);
   let editOptions: {
     services: PosDeskService[];
     staff: PosDeskStaff[];
@@ -2100,7 +2355,10 @@ export async function getPortableBookData(
       p_key_id: keyId,
       p_session_signature: signature,
     }),
-    supabase.rpc("get_pos_portable_booking_policy", { p_key_id: keyId, p_session_signature: signature }),
+    supabase.rpc("get_pos_portable_booking_policy", {
+      p_key_id: keyId,
+      p_session_signature: signature,
+    }),
   ]);
 
   if (rpcResult.error || !rpcResult.data) {
@@ -2128,72 +2386,186 @@ export async function getPortableBookData(
   };
 
   return {
-    appointments: Array.isArray(payload.appointments) ? payload.appointments : [],
+    appointments: Array.isArray(payload.appointments)
+      ? payload.appointments
+      : [],
     staffServiceAssignments: payload.staffServiceAssignments,
     bookingPolicy: policyResult.data as BookingTimePolicy | undefined,
-    canCreateTicket: hasPortableCapability(portableSession, PORTABLE_POS_CAPABILITIES.posUse),
-    notificationSetup: "Booking messages are queued according to salon settings. Delivery requires configured email/SMS providers and the notification worker.",
+    canCreateTicket: hasPortableCapability(
+      portableSession,
+      PORTABLE_POS_CAPABILITIES.posUse,
+    ),
+    notificationSetup:
+      "Booking messages are queued according to salon settings. Delivery requires configured email/SMS providers and the notification worker.",
     canCancel: hasPortableCapability(
       portableSession,
       PORTABLE_POS_CAPABILITIES.bookCancel,
     ),
-    canCreate: !policyResult.error && !!policyResult.data && hasPortableCapability(
-      portableSession,
-      PORTABLE_POS_CAPABILITIES.bookCreate,
-    ),
+    canCreate:
+      !policyResult.error &&
+      !!policyResult.data &&
+      hasPortableCapability(
+        portableSession,
+        PORTABLE_POS_CAPABILITIES.bookCreate,
+      ),
     date,
     salonName: deskData.salonName,
     services: deskData.services,
-    setupMessage: policyResult.error || !policyResult.data ? "Booking rules could not be loaded. Reconnect before creating appointments." : null,
+    setupMessage:
+      policyResult.error || !policyResult.data
+        ? "Booking rules could not be loaded. Reconnect before creating appointments."
+        : null,
     staff: deskData.staff,
     timezone: payload.timezone ?? "America/Chicago",
   };
 }
 
-export async function portableBookingNotifications(): Promise<PortableBookAppointment[]> {
-  const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.bookView);
-  const { data, error } = await supabase.rpc("get_pos_portable_booking_notifications", { p_key_id: keyId, p_session_signature: signature });
-  if (error || !Array.isArray(data)) throw new Error("Appointment notifications could not be loaded. Please try again.");
+export async function portableBookingNotifications(): Promise<
+  PortableBookAppointment[]
+> {
+  const { keyId, signature, supabase } = await requirePortableCapability(
+    PORTABLE_POS_CAPABILITIES.bookView,
+  );
+  const { data, error } = await supabase.rpc(
+    "get_pos_portable_booking_notifications",
+    { p_key_id: keyId, p_session_signature: signature },
+  );
+  if (error || !Array.isArray(data))
+    throw new Error(
+      "Appointment notifications could not be loaded. Please try again.",
+    );
   return data;
 }
 
-export async function portableBookingAppointments(date: string): Promise<PortableBookAppointment[]> {
-  const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.bookView);
-  const { data, error } = await supabase.rpc("get_pos_portable_book_data", { p_date: date, p_key_id: keyId, p_session_signature: signature });
-  if (error || !Array.isArray(data?.appointments)) throw new Error("Appointments could not be refreshed.");
+export async function portableBookingAppointments(
+  date: string,
+): Promise<PortableBookAppointment[]> {
+  const { keyId, signature, supabase } = await requirePortableCapability(
+    PORTABLE_POS_CAPABILITIES.bookView,
+  );
+  const { data, error } = await supabase.rpc("get_pos_portable_book_data", {
+    p_date: date,
+    p_key_id: keyId,
+    p_session_signature: signature,
+  });
+  if (error || !Array.isArray(data?.appointments))
+    throw new Error("Appointments could not be refreshed.");
   return data.appointments;
 }
 
-export async function portableBookingHours(date: string): Promise<import("@/lib/booking-calendar-window").BookingOpeningHours> {
-  const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.bookView);
-  const { data, error } = await supabase.rpc("get_pos_portable_booking_hours", {p_key_id:keyId,p_session_signature:signature,p_date:date});
+export async function portableBookingHours(
+  date: string,
+): Promise<import("@/lib/booking-calendar-window").BookingOpeningHours> {
+  const { keyId, signature, supabase } = await requirePortableCapability(
+    PORTABLE_POS_CAPABILITIES.bookView,
+  );
+  const { data, error } = await supabase.rpc("get_pos_portable_booking_hours", {
+    p_key_id: keyId,
+    p_session_signature: signature,
+    p_date: date,
+  });
   if (error) throw new Error("Opening hours could not be loaded.");
   return data;
 }
 
-export type PortableStaffOption = {staffId: string; available: boolean | null; endAt?: string};
-export async function portableBookingStaffOptions(input: {serviceIds: string[]; staffIds: (string | null)[]; startAt: string; index: number; bookingId?: string}): Promise<PortableStaffOption[]> {
-  const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.bookCreate);
-  const { data, error } = await supabase.rpc("get_pos_portable_booking_staff_options", {p_key_id:keyId,p_session_signature:signature,p_service_ids:input.serviceIds,p_staff_ids:input.staffIds,p_start:input.startAt,p_index:input.index,p_booking_id:input.bookingId ?? null});
+export type PortableStaffOption = {
+  staffId: string;
+  available: boolean | null;
+  endAt?: string;
+};
+export async function portableBookingStaffOptions(input: {
+  serviceIds: string[];
+  staffIds: (string | null)[];
+  startAt: string;
+  index: number;
+  bookingId?: string;
+}): Promise<PortableStaffOption[]> {
+  const { keyId, signature, supabase } = await requirePortableCapability(
+    PORTABLE_POS_CAPABILITIES.bookCreate,
+  );
+  const { data, error } = await supabase.rpc(
+    "get_pos_portable_booking_staff_options",
+    {
+      p_key_id: keyId,
+      p_session_signature: signature,
+      p_service_ids: input.serviceIds,
+      p_staff_ids: input.staffIds,
+      p_start: input.startAt,
+      p_index: input.index,
+      p_booking_id: input.bookingId ?? null,
+    },
+  );
   if (error) throw new Error("Availability could not be checked.");
   return data ?? [];
 }
 
-export async function portableBookingSlots(input: { serviceId: string; serviceIds?: string[]; staffIds?: (string | null)[]; staffId: string; date: string; bookingId?: string }): Promise<PortableBookingSlot[]> {
-  const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.bookCreate);
-  const { data, error } = await supabase.rpc("get_pos_portable_booking_slots_v3", { p_staff_ids: input.staffIds ?? null, p_key_id: keyId, p_session_signature: signature, p_service_ids: input.serviceIds ?? [input.serviceId], p_staff_id: input.staffId || null, p_date: input.date, p_booking_id: input.bookingId || null });
+export async function portableBookingSlots(input: {
+  serviceId: string;
+  serviceIds?: string[];
+  staffIds?: (string | null)[];
+  staffId: string;
+  date: string;
+  bookingId?: string;
+}): Promise<PortableBookingSlot[]> {
+  const { keyId, signature, supabase } = await requirePortableCapability(
+    PORTABLE_POS_CAPABILITIES.bookCreate,
+  );
+  const { data, error } = await supabase.rpc(
+    "get_pos_portable_booking_slots_v3",
+    {
+      p_staff_ids: input.staffIds ?? null,
+      p_key_id: keyId,
+      p_session_signature: signature,
+      p_service_ids: input.serviceIds ?? [input.serviceId],
+      p_staff_id: input.staffId || null,
+      p_date: input.date,
+      p_booking_id: input.bookingId || null,
+    },
+  );
   if (error) throw new Error("Available times could not be loaded.");
   return data ?? [];
 }
 
-export async function portableManageBooking(input: { bookingId: string; action: "read" | "edit" | "confirm" | "cancel" | "ticket" | "mark_no_show" | "mark_no_show_excused"; payload?: Record<string, unknown> }): Promise<ActionResult<PortableBookAppointment>> {
+export async function portableManageBooking(input: {
+  bookingId: string;
+  action:
+    | "read"
+    | "edit"
+    | "confirm"
+    | "cancel"
+    | "ticket"
+    | "mark_no_show"
+    | "mark_no_show_excused";
+  payload?: Record<string, unknown>;
+}): Promise<ActionResult<PortableBookAppointment>> {
   try {
-    const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.bookView);
-    const { data, error } = await supabase.rpc("manage_pos_portable_booking", {p_key_id:keyId,p_session_signature:signature,p_booking_id:input.bookingId,p_action:input.action,p_payload:input.payload ?? {}});
-    if (error || !data) throw new Error(error?.message ?? "Appointment unavailable.");
-    if (input.action !== "read" && !(data as PortableBookAppointment).requiresNoShowReview) revalidatePath("/pos/portable/book");
-    return {ok:true,data:data as PortableBookAppointment};
-  } catch (error) { return {ok:false,error:error instanceof Error ? error.message : "Unable to update appointment."}; }
+    const { keyId, signature, supabase } = await requirePortableCapability(
+      PORTABLE_POS_CAPABILITIES.bookView,
+    );
+    const { data, error } = await supabase.rpc("manage_pos_portable_booking", {
+      p_key_id: keyId,
+      p_session_signature: signature,
+      p_booking_id: input.bookingId,
+      p_action: input.action,
+      p_payload: input.payload ?? {},
+    });
+    if (error || !data)
+      throw new Error(error?.message ?? "Appointment unavailable.");
+    if (
+      input.action !== "read" &&
+      !(data as PortableBookAppointment).requiresNoShowReview
+    )
+      revalidatePath("/pos/portable/book");
+    return { ok: true, data: data as PortableBookAppointment };
+  } catch (error) {
+    return {
+      ok: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unable to update appointment.",
+    };
+  }
 }
 
 export async function portableCreateAppointment(
@@ -2237,22 +2609,56 @@ export async function portableCreateAppointment(
   } catch (error) {
     return {
       error:
-        error instanceof Error ? error.message : "Unable to create appointment.",
+        error instanceof Error
+          ? error.message
+          : "Unable to create appointment.",
       ok: false,
     };
   }
 }
 
-export async function getPortableReportInputHistory(reportDate:string):Promise<{rows:PayrollLiveChange[]}>{
- const {keyId,portableSession,signature,supabase}=await requirePortableCapability(PORTABLE_POS_CAPABILITIES.reportView);
- if(reportDate!==getTodayDate(portableSession.salon_timezone))throw new Error("Portable Report is available for today only.");
- const {data,error}=await supabase.rpc("get_pos_portable_daily_input_history",{p_key_id:keyId,p_session_signature:signature,p_report_date:reportDate});
- if(error||!Array.isArray(data))throw new Error("Saved report changes could not be loaded. Please retry.");
- return {rows:data.filter(row=>row.salon_id===portableSession.salon_id&&row.business_date===reportDate).map(row=>({
-  id:row.id,salon_id:row.salon_id,staff_id:null,source_table:"daily_report",source_id:row.source_id,
-  period_start:row.business_date,period_end:row.business_date,before_values:row.before_values,after_values:row.after_values,
-  actor_id:null,actor_name:row.actor_name,note:row.note,created_at:row.created_at,event_action:row.event_action,business_timezone:row.business_timezone,
- }))};
+export async function getPortableReportInputHistory(
+  reportDate: string,
+): Promise<{ rows: PayrollLiveChange[] }> {
+  const { keyId, portableSession, signature, supabase } =
+    await requirePortableCapability(PORTABLE_POS_CAPABILITIES.reportView);
+  if (reportDate !== getTodayDate(portableSession.salon_timezone))
+    throw new Error("Portable Report is available for today only.");
+  const { data, error } = await supabase.rpc(
+    "get_pos_portable_daily_input_history",
+    {
+      p_key_id: keyId,
+      p_session_signature: signature,
+      p_report_date: reportDate,
+    },
+  );
+  if (error || !Array.isArray(data))
+    throw new Error("Saved report changes could not be loaded. Please retry.");
+  return {
+    rows: data
+      .filter(
+        (row) =>
+          row.salon_id === portableSession.salon_id &&
+          row.business_date === reportDate,
+      )
+      .map((row) => ({
+        id: row.id,
+        salon_id: row.salon_id,
+        staff_id: null,
+        source_table: "daily_report",
+        source_id: row.source_id,
+        period_start: row.business_date,
+        period_end: row.business_date,
+        before_values: row.before_values,
+        after_values: row.after_values,
+        actor_id: null,
+        actor_name: row.actor_name,
+        note: row.note,
+        created_at: row.created_at,
+        event_action: row.event_action,
+        business_timezone: row.business_timezone,
+      })),
+  };
 }
 
 export async function getPortableReportData(
@@ -2261,7 +2667,8 @@ export async function getPortableReportData(
   const { keyId, portableSession, signature, supabase } =
     await requirePortableCapability(PORTABLE_POS_CAPABILITIES.reportView);
   const today = getTodayDate(portableSession.salon_timezone);
-  if (reportDate && reportDate !== today) throw new Error("Portable Report is available for today only.");
+  if (reportDate && reportDate !== today)
+    throw new Error("Portable Report is available for today only.");
   reportDate = today;
   const rpcResult = await supabase.rpc("get_pos_portable_report_data", {
     p_key_id: keyId,
@@ -2281,7 +2688,7 @@ export async function getPortableReportData(
     }
 
     return {
-    closingScope: `${portableSession.salon_id}:${keyId}`,
+      closingScope: `${portableSession.salon_id}:${keyId}`,
       closingInputs: {
         cashAmount: 0,
         creditCardAmount: 0,
@@ -2358,19 +2765,38 @@ export async function savePortableReportClosing(
       throw new Error("Report date is required.");
     }
 
-    const { keyId, portableSession, signature, supabase } = await requirePortableCapability(
-      PORTABLE_POS_CAPABILITIES.reportView,
-    );
-    if (input.expectedScope && input.expectedScope !== `${portableSession.salon_id}:${keyId}`) {
-      throw new Error("The Portable salon session changed. Reopen this report before saving.");
+    const { keyId, portableSession, signature, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.reportView);
+    if (
+      input.expectedScope &&
+      input.expectedScope !== `${portableSession.salon_id}:${keyId}`
+    ) {
+      throw new Error(
+        "The Portable salon session changed. Reopen this report before saving.",
+      );
     }
-      if (input.reportDate !== getTodayDate(portableSession.salon_timezone)) {
-        throw new Error("Portable Report is available for today only. Reload Report to continue.");
-      }
-    const values = closingPayload({cashAmount: input.cashAmount, creditCardAmount: input.creditCardAmount, otherAmount: input.otherAmount, tipInput: input.tipInput ?? "", note: input.note ?? ""});
-    const { error } = await supabase.rpc("save_pos_workspace_report_closing_v2", {
-      p_expected: input.expectedClosing ?? null, p_key: keyId, p_signature: signature, p_date: input.reportDate, p_values: values,
+    if (input.reportDate !== getTodayDate(portableSession.salon_timezone)) {
+      throw new Error(
+        "Portable Report is available for today only. Reload Report to continue.",
+      );
+    }
+    const values = closingPayload({
+      cashAmount: input.cashAmount,
+      creditCardAmount: input.creditCardAmount,
+      otherAmount: input.otherAmount,
+      tipInput: input.tipInput ?? "",
+      note: input.note ?? "",
     });
+    const { error } = await supabase.rpc(
+      "save_pos_workspace_report_closing_v2",
+      {
+        p_expected: input.expectedClosing ?? null,
+        p_key: keyId,
+        p_signature: signature,
+        p_date: input.reportDate,
+        p_values: values,
+      },
+    );
 
     if (error) {
       throw new Error(error.message);
@@ -2409,13 +2835,19 @@ export async function portableSearchPosDeskCustomers(search: string) {
   return (data ?? []) as PosDeskCustomer[];
 }
 
-export async function portableSearchBookingCustomers(search: string): Promise<PosDeskCustomer[]> {
-  const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.bookCreate);
+export async function portableSearchBookingCustomers(
+  search: string,
+): Promise<PosDeskCustomer[]> {
+  const { keyId, signature, supabase } = await requirePortableCapability(
+    PORTABLE_POS_CAPABILITIES.bookCreate,
+  );
   const query = search.trim().slice(0, 120);
   if (query.length < 2) return [];
   // Salon scope comes from the authenticated Portable key, never a client-supplied salon ID.
   const { data, error } = await supabase.rpc("search_pos_portable_customers", {
-    p_key_id: keyId, p_session_signature: signature, p_search: query,
+    p_key_id: keyId,
+    p_session_signature: signature,
+    p_search: query,
   });
   if (error) throw new Error("Unable to search customers in this salon.");
   return ((data ?? []) as PosDeskCustomer[]).slice(0, 10);
@@ -2448,7 +2880,8 @@ export async function portableCreatePosDeskCustomer(input: {
     return { data: data as PosDeskCustomer, ok: true };
   } catch (error) {
     return {
-      error: error instanceof Error ? error.message : "Unable to create customer.",
+      error:
+        error instanceof Error ? error.message : "Unable to create customer.",
       ok: false,
     };
   }
@@ -2501,7 +2934,9 @@ export async function portableUpdatePosActiveDraft(input: {
   } catch (error) {
     return {
       error:
-        error instanceof Error ? error.message : "Unable to update live receipt.",
+        error instanceof Error
+          ? error.message
+          : "Unable to update live receipt.",
       ok: false,
     };
   }
@@ -2514,27 +2949,60 @@ export async function portableSyncDraftOperation(input: {
   payload: Parameters<typeof portableUpdatePosActiveDraft>[0];
 }) {
   try {
-    const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { keyId, signature, supabase } = await requirePortableCapability(
+      PORTABLE_POS_CAPABILITIES.posUse,
+    );
     const { data, error } = await supabase.rpc("sync_pos_portable_draft", {
-      p_key_id: keyId, p_session_signature: signature, p_token: input.token,
-      p_operation_id: input.id, p_expected_version: input.expectedVersion,
+      p_key_id: keyId,
+      p_session_signature: signature,
+      p_token: input.token,
+      p_operation_id: input.id,
+      p_expected_version: input.expectedVersion,
       p_payload: input.payload,
     });
     if (error) {
       // Retry only transport/availability failures; permissions and validation
       // errors need attention, not an infinite retry loop.
-      if (["08000", "08006", "53300", "57P01", "PGRST000", "PGRST001", "PGRST002"].includes(error.code)) {
+      if (
+        [
+          "08000",
+          "08006",
+          "53300",
+          "57P01",
+          "PGRST000",
+          "PGRST001",
+          "PGRST002",
+        ].includes(error.code)
+      ) {
         return { kind: "retry" as const };
       }
-      return { kind: "blocked" as const, message: "This draft could not be synced. Check your connection and access, then try again." };
+      return {
+        kind: "blocked" as const,
+        message:
+          "This draft could not be synced. Check your connection and access, then try again.",
+      };
     }
-    if (data?.conflict) return { kind: "blocked" as const, message: "This receipt changed on another screen. Your local draft is retained. Review the current receipt before submitting." };
-    const snapshot = normalizeLiveDraft(data?.snapshot as PosLiveDraftView | null);
-    if (!snapshot) return { kind: "blocked" as const, message: "POS session expired. Sign in again." };
+    if (data?.conflict)
+      return {
+        kind: "blocked" as const,
+        message:
+          "This receipt changed on another screen. Your local draft is retained. Review the current receipt before submitting.",
+      };
+    const snapshot = normalizeLiveDraft(
+      data?.snapshot as PosLiveDraftView | null,
+    );
+    if (!snapshot)
+      return {
+        kind: "blocked" as const,
+        message: "POS session expired. Sign in again.",
+      };
     after(() => broadcastPosLiveDraftSnapshot(snapshot, "pos"));
     return { kind: "ok" as const, version: snapshot.version, snapshot };
   } catch {
-    return { kind: "blocked" as const, message: "Unable to authorize draft sync. Check your POS session." };
+    return {
+      kind: "blocked" as const,
+      message: "Unable to authorize draft sync. Check your POS session.",
+    };
   }
 }
 
@@ -2570,7 +3038,9 @@ export async function portableUpdatePosLiveDraftCustomer(input: {
   } catch (error) {
     return {
       error:
-        error instanceof Error ? error.message : "Unable to update live customer.",
+        error instanceof Error
+          ? error.message
+          : "Unable to update live customer.",
       ok: false,
     };
   }
@@ -2584,22 +3054,47 @@ export async function portableGetPosLiveDraft(
 
 export async function portableGetWaitingQueue() {
   try {
-    const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
-    const { data, error } = await supabase.rpc("get_pos_portable_waiting_queue", { p_key_id: keyId, p_session_signature: signature });
+    const { keyId, signature, supabase } = await requirePortableCapability(
+      PORTABLE_POS_CAPABILITIES.posUse,
+    );
+    const { data, error } = await supabase.rpc(
+      "get_pos_portable_waiting_queue",
+      { p_key_id: keyId, p_session_signature: signature },
+    );
     if (error) throw error;
     return { ok: true as const, data: normalizePortableWaitingVisits(data) };
-  } catch { return { ok: false as const }; }
+  } catch {
+    return { ok: false as const };
+  }
 }
 
 export async function portableResolveScannedCheckinReceipt(code: string) {
   try {
-    const { portableSession } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
-    const match = /^reylumi:checkin:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(code.trim());
+    const { portableSession } = await requirePortableCapability(
+      PORTABLE_POS_CAPABILITIES.posUse,
+    );
+    const match =
+      /^reylumi:checkin:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(
+        code.trim(),
+      );
     if (!match) throw new Error("Scan a Reylumi check-in receipt.");
-    const { data, error } = await marketServiceClient().rpc("resolve_checkin_receipt", { p_salon: portableSession.salon_id, p_visit: match[1] });
-    if (error || !data) throw new Error("Receipt is unavailable: check the salon, subscription, or whether this customer already has a ticket.");
+    const { data, error } = await marketServiceClient().rpc(
+      "resolve_checkin_receipt",
+      { p_salon: portableSession.salon_id, p_visit: match[1] },
+    );
+    if (error || !data)
+      throw new Error(
+        "Receipt is unavailable: check the salon, subscription, or whether this customer already has a ticket.",
+      );
     return { visit: data as CustomerVisitQueueItem };
-  } catch (error) { return { error: error instanceof Error ? error.message : "Receipt could not be scanned." }; }
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Receipt could not be scanned.",
+    };
+  }
 }
 
 export async function portableSelectWaitingVisitForPos(input: {
@@ -2638,11 +3133,14 @@ export async function portableSelectWaitingVisitForPos(input: {
 
     if (payload.ok !== true) {
       throw new Error(
-        normalizePortableString(payload.message) || "Unable to select waiting client.",
+        normalizePortableString(payload.message) ||
+          "Unable to select waiting client.",
       );
     }
 
-    const snapshot = normalizeLiveDraft(payload.snapshot as PosLiveDraftView | null);
+    const snapshot = normalizeLiveDraft(
+      payload.snapshot as PosLiveDraftView | null,
+    );
 
     if (!snapshot) {
       throw new Error("Live draft was not found.");
@@ -2664,7 +3162,9 @@ export async function portableSelectWaitingVisitForPos(input: {
   } catch (error) {
     return {
       error:
-        error instanceof Error ? error.message : "Unable to select waiting client.",
+        error instanceof Error
+          ? error.message
+          : "Unable to select waiting client.",
       ok: false,
     };
   }
@@ -2704,7 +3204,8 @@ export async function portableCancelWaitingVisitForPos(input: {
 
     if (payload.ok !== true) {
       throw new Error(
-        normalizePortableString(payload.message) || "Unable to remove waiting client.",
+        normalizePortableString(payload.message) ||
+          "Unable to remove waiting client.",
       );
     }
 
@@ -2723,7 +3224,9 @@ export async function portableCancelWaitingVisitForPos(input: {
   } catch (error) {
     return {
       error:
-        error instanceof Error ? error.message : "Unable to remove waiting client.",
+        error instanceof Error
+          ? error.message
+          : "Unable to remove waiting client.",
       ok: false,
     };
   }
@@ -2801,7 +3304,9 @@ export async function portableSubmitPosDeskReceipt(
   } catch (error) {
     return {
       error:
-        error instanceof Error ? error.message : "Unable to submit POS receipt.",
+        error instanceof Error
+          ? error.message
+          : "Unable to submit POS receipt.",
       ok: false,
     };
   }
@@ -2857,7 +3362,9 @@ export async function portableAdjustStaffTurn(
     revalidatePath("/pos/portable");
     revalidatePath("/pos/portable/check-in");
     revalidatePath("/pos/portable/ticket");
-    after(() => broadcastPosStaffChange(portableSession.salon_id, "turn_adjust"));
+    after(() =>
+      broadcastPosStaffChange(portableSession.salon_id, "turn_adjust"),
+    );
 
     const payload = data as Record<string, unknown>;
 
@@ -2876,70 +3383,173 @@ export async function portableAdjustStaffTurn(
   } catch (error) {
     return {
       error:
-        error instanceof Error
-          ? error.message
-          : "Unable to adjust staff turn.",
+        error instanceof Error ? error.message : "Unable to adjust staff turn.",
       ok: false,
     };
   }
 }
 
 export async function getPortableOfflineStaffBundle() {
-  const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.checkInUse);
+  const { keyId, signature, portableSession, supabase } =
+    await requirePortableCapability(PORTABLE_POS_CAPABILITIES.checkInUse);
   const privateKey = process.env.KINGPOS_OFFLINE_PRIVATE_KEY;
-  if (!privateKey) throw new Error("Offline check-in is unavailable. Connect to the internet to check in.");
-  const { data, error } = await supabase.rpc("get_pos_portable_offline_staff", { p_key_id: keyId, p_session_signature: signature });
+  if (!privateKey)
+    throw new Error(
+      "Offline check-in is unavailable. Connect to the internet to check in.",
+    );
+  const { data, error } = await supabase.rpc("get_pos_portable_offline_staff", {
+    p_key_id: keyId,
+    p_session_signature: signature,
+  });
   if (error) throw new Error("Unable to prepare offline check-in.");
-  const staff = await Promise.all((data as { id: string; salt: string; digest: string }[]).map(async (row) => {
-    const verifierSalt = createHash("sha256").update(keyId + ":" + row.id + ":" + row.salt).digest("hex");
-    const verifier = await new Promise<string>((resolve, reject) => pbkdf2(row.digest, verifierSalt, 100000, 32, "sha256", (error, result) => error ? reject(error) : resolve(result.toString("hex"))));
-    return { id: row.id, salt: row.salt, verifierSalt, verifier };
-  }));
-  return { scope: portableSession.salon_id + ":" + keyId, salonId: portableSession.salon_id,
-    expiresAt: Date.now() + 24 * 60 * 60 * 1000, staff,
-    publicKey: createPublicKey(Buffer.from(privateKey, "base64")).export({ type: "spki", format: "der" }).toString("base64") };
+  const staff = await Promise.all(
+    (data as { id: string; salt: string; digest: string }[]).map(
+      async (row) => {
+        const verifierSalt = createHash("sha256")
+          .update(keyId + ":" + row.id + ":" + row.salt)
+          .digest("hex");
+        const verifier = await new Promise<string>((resolve, reject) =>
+          pbkdf2(
+            row.digest,
+            verifierSalt,
+            100000,
+            32,
+            "sha256",
+            (error, result) =>
+              error ? reject(error) : resolve(result.toString("hex")),
+          ),
+        );
+        return { id: row.id, salt: row.salt, verifierSalt, verifier };
+      },
+    ),
+  );
+  return {
+    scope: portableSession.salon_id + ":" + keyId,
+    salonId: portableSession.salon_id,
+    expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+    staff,
+    publicKey: createPublicKey(Buffer.from(privateKey, "base64"))
+      .export({ type: "spki", format: "der" })
+      .toString("base64"),
+  };
 }
 
 export async function getPortableWorkspaceSettings() {
-  const {keyId,signature,supabase}=await requirePortablePosSessionContext();
-  const {data,error}=await supabase.rpc('get_pos_workspace_settings',{p_key:keyId,p_signature:signature});
-  if(error)throw Error('Unable to refresh settings');
-  return data as Record<string,unknown>;
+  const { keyId, signature, supabase } =
+    await requirePortablePosSessionContext();
+  const { data, error } = await supabase.rpc("get_pos_workspace_settings", {
+    p_key: keyId,
+    p_signature: signature,
+  });
+  if (error) throw Error("Unable to refresh settings");
+  return data as Record<string, unknown>;
 }
 
 export async function replayPortableOperation(input: {
-  scope: string; id: string; kind: "receipt" | "attendance" | "booking" | "visit";
-  occurredAt: string; payload: Record<string, unknown>;
+  scope: string;
+  id: string;
+  kind: "receipt" | "attendance" | "booking" | "visit";
+  occurredAt: string;
+  payload: Record<string, unknown>;
 }) {
   try {
-    const capability = input.kind === "attendance" ? PORTABLE_POS_CAPABILITIES.checkInUse :
-      input.kind === "booking" ? PORTABLE_POS_CAPABILITIES.bookCreate : PORTABLE_POS_CAPABILITIES.posUse;
-    const { keyId, signature, portableSession, supabase } = await requirePortableCapability(capability);
-    if (input.scope !== portableSession.salon_id + ":" + keyId) return { kind: "blocked", message: "Sign in with the original POS ID to upload these items." };
+    const capability =
+      input.kind === "attendance"
+        ? PORTABLE_POS_CAPABILITIES.checkInUse
+        : input.kind === "booking"
+          ? PORTABLE_POS_CAPABILITIES.bookCreate
+          : PORTABLE_POS_CAPABILITIES.posUse;
+    const { keyId, signature, portableSession, supabase } =
+      await requirePortableCapability(capability);
+    if (input.scope !== portableSession.salon_id + ":" + keyId)
+      return {
+        kind: "blocked",
+        message: "Sign in with the original POS ID to upload these items.",
+      };
     const payload = { ...input.payload };
     if (input.kind === "attendance") {
       const privateKey = process.env.KINGPOS_OFFLINE_PRIVATE_KEY;
       if (!privateKey) return { kind: "retry" };
-      payload.passcode = privateDecrypt({ key: Buffer.from(privateKey, "base64"),
-        padding: cryptoConstants.RSA_PKCS1_OAEP_PADDING, oaepHash: "sha256" },
-        Buffer.from(String(payload.sealedPasscode), "base64")).toString("utf8");
+      payload.passcode = privateDecrypt(
+        {
+          key: Buffer.from(privateKey, "base64"),
+          padding: cryptoConstants.RSA_PKCS1_OAEP_PADDING,
+          oaepHash: "sha256",
+        },
+        Buffer.from(String(payload.sealedPasscode), "base64"),
+      ).toString("utf8");
       delete payload.sealedPasscode;
     }
-    const { data, error } = await supabase.rpc("replay_pos_portable_operation", {
-      p_key_id: keyId, p_session_signature: signature, p_operation_id: input.id,
-      p_kind: input.kind, p_occurred_at: input.occurredAt, p_payload: payload,
-    });
+    const { data, error } = await supabase.rpc(
+      "replay_pos_portable_operation",
+      {
+        p_key_id: keyId,
+        p_session_signature: signature,
+        p_operation_id: input.id,
+        p_kind: input.kind,
+        p_occurred_at: input.occurredAt,
+        p_payload: payload,
+      },
+    );
     if (error) {
-      if (!error.code || error.code.startsWith("08") || ["PGRST000","PGRST001","PGRST002","53300","57P01"].includes(error.code)) return { kind: "retry" };
-      return { kind: "blocked", message: error.message, rejected:error.code==='P0001' };
+      if (
+        !error.code ||
+        error.code.startsWith("08") ||
+        ["PGRST000", "PGRST001", "PGRST002", "53300", "57P01"].includes(
+          error.code,
+        )
+      )
+        return { kind: "retry" };
+      return {
+        kind: "blocked",
+        message: error.message,
+        rejected: error.code === "P0001",
+      };
     }
-    after(() => broadcastPosStaffChange(portableSession.salon_id, input.kind === "attendance" ? "attendance" : "pos"));
+    after(() =>
+      broadcastPosStaffChange(
+        portableSession.salon_id,
+        input.kind === "attendance" ? "attendance" : "pos",
+      ),
+    );
     return { kind: "ok", data };
-  } catch { return { kind: "retry" }; }
+  } catch {
+    return { kind: "retry" };
+  }
 }
 
-export async function getPortableWorkspaceCatalog(){
- const {keyId,signature,supabase}=await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
- const {data,error}=await supabase.rpc('get_pos_workspace_catalog',{p_key:keyId,p_signature:signature});
- if(error)throw Error('Unable to refresh services');return data as PosDeskService[];
+export async function getPortableWorkspaceCatalog() {
+  const { keyId, signature, supabase } = await requirePortableCapability(
+    PORTABLE_POS_CAPABILITIES.posUse,
+  );
+  const { data, error } = await supabase.rpc("get_pos_workspace_catalog", {
+    p_key: keyId,
+    p_signature: signature,
+  });
+  if (error) throw Error("Unable to refresh services");
+  return data as PosDeskService[];
+}
+
+export async function portablePosHeldTicketState(
+  visitId: string,
+): Promise<{ data?: HeldVisitState; error?: string }> {
+  try {
+    const { keyId, signature, portableSession, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const { data, error } = await supabase.rpc("phone_checkin_visit_state", {
+      p_salon: portableSession.salon_id,
+      p_visit: visitId,
+      p_key: keyId,
+      p_signature: signature,
+    });
+    if (error) throw new Error(error.message);
+    return { data: data as HeldVisitState };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Could not refresh this visit.",
+    };
+  }
 }

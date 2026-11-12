@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { WorkspaceNavigationIcon } from "@/components/workspace-navigation-icon";
 import { setSupplementalKeyboard, useSupplementalKeyboard } from "@/lib/portable-keyboard-preference";
+import { setPortableServiceAddOns, usePortableServiceAddOns } from "@/lib/portable-service-preference";
 import { saveCustomerDisplayPreferences, useCustomerDisplayPreferences } from "@/lib/customer-display-preferences";
 import { prepareLocalPromotionImages, saveLocalPromotionImages, useLocalPromotionImages } from "@/lib/customer-display-local-images";
 import { DEFAULT_CUSTOMER_DISPLAY_PROMO_SLIDE_URL } from "@/lib/pos-display-default-assets";
@@ -17,6 +18,22 @@ import "./device-input-settings.css";
 const subscribeDesktop = () => () => {};
 const readDesktop = () => Boolean(desktopDevice());
 const serverDesktop = () => false;
+
+export function ServiceDisplaySettings() {
+  const t = useWorkspaceTranslation();
+  const enabled = usePortableServiceAddOns();
+  const [error, setError] = useState(false);
+  return <section className="device-setting-section" aria-label={t("Services")}>
+    <h3><WorkspaceText text="Services" /></h3>
+    <label className="device-setting-check"><span><WorkspaceText text="Show service add-ons" /></span>
+      <input type="checkbox" checked={enabled} onChange={event => {
+        try { setPortableServiceAddOns(event.target.checked); setError(false); } catch { setError(true); }
+      }} />
+    </label>
+    <p><WorkspaceText text="Only after selecting a main service" /></p>
+    {error && <p role="alert"><WorkspaceText text="Unable to save this device setting. Please try again." /></p>}
+  </section>;
+}
 
 function ExternalIcon() { return <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M14 3h7v7m0-7L10 14M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" /></svg>; }
 
@@ -76,6 +93,7 @@ export function DeviceInputSettingsButton({ desktopOnly=false }: {desktopOnly?:b
   return <><button type="button" aria-label={t("Device settings")} title={t("Device settings")} onClick={()=>setOpen(true)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-orange-500"><WorkspaceNavigationIcon name="gear" className="h-5 w-5" /></button>
     {open&&createPortal(<dialog ref={dialog} onPointerDown={dialogOutsidePointerDown} onClick={dialogOutsideClick} aria-label={t("Device settings")} onClose={()=>setOpen(false)} className="portable-device-settings" data-touch-keyboard="off"><header><h2><WorkspaceText text="Settings" /></h2><button type="button" aria-label={t("Close settings")} onClick={()=>dialog.current?.close()}>×</button></header>
       <DeviceInputSettings />
+      <ServiceDisplaySettings />
       <section className="device-setting-section" aria-label={t("Customer display")}><h3><WorkspaceText text="Customer display" /></h3>
         {desktop&&<div className="device-list-row"><span><WorkspaceText text="Customer screen" /></span><button type="button" onClick={()=>{setError("");void desktopDevice()?.display?.open().catch(()=>setError("Open the POS tab first, then try again."));}}><WorkspaceText text="Open" /></button></div>}
         <CustomerDisplayPreferencesEditor />

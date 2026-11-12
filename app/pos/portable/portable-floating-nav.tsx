@@ -1,4 +1,6 @@
 "use client";
+import { WorkspaceNavigationIcon } from "@/components/workspace-navigation-icon";
+
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -789,86 +791,8 @@ function usePrefersReducedMotion() {
 }
 
 function Icon({ icon }: { icon: OrbitAction["icon"] | "menu" }) {
-  const common = {
-    "aria-hidden": true,
-    className: "h-6 w-6",
-    fill: "none",
-    stroke: "currentColor",
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    strokeWidth: 2,
-    viewBox: "0 0 24 24",
-  };
-
-  if (icon === "book") {
-    return (
-      <svg {...common}>
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z" />
-      </svg>
-    );
-  }
-
-  if (icon === "calendar") {
-    return (
-      <svg {...common}>
-        <path d="M8 2v4M16 2v4M3 10h18" />
-        <rect height="18" rx="2" width="18" x="3" y="4" />
-      </svg>
-    );
-  }
-
-  if (icon === "check") {
-    return (
-      <svg {...common}>
-        <path d="M20 6 9 17l-5-5" />
-        <path d="M4 20h16" />
-      </svg>
-    );
-  }
-
-  if (icon === "logout") {
-    return (
-      <svg {...common}>
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-        <path d="M16 17l5-5-5-5" />
-        <path d="M21 12H9" />
-      </svg>
-    );
-  }
-
-  if (icon === "menu") {
-    return (
-      <svg {...common}>
-        <path d="M5 7h14M5 12h14M5 17h14" />
-      </svg>
-    );
-  }
-
-  if (icon === "report") {
-    return (
-      <svg {...common}>
-        <path d="M8 17V9M12 17V5M16 17v-6" />
-        <path d="M5 21h14" />
-      </svg>
-    );
-  }
-
-  if (icon === "ticket") {
-    return (
-      <svg {...common}>
-        <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a3 3 0 0 0 0 6v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a3 3 0 0 0 0-6z" />
-        <path d="M9 9h6M9 13h6" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg {...common}>
-      <path d="M4 10h16l-1-6H5z" />
-      <path d="M5 10v10h14V10M9 20v-6h6v6" />
-    </svg>
-  );
+  const icons = { book: "calendar", calendar: "calendar", check: "check", logout: "log-out", menu: "more", report: "list", ticket: "receipt", store: "store" } as const;
+  return <WorkspaceNavigationIcon name={icons[icon]} className="h-6 w-6" />;
 }
 
 export function PortableFloatingNav({

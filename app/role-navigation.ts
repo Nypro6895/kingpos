@@ -1,4 +1,9 @@
 export type NavigationIcon =
+  | "badge"
+  | "flag"
+  | "gift"
+  | "heart"
+  | "lock"
   | "bell"
   | "book"
   | "briefcase"
@@ -105,7 +110,7 @@ export const SHARED_CONTEXT_ROUTE_PREFIXES = [
 
 export function roleNavigationKindForContext(input: {
   salonMode: "manage" | "staff" | null;
-  workspaceType: "account" | "personal" | "salon";
+  workspaceType: "account" | "personal" | "salon" | "tax";
 }): RoleNavigationKind {
   if (input.workspaceType === "salon" && input.salonMode === "staff") {
     return "staff";
@@ -122,7 +127,12 @@ const PERSONAL_LINKS: NavigationLink[] = [
   { href: "/explore", icon: "compass", id: "explore", label: "Explore" },
   { href: "/my-bookings", icon: "calendar", id: "bookings", label: "Bookings" },
   { href: "/beauty", icon: "user", id: "beauty", label: "Beauty" },
-  { href: "/beauty/library", icon: "grid", id: "beauty-library", label: "Library" },
+  {
+    href: "/beauty/library",
+    icon: "grid",
+    id: "beauty-library",
+    label: "Library",
+  },
   { href: "/more", icon: "more", id: "more", label: "More" },
 ];
 
@@ -132,7 +142,7 @@ const STAFF_LINKS: NavigationLink[] = [
     href: "/staff/appointments",
     icon: "calendar",
     id: "staff-schedule",
-    label: "Schedule",
+    label: "Bookings",
   },
   { href: "/salon-profile", icon: "store", id: "staff-post", label: "Post" },
   {
@@ -146,8 +156,13 @@ const STAFF_LINKS: NavigationLink[] = [
 
 const OWNER_LINKS: NavigationLink[] = [
   { href: "/staff/today", icon: "home", id: "owner-today", label: "Today" },
-  { href: "/bookings", icon: "book", id: "owner-book", label: "Book" },
-  { href: "/salon-profile", icon: "store", id: "owner-profile", label: "Salon profile" },
+  { href: "/bookings", icon: "calendar", id: "owner-book", label: "Bookings" },
+  {
+    href: "/salon-profile",
+    icon: "store",
+    id: "owner-profile",
+    label: "Profile",
+  },
   {
     href: "/notifications",
     icon: "bell",
@@ -159,8 +174,22 @@ const OWNER_LINKS: NavigationLink[] = [
 
 export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   personal: [
-    { description: "Keep, use and share your gift cards.", href: "/gift-cards", icon: "star", id: "personal-gift-cards", label: "Gift Cards", navigationIcon: "star" },
-    { description: "Points, rewards and activity at each salon.", href: "/rewards", icon: "star", id: "personal-rewards", label: "My Rewards", navigationIcon: "star" },
+    {
+      description: "Keep, use and share your gift cards.",
+      href: "/gift-cards",
+      icon: "star",
+      id: "personal-gift-cards",
+      label: "Gift cards",
+      navigationIcon: "gift",
+    },
+    {
+      description: "Points, rewards and activity at each salon.",
+      href: "/rewards",
+      icon: "star",
+      id: "personal-rewards",
+      label: "My Rewards",
+      navigationIcon: "star",
+    },
     {
       description: "Your Personal ID QR, salon check-in, and recent visits.",
       href: "/qr",
@@ -170,7 +199,8 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       navigationIcon: "qr",
     },
     {
-      description: "Switch between Personal, owner salons, staff workplaces, and accounts.",
+      description:
+        "Switch between Personal, owner salons, staff workplaces, and accounts.",
       href: "/my-place",
       icon: "grid",
       id: "personal-my-place",
@@ -191,10 +221,10 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       icon: "heart",
       id: "personal-saved-post",
       label: "Saved posts",
-      navigationIcon: "star",
+      navigationIcon: "heart",
     },
     {
-      description: "Shops and Beauty profiles followed by this account.",
+      description: "Salons and Beauty profiles followed by this account.",
       href: "/more/following",
       icon: "users",
       id: "personal-following",
@@ -207,28 +237,30 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       icon: "badge",
       id: "personal-memberships",
       label: "Memberships",
-      navigationIcon: "star",
+      navigationIcon: "badge",
     },
     {
       description: "Reviews you have posted as a customer.",
       href: "/more/reviews",
       icon: "star",
       id: "personal-reviews",
-      label: "Reviews",
+      label: "My reviews",
       navigationIcon: "star",
     },
     {
-      description: "Report a problem, contact us and continue your support conversations.",
+      description:
+        "Report a problem, contact us and continue your support conversations.",
       href: "/support",
       icon: "flag",
       id: "personal-reports",
-      label: "Report / Contact",
-      navigationIcon: "list",
+      label: "Support",
+      navigationIcon: "message",
     },
   ],
   staff: [
     {
-      description: "Switch workplaces, owner salons, accounts, and Personal mode.",
+      description:
+        "Switch workplaces, owner salons, accounts, and Personal mode.",
       href: "/my-place",
       icon: "grid",
       id: "staff-my-place",
@@ -241,10 +273,10 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       icon: "heart",
       id: "staff-saved-post",
       label: "Saved posts",
-      navigationIcon: "star",
+      navigationIcon: "heart",
     },
     {
-      description: "Shops and Beauty profiles followed by this account.",
+      description: "Salons and Beauty profiles followed by this account.",
       href: "/more/following",
       icon: "users",
       id: "staff-following",
@@ -253,10 +285,38 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
     },
   ],
   owner: [
-    { description: "Connect with salon owners, share experience and chat.", href: "/forum", icon: "users", id: "owner-forum", label: "Forum", navigationIcon: "message" },
-    { description: "Manage gift card sales, balances and activity.", href: "/gift-cards/manage", icon: "star", id: "owner-gift-cards", label: "Gift Cards", navigationIcon: "star" },
-    { description: "Set earning rules and customer rewards.", href: "/reward-system", icon: "star", id: "owner-rewards", label: "Reward System", navigationIcon: "star" },
-    { description: "Run ads for your salon.", href: "/campaigns", icon: "flag", id: "owner-campaigns", label: "Advertising", navigationIcon: "star" },
+    {
+      description: "Connect with salon owners, share experience and chat.",
+      href: "/forum",
+      icon: "users",
+      id: "owner-forum",
+      label: "Forum",
+      navigationIcon: "message",
+    },
+    {
+      description: "Manage gift card sales, balances and activity.",
+      href: "/gift-cards/manage",
+      icon: "star",
+      id: "owner-gift-cards",
+      label: "Gift cards",
+      navigationIcon: "gift",
+    },
+    {
+      description: "Set earning rules and customer rewards.",
+      href: "/reward-system",
+      icon: "star",
+      id: "owner-rewards",
+      label: "Reward System",
+      navigationIcon: "star",
+    },
+    {
+      description: "Run ads for your salon.",
+      href: "/campaigns",
+      icon: "flag",
+      id: "owner-campaigns",
+      label: "Advertising",
+      navigationIcon: "flag",
+    },
     {
       description: "Add messaging, payroll, rewards, and more to Reylumi.",
       href: "/market",
@@ -266,7 +326,8 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       navigationIcon: "store",
     },
     {
-      description: "Switch salons, staff workplaces, accounts, and Personal mode.",
+      description:
+        "Switch salons, staff workplaces, accounts, and Personal mode.",
       href: "/my-place",
       icon: "grid",
       id: "owner-my-place",
@@ -286,7 +347,7 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       href: "/reports",
       icon: "list",
       id: "owner-report",
-      label: "Report",
+      label: "Reports",
       navigationIcon: "list",
     },
     {
@@ -318,11 +379,12 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       href: "/pos-tickets",
       icon: "receipt",
       id: "owner-ticket",
-      label: "Ticket",
+      label: "Tickets",
       navigationIcon: "receipt",
     },
     {
-      description: "Salon customer profiles, duplicate cleanup, and visit history.",
+      description:
+        "Salon customer profiles, duplicate cleanup, and visit history.",
       href: "/customers",
       icon: "users",
       id: "owner-customers",
@@ -333,31 +395,97 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
 };
 
 for (const kind of ["personal", "owner", "staff"] as const) {
-  ROLE_MORE_ITEMS[kind].push({id:`${kind}-help`,href:"/help",icon:"gear",navigationIcon:"list",label:"Help",description:"Read guides for customers, salon owners and staff."});
+  ROLE_MORE_ITEMS[kind].push({
+    id: `${kind}-help`,
+    href: "/help",
+    icon: "gear",
+    navigationIcon: "book",
+    label: "Help",
+    description: "Read guides for customers, salon owners and staff.",
+  });
 }
 
 for (const kind of ["owner", "staff"] as const) {
-  ROLE_MORE_ITEMS[kind].push({id:`${kind}-support`,href:"/support",icon:"gear",navigationIcon:"message",label:"Report / Contact",description:"Report an issue and view your requests."});
+  ROLE_MORE_ITEMS[kind].push({
+    id: `${kind}-support`,
+    href: "/support",
+    icon: "gear",
+    navigationIcon: "message",
+    label: "Report / Contact",
+    description: "Report an issue and view your requests.",
+  });
 }
 
 export const PERSONAL_MORE_GROUPS = [
-  { id: "visits-benefits", title: "Visits & benefits", summary: "Check in, review visits, and use your rewards and gift cards.", ids: ["personal-qr", "personal-activity", "personal-rewards", "personal-gift-cards", "personal-memberships"] },
-  { id: "saved-following", title: "Saved & following", summary: "Your saved posts, followed profiles, and reviews.", ids: ["personal-saved-post", "personal-following", "personal-reviews"] },
-  { id: "workspace-support", title: "Workspace & support", summary: "Switch workspaces and find help.", ids: ["personal-my-place", "personal-help", "personal-reports"] },
+  {
+    id: "visits-benefits",
+    title: "Visits & benefits",
+    summary: "Check in, review visits, and use your rewards and gift cards.",
+    ids: [
+      "personal-qr",
+      "personal-activity",
+      "personal-rewards",
+      "personal-gift-cards",
+      "personal-memberships",
+    ],
+  },
+  {
+    id: "saved-following",
+    title: "Saved & following",
+    summary: "Your saved posts, followed profiles, and reviews.",
+    ids: ["personal-saved-post", "personal-following", "personal-reviews"],
+  },
+  {
+    id: "workspace-support",
+    title: "Workspace & support",
+    summary: "Switch workspaces and find help.",
+    ids: ["personal-my-place", "personal-help", "personal-reports"],
+  },
 ];
-const personalPriority = PERSONAL_MORE_GROUPS.flatMap(group => group.ids);
-ROLE_MORE_ITEMS.personal.sort((a, b) => personalPriority.indexOf(a.id) - personalPriority.indexOf(b.id));
+const personalPriority = PERSONAL_MORE_GROUPS.flatMap((group) => group.ids);
+ROLE_MORE_ITEMS.personal.sort(
+  (a, b) => personalPriority.indexOf(a.id) - personalPriority.indexOf(b.id),
+);
 
 export const OWNER_MORE_GROUPS = [
-  { id: "daily", title: "Daily operations", summary: "Sales, tickets, and customer visits.", ids: ["owner-pos", "owner-ticket", "owner-customers"] },
-  { id: "business", title: "Business management", summary: "Performance, payroll, team, and services.", ids: ["owner-report", "owner-payroll", "owner-staff", "owner-services"] },
-  { id: "growth", title: "Grow your salon", summary: "Reach more customers and add useful features.", ids: ["owner-forum", "owner-campaigns", "owner-rewards", "owner-gift-cards", "owner-market"] },
-  { id: "settings-support", title: "Workspace & support", summary: "Switch workspaces and get help.", ids: [ "owner-my-place", "owner-support", "owner-help"] },
+  {
+    id: "daily",
+    title: "Daily operations",
+    summary: "Sales, tickets, and customer visits.",
+    ids: ["owner-pos", "owner-ticket", "owner-customers"],
+  },
+  {
+    id: "business",
+    title: "Business management",
+    summary: "Performance, payroll, team, and services.",
+    ids: ["owner-report", "owner-payroll", "owner-staff", "owner-services"],
+  },
+  {
+    id: "growth",
+    title: "Grow your salon",
+    summary: "Reach more customers and add useful features.",
+    ids: [
+      "owner-forum",
+      "owner-campaigns",
+      "owner-rewards",
+      "owner-gift-cards",
+      "owner-market",
+    ],
+  },
+  {
+    id: "settings-support",
+    title: "Workspace & support",
+    summary: "Switch workspaces and get help.",
+    ids: ["owner-my-place", "owner-support", "owner-help"],
+  },
 ];
-const ownerPriority = OWNER_MORE_GROUPS.flatMap(group => group.ids);
-ROLE_MORE_ITEMS.owner.sort((a,b) => {
-  const ai=ownerPriority.indexOf(a.id),bi=ownerPriority.indexOf(b.id);
-  return (ai<0?ownerPriority.length:ai)-(bi<0?ownerPriority.length:bi);
+const ownerPriority = OWNER_MORE_GROUPS.flatMap((group) => group.ids);
+ROLE_MORE_ITEMS.owner.sort((a, b) => {
+  const ai = ownerPriority.indexOf(a.id),
+    bi = ownerPriority.indexOf(b.id);
+  return (
+    (ai < 0 ? ownerPriority.length : ai) - (bi < 0 ? ownerPriority.length : bi)
+  );
 });
 
 function moreNavigationLinks(kind: RoleNavigationKind): NavigationLink[] {
@@ -369,67 +497,68 @@ function moreNavigationLinks(kind: RoleNavigationKind): NavigationLink[] {
   }));
 }
 
-export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> = {
-  personal: {
-    ariaLabel: "Customer",
-    desktopAriaLabel: "Customer desktop",
-    homeHref: "/explore",
-    kind: "personal",
-    links: PERSONAL_LINKS,
-    moreLinks: moreNavigationLinks("personal"),
-    routePrefixes: [
-      "/qr",
-      "/activity",
-      "/beauty",
-      "/claim",
-      "/businesses",
-      "/gift-cards",
-      "/my-bookings",
-      "/permissions",
-      "/roles",
-      "/rewards",
-      "/salons",
-      "/staff/connections",
-      "/tax-company",
-    ],
-  },
-  staff: {
-    ariaLabel: "Staff",
-    desktopAriaLabel: "Staff desktop",
-    homeHref: "/explore",
-    kind: "staff",
-    links: STAFF_LINKS,
-    moreLinks: moreNavigationLinks("staff"),
-    routePrefixes: [
-      "/staff/appointments",
-      "/staff/my-work",
-      "/staff/workday",
-      "/staff/scan",
-    ],
-  },
-  owner: {
-    ariaLabel: "Owner",
-    desktopAriaLabel: "Owner desktop",
-    homeHref: "/explore",
-    kind: "owner",
-    links: OWNER_LINKS,
-    moreLinks: moreNavigationLinks("owner"),
-    routePrefixes: [
-      "/forum",
-      "/campaigns",
-      "/bookings",
-      "/check-writer",
-      "/customers",
-      "/gift-cards/manage",
-      "/payroll",
-      "/pos",
-      "/pos-tickets",
-      "/reports",
-      "/reward-system",
-      "/salon-settings",
-      "/services",
-      "/staff",
-      "/tickets",
-    ],
-  },
-};
+export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
+  {
+    personal: {
+      ariaLabel: "Customer",
+      desktopAriaLabel: "Customer desktop",
+      homeHref: "/explore",
+      kind: "personal",
+      links: PERSONAL_LINKS,
+      moreLinks: moreNavigationLinks("personal"),
+      routePrefixes: [
+        "/qr",
+        "/activity",
+        "/beauty",
+        "/claim",
+        "/businesses",
+        "/gift-cards",
+        "/my-bookings",
+        "/permissions",
+        "/roles",
+        "/rewards",
+        "/salons",
+        "/staff/connections",
+        "/tax-company",
+      ],
+    },
+    staff: {
+      ariaLabel: "Staff",
+      desktopAriaLabel: "Staff desktop",
+      homeHref: "/explore",
+      kind: "staff",
+      links: STAFF_LINKS,
+      moreLinks: moreNavigationLinks("staff"),
+      routePrefixes: [
+        "/staff/appointments",
+        "/staff/my-work",
+        "/staff/workday",
+        "/staff/scan",
+      ],
+    },
+    owner: {
+      ariaLabel: "Owner",
+      desktopAriaLabel: "Owner desktop",
+      homeHref: "/explore",
+      kind: "owner",
+      links: OWNER_LINKS,
+      moreLinks: moreNavigationLinks("owner"),
+      routePrefixes: [
+        "/forum",
+        "/campaigns",
+        "/bookings",
+        "/check-writer",
+        "/customers",
+        "/gift-cards/manage",
+        "/payroll",
+        "/pos",
+        "/pos-tickets",
+        "/reports",
+        "/reward-system",
+        "/salon-settings",
+        "/services",
+        "/staff",
+        "/tickets",
+      ],
+    },
+  };

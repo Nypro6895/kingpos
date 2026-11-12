@@ -12,7 +12,8 @@
 .expanded p { margin: 0 0 8px; line-height: 1.5; overflow-wrap: anywhere; white-space: pre-line; }
 .actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .actions button, .actions a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 4px 8px; background: none; border: 0; font: inherit; text-decoration: none; cursor: pointer; color: #2f6f6a; }
-.actions a { color: var(--brand-orange,#f26f3d); font-weight: 600; }
+.actions a { max-width: 100%; white-space: normal; color: var(--brand-orange,#f26f3d); font-weight: 600; }
+.actions svg { flex: 0 0 18px; }
 .actions > span { font-size: 12px; }
 .row:focus-visible, .actions button:focus-visible, .actions a:focus-visible { outline: 2px solid var(--brand-orange,#f26f3d); outline-offset: 2px; }
 @media(max-width:640px) { .item { padding-inline: 16px; } .expanded { padding-left: 0; } }

@@ -707,6 +707,7 @@ function SettingsReadContent({
 }
 
 function SettingsStaffCard({
+  salonPayrollSetting,
   canManage,
   inputChanges = [],
   history,
@@ -718,6 +719,7 @@ function SettingsStaffCard({
   staffProfileAvatarUrl,
   staffProfileDisplayName,
 }: {
+  salonPayrollSetting: SalonPayrollSetting;
   canManage: boolean;
   history: StaffPayrollSetting[];
   inputChanges?: PayrollLiveChange[];
@@ -734,6 +736,7 @@ function SettingsStaffCard({
       <div className="grid gap-4 p-4">
       {isEditing ? (
         <StaffPayrollSettingInlineEdit
+          salonPayrollSetting={salonPayrollSetting}
           period={period}
           returnPath={returnPath}
           setting={setting}
@@ -843,7 +846,7 @@ function SettingsTab({
               const isEditing = canManage && editStaffId === staff.id;
 
               return (
-                <SettingsStaffCard canManage={canManage}
+                <SettingsStaffCard salonPayrollSetting={salonPayrollSetting} canManage={canManage}
                   history={history}
                   inputChanges={financialHistoryForObject(changes,{staffId:staff.id,sourceKinds:["payroll_settings","staff_payroll_settings"]})}
                   isEditing={isEditing}

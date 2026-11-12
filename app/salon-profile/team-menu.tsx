@@ -53,7 +53,7 @@ export function TeamMenu({members,canBook,bookingHref,onOpen}: {
         <div className={styles.actions}>
           <button type="button" onClick={()=>onOpen(member)}><WorkspaceText text="View profile" /></button>
           {bookable?<a href={bookingHref(member.id)} aria-label={__vt(`Book with ${member.displayName}`)}>
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-12 5 3 3 5-5"/></svg><WorkspaceText text="Book" />
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-12 5 3 3 5-5"/></svg><WorkspaceText text="Book appointment" />
           </a>:<span><WorkspaceText text="Online booking unavailable" /></span>}
         </div>
       </div>:null}

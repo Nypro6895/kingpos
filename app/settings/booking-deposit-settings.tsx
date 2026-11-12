@@ -1,6 +1,7 @@
 "use client";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 
+import { marketTargetHref } from "@/lib/market-target-url";
 import { useEffect, useState, useTransition } from "react";
 import { useWorkspaceTranslation } from "@/components/workspace-language";
 import { loadBookingDepositAction, saveBookingDepositAction } from "@/app/market/booking-deposit-actions";
@@ -68,7 +69,7 @@ export function BookingDepositSettings({ salonId }: { salonId: string }) {
         </button>
         {state?.installed && <button type="button" className={styles.save} disabled={busy || loading} onClick={save}>{t(busy ? "Saving…" : "Save")}</button>}
       </div>
-      <PluginActivationDialog open={showActivation} onClose={() => setShowActivation(false)} pluginName="Booking Deposit" marketHref="/market/booking-deposit" />
+      <PluginActivationDialog open={showActivation} onClose={() => setShowActivation(false)} pluginName="Booking Deposit" marketHref={marketTargetHref("/market/booking-deposit", salonId)} />
       {state?.installed && (
         <div className={`${styles.fields} ${state.mode === "full" ? styles.fullPrice : ""}`}>
           <label>{t("Deposit type")}

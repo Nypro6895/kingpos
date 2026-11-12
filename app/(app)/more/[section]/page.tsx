@@ -84,7 +84,7 @@ const FOLLOWING_FILTERS: Array<{
   value: AccountFollowingFilter;
 }> = [
   { label: "All", value: "all" },
-  { label: "Shops", value: "shop" },
+  { label: "Salons", value: "shop" },
   { label: "Beauty", value: "beauty" },
 ];
 
@@ -434,7 +434,7 @@ function FollowingControls({ filter, query }: { filter: AccountFollowingFilter; 
     <div className={styles.controls}>
       <Form action="/more/following" className={styles.search} role="search">
         <label className="sr-only" htmlFor="following-search"><WorkspaceText text="Search following" /></label>
-        <WorkspaceElement as="input" id="following-search" defaultValue={query} name="q" placeholder="Search people and shops" type="search" />
+        <WorkspaceElement as="input" id="following-search" defaultValue={query} name="q" placeholder="Search people and salons" type="search" />
         <input type="hidden" name="filter" value={filter} />
         <SubmitButton pendingLabel="Processing…" type="submit" aria-label="Search following">
           <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -526,8 +526,8 @@ function FollowingSection({
           actionLabel={query || filter !== "all" ? "Clear filters" : "Explore"}
           description={
             query || filter !== "all"
-              ? "No followed shops or Beauty profiles match this search."
-              : "Followed shops and Beauty profiles will appear here."
+              ? "No followed salons or Beauty profiles match this search."
+              : "Followed salons and Beauty profiles will appear here."
           }
         />
       </div>

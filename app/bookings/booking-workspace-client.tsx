@@ -7383,7 +7383,7 @@ export function BookingWorkspaceClient({
               navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>item.open=false);
             }}/>
           </div></details>
-          <details data-dismissible-popover className="owner-schedule-menu"><summary><SettingsIcon/><span><WorkspaceText text="Settings" /></span></summary><div className="owner-schedule-popover owner-settings-menu">
+          <details data-dismissible-popover className="owner-schedule-menu"><summary aria-current={filters.tab!=="calendar"?"page":undefined}><SettingsIcon/><span><WorkspaceText text="Settings" /></span></summary><div className="owner-schedule-popover owner-settings-menu">
             <WorkspaceTabs appointmentCount={appointmentCount} filters={filters} setupIncomplete={setupIncomplete}/>
           </div></details>
         </nav>

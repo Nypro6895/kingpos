@@ -1,10 +1,11 @@
 <resources>
     <string name="app_name" translatable="false">Reylumi</string>
-    <string name="back">Back</string>
-    <string name="share">Share</string>
     <string name="connection_error">Unable to load Reylumi. Check your connection and try again.</string>
     <string name="retry">Try again</string>
-    <string name="download_browser">Please use Reylumi in your browser to download this file.</string>
+    <string name="download_saved">File saved</string>
+    <string name="camera_denied">Camera access was not allowed. You can still use manual entry or choose a photo.</string>
+    <string name="location_denied">Location access was not allowed. You can still enter or choose an area.</string>
+    <string name="download_failed">Unable to save this file. Try again, or use your browser for files over 10 MB.</string>
     <string name="no_handler">No app can open this link</string>
     <string name="unavailable">This feature is not available in this Android preview</string>
     <string name="share_title">Share Reylumi</string>
