@@ -313,7 +313,8 @@ final class ReylumiLocalAppTransport {
             ("app/service-relay/actions.ts", "respondServiceRelay"),
             ("app/service-relay/actions.ts", "saveServiceRelay"),
             ("app/service-relay/actions.ts", "findServiceRelay"),
-            ("app/staff/scan/actions.ts", "connectStaffScan")
+            ("app/staff/scan/actions.ts", "connectStaffScan"),
+            ("app/settings/language-actions.ts", "languageAction")
         ]
         let names = actions.map { module, name in
             "action." + String(SHA256.hash(data: Data((module + "#" + name).utf8)).map { String(format: "%02x", $0) }.joined().prefix(24))

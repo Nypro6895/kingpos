@@ -17,7 +17,7 @@ test('language invitation, direct switch, persisted later, English override and 
  const initial=location.search.includes('personal')?PERSONAL_LANGUAGE:{...PERSONAL_LANGUAGE,salonId:'salon-b',salonName:'Salon B',offers:[offer],notices:[{code:'vi',activation,seen:false,accepted:false}]};
  const stored=sessionStorage.getItem('state');window.state=stored?JSON.parse(stored):initial;
  window.calls=[];window.fail=false;window.refreshes=0;
- function App(){const[scope,setScope]=useState('salon-b');const[snapshot,setSnapshot]=useState(window.state);window.renderSnapshot=setSnapshot;return <><button onClick={()=>setScope('personal')}>Personal workspace</button><SalonLanguagePreferences key={scope} initial={scope==='personal'?PERSONAL_LANGUAGE:snapshot}><WorkspaceLanguageProvider enabled={false} portableEnabled={false} expiresAt={null}><h1><WorkspaceText text="Payroll"/></h1><LanguageSetting/><LanguageNotifications/></WorkspaceLanguageProvider></SalonLanguagePreferences></>};
+ function App(){const[scope,setScope]=useState('salon-b');const[snapshot,setSnapshot]=useState(location.search.includes('late')?PERSONAL_LANGUAGE:window.state);window.renderSnapshot=setSnapshot;return <><button onClick={()=>setScope('personal')}>Personal workspace</button><SalonLanguagePreferences key={scope} initial={scope==='personal'?PERSONAL_LANGUAGE:snapshot}><WorkspaceLanguageProvider enabled={false} portableEnabled={false} expiresAt={null}><h1><WorkspaceText text="Payroll"/></h1><LanguageSetting/><LanguageNotifications/></WorkspaceLanguageProvider></SalonLanguagePreferences></>};
  createRoot(document.getElementById('root')).render(<App/>);`},bundle:true,write:false,format:'iife',jsx:'automatic',alias:{'@':process.cwd()},plugins:[{name:'server-stubs',setup(b){
   b.onResolve({filter:/^(next\/navigation|.*language-actions)$/},a=>({path:a.path,namespace:'stub'}));
   b.onLoad({filter:/.*/,namespace:'stub'},a=>({resolveDir:process.cwd(),loader:'js',contents:a.path.includes('navigation')?`import{useState,useEffect}from'react';export function usePathname(){const[p,setP]=useState(location.pathname);useEffect(()=>{const update=()=>setP(location.pathname);window.addEventListener('navigation',update);return()=>window.removeEventListener('navigation',update)},[]);return p;}export const useRouter=()=>({refresh(){window.refreshes++}});`:`
@@ -108,6 +108,9 @@ test('language invitation, direct switch, persisted later, English override and 
   await page.getByRole('heading',{name:'Payroll',exact:true}).waitFor();
   assert.equal(await page.locator('option[value=vi]').isDisabled(),true,'revoked session stops applying language');
   await page.getByRole('alert').waitFor();
+  await page.evaluate(()=>sessionStorage.clear());await page.goto(url+'?late');await page.getByRole('heading',{name:'Payroll',exact:true}).waitFor();
+  await page.evaluate(()=>window.renderSnapshot(window.state));await page.getByRole('dialog').waitFor();assert.equal(await page.getByRole('heading',{name:'Payroll',exact:true}).count(),1,'late package configuration never changes English without choice');
+  await page.getByRole('dialog').getByRole('button',{name:'Chuyển sang Tiếng Việt',exact:true}).click();await page.getByRole('heading',{name:'Lương',exact:true}).waitFor();
   assert.deepEqual(errors,[]);
  } finally {await browser.close();await new Promise(r=>server.close(r));}
 });

@@ -577,6 +577,9 @@
     "app/tax/flow-actions.ts": [
       "createTaxInvitation",
       "revokeTaxInvitation"
+    ],
+    "app/settings/language-actions.ts": [
+      "languageAction"
     ]
   }
 }

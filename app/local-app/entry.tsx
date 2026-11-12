@@ -1,3 +1,4 @@
+import NumericInputEditing from "@/components/numeric-input-editing";
 import { Activity, Component, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { appLocalPageKey, rememberAppLocalPaths } from "@/lib/app-local-page-key";
@@ -709,4 +710,4 @@ function App() {
     </div>
   </AppLocalShell></ExperienceScopeProvider></AppLocalNavigationProvider>;
 }
-createRoot(document.getElementById("app")!).render(<App />);
+createRoot(document.getElementById("app")!).render(<><NumericInputEditing /><App /></>);

@@ -1,4 +1,6 @@
 "use client";
+import {SalonLanguagePreferences} from "./salon-language-preferences";
+import {PERSONAL_LANGUAGE} from "@/lib/salon-language";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
@@ -61,7 +63,7 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
   // Device PIN authority is not an account session or an expired guest. Its own
   // portable view provides its language, lease, lock and queue runtimes.
   if (deviceContext) return <><GuestNavigationShell authenticated={false}>{body}</GuestNavigationShell>{bodyHost ? createPortal(children, bodyHost) : children}</>;
-  return <WorkspaceLanguageProvider scope={scope ?? ""} enabled={config?.language.enabled ?? false} portableEnabled={config?.language.portableEnabled ?? false} expiresAt={config?.language.expiresAt ?? null}>
+  return <SalonLanguagePreferences key={scope ?? "public"} initial={config?.language.preference ?? PERSONAL_LANGUAGE}><WorkspaceLanguageProvider scope={scope ?? ""} enabled={config?.language.enabled ?? false} portableEnabled={config?.language.portableEnabled ?? false} expiresAt={config?.language.expiresAt ?? null}>
     <CampaignPluginProvider scope={scope ?? ""} installed={config?.campaign.installed ?? false}>
       <OverlayDismissal />
       <AppLocalSessionExpiryPrompt key={guestContinuation} authenticated={context ? context.context.authenticated : null} scope={scope} enabled={!publicInitial} checkContext={checkContext} onContinueAsGuest={onContinueAsGuest} signInReturnPath={signInReturnPath} />
@@ -98,5 +100,5 @@ export function AppLocalShell({ context, presentationContext, children, path, ch
       </ExploreAccountActionsProvider>
       <ActionDialog open={Boolean(error)} title="Workspace action needed" description={error} onClose={() => setError("")} primaryAction={{ label: "Try again", onClick: () => { setError(""); window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); } }} />
     </CampaignPluginProvider>
-  </WorkspaceLanguageProvider>;
+  </WorkspaceLanguageProvider></SalonLanguagePreferences>;
 }

@@ -16,7 +16,7 @@ export function SalonLanguagePreferences({ initial, children }: { initial: Salon
   initial = configured ?? initial;
   if (lastInitial !== initial) {
     setLastInitial(initial);
-    if (acceptLanguageSnapshot(state, initial)) { setState(initial); setError(initial.loadError ?? ""); }
+    if (state.salonId === null || acceptLanguageSnapshot(state, initial)) { setState(initial); setError(initial.loadError ?? ""); }
   }
   const [now, setNow] = useState(() => Date.now());
   const [popup, setPopup] = useState<LanguageNotice | null>(null);

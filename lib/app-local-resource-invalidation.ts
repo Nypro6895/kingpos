@@ -1,5 +1,6 @@
 /** Read refresh hints only. Commands retain their original server authorization. */
 export function appLocalCommandAffectsResource(resource: string, source?: string): boolean {
+  if (source === "app/settings/language-actions.ts") return ["shell.auxiliary", "shell.configuration"].includes(resource);
   if (source === "app/pos/owner-check-in-actions.ts") {
     return resource.startsWith("owner.") || resource.startsWith("staff.")
       || ["page.owner-staff", "page.owner-today", "page.owner-payroll", "shell.summary", "shell.auxiliary"].includes(resource);

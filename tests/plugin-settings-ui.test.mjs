@@ -4,7 +4,7 @@ import test from "node:test";
 import { build } from "esbuild";
 import { chromium } from "playwright-core";
 
-const output = "work/plugin-settings-consistency-20261016/qa";
+const output = "artifacts/plugin-settings-consistency-20261016/qa";
 const bundle = await build({ stdin: { resolveDir: process.cwd(), loader: "tsx", contents: `
 import React from 'react';import{createRoot}from'react-dom/client';
 import{BookingRulesSettings,BookSmsSettings}from'./app/settings/booking-plugin-settings';
@@ -101,3 +101,4 @@ test("activated rules and SMS save only operational settings; other plugins keep
   await sms.getByRole("link", { name: "Open Market" }).waitFor();
   assert.deepEqual(await page.evaluate(() => window.calls), []);
 }));
+

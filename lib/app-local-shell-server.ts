@@ -1,4 +1,6 @@
 import "server-only";
+import {getSalonLanguageForContext} from "./salon-language-server";
+import {PERSONAL_LANGUAGE,effectiveLanguage} from "./salon-language";
 import { createHash } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { NextRequest, type NextResponse } from "next/server";
@@ -73,8 +75,8 @@ function forwarded(current: Headers, origin?: string) {
 async function configuration(context: Awaited<ReturnType<typeof getRequestBusinessContext>>, scope: string): Promise<AppLocalShellConfiguration> {
   const salonId = context.workspaceType === "salon" ? context.salonMode === "staff" ? context.currentStaffSalon?.id : context.currentSalon?.id : null;
   const language = (async () => {
-    const plugin = salonId ? await runReadWithDeadline(vietnamesePluginState(salonId), 8_000) : null;
-    return { enabled: Boolean(plugin?.active && (context.salonMode === "manage" || context.salonMode === "staff" && plugin.staff_enabled)), portableEnabled: Boolean(plugin?.active && plugin.portable_enabled), expiresAt: plugin ? [plugin.trial_ends_at, plugin.paid_until].filter((value): value is string => Boolean(value)).sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null : null };
+    const [plugin,preference] = await Promise.all([salonId ? runReadWithDeadline(vietnamesePluginState(salonId),8_000) : Promise.resolve(null),runReadWithDeadline(getSalonLanguageForContext(context),8_000).catch(()=>({...PERSONAL_LANGUAGE,loadError:"Could not load language settings. Please try again."}))]);
+    return { preference, enabled: effectiveLanguage(preference.selected,preference.offers,Date.now(),preference.selectedActivation)==="vi" && Boolean(plugin?.active && (context.salonMode === "manage" || context.salonMode === "staff" && plugin.staff_enabled)), portableEnabled: Boolean(plugin?.active && plugin.portable_enabled), expiresAt: plugin ? [plugin.trial_ends_at, plugin.paid_until].filter((value): value is string => Boolean(value)).sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null : null };
   })();
   const campaign = (async () => {
     if (!context.user || context.user.status !== "active" || context.currentAccount?.status !== "active" || !isSalonManageContext(context) || !isOwnerMembership(context.currentMembership) || context.currentSalon?.status !== "active") return { installed: false, runtime: null };

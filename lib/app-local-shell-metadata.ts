@@ -12,7 +12,7 @@ export type AppLocalShellNavigation = {
 };
 export type AppLocalShellConfiguration = {
   scope: string;
-  language: { enabled: boolean; portableEnabled: boolean; expiresAt: string | null };
+  language: { preference?: import("./salon-language").SalonLanguageState; enabled: boolean; portableEnabled: boolean; expiresAt: string | null };
   campaign: { installed: boolean; runtime: ComponentProps<typeof OwnerCampaignRuntime> | null };
 };
 export type AppLocalShellSummary = { scope: string; notificationScope: string; summary: CustomerNotificationSummary };

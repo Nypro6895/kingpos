@@ -66,6 +66,7 @@ const nextPlugin = {
         // consumes that bookkeeping; treating it as a business write refreshes
         // every mounted Owner resource even when no suggestion was returned.
         const invalidates = originalModule === 'app/campaigns/actions.ts' && name === 'ownerCampaignPromptAction' ? 'false'
+          : originalModule === 'app/settings/language-actions.ts' && name === 'languageAction' ? 'values[1]==="choose"'
           : originalModule === 'app/market/trial-actions.ts' && name === 'marketTrialAction' ? 'values[1]===true' : String(!/^(load|get|read|search|referenceLoveStates)/.test(name));
         if (id) return `export const ${name}=(...values)=>invokeAppLocalCommand(${JSON.stringify(id)},values,${invalidates},${JSON.stringify(originalModule)},${originalModule === 'app/notifications/actions.ts' && name === 'runNotificationBookingAction'});`;
         unsupported.set(originalModule + '#' + name, true);

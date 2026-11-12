@@ -354,7 +354,7 @@ final class StaffOnlineAccessTransportTests: XCTestCase {
             ("app/staff/workday/actions.ts", "checkInStaffWorkday"), ("app/staff/workday/actions.ts", "checkOutStaffWorkday"), ("app/staff/workday/actions.ts", "updateStaffWorkdayStatus"),
             ("app/staff/actions.ts", "updateOwnStaffPasscodeAction"), ("app/staff/actions.ts", "updateStaffPublicProfileAction"), ("app/staff/actions.ts", "getStaffProfileAvatarUploadSessionAction"),
             ("app/staff/appointments/staff-preferences-actions.ts", "staffBookingPreferencesAction"),
-            ("app/service-relay/actions.ts", "loadServiceRelay"), ("app/service-relay/actions.ts", "respondServiceRelay"), ("app/staff/scan/actions.ts", "connectStaffScan"), ("app/service-relay/actions.ts", "findServiceRelay")
+            ("app/service-relay/actions.ts", "loadServiceRelay"), ("app/service-relay/actions.ts", "respondServiceRelay"), ("app/staff/scan/actions.ts", "connectStaffScan"), ("app/settings/language-actions.ts", "languageAction"), ("app/service-relay/actions.ts", "findServiceRelay")
         ]
         for (module, name) in actions { XCTAssertTrue(names.contains(action(module, name)), "Pinned Staff action missing from signed manifest: \(name)") }
         for name in ["http.staff.create-appointment", "http.staff.report-no-show", "http.staff.confirm-booking", "http.staff.booking-preferences"] { XCTAssertTrue(names.contains(name)) }

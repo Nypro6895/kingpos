@@ -113,3 +113,9 @@ test('rebuilt installed application bundle shows the approved Help UI, all artic
  fs.writeFileSync(output+'/installed-bundle-check.json',JSON.stringify({passed:true,bundleBuildId:JSON.parse(fs.readFileSync(path.join(process.env.HELP_NATIVE_BUNDLE_DIR,'manifest.json'))).buildId,guideCount:36,groupCount:7,languages:['en','vi'],backendCalls:0,diagnosticCalls:0,scope:'Actual packaged entry, routing and CSS in Chromium; no WKWebView, signing or physical-device claim'},null,2));
  }finally{await page.close()}
 });
+test('actual installed root replaces initial numeric zero while preserving OTP and phone input',{timeout:30000,skip:!process.env.HELP_NATIVE_BUNDLE_DIR},async()=>{
+ const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));try{
+ await page.goto(origin+'/help',{waitUntil:'networkidle'});await page.getByRole('searchbox').waitFor();await page.evaluate(()=>{for(const [id,type,mode,name,value]of [['native-amount','text','decimal','amount','0.00'],['native-code','text','numeric','otp','0'],['native-phone','tel','tel','phone','0']]){const input=document.createElement('input');input.id=id;input.type=type;input.inputMode=mode;input.name=name;input.value=value;document.body.append(input)}});
+ for(const [id,expected]of [['native-amount','5'],['native-code','05'],['native-phone','05']]){await page.locator('#'+id).focus();await page.keyboard.press('End');await page.keyboard.type('5');assert.equal(await page.locator('#'+id).inputValue(),expected,id)}assert.deepEqual(errors,[]);
+ }finally{await page.close()}
+});

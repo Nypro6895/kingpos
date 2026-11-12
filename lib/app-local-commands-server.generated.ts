@@ -399,6 +399,7 @@ import {loadCampaignReportAction as action395} from "@/app/market/scoped-market-
 import {connectStaffScan as action396} from "@/app/staff/scan/actions";
 import {createTaxInvitation as action397} from "@/app/tax/flow-actions";
 import {revokeTaxInvitation as action398} from "@/app/tax/flow-actions";
+import {languageAction as action399} from "@/app/settings/language-actions";
 const commands: Record<string,(values:unknown[])=>unknown>={
 "action.0dde0f1e1c260096f8675486": (values: unknown[]) => (action0 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.05073222e31d780f4868f2db": (values: unknown[]) => (action1 as unknown as (...args: unknown[]) => unknown)(...values),
@@ -799,5 +800,6 @@ const commands: Record<string,(values:unknown[])=>unknown>={
 "action.0f199296d10b4bb1ee2dcdfd": (values: unknown[]) => (action396 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.3b81d6e13509b356448bf6b5": (values: unknown[]) => (action397 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.77f51317d76efeb399346b57": (values: unknown[]) => (action398 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.7e47ed3a57ca2b87d3b268c2": (values: unknown[]) => (action399 as unknown as (...args: unknown[]) => unknown)(...values),
 };
 export async function runAppLocalCommand(name:string, values:unknown[]){const action=commands[name];if(!action)throw Object.assign(new Error("Unsupported form"),{status:404});return await action(values);}

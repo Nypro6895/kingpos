@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 const mocks = {
   'server-only': '',
+ './salon-language-server':`export async function getSalonLanguageForContext(context){const f=globalThis.__aux;f.languageContext=context;if(f.languageError)throw Error('language unavailable');return {salonId:context.currentStaffSalon?.id??null,salonName:'Fixture',selected:f.english?'en':'vi',selectedActivation:'activation',effective:f.english?'en':'vi',offers:[{code:'vi',activation:'activation',expiresAt:'2099-01-01'}],notices:[],unavailable:false}}`,
   'next/headers': 'export const headers=async()=>new Headers(globalThis.__aux.headers);export const cookies=async()=>({set(){}});',
   'next/server': 'export const NextRequest=Request;',
   './request-business-context': 'export async function getRequestBusinessContext(){globalThis.__aux.admissions++;return globalThis.__aux.context;}',
@@ -22,7 +23,7 @@ const mocks = {
   './bounded-get': 'export const runReadWithDeadline=p=>p;',
   '@/lib/workspace-selection': 'export const selectWorkspaceContext=async()=>{throw Error("No command in read");};',
 };
-for (const p of ['@/app/api/forum/latest/route','@/app/(app)/api/auth/session/route','@/app/(app)/api/auth/logout/route','@/app/api/public-booking/context/route','@/app/api/explore/advertising/route','@/app/api/campaigns/delivery/route']) mocks[p]='export const GET=async()=>{throw Error("Unexpected HTTP forward");};export const POST=GET;';
+for (const p of ['@/app/api/membership/salon-badges/route','@/app/api/forum/latest/route','@/app/(app)/api/auth/session/route','@/app/(app)/api/auth/logout/route','@/app/api/public-booking/context/route','@/app/api/explore/advertising/route','@/app/api/campaigns/delivery/route']) mocks[p]='export const GET=async()=>{throw Error("Unexpected HTTP forward");};export const POST=GET;';
 const built=await build({stdin:{contents:'export {readAppLocalShellResource} from "./lib/app-local-shell-server";',resolveDir:process.cwd(),loader:'ts'},bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'boundaries',setup(b){b.onResolve({filter:/.*/},({path})=>Object.hasOwn(mocks,path)?{path,namespace:'fixture'}:undefined);b.onLoad({filter:/.*/,namespace:'fixture'},({path})=>({contents:mocks[path],loader:'js'}));}}]});
 const api=await import('data:text/javascript;base64,'+Buffer.from(built.outputFiles[0].text).toString('base64'));
 function fixture(){return globalThis.__aux={headers:{},admissions:0,config:0,summary:0,notice:0,context:{scope:'scope-a',user:{id:'viewer'},workspaceType:'salon',salonMode:'staff',currentStaffSalon:{id:'salon'},currentWorkspace:{id:'staff:salon'}}};}
@@ -56,6 +57,7 @@ test('conditional reads still authorize freshly and aborted requests cannot publ
 });
 
 const uiMocks={
+ './salon-language-preferences':'export function SalonLanguagePreferences({children,initial}){globalThis.__auxUI.preference=initial;return children;}',
   'next/navigation':'export const usePathname=()=>globalThis.__auxUI.path;export const useRouter=()=>({push(){}});',
   '@/lib/app-local-resource':'export function useAppLocalResource(scope,name,args,options){globalThis.__auxUI.calls.push({scope,name,enabled:options.enabled});return globalThis.__auxUI.states[name]??{};}',
   '@/app/navigation-shell':'export const NavigationShell=({children})=>children;',
@@ -99,3 +101,6 @@ test('public Help does not issue private reads and check-in invalidates bundled 
   const f=uiFixture();f.path='/help?lang=en';render(null);assert.deepEqual(enabled(f),[]);
   assert.equal(ui.appLocalCommandAffectsResource('shell.auxiliary','app/pos/owner-check-in-actions.ts'),true);
 });
+
+test('shell reuses the admitted language context and never auto-enables a purchased language without an explicit choice',async()=>{const f=fixture();f.english=true;const value=await read();assert.equal(value.data.configuration.data.language.enabled,false);assert.equal(value.data.configuration.data.language.preference.selected,'en');assert.equal(f.languageContext,f.context);assert.equal(f.admissions,1);});
+test('transient language-state failure returns English compatibility flags without leaking upstream details',async()=>{const f=fixture();f.languageError=true;const value=await read();assert.equal(value.data.configuration.data.language.enabled,false);assert.equal(value.data.configuration.data.language.preference.selected,'en');assert.equal(value.data.configuration.data.language.preference.offers.length,0);assert.ok(!JSON.stringify(value).includes('language unavailable'));});
