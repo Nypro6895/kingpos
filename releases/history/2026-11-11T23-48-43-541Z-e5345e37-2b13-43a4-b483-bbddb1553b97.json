@@ -1,0 +1,36 @@
+{
+  "kind": "release",
+  "summary": "Verified account recovery and encrypted Hostinger SMTP published on exact live baseline; schema and live SMTP connection verified. Native copy update tracked separately.",
+  "changes": [
+    "e4c96d41-e234-4665-8621-ee0f1f69424f",
+    "2af45a85-e9a5-45bb-ba35-414e0ff47d2a"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_7pwRdKHxYEnhNbvw2Ja3H93BAfqr",
+      "baselineDeploymentId": "dpl_v6PbmwAoHe3r7A7WgDLMWXuqYF3o",
+      "sourceSha256": "e71b4b73720276cf5c6f9329cc8e1310d4e3f7eaac9f808ee018b4358a894b15",
+      "overlaySha256": "e4068b2a3894a0d9e11530dddb629918f88306180709743416754032b85d2134",
+      "evidence": "artifacts/recovery-release/RELEASE.txt"
+    }
+  },
+  "sourceCommit": "9625dbba6b9aa868e10241cdcfb728c51b3ec364",
+  "migrations": [
+    {
+      "file": "20261110213000_smtp_delivery_receipts.sql",
+      "sha256": "1af7725569a7ab367a6384109cb00f893576b7c38e35b821f001afaec067d432"
+    },
+    {
+      "file": "20261111233000_recovery_completion.sql",
+      "sha256": "9fef1f80a3f96b72f7d8999ff6e474975aa02d9dd77f29f66d94197d71a32bd0"
+    }
+  ],
+  "limits": [
+    "No real customer recovery or email sent for QA. Email reply ingestion remains manual in support mailbox. Native Personal Settings copy update has separate TestFlight workflow."
+  ],
+  "id": "e5345e37-2b13-43a4-b483-bbddb1553b97",
+  "recordedAt": "2026-11-11T23:48:43.541Z",
+  "worktree": "C:\\Reylumi-worktrees\\recovery-completion-20261111"
+}

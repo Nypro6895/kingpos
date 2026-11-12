@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "recovery-app-copy-20261111",
+  "status": "working",
+  "summary": "Rebuild installed Personal Settings recovery explanation on latest uploaded native source, with hosted recovery/server authority unchanged; TestFlight only.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/login-security/login-security-quick-editor.tsx"
+  ],
+  "dependencies": [
+    "recovery-completion-20261111"
+  ],
+  "source": {
+    "commit": "9625dbba6b9aa868e10241cdcfb728c51b3ec364",
+    "snapshot": "C:\\Reylumi-worktrees\\recovery-completion-20261111/artifacts/recovery-release/snapshot"
+  },
+  "validation": [
+    {
+      "name": "Latest uploaded native baseline acb1769 build97; no Swift/workflow/native code diff",
+      "result": "passed"
+    },
+    {
+      "name": "Native CI simulator, archive, signing and TestFlight processing",
+      "result": "pending"
+    }
+  ],
+  "id": "a8d3f31e-8327-45d0-8e29-07e5a36920cf",
+  "recordedAt": "2026-11-11T23:48:19.762Z",
+  "worktree": "C:\\Reylumi-worktrees\\recovery-completion-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

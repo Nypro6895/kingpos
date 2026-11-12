@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "recovery-latest-attempt-20261111",
+  "status": "ready",
+  "summary": "Resent resets invalidate prior password progress; completion requires fresh sign-in after the latest containment/MFA reset. Same Auth signatures and permissions retained.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261112001500_recovery_latest_attempt.sql",
+    "tests/recovery-completion.integration.test.mjs"
+  ],
+  "dependencies": [
+    "recovery-completion-20261111"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\recovery-completion-20261111\\artifacts\\recovery-release\\latest-attempt\\snapshot"
+  },
+  "validation": [
+    {
+      "name": "Seven recovery integration cases, including resend/latest containment",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/latest-attempt-test.txt"
+    },
+    {
+      "name": "Entire405-migration schema and real isolated Auth recovery",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/full-stack-latest-attempt.txt"
+    }
+  ],
+  "id": "1574f6ef-5398-4501-ba62-801121ad429d",
+  "recordedAt": "2026-11-12T00:11:33.216Z",
+  "worktree": "C:\\Reylumi-worktrees\\recovery-completion-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "supabase/migrations/20261112001500_recovery_latest_attempt.sql": "ac22d8891ea110a5d5dd165ab0792d7daa1ecd540f8d412b750d34afdaccff1d",
+    "tests/recovery-completion.integration.test.mjs": "3fa9d470f41104f5e0019800e7ba7ed738b2eba0e22ef38c77a032fba13b064b"
+  }
+}

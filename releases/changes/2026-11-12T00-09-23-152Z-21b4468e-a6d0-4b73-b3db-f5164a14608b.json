@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "recovery-latest-attempt-20261111",
+  "status": "working",
+  "summary": "Invalidate password progress after a resent reset and require fresh sign-in after the latest containment/MFA reset.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261112001500_recovery_latest_attempt.sql",
+    "tests/recovery-completion.integration.test.mjs"
+  ],
+  "dependencies": [
+    "recovery-completion-20261111"
+  ],
+  "source": {
+    "commit": "9625dbba6b9aa868e10241cdcfb728c51b3ec364"
+  },
+  "validation": [],
+  "id": "21b4468e-a6d0-4b73-b3db-f5164a14608b",
+  "recordedAt": "2026-11-12T00:09:23.152Z",
+  "worktree": "C:\\Reylumi-worktrees\\recovery-completion-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
