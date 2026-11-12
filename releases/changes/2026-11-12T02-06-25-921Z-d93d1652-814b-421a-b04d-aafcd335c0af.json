@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "staff-scan-checkin-guidance-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Explain missing check-in clearly and distinguish invalid QR and multiple active visits Original handoff 4924fb96-a1b8-4e3d-ba25-b052b20cb0ea. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261110183000_staff_scan_checkin_guidance.sql",
+    "lib/vietnamese-staff-scan.json",
+    "tests/staff-scan-checkin-guidance.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [
+    "4924fb96-a1b8-4e3d-ba25-b052b20cb0ea"
+  ],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "d93d1652-814b-421a-b04d-aafcd335c0af",
+  "recordedAt": "2026-11-12T02:06:25.921Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "supabase/migrations/20261110183000_staff_scan_checkin_guidance.sql": "5a1a17c7ccb34a2e2a514abda42d0214b6b41266b6e3742d68656d7bbf78f632",
+    "lib/vietnamese-staff-scan.json": "6194d664de823626f69fbfd4fd6e95e7a2d8f3287b7ac31472f36dcd1c9ad151",
+    "tests/staff-scan-checkin-guidance.integration.test.mjs": "6ccd194f1faff2ebf6e7575d7d792bc18a899819a056458135a9cb1554deeff1"
+  }
+}

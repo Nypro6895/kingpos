@@ -1,0 +1,103 @@
+{
+  "kind": "change",
+  "changeId": "terminology-step1-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Complete step-1 labels with Support and truthful booking-contact guidance; preserve route, permission, filter and submission behavior Original handoff a27cc5d0-b2ae-4d49-9d85-7110d8764bf2. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/more/[section]/page.tsx",
+    "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "app/(app)/support/page.tsx",
+    "app/activity/my-reviews-list.tsx",
+    "app/beauty/beauty-home.tsx",
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/navigation-shell.tsx",
+    "app/pos-tickets/work-log-filters.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-windows-compact-menu.tsx",
+    "app/pos/portable/check-in/portable-check-in-client.tsx",
+    "app/role-navigation.ts",
+    "components/app-local-social-views.tsx",
+    "components/app-local-support.tsx",
+    "components/gift-card/manage-gift-cards.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-reference-content.ts",
+    "lib/app-local-secondary-registry.tsx",
+    "lib/pos-portable-capabilities.ts",
+    "lib/pos-portable-routes.ts",
+    "lib/reylumi-config.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-terminology-copy.json",
+    "tests/terminology-regression.test.mjs",
+    "tests/terminology-booking-browser.mjs",
+    "tests/terminology-menu-browser.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "03232de4-355a-4b0b-aa5f-98fecfdca092",
+  "recordedAt": "2026-11-12T02:06:55.365Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/(app)/more/[section]/page.tsx": "a2c0b2090eb094450f0e6f85180f84ff9d65680d5c80beae93df649035c7404d",
+    "app/(app)/pos-tickets/[ticketId]/page.tsx": "f14e1342a69ee2ce93d986b7da030fc8382cd67f4bab6725b8bc333655340870",
+    "app/(app)/support/page.tsx": "c13d1a054201f66c010f829a418703f9ff3a0a1288530dde6b5e950f0a962a9e",
+    "app/activity/my-reviews-list.tsx": "8c2b632a7389811d5b07cfe88eea43eea5c58cfc4ac29ec66c160c7ce1c51604",
+    "app/beauty/beauty-home.tsx": "2fc50e99bf1f9afb0edefd2756eee8fa93fc0b6200bcfa817f94194b6e3126a8",
+    "app/book/[salonId]/public-booking-client.tsx": "a9103bf94155d35fc27039a71920310458e4933cf7be003f424a5c9652e7feac",
+    "app/navigation-shell.tsx": "8923819f4ed1a2284ada52539d040efd5117db9c33fe84339a82f719a536523f",
+    "app/pos-tickets/work-log-filters.tsx": "3010d99247744693153ed8c036f13dadd91b8a90c2e344e80a455f5ec521a200",
+    "app/pos/owner-pos-tabs.tsx": "447ac1f57e7b07ec8534650094029afe995978c2883893a55500c25bcbf9296c",
+    "app/pos/owner-windows-compact-menu.tsx": "4462ca746b502b5dc74878fefd0386079a16669dcfc15074ae07d7faca96bbba",
+    "app/pos/portable/check-in/portable-check-in-client.tsx": "716ed0e505025cfb62d827f1646fd394f65b8e925d23bb883251dde0138110e4",
+    "app/role-navigation.ts": "62c4738f763c42b1cbfd58d4a5ca97849263024e2cfcfa30b96e723c0d0a6c5a",
+    "components/app-local-social-views.tsx": "678f225a470b6966afb12fbf174f639508ccb66479bd6ad1e843d73f3221118e",
+    "components/app-local-support.tsx": "d98a39190de17a49626c3d62a9fbc43af90090e868584af0939170c52e143c5e",
+    "components/gift-card/manage-gift-cards.tsx": "bc1c2fd70ce279f9b7d87478ebcf1845eabd136e3c542988f822f9f7d4ccd785",
+    "lib/app-local-page-registry.tsx": "caf3a07dd01960a5628d5754a47c5b2091ab61ea05e022d978d77eb16d74985b",
+    "lib/app-local-reference-content.ts": "df3e9a178da76704b70ba9270b4a804de0b1b154f28c527be0ba4ce14defa1b8",
+    "lib/app-local-secondary-registry.tsx": "532b6a6d3beb29f0b7db77253a841c9d88c366da903f489741849064bd9ee696",
+    "lib/pos-portable-capabilities.ts": "b33c017e1522efc1e64f5747c78de36ce347360ea3d840cde5ac843a114bc098",
+    "lib/pos-portable-routes.ts": "4abf888820e08f80a04f9fe666468fd4a73c46d8c96bcd38ed85d3f63e07f804",
+    "lib/reylumi-config.ts": "519939bd211e87fb46bbdd9c6f8cb0969cd5c01de9352b6889e3e0bcdded66ac",
+    "lib/vietnamese-dictionary.ts": "5e80dcca2251f596feabdf786989ca111d3dd468624f7001e3ae620c0e4a22a6",
+    "lib/vietnamese-terminology-copy.json": "aae8c2509d46d3817b65cc9f0e94a9b7183b8d34a1bf0f55f697298b5f5a7d6e",
+    "tests/terminology-regression.test.mjs": "f2f0d3840f3bc05b16bbc2df88d224843402bde0d57cf48209e542c1c8c4e3ed",
+    "tests/terminology-booking-browser.mjs": "4a9b4c6a3aee2bd705b6fbb627541595ca80e1c01ada888c2c745c20783454d0",
+    "tests/terminology-menu-browser.mjs": "8d456cef485459b652b57121f4e0f9507be10077490adfab34e6cf681c5c54ac"
+  }
+}

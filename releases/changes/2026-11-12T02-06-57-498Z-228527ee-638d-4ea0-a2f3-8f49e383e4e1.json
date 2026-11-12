@@ -1,0 +1,98 @@
+{
+  "kind": "change",
+  "changeId": "isolated-local-qa-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: LOCAL QA tooling only: isolated Supabase, synthetic accounts/data and simulated card/email providers; tested booking, POS, rewards, forum and campaign. No production deployment, provider charge or external email. Frozen baseline acb1769 plus scoped Staff pending fix from e3924e1. Original handoff e5f29ee4-619d-497e-9fc2-5eba4f140cc6. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    ".gitignore",
+    "app/staff/requests-workspace.tsx",
+    "next.config.ts",
+    "app/api/qa/environment/route.ts",
+    "qa/local/Open-EmulatorQA.ps1",
+    "qa/local/Open-QA.ps1",
+    "qa/local/README.md",
+    "qa/local/RECEIPT.json",
+    "qa/local/Start-QA.ps1",
+    "qa/local/Stop-QA.ps1",
+    "qa/local/browser.mjs",
+    "qa/local/common.mjs",
+    "qa/local/config.toml",
+    "qa/local/configure.mjs",
+    "qa/local/docker-loopback.mjs",
+    "qa/local/guard.mjs",
+    "qa/local/prepare.mjs",
+    "qa/local/providers.mjs",
+    "qa/local/seed.mjs",
+    "qa/local/serve.mjs",
+    "qa/local/smoke.mjs",
+    "qa/local/staff-pending.test.mjs",
+    "qa/local/verify.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "android-flow-audit-20261111"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "228527ee-638d-4ea0-a2f3-8f49e383e4e1",
+  "recordedAt": "2026-11-12T02:06:57.498Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    ".gitignore": "3b45a0f8a83b74a654db6637bad4009ead78c7ba592ab6dc8223c3a9aa022268",
+    "app/staff/requests-workspace.tsx": "1276cae2b68f08ef9727bd5545296f91720168f084970db6dd14495049fc589a",
+    "next.config.ts": "51fe3bbc33616bbf43e465e7980e7c93d5f4b279b77fcb53c09d803f6cf25009",
+    "app/api/qa/environment/route.ts": "d7547f3ab422aa2138e7cd23943e987f1bc91fc3a12c8cc0f066e18c08dfd7cf",
+    "qa/local/Open-EmulatorQA.ps1": "4f0738f817b63d06dffa9bfa443cadfdcf6e9f476ac78770bcafe19041879bfb",
+    "qa/local/Open-QA.ps1": "2a6627c35747523e4e8c2322aa6fffc7b3d8dd45ec2a05374692f98d8b0b280b",
+    "qa/local/README.md": "0b38de0e93c68b7588cfc69da05924fd6a36b081f42e9fd447cd3cb36c94537a",
+    "qa/local/RECEIPT.json": "9334ec51e45ce90448adca45787e0898881905bb507be64224ec326f631a1b66",
+    "qa/local/Start-QA.ps1": "3856175804af8bec7b153d54f14e3806d17ae1a74464c0840355b4175fca8d72",
+    "qa/local/Stop-QA.ps1": "03df6131ee9abca4670059707e763ac74f49c6468691898186b95513bd19c159",
+    "qa/local/browser.mjs": "c5e094ace375835eb44a27057035b2f389d34bb439edd73fa812fdd68828c785",
+    "qa/local/common.mjs": "b38d49eec3ab317e86e26f93140d01a6dfc19e312278828ef593cdd5364e2245",
+    "qa/local/config.toml": "c6466ed7e9e5b392fe91cf77817273b1606bdc081e9624c3e445c3725ba59903",
+    "qa/local/configure.mjs": "c7dbda02f084a3887155fe2fc0b442f0e3707079a29e68ce2e2738882d9a6910",
+    "qa/local/docker-loopback.mjs": "a28c35f81d4ccdbd1a03715a1a563013ab1487752c5894f5404ae9dd57168a8c",
+    "qa/local/guard.mjs": "13c4f56e468eedfff468974204258e79d24c303bd36be6c79a41d77d42d31fe8",
+    "qa/local/prepare.mjs": "a7f38bd42dcfc392febf0e7e982f136804e4d7c162258ce36e55de275a5ada89",
+    "qa/local/providers.mjs": "4a4cda3de14c6c311fce5ffd48a26ac2a78e087673d4a3bb94295f18ca6c5ab1",
+    "qa/local/seed.mjs": "f75097bd8e58b6a5efe4f5724f0c5e38f5cc383e5c2e43ea7b5e8872aeaf8d18",
+    "qa/local/serve.mjs": "909ec0658346c656ba645c41f13a6984fac064b14bac92dddcdbd435b4e603c8",
+    "qa/local/smoke.mjs": "fd2cda933747b8339f58e78631c1b42fa9568eeb595158759f7d4a9407af5719",
+    "qa/local/staff-pending.test.mjs": "c2673c7b8fcc7a9c01768aa1036fef74a5b03a90a3ce78cadb4f826fa73fa3d6",
+    "qa/local/verify.mjs": "58cc151ab5c3b80f6e081f9ab7867a048fa79c4ef925dee8e6a2374015d3a2ae"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "kind": "change",
+  "changeId": "help-native-parity-20261106",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Fix installed app Help to use the same compact icon-based orange/teal view as web; remove legacy quick starts/guide numbering and every end-user diagnostic export control Original handoff 0909d789-5d3f-40ab-afb5-37661b4d740f. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/help/help-catalog.tsx",
+    "app/help/help-content.tsx",
+    "app/help/help-language.tsx",
+    "app/help/help.module.css",
+    "app/help/help-copy.json",
+    "app/help/help-icon.tsx",
+    "app/help/help-view-context.tsx",
+    "app/help/help-view.tsx",
+    "components/app-local-help.tsx",
+    "components/app-local-diagnostic-export.tsx",
+    "tests/app-local-diagnostic-export.test.mjs"
+  ],
+  "deletedFiles": [
+    "components/app-local-diagnostic-export.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "help-complete-20261106"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "d6b91abd-e021-48bb-9586-7d11aba5f256",
+  "recordedAt": "2026-11-12T02:06:20.993Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/help/help-catalog.tsx": "493245d81bf8bb8f624790fdc7cf6ce8d598397b87d8c9f6000929c0ff18bdb8",
+    "app/help/help-content.tsx": "5b6b3c28148b568baa226b10309d5301cf4bfd58574db76f3479c1650d34ced7",
+    "app/help/help-language.tsx": "3a45adab6344830b87530b8a09be62ed0355c81e94f77ee148f6d8627a136e96",
+    "app/help/help.module.css": "a829e968d820c5c294eb2ab269e5fb3c5c05697f7aeaf31c0a5deb131888845a",
+    "app/help/help-copy.json": "ed8af28e0db9e34d2c4d7eca419fa14f67cb9b9926bfa5d58aa16ff068e73f20",
+    "app/help/help-icon.tsx": "ff7ba223384f9e4bd9b8d5c1b666e3359f70f32d640a285e530a6b3ff7784fd9",
+    "app/help/help-view-context.tsx": "2b1ca2a753924104e8aaedb5b42b3cea4553aed80bacfdacf20a045482e7fa1a",
+    "app/help/help-view.tsx": "e9e2b725d3363c52b008143fa58aaa0e1bd181f9f015a9f1e89eec9548aeed3d",
+    "components/app-local-help.tsx": "1956283ae04a9d9b2eb6f23ce2bfb1108420106b341a25653d2aad8c2054d09a",
+    "components/app-local-diagnostic-export.tsx": null,
+    "tests/app-local-diagnostic-export.test.mjs": "c6bd4d01e6b0e21a275ac2ea6636175614f0a4d7e5d919c8d216ecf10030b0a6"
+  }
+}

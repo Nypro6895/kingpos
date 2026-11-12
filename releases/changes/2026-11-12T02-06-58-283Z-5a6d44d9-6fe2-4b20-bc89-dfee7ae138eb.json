@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "ipad-native97-ui",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Fix selected-role reentry across switchers, native Library section, duplicate Library profile, and Owner Book Settings highlight Original handoff 455e4836-9448-4041-b65e-a9008921fd2e. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "lib/app-local-personal-registry.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/(app)/beauty/library/page.tsx",
+    "app/bookings/booking-workspace-client.tsx",
+    "app/bookings/booking-workspace.css",
+    "tests/ipad-native97-regression.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "5a6d44d9-6fe2-4b20-bc89-dfee7ae138eb",
+  "recordedAt": "2026-11-12T02:06:58.283Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/navigation-shell.tsx": "8923819f4ed1a2284ada52539d040efd5117db9c33fe84339a82f719a536523f",
+    "lib/app-local-personal-registry.tsx": "f1ed517663fa030bcbad964c7c3cd15a21bb4879c837f3c9f2d12debed5d9830",
+    "app/beauty/beauty-profile-client.tsx": "b7718cc2c85a03b62fa6a2e058eff7e8cb062929bbb44fa8d75ddcc46032bfba",
+    "app/(app)/beauty/library/page.tsx": "ff7f1d1a3c69fbd38a9c2b2f885c94838779003bd6d005475c3bb1dd562c3296",
+    "app/bookings/booking-workspace-client.tsx": "9a2c333f522eb7567ef721fcb2f930c6eb8ef5c2a2b2cc50ab66e570f449679a",
+    "app/bookings/booking-workspace.css": "39b8387bc88b1ccb343ac88e6d828e6febb6d7304beaa03ab59d29382dbb3dad",
+    "tests/ipad-native97-regression.test.mjs": "94585f18cfc087400bdb5362a2ad7c4584a2cc88fe6e375c5dc9872c9ade0ae7"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "kind": "change",
+  "changeId": "android-flow-audit-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Fix Staff request pending dismissal and Android Back native dialog cancel/foreground priority; repair QA portability and React timing. Broad local audit passed with documented external acceptance gaps. Android native-only; ios channel is schema compatibility, no iOS binary change. Original handoff 3f126e1c-1f05-4cbe-89cc-a4937a80a60e. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "android/app/src/main/assets/NativeBridge.js",
+    "app/staff/requests-workspace.tsx",
+    "tests/customer-history-ui.test.mjs",
+    "tests/financial-schema-payload-contract.test.mjs",
+    "tests/notification-center-ui.test.mjs",
+    "tests/android-native-bridge.test.mjs",
+    "docs/android-flow-audit-20261111.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "android-hardware-20261110"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "b80ab073-d048-49c9-bdb5-2dab5780b049",
+  "recordedAt": "2026-11-12T02:06:56.446Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "android/app/src/main/assets/NativeBridge.js": "2e661c88ce75e597c48a52811ae6915eeff2f4a6d9f2196efd07dd77ed8b5d24",
+    "app/staff/requests-workspace.tsx": "1276cae2b68f08ef9727bd5545296f91720168f084970db6dd14495049fc589a",
+    "tests/customer-history-ui.test.mjs": "e546ecb6a4a87175bfc97ec19b147f281469e77c7b10c2173a55aec369772e79",
+    "tests/financial-schema-payload-contract.test.mjs": "affe7c1cc5a336721f51ed449b8ae3d0d377cbb94d46124ed4f3c2bcb34af410",
+    "tests/notification-center-ui.test.mjs": "351c04e7cf2c08a51ceec212f1565b1bb89093a69d5991ab8d12c9775ac0e1c4",
+    "tests/android-native-bridge.test.mjs": "e39266416f0631244770f2082da307381a16fd575749318a79252e364e3b49ec",
+    "docs/android-flow-audit-20261111.md": "30e8617493095f394917a6c0c66f60bdec65f0042d9a0e6b49aa1b3bdb91962c"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "profile-header-compact-20261106",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Cumulative profile header revision: owner gear beside name, metadata grouped immediately below locality, Follow in title row and manage access in overflow; integrate revision-2 scoped.patch instead of revision-1 Original handoff ec193e69-d8eb-4f73-96b3-33176537148d. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-header.tsx",
+    "app/salon-profile/salon-website-header.module.css"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "59a4b990-8f54-4274-9a0e-13aeb0e21601",
+  "recordedAt": "2026-11-12T02:06:21.278Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/salon-profile/salon-profile-view.tsx": "8854fcd954017d3684b754450a3b3ed74bcac2e202bce9dc3f5a3d646510f336",
+    "app/salon-profile/salon-website-header.tsx": "1810eeee4b1ba36352d012e397d9fb210486134f0a970c4f712a178d8545753e",
+    "app/salon-profile/salon-website-header.module.css": "8593a2bb2ed40c8926dd9cda7c01e52872067556f2710a2e245afa2c2558e2d2"
+  }
+}

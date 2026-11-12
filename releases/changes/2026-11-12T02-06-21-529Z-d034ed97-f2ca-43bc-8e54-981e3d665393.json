@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "app-store-privacy-preparation-20261109",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Prepared build-97 required-reason privacy manifest and explicit resource packaging; audited SDK/data use, deletion and UGC; held for archive validation, Forum gaps and owner legal decisions Original handoff 7d28fdab-c6f7-46ba-86f7-10fe4a12dcf1. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/PrivacyInfo.xcprivacy",
+    "ios/project.yml",
+    "scripts/audit-ios-privacy.mjs",
+    "docs/app-store-legal-audit-20261109.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "d034ed97-f2ca-43bc-8e54-981e3d665393",
+  "recordedAt": "2026-11-12T02:06:21.529Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "ios/Reylumi/PrivacyInfo.xcprivacy": "24bc76d99600aabffda189c61ec29e7d31c0f997e0c4f93238336c39d8757b6a",
+    "ios/project.yml": "3f67be8dfdcd7b93a699a0915029201f344665ee54df6c9f78255fa8a9a5badd",
+    "scripts/audit-ios-privacy.mjs": "45b1edcb4a5fd3ec7fb63f1bcc52f9298b88380564325eb59ccfde8121b7d41c",
+    "docs/app-store-legal-audit-20261109.md": "1d96bd38c03d0b0451ea2e97dd37ad89b5fee4348a96608a7aadd5c5bc84d820"
+  }
+}

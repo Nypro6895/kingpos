@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "staff-pay-tip-bonus-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Staff My Pay shows Tip and Bonus together and always shows bonus in breakdown. Audited canonical take-home already includes both; owner bonus input and tax on/off verified across cash/check payouts. Original handoff 8b1bd1a9-ef49-4d0a-8b1d-ff361be0386d. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/staff/my-work/staff-pay-analysis.module.css",
+    "tests/staff-pay-analysis.test.mjs",
+    "tests/payroll-live-dashboard.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "1741bc2a-34d0-45bf-bc1e-a4c51a0b35ea",
+  "recordedAt": "2026-11-12T02:06:59.645Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/staff/my-work/staff-pay-analysis.tsx": "5df934d5a0a82f15b4bff2472cd7cc979aa077ef3dc58a198bab8311fa9bc1e5",
+    "app/staff/my-work/staff-pay-analysis.module.css": "c4e32f7d4762000270fb5d2dce1f7bbeeaa158c11103bf522a152053cc418302",
+    "tests/staff-pay-analysis.test.mjs": "974fecb6f5c621dcd25ca93daf2c3520a8151d33f39caaa09c891b461244c5cc",
+    "tests/payroll-live-dashboard.test.mjs": "69242368efa9e41f8263a8aade7f68dc0b7920c2e0d3bb19a6a6f8cdc2c4dc34"
+  }
+}

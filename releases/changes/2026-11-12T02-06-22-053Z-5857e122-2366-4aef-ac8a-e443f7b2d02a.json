@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "app-store-report-consumer-and-notification-race-20261109",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Verified case-bound admin evidence, ordinary-case lookup-failure compatibility and real two-session PostgreSQL notification race defenses; local runtime blocker cleared, publication remains held Original handoff 7785f7e4-5f6d-49c1-8e16-bebcf2ce7a82. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/reports/report-case-view.tsx",
+    "docs/app-store-report-consumer-20261109.md",
+    "lib/platform-admin/report-context.ts",
+    "lib/platform-admin/reports.ts",
+    "scripts/test-forum-notification-two-session.mjs",
+    "supabase/migrations/20261109223000_social_report_evidence.sql",
+    "supabase/migrations/20261109223100_forum_notification_visibility.sql",
+    "tests/admin-report-context.test.mjs",
+    "tests/admin-report-workflow.test.mjs",
+    "tests/forum-notification-concurrency.test.mjs",
+    "tests/social-report-consumer.integration.test.mjs",
+    "types/social-text-reports.ts"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "app-store-ugc-privacy-completion-20261109"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "5857e122-2366-4aef-ac8a-e443f7b2d02a",
+  "recordedAt": "2026-11-12T02:06:22.053Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/(app)/admin/reports/report-case-view.tsx": "f3f46f760aa3b8bbe3b5f54187e78198dd875ac3f08fa1bbee32fbed0fa815cb",
+    "docs/app-store-report-consumer-20261109.md": "d90fb2d510d586158ad8bb9b80fbebea857777467ee37bb2e767a2256eac440d",
+    "lib/platform-admin/report-context.ts": "215e64b5f2b600a657104127c204e5797307a48152b0a32130ddbfefb04a3ae1",
+    "lib/platform-admin/reports.ts": "d2ddadf512019a22686acd864b6f4e0b020ce9714b448fd034b11830fc9301d6",
+    "scripts/test-forum-notification-two-session.mjs": "6078ed40da7752c105c7b07c1c93ef10289b0aed45812e202d713fa5e5dc92f6",
+    "supabase/migrations/20261109223000_social_report_evidence.sql": "1b63a5f8eb74be8634b2154c0a84d8ebd9f8e54d549085716682d1b4e4c96ea9",
+    "supabase/migrations/20261109223100_forum_notification_visibility.sql": "9ba444bb15deb23a687fef26bd261b3f5940cb57e60da4b005b4c8d4c655eed6",
+    "tests/admin-report-context.test.mjs": "f91c27063f03a07b60eb477dbb2f7990f58537c816379e8f60af86e36f0d1ced",
+    "tests/admin-report-workflow.test.mjs": "110c7afe4b6550cafcbce0bd2a518a953c09a27197e1a2e1c60ab1aaf335231f",
+    "tests/forum-notification-concurrency.test.mjs": "beb63b811e2f7ceab88f3501522d2f6b1a46adee8332fcc1be669cf18e6922e8",
+    "tests/social-report-consumer.integration.test.mjs": "719011bbd231c94e5e6c81e59d3594dd498338bcb80540b255ef6e34f50e4f8c",
+    "types/social-text-reports.ts": "e229e21cb3717ecc5d7b0b9c9aeb7dfdd58caa8ce5aea760960874898cbc7087"
+  }
+}

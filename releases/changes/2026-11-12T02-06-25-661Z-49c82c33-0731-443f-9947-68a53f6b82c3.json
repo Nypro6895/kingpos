@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "android-hardware-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Android-only camera/foreground location, system image capture, branded offline UI and Back handling. Physical QR passed; GPS and full parity remain open. ios channel is journal-schema compatibility only, no iOS release. Original handoff 55128068-fd97-4ab2-82dc-8b16fe162941. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "android/README.md",
+    "android/app/src/main/AndroidManifest.xml",
+    "android/app/src/main/assets/NativeBridge.js",
+    "android/app/src/main/java/com/reylumi/android/MainActivity.java",
+    "android/app/src/main/java/com/reylumi/android/NavigationPolicy.java",
+    "android/app/src/main/res/values-vi/strings.xml",
+    "android/app/src/main/res/values/strings.xml",
+    "android/app/src/test/java/com/reylumi/android/NavigationPolicyTest.java",
+    "android/app/src/main/java/com/reylumi/android/DeviceAccess.java",
+    "android/app/src/main/res/xml/file_paths.xml",
+    "docs/android-hardware-audit-20261110.txt"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "android-parity-20261110"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "49c82c33-0731-443f-9947-68a53f6b82c3",
+  "recordedAt": "2026-11-12T02:06:25.661Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "android/README.md": "0c4846ebf74f224e89574eabe68b81305fc9f44abc1d62191dc1a0eac6b9b985",
+    "android/app/src/main/AndroidManifest.xml": "c5e63088b8a685545b735839c37e581725c6946c37d92c153333f22347985b95",
+    "android/app/src/main/assets/NativeBridge.js": "2e661c88ce75e597c48a52811ae6915eeff2f4a6d9f2196efd07dd77ed8b5d24",
+    "android/app/src/main/java/com/reylumi/android/MainActivity.java": "dc44dc7b142cebfb18b413513d06b86ced2b1883a240546674a823b4a5b5db2c",
+    "android/app/src/main/java/com/reylumi/android/NavigationPolicy.java": "6fdaab74600ee711359066ee0472563e6fe0466c2c3eca9c893bb8a5ab9c41b9",
+    "android/app/src/main/res/values-vi/strings.xml": "c1cd62421d064191e58ff4e6fd5f46192090281ab55219c9f77109fcd4559001",
+    "android/app/src/main/res/values/strings.xml": "724ade0b9c286d211e0e84680615f4f1fe1ccac0dd27208f5448b144b2417dde",
+    "android/app/src/test/java/com/reylumi/android/NavigationPolicyTest.java": "aafa25e0956ff8be86d07c59d6df2632cf6f8227a1cd2bf78524f9981a195f64",
+    "android/app/src/main/java/com/reylumi/android/DeviceAccess.java": "a128e87377308f48f60d394afb96b7e6a2d4573ec55edff1ae17deb0834cfe85",
+    "android/app/src/main/res/xml/file_paths.xml": "8550fa7aa6b5da363f8ec2dfc9dc11e3381d3c2bf27ff49a497ea346d4b60c3c",
+    "docs/android-hardware-audit-20261110.txt": "a4b14de062b321681342b5237b9924e7b039457685948725bfdec9c085e3c65b"
+  }
+}

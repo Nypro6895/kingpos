@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "numeric-input-leading-zero-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: App-wide numeric zero replacement and leading-zero cleanup; 33 local Chrome assertions and 5 payroll/tax checks pass; no deployment Original handoff f208bd79-0294-4b51-8929-0aab46d0ed67. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/layout.tsx",
+    "components/numeric-input-editing.tsx",
+    "lib/numeric-input-editing.ts",
+    "tests/numeric-input-editing.browser.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "482e55a0-9cea-4fc3-b2ee-5aafb6282cde",
+  "recordedAt": "2026-11-12T02:06:23.870Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/layout.tsx": "2b5686e0709fdf70f0890f964a5af1fa8ea7c2e8cef91adfc1ba02b33fe63242",
+    "components/numeric-input-editing.tsx": "434bbee86ffd602ec13c2dd86ec4712e9cad955ea61e57d0f8165db5cbacecfb",
+    "lib/numeric-input-editing.ts": "c3b4dec252b71d2456afd086d8bbd537359d58692d9b213eef4a2ff4b2a6c52d",
+    "tests/numeric-input-editing.browser.mjs": "6ad955d23912da0330c49b414fdbc7539d129e78d8c79c6026c8f5b216c6208e"
+  }
+}

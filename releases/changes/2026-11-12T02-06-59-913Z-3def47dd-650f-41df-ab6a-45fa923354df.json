@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "explore-ahead-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: After first paint, automatically prepare ordered Explore sections, feed and images 2.5 viewports ahead without waiting for scroll Original handoff e997e3b8-a22a-4d52-884a-1314bc03c9e7. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/explore-viewport-priority.ts",
+    "app/explore/explore-auto-load.tsx",
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-deferred.tsx",
+    "app/explore/explore-discovery-feed.tsx",
+    "app/explore/explore-viewport-image.tsx",
+    "app/explore/nail-inspiration.tsx",
+    "tests/explore-ahead.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "explore-zip-scope-20261111",
+    "explore-filters-20261111"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "3def47dd-650f-41df-ab6a-45fa923354df",
+  "recordedAt": "2026-11-12T02:06:59.913Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "lib/explore-viewport-priority.ts": "19aa099ebc592d8d69713cb6fa8ec634922a1af4569939c68e1ab5862c9691c1",
+    "app/explore/explore-auto-load.tsx": "6402ce250b8dd9c0ffe84e293ae57e2c82de23d9f4d83fdde6969e3bbd01fcf0",
+    "app/explore/explore-client.tsx": "50d6e0afa32ea05622e7ad88a86ba01ac82c30680d1ecfec6a903e37ed7a4845",
+    "app/explore/explore-deferred.tsx": "beac78a82e084aee86ab7e55e294506e4eb855b884cc192f33577c66ab9732e0",
+    "app/explore/explore-discovery-feed.tsx": "443db9b4fe504e423563516dc42af2dc81c5c8f8a2d03d78916f853b4b72c88a",
+    "app/explore/explore-viewport-image.tsx": "2fc74d085467abef55392730871b36b611e03b10a59d93bcb314d6f0d324af41",
+    "app/explore/nail-inspiration.tsx": "6cc6a1b4b272e71ce0210cb7d068478c2e3602863cd76d50433d9ec128a661f2",
+    "tests/explore-ahead.test.mjs": "c0eac34a0c5dda77c674fa0ff46016b892be6802212a8827e0b485d2b381fe30"
+  }
+}

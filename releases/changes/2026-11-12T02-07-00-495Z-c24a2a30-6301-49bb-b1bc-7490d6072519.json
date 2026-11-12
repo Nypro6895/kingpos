@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "recovery-latest-attempt-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Resent resets invalidate prior password progress; completion requires fresh sign-in after the latest containment/MFA reset. Same Auth signatures and permissions retained. Original handoff 1574f6ef-5398-4501-ba62-801121ad429d. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261112001500_recovery_latest_attempt.sql",
+    "tests/recovery-completion.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "recovery-completion-20261111"
+  ],
+  "supersedesEvents": [
+    "1574f6ef-5398-4501-ba62-801121ad429d"
+  ],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "c24a2a30-6301-49bb-b1bc-7490d6072519",
+  "recordedAt": "2026-11-12T02:07:00.495Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "supabase/migrations/20261112001500_recovery_latest_attempt.sql": "ac22d8891ea110a5d5dd165ab0792d7daa1ecd540f8d412b750d34afdaccff1d",
+    "tests/recovery-completion.integration.test.mjs": "3fa9d470f41104f5e0019800e7ba7ed738b2eba0e22ef38c77a032fba13b064b"
+  }
+}
