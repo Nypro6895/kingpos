@@ -20,7 +20,7 @@ test('Windows app: native encrypted tickets, logout, restart, abrupt exit and st
     import{useSupplementalKeyboard,setSupplementalKeyboard}from'${repo}/lib/portable-keyboard-preference';
     function KeyboardPreference(){const enabled=useSupplementalKeyboard();return <button onClick={()=>setSupplementalKeyboard(!enabled)}>{enabled?'Keyboard on':'Keyboard off'}</button>;}
     function Desk(){const[value,setValue]=React.useState({amount:0});
-      const draft=usePortableDraft({scope:'salon:token',operationScope:'salon:key',version:0,recovery:value,emptyRecovery:{amount:0},restore:setValue,onVersion:()=>{}});
+      const draft=usePortableDraft({scope:'salon:token',operationScope:'salon:key',version:0,recovery:value,emptyRecovery:{amount:0},restore:setValue,onVersion:()=>{},busy:value.amount>0});
       usePortableCloseGuard(value.amount>0);
       return <><output>{draft.ready?'Ready '+value.amount:'Loading'}</output><button onClick={()=>setValue({amount:125})}>Enter ticket</button>
       <button onClick={async()=>{await ops.savePortableOperation('salon:key','receipt',{localDraftKey:draft.recoveryKey.current,total:value.amount});draft.checkpoint({amount:0});setValue({amount:0});}}>Submit</button>
@@ -53,6 +53,8 @@ test('Windows app: native encrypted tickets, logout, restart, abrupt exit and st
     assert.equal(second.status,0,'A second launch must hand off to the existing app');
     assert.equal(app.windows().length,1);
     await page.getByRole('button',{name:'Enter ticket'}).click();await page.getByText('Ready 125',{exact:true}).waitFor();
+    const updateFlush=await page.evaluate(()=>{const event=new CustomEvent('kingpos:desktop-flush',{detail:{saved:false}});window.dispatchEvent(event);return event.detail;});
+    assert.equal(updateFlush.saved,true);assert.equal(updateFlush.busy,true);assert.equal(updateFlush.operationBusy,false,'An editable saved draft is distinct from an in-flight transaction');
     await page.getByRole('button',{name:'Logout',exact:true}).click();await page.getByRole('button',{name:'Login',exact:true}).click();
     await page.getByText('Ready 125',{exact:true}).waitFor();
     await app.close();app=await launch();page=await app.firstWindow();await page.getByText('Ready 125',{exact:true}).waitFor();

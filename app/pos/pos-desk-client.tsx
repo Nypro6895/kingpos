@@ -1313,6 +1313,7 @@ export function PosDeskClient({
         : null,
     operationScope: portableWorkspaceState?.scope,
     busy: hasUnsavedDraftWork,
+    operationBusy: receiptLocked,
     version: liveDraft?.version ?? 0,
     recovery,
     emptyRecovery: {

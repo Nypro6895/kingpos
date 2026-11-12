@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "windows-update-one-click-20261112",
+  "status": "working",
+  "summary": "Reproduce Settings updater download-only and installer launch failures; implement explicit one-click update and restart with durable draft safeguards. Native Windows installer changes require a new binary; journal uses supported web channel with native scope documented in receipt.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "desktop/main.cjs",
+    "desktop/build.cjs",
+    "desktop/update-installer.cjs",
+    "app/pos/portable/device-settings-panel.tsx",
+    "app/pos/portable/desktop-update.tsx",
+    "lib/portable-device-storage.ts",
+    "app/api/pos/windows-update/latest.yml/route.ts",
+    "app/download/windows.exe/route.ts"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/windows-update-one-click-20261112",
+    "commit": "274a3ab4300956a458c564ad6beab44ff85e7264"
+  },
+  "validation": [
+    {
+      "name": "Installed 0.7.5 native baseline",
+      "result": "passed",
+      "evidence": "Installed ASAR SHA256 exactly matches published 0.7.5 receipt; current feed 0.7.5; native Check shows up-to-date."
+    },
+    {
+      "name": "Download/install/restart regression",
+      "result": "pending"
+    }
+  ],
+  "id": "8dd56003-3c60-4283-84e9-790cf8cea34f",
+  "recordedAt": "2026-11-12T16:30:54.614Z",
+  "worktree": "C:\\Reylumi-worktrees\\windows-update-one-click-20261112",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -6,7 +6,8 @@ const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const source = readFileSync(join(__dirname, '../main.cjs'), 'utf8').split('function updateState()')[1];
 
-function host({ pending = false, downloadFails = false, checkFails = false, replies = [], channel = 'online', publisher } = {}) {
+function host({ pending = false, downloadFails = false, checkFails = false, replies = [], channel = 'online', publisher,
+  ready = true, backupFails = false, launchFails = false, prepareFails = false } = {}) {
   const effects = [], dialogs = [], timers = [];
   const engine = new EventEmitter();
   Object.assign(engine, {
@@ -20,13 +21,15 @@ function host({ pending = false, downloadFails = false, checkFails = false, repl
     updateVersion: '', updatePhase: 'unavailable', updateMessage: '', checkingUpdate: false,
     updateCheckPromise: undefined, updateDownloadPromise: undefined, installRequest: undefined, updateProgress: 0,
     config: { channel, origin: 'https://reylumi.com', updates: channel === 'release', publisher },
-    app: { isPackaged: true, getVersion: () => '0.7.3' },
+    app: { isPackaged: true, getVersion: () => '0.7.3', quit() { effects.push(['quit']); } },
+    async prepareUpdateInstaller() { effects.push(['verify']); if (prepareFails) throw Error('Invalid file'); },
+    async launchUpdateInstaller() { effects.push(['install', true, true]); if (launchFails) throw Error('Launch refused'); },
     require: name => { assert.equal(name, 'electron-updater'); return { autoUpdater: engine }; },
     setInterval(callback, delay) { timers.push({ callback, delay }); return { unref() {} }; },
     dialog: { async showMessageBox(_window, options) { dialogs.push(options); return { response: replies.shift() ?? 0 }; } },
-    vault: { pending: () => pending, async backup() { effects.push(['backup']); } },
+    vault: { pending: () => typeof pending === 'function' ? pending(effects) : pending, async backup() { effects.push(['backup']); if (backupFails) throw Error('Disk unavailable'); } },
     win: { isDestroyed: () => false, webContents: {
-      async executeJavaScript(code) { effects.push([code.includes('desktop-flush') ? 'flush' : 'unfreeze']); return true; },
+      async executeJavaScript(code) { effects.push([code.includes('desktop-flush') ? 'flush' : 'unfreeze']); return ready; },
       session: { cookies: { async flushStore() { effects.push(['cookies']); } }, flushStorageData() { effects.push(['storage']); } },
     } },
   });
@@ -56,12 +59,37 @@ test('Install before a download discovers, downloads once, flushes, backs up and
   assert.deepEqual(h.effects.find(e => e[0] === 'install'), ['install', true, true]);
 });
 
-test('Download-only action leaves current app open; downloaded installer can be installed without another download', async () => {
-  const h = host({ replies: [1] }); h.context.setupUpdater(); await h.context.checkUpdate(true);
+test('Explicit download-only API leaves current app open; installing cached bytes needs no second download', async () => {
+  const h = host(); h.context.setupUpdater(); await h.context.downloadUpdate();
   assert.equal(h.count('download'), 1); assert.equal(h.count('install'), 0);
   assert.equal(h.context.updateState().progress, 100); assert.equal(h.context.updatePhase, 'ready');
   await h.context.requestUpdateInstall(true);
   assert.equal(h.count('download'), 1); assert.equal(h.count('install'), 1);
+});
+
+test('Settings native action confirms once, then downloads, installs and restarts without a second Check click', async () => {
+  const h = host({ replies: [1] }); h.context.setupUpdater(); await h.context.checkUpdate(true);
+  assert.equal(h.dialogs.length, 1); assert.match(h.dialogs[0].buttons[1], /Update and restart/);
+  assert.equal(h.count('download'), 1); assert.equal(h.count('install'), 1); assert.equal(h.count('quit'), 1);
+  assert.equal(h.context.updateState().phase, 'installing');
+  assert.equal(h.count('unfreeze'), 0);
+});
+
+test('business dialogs, ongoing operation and unsaved draft block install with an actionable retry', async () => {
+  for (const ready of ['dialog', 'busy', 'unsaved']) {
+    const h = host({ ready }); h.context.setupUpdater(); await h.context.requestUpdateInstall(true);
+    assert.equal(h.count('install'), 0); assert.equal(h.count('quit'), 0);
+    assert.equal(h.context.updatePhase, 'blocked'); assert.match(h.context.updateMessage, /Retry update/);
+    assert.equal(h.count('unfreeze'), 1);
+  }
+});
+
+test('late upload, failed backup, invalid file or failed launch keeps app running and restores input', async () => {
+  for (const options of [{ pending: effects => effects.some(e => e[0] === 'backup') }, { backupFails: true }, { prepareFails: true }, { launchFails: true }]) {
+    const h = host(options); h.context.setupUpdater(); await h.context.requestUpdateInstall(true);
+    assert.equal(h.count('quit'), 0); assert.equal(h.count('unfreeze'), 1);
+    assert.equal(h.context.installing, false); assert.match(h.context.updateMessage, /Retry update/);
+  }
 });
 
 test('failed or corrupt download never installs; pending uploads block install and backup', async () => {

@@ -27,8 +27,8 @@ export function clearPortableLocalDrafts(event?: { preventDefault: () => void })
   // available only when the same POS account signs in again on this device.
 }
 
-export function usePortableDraft<Recovery>({ scope, operationScope, version, recovery, emptyRecovery, restore, onVersion, busy = false }: {
-  busy?: boolean; scope: string | null; operationScope?: string; version: number; recovery: Recovery; emptyRecovery?: Recovery;
+export function usePortableDraft<Recovery>({ scope, operationScope, version, recovery, emptyRecovery, restore, onVersion, busy = false, operationBusy = false }: {
+  busy?: boolean; operationBusy?: boolean; scope: string | null; operationScope?: string; version: number; recovery: Recovery; emptyRecovery?: Recovery;
   restore: (value: Recovery) => void; onVersion: (version: number) => void;
 }) {
   const recoveryKey = useRef<string | null>(null);
@@ -36,7 +36,9 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
   const queue = useRef<DraftOutbox<PortableDraftPayload> | null>(null);
   const recoveryRef = useRef(recovery);
   const busyRef = useRef(busy);
+  const operationBusyRef = useRef(operationBusy);
   useEffect(() => { busyRef.current = busy; }, [busy]);
+  useEffect(() => { operationBusyRef.current = operationBusy; }, [operationBusy]);
   const emptyRecoveryRef = useRef(emptyRecovery);
   const restoreRef = useRef(restore);
   const versionRef = useRef(onVersion);
@@ -152,8 +154,9 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
     };
     const flushDesktop = (event: Event) => {
       persistRecovery.current?.();
-      const request = event as CustomEvent<{ saved: boolean; busy?: boolean }>;
+      const request = event as CustomEvent<{ saved: boolean; busy?: boolean; operationBusy?: boolean }>;
       request.detail.busy = busyRef.current;
+      request.detail.operationBusy = operationBusyRef.current;
       request.detail.saved = !outbox.storageError && !storageUnavailable;
     };
     window.addEventListener("kingpos:desktop-flush", flushDesktop);

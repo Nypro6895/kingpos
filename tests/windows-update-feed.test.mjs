@@ -17,7 +17,8 @@ test('feed describes only a checksum-pinned release at the Reylumi download path
   const response = await feed({ WINDOWS_POS_DOWNLOAD_SHA512: digest, WINDOWS_POS_DOWNLOAD_SIZE: '111790179' });
   assert.equal(response.status, 200); assert.equal(response.headers.get('cache-control'), 'no-store');
   const result = await response.json();
-  assert.equal(result.version, '0.7.3'); assert.equal(result.files[0].url, '/download/windows');
+  assert.equal(result.version, '0.7.3'); assert.equal(result.files[0].url, '/download/windows.exe');
+  assert.equal(result.path, result.files[0].url);
   assert.equal(result.files[0].sha512, digest); assert.equal(result.files[0].size, 111790179);
   assert.doesNotMatch(JSON.stringify(result), /github|nypro/i);
 });

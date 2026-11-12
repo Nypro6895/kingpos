@@ -25,7 +25,19 @@ async function main() {
   const installed = path.join(root, 'installed');
   fs.mkdirSync(payload, { recursive: true });
   fs.mkdirSync(path.join(payload, 'resources'));
-  fs.copyFileSync(path.join(process.env.SystemRoot, 'System32/ping.exe'), path.join(payload, `${name}.exe`));
+  const compilerRoot = path.join(process.env.LOCALAPPDATA, 'electron-builder/Cache/nsis-3.0.4.1');
+  function findCompiler(directory) {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const file = path.join(directory, entry.name);
+      if (entry.isFile() && entry.name === 'makensis.exe') return file;
+      if (entry.isDirectory()) { const found = findCompiler(file); if (found) return found; }
+    }
+  }
+  const compiler = findCompiler(compilerRoot);
+  const restartMarker = path.join(root, 'reopened.txt');
+  const appScript = path.join(root, 'qa-app.nsi');
+  fs.writeFileSync(appScript, `!include "FileFunc.nsh"\nOutFile "${path.join(payload, `${name}.exe`)}"\nRequestExecutionLevel user\nSilentInstall silent\nSection\n\${GetParameters} $0\nStrCmp $0 "-t 127.0.0.1" hold\nFileOpen $1 "${restartMarker}" w\nFileWrite $1 "reopened"\nFileClose $1\nQuit\nhold:\nSleep 600000\nSectionEnd\n`);
+  execFileSync(compiler, ['/V2', appScript], { windowsHide: true });
   fs.writeFileSync(path.join(payload, 'payload.txt'), 'new payload');
   prepareInstallerTemplate(path.resolve(__dirname, '../build'));
   const files = await build({ targets: Platform.WINDOWS.createTarget(['nsis'], Arch.x64), prepackaged: payload,
@@ -36,7 +48,7 @@ async function main() {
       win: { signExecutable: false },
       nsis: { include: path.resolve(__dirname, '../installer-check.nsh'), oneClick: false,
         perMachine: false, allowElevation: false, allowToChangeInstallationDirectory: true,
-        createDesktopShortcut: false, createStartMenuShortcut: false, runAfterFinish: false,
+        createDesktopShortcut: false, createStartMenuShortcut: false, runAfterFinish: true,
         deleteAppDataOnUninstall: false }, publish: null,
     }, publish: 'never' });
   const installer = files.find(file => file.endsWith('installer.exe'));
@@ -72,25 +84,23 @@ async function main() {
   const legacy = path.join(installed, `Uninstall ${name}.exe`);
   const script = path.join(root, 'legacy.nsi');
   fs.writeFileSync(script, `OutFile "${legacy}"\nRequestExecutionLevel user\nSilentInstall silent\nSection\nFileOpen $0 "${marker}" w\nFileWrite $0 "legacy called"\nFileClose $0\nSleep 600000\nSectionEnd\n`);
-  const compilerRoot = path.join(process.env.LOCALAPPDATA, 'electron-builder/Cache/nsis-3.0.4.1');
-  function findCompiler(directory) {
-    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      const file = path.join(directory, entry.name);
-      if (entry.isFile() && entry.name === 'makensis.exe') return file;
-      if (entry.isDirectory()) { const found = findCompiler(file); if (found) return found; }
-    }
-  }
-  execFileSync(findCompiler(compilerRoot), ['/V2', script], { windowsHide: true });
+  execFileSync(compiler, ['/V2', script], { windowsHide: true });
   fs.writeFileSync(path.join(installed, 'obsolete.txt'), 'old release file');
   assert.equal(await run(installer, ['/S', '/currentuser', `/D=${installed}`]), 0);
   assert.equal(fs.existsSync(marker), false, 'must not execute the old hanging uninstaller');
   assert.equal(fs.existsSync(path.join(installed, 'obsolete.txt')), false, 'old files must be removed');
   assert.equal(fs.readFileSync(path.join(profile, 'preserve.txt'), 'utf8'), 'saved ticket fixture');
   console.log('PASS legacy upgrade bypasses hanging uninstaller, removes old files and preserves profile');
+  fs.writeFileSync(restartMarker, 'not reopened yet');
+  assert.equal(await run(installer, ['/S', '--force-run', '/currentuser', `/D=${installed}`]), 0);
+  const deadline = Date.now() + 5000;
+  while (fs.readFileSync(restartMarker, 'utf8') !== 'reopened' && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 100));
+  assert.equal(fs.readFileSync(restartMarker, 'utf8'), 'reopened');
+  console.log('PASS actual silent installer force-run reopens the isolated QA app');
   assert.equal(await run(path.join(installed, `Uninstall ${name}.exe`), ['/S', '/KEEP_APP_DATA', `/currentuser`, `_?=${installed}`]), 0);
   assert.equal(fs.readFileSync(path.join(profile, 'preserve.txt'), 'utf8'), 'saved ticket fixture');
   console.log('PASS repaired uninstaller without WMI; profile preserved');
-  fs.writeFileSync(path.join(root, 'result.json'), JSON.stringify({ passed: true, name, root, installer }, null, 2));
+  fs.writeFileSync(path.join(root, 'result.json'), JSON.stringify({ passed: true, name, root, installer, actualSilentRelaunch: true }, null, 2));
   console.log(root);
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

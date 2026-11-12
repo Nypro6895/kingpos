@@ -9,7 +9,7 @@ async function download(request: Request, method: 'GET' | 'HEAD') {
   });
   if (!release) return unavailable();
   const source = new URL(release.href, request.url);
-  if (source.origin === new URL(request.url).origin && source.pathname === '/download/windows') return unavailable();
+  if (source.origin === new URL(request.url).origin && ['/download/windows', '/download/windows.exe'].includes(source.pathname)) return unavailable();
   const headers = new Headers({ 'Accept-Encoding': 'identity' });
   for (const name of ['range', 'if-range']) {
     const value = request.headers.get(name);

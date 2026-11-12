@@ -11,7 +11,7 @@ export async function GET() {
     !Number.isSafeInteger(size) || size <= 0 || size > 512 * 1024 * 1024) {
     return new Response('Windows update information is temporarily unavailable.', { status: 503, headers: { 'Cache-Control': 'no-store' } });
   }
-  return Response.json({ version: release.version, path: '/download/windows', sha512,
-    files: [{ url: '/download/windows', sha512, size }] },
+  return Response.json({ version: release.version, path: '/download/windows.exe', sha512,
+    files: [{ url: '/download/windows.exe', sha512, size }] },
   { headers: { 'Cache-Control': 'no-store', 'Content-Type': 'application/yaml' } });
 }

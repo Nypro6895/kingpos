@@ -7,6 +7,7 @@ const { validConfig, allowedPage } = require('./policy.cjs');
 const { Vault } = require('./vault.cjs');
 const { OfflineShell } = require('./offline-shell.cjs');
 const { UpdatePlan } = require('./update-plan.cjs');
+const { prepareUpdateInstaller, launchUpdateInstaller } = require('./update-installer.cjs');
 const { receiptHtml } = require('./checkin-receipt.cjs');
 const config = validConfig({ ...require('./config.json'), ...(!app.isPackaged && process.env.KINGPOS_DESKTOP_TEST_ORIGIN ? { origin: process.env.KINGPOS_DESKTOP_TEST_ORIGIN, channel: 'test', updates: false } : {}) });
 // Stable across upgrades; never inside the installation directory. Test and
@@ -309,11 +310,11 @@ async function checkUpdate(manual) {
   if (updateDownloadPromise) { await dialog.showMessageBox(win, { message: 'Downloading the update.', detail: `${updateProgress}% complete. You can keep working.` }); return; }
   if (updatePhase === 'error') { await dialog.showMessageBox(win, { message: updateMessage }); return; }
   if (!updateVersion) { await dialog.showMessageBox(win, { message: 'KingPOS is up to date.', detail: `Installed version: ${app.getVersion()}.` }); return; }
-  const { response } = await dialog.showMessageBox(win, { buttons: ['Keep current version', updateReady ? 'Install update' : 'Download update'], defaultId: 0, cancelId: 0,
-    message: `KingPOS ${updateVersion} is available.`, detail: 'Your current version and saved tickets will be kept until you choose to install.' });
+  const { response } = await dialog.showMessageBox(win, { buttons: ['Keep current version', 'Update and restart'], defaultId: 0, cancelId: 0,
+    message: `KingPOS ${updateVersion} is available.`, detail: 'KingPOS will download the update, save your work, install and reopen. Windows may ask you to approve the installer.' });
   if (response === 1) {
-    if (updateReady) await requestUpdateInstall(true);
-    else await downloadUpdate();
+    await requestUpdateInstall(true);
+    if (updatePhase !== 'installing' && updateMessage && win && !win.isDestroyed()) await dialog.showMessageBox(win, { message: updateMessage });
   }
 }
 async function downloadUpdate() {
@@ -327,8 +328,8 @@ async function downloadUpdate() {
   if (updateDownloadPromise) return updateDownloadPromise;
   updatePhase = 'downloading'; updateProgress = 0; updateMessage = '';
   updateDownloadPromise = (async () => {
-    try { await updater.downloadUpdate(); }
-    catch { updatePhase = 'available'; updateMessage = 'Download failed. Your current version has been kept. Try again when connected.'; }
+    try { await updater.downloadUpdate(); updateMessage = 'Download complete. Choose Update and restart to install.'; }
+    catch { updatePhase = 'error'; updateMessage = 'Download failed. Your current version has been kept. Try again when connected.'; }
   })();
   try { await updateDownloadPromise; }
   finally { updateDownloadPromise = null; }
@@ -340,6 +341,7 @@ function requestUpdateInstall(confirmed = false) {
 async function installUpdate(confirmed = false, scheduled = false) {
   if (installing) return;
   if (!updater) { updateMessage = 'Updates are unavailable for this edition. Download the Windows app from ' + config.origin + '/download/windows.'; return; }
+  if (updateDownloadPromise) await updateDownloadPromise;
   if (!updateReady) {
     await checkUpdate(false);
     if (!updateVersion || updatePhase === 'error') { if (!updateMessage) updateMessage = 'KingPOS is up to date.'; return; }
@@ -352,34 +354,53 @@ async function installUpdate(confirmed = false, scheduled = false) {
     await downloadUpdate();
     if (!updateReady) return;
   }
-  if (vault.pending()) { updateMessage = 'Waiting for saved tickets to finish uploading.'; return; }
+  if (vault.pending()) { updatePhase = 'blocked'; updateMessage = 'Saved tickets are still uploading. Keep KingPOS open, then choose Retry update.'; return; }
   if (!confirmed) {
     const { response } = await dialog.showMessageBox(win, { buttons: ['Later', 'Update now'], defaultId: 0, cancelId: 0, message: 'Update and reopen KingPOS?', detail: 'Your saved tickets will be kept.' });
     if (response !== 1) return;
   }
   installing = true;
+  let handedOff = false;
   try {
+    updatePhase = 'preparing'; updateMessage = 'Saving your work before updating…';
     // Freeze input before flushing/backup, with a fail-closed readiness check.
     const ready = await win.webContents.executeJavaScript(`(() => {
       if (${scheduled} && Date.now() - (window.__kingposLastInput || Date.now()) < 60000) return false;
-      if (document.querySelector('[role="dialog"]')) return false;
+      if ([...document.querySelectorAll('dialog[open], [role="dialog"]')].some(element => !element.matches('dialog.portable-device-settings') && element.getClientRects().length)) return 'dialog';
       const request = new CustomEvent('kingpos:desktop-flush', { detail: { saved: false } });
       window.dispatchEvent(request);
-      if (!request.detail.saved || (${scheduled} && request.detail.busy)) return false;
+      if (request.detail.operationBusy || (request.detail.operationBusy === undefined && request.detail.busy)) return 'busy';
+      if (!request.detail.saved) return 'unsaved';
       document.body.inert = true;
       return true;
     })()`);
-    if (!ready) { updateMessage = 'Waiting until you finish working. Your update reminder will stay here.'; return; }
-    if (vault.pending()) { updateMessage = 'Waiting for saved tickets to finish uploading.'; return; }
+    if (ready !== true) {
+      updatePhase = 'blocked';
+      updateMessage = ready === 'dialog' ? 'Finish or close the open dialog, then choose Retry update.' : ready === 'busy' ? 'Finish the current operation or save the open ticket for later, then choose Retry update.' : 'Open the POS tab and let your draft finish saving, then choose Retry update.';
+      return;
+    }
+    if (vault.pending()) { updatePhase = 'blocked'; updateMessage = 'Saved tickets are still uploading. Keep KingPOS open, then choose Retry update.'; return; }
     await vault.backup();
     await win.webContents.session.cookies.flushStore();
     win.webContents.session.flushStorageData();
-    if (vault.pending()) return;
+    if (vault.pending()) { updatePhase = 'blocked'; updateMessage = 'Saved tickets are still uploading. Keep KingPOS open, then choose Retry update.'; return; }
+    try { await prepareUpdateInstaller(updater); }
+    catch (error) {
+      updateReady = false;
+      await updater.downloadedUpdateHelper?.clear().catch(() => {});
+      throw error;
+    }
+    if (vault.pending()) { updatePhase = 'blocked'; updateMessage = 'Saved tickets are still uploading. Keep KingPOS open, then choose Retry update.'; return; }
     updatePlan.set('', null);
-    updater.quitAndInstall(true, true);
-  } catch { updateMessage = 'Unable to prepare the update. Your app and tickets have been kept. Try again later.'; }
+    await launchUpdateInstaller(updater);
+    updatePhase = 'installing'; updateMessage = 'Installing the update. KingPOS will reopen automatically.';
+    handedOff = true;
+    app.quit();
+  } catch { updatePhase = 'error'; updateMessage = 'The update could not start. Your app and saved tickets have been kept. Choose Retry update; approve the Windows installer if asked.'; }
   finally {
-    installing = false;
-    if (win && !win.isDestroyed()) await win.webContents.executeJavaScript('document.body.inert = false').catch(() => {});
+    if (!handedOff) {
+      installing = false;
+      if (win && !win.isDestroyed()) await win.webContents.executeJavaScript('document.body.inert = false').catch(() => {});
+    }
   }
 }
