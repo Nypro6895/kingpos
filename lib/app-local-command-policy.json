@@ -468,7 +468,10 @@
       "portableSubmitServiceRelay",
       "portableUpdatePosActiveDraft",
       "portableUpdatePosLiveDraftCustomer",
-      "savePortableReportClosing"
+      "savePortableReportClosing",
+      "portableHoldPosDraft",
+      "portablePosHeldTicketState",
+      "portableUpdatePosHeldTicket"
     ],
     "app/pos/checkin-receipt-actions.ts": [
       "issueCheckinReceipt"

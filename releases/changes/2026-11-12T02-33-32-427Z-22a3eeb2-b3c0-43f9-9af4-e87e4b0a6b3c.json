@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "after97-installed-root-parity-20261111",
+  "status": "working",
+  "summary": "Mount the shared numeric editor in the actual installed entry; admit delayed salon language configuration, reuse authorized shell context, preserve explicit choice and English fallback for old/new native clients, and keep language status reads free of refresh cascades. Installed Portable register now receives its dedicated paired Save/state/Submit handlers; authenticated Owner handlers remain excluded from paired scope.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "components/app-local-shell.tsx",
+    "components/salon-language-preferences.tsx",
+    "lib/salon-language-server.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-resource-invalidation.ts",
+    "scripts/build-app-local-bundle.mjs",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift",
+    "tests/app-local-shell-auxiliary.test.mjs",
+    "tests/salon-language-choices-ui.test.mjs",
+    "tests/app-local-diagnostic-export.test.mjs",
+    "components/app-local-portable-workspace.tsx",
+    "lib/app-local-portable-actions.generated.json",
+    "tests/after97-installed-portable.test.mjs"
+  ],
+  "id": "22a3eeb2-b3c0-43f9-9af4-e87e4b0a6b3c",
+  "recordedAt": "2026-11-12T02:33:32.427Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

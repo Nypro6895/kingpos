@@ -327,79 +327,82 @@ import {portableSubmitServiceRelay as action323} from "@/app/pos/portable/action
 import {portableUpdatePosActiveDraft as action324} from "@/app/pos/portable/actions";
 import {portableUpdatePosLiveDraftCustomer as action325} from "@/app/pos/portable/actions";
 import {savePortableReportClosing as action326} from "@/app/pos/portable/actions";
-import {issueCheckinReceipt as action327} from "@/app/pos/checkin-receipt-actions";
-import {saveOwnerAdjustment as action328} from "@/app/payroll/ledger-actions";
-import {saveRecordedPayment as action329} from "@/app/payroll/ledger-actions";
-import {verifyPayrollIntent as action330} from "@/app/payroll/ledger-actions";
-import {loadPluginMarketStatusAction as action331} from "@/app/settings/plugin-market-status-actions";
-import {loadBookingRulesSettingsAction as action332} from "@/app/settings/plugin-settings-actions";
-import {saveBookingRulesSettingsAction as action333} from "@/app/settings/plugin-settings-actions";
-import {loadBookSmsSettingsAction as action334} from "@/app/settings/plugin-settings-actions";
-import {saveBookSmsSettingsAction as action335} from "@/app/settings/plugin-settings-actions";
-import {loadCampaignPreviewAction as action336} from "@/app/campaigns/preview-actions";
-import {getMyCustomerMergeGroups as action337} from "@/app/activity/customer-merge-actions";
-import {mergeMyCustomerProfiles as action338} from "@/app/activity/customer-merge-actions";
-import {downloadMyCurrentPayroll as action339} from "@/app/payroll/current-payroll-download-actions";
-import {authorizePhoneChangeAction as action340} from "@/app/account/phone-change-actions";
-import {manageCheckWriterSubscription as action341} from "@/app/market/check-writer-actions";
-import {replyToVisitExperienceAction as action342} from "@/app/activity/experience-actions";
-import {resolveMyVisitExperienceAction as action343} from "@/app/activity/experience-actions";
-import {setVisitExperienceStatusAction as action344} from "@/app/activity/experience-actions";
-import {loadPersonalQr as action345} from "@/app/qr/actions";
-import {loadPersonalQrCatalog as action346} from "@/app/qr/actions";
-import {checkinPersonalQr as action347} from "@/app/qr/actions";
-import {saveStaffHoursBooking as action348} from "@/app/settings/staff-hours-booking-actions";
-import {marketTrialAction as action349} from "@/app/market/trial-actions";
-import {reconcileMarketReturnAction as action350} from "@/app/market/payment-return-actions";
-import {saveStaffCustomerContacts as action351} from "@/app/settings/staff-customer-contact-actions";
-import {setServiceRelayPlugin as action352} from "@/app/market/scoped-market-actions";
-import {checkinReceiptPaymentAction as action353} from "@/app/market/scoped-market-actions";
-import {setCampaignPluginAction as action354} from "@/app/market/scoped-market-actions";
-import {setPayrollDataPlugin as action355} from "@/app/market/scoped-market-actions";
-import {cancelMarketBankOrder as action356} from "@/app/market/scoped-market-actions";
-import {createMarketBankOrder as action357} from "@/app/market/scoped-market-actions";
-import {refreshMarketBankBilling as action358} from "@/app/market/scoped-market-actions";
-import {bookingDepositBillingAction as action359} from "@/app/market/scoped-market-actions";
-import {connectBookingStripeAction as action360} from "@/app/market/scoped-market-actions";
-import {loadBookingDepositAction as action361} from "@/app/market/scoped-market-actions";
-import {saveBookingDepositAction as action362} from "@/app/market/scoped-market-actions";
-import {installBookingDepositAction as action363} from "@/app/market/scoped-market-actions";
-import {saveBookingPolicy as action364} from "@/app/market/scoped-market-actions";
-import {bookingPolicyPaymentAction as action365} from "@/app/market/scoped-market-actions";
-import {saveBookSms as action366} from "@/app/market/scoped-market-actions";
-import {startCardCheckout as action367} from "@/app/market/scoped-market-actions";
-import {refreshCardPurchase as action368} from "@/app/market/scoped-market-actions";
-import {manageCardSubscription as action369} from "@/app/market/scoped-market-actions";
-import {taxCompanyPaymentAction as action370} from "@/app/market/scoped-market-actions";
-import {marketTrialAction as action371} from "@/app/market/scoped-market-actions";
-import {setVietnamesePlugin as action372} from "@/app/market/scoped-market-actions";
-import {vietnamesePaymentAction as action373} from "@/app/market/scoped-market-actions";
-import {beginBookingDepositCheckoutAction as action374} from "@/app/market/scoped-market-actions";
-import {loadCampaignResultsAction as action375} from "@/app/market/scoped-market-actions";
-import {changeOwnerCampaignAction as action376} from "@/app/market/scoped-market-actions";
-import {loadOwnerCampaignsAction as action377} from "@/app/market/scoped-market-actions";
-import {fundSavedCampaignAction as action378} from "@/app/market/scoped-market-actions";
-import {saveCampaignLimitAction as action379} from "@/app/market/scoped-market-actions";
-import {loadCampaignPostsAction as action380} from "@/app/market/scoped-market-actions";
-import {campaignWalletAction as action381} from "@/app/market/scoped-market-actions";
-import {createCampaignCreativeAction as action382} from "@/app/market/scoped-market-actions";
-import {buyCampaignCreditsAction as action383} from "@/app/market/scoped-market-actions";
-import {saveCampaignTopupAction as action384} from "@/app/market/scoped-market-actions";
-import {campaignCardSetupAction as action385} from "@/app/market/scoped-market-actions";
-import {campaignPaymentControlAction as action386} from "@/app/market/scoped-market-actions";
-import {loadCampaignCardAction as action387} from "@/app/market/scoped-market-actions";
-import {loadCampaignLedgerAction as action388} from "@/app/market/scoped-market-actions";
-import {saveCampaignRemindersAction as action389} from "@/app/market/scoped-market-actions";
-import {updateTaxSettings as action390} from "@/app/market/scoped-market-actions";
-import {downloadPayrollData as action391} from "@/app/market/scoped-market-actions";
-import {createOwnerCampaignAction as action392} from "@/app/market/scoped-market-actions";
-import {runAgainOwnerCampaignAction as action393} from "@/app/market/scoped-market-actions";
-import {loadOwnerCampaignAction as action394} from "@/app/market/scoped-market-actions";
-import {loadCampaignReportAction as action395} from "@/app/market/scoped-market-actions";
-import {connectStaffScan as action396} from "@/app/staff/scan/actions";
-import {createTaxInvitation as action397} from "@/app/tax/flow-actions";
-import {revokeTaxInvitation as action398} from "@/app/tax/flow-actions";
-import {languageAction as action399} from "@/app/settings/language-actions";
+import {portableHoldPosDraft as action327} from "@/app/pos/portable/actions";
+import {portablePosHeldTicketState as action328} from "@/app/pos/portable/actions";
+import {portableUpdatePosHeldTicket as action329} from "@/app/pos/portable/actions";
+import {issueCheckinReceipt as action330} from "@/app/pos/checkin-receipt-actions";
+import {saveOwnerAdjustment as action331} from "@/app/payroll/ledger-actions";
+import {saveRecordedPayment as action332} from "@/app/payroll/ledger-actions";
+import {verifyPayrollIntent as action333} from "@/app/payroll/ledger-actions";
+import {loadPluginMarketStatusAction as action334} from "@/app/settings/plugin-market-status-actions";
+import {loadBookingRulesSettingsAction as action335} from "@/app/settings/plugin-settings-actions";
+import {saveBookingRulesSettingsAction as action336} from "@/app/settings/plugin-settings-actions";
+import {loadBookSmsSettingsAction as action337} from "@/app/settings/plugin-settings-actions";
+import {saveBookSmsSettingsAction as action338} from "@/app/settings/plugin-settings-actions";
+import {loadCampaignPreviewAction as action339} from "@/app/campaigns/preview-actions";
+import {getMyCustomerMergeGroups as action340} from "@/app/activity/customer-merge-actions";
+import {mergeMyCustomerProfiles as action341} from "@/app/activity/customer-merge-actions";
+import {downloadMyCurrentPayroll as action342} from "@/app/payroll/current-payroll-download-actions";
+import {authorizePhoneChangeAction as action343} from "@/app/account/phone-change-actions";
+import {manageCheckWriterSubscription as action344} from "@/app/market/check-writer-actions";
+import {replyToVisitExperienceAction as action345} from "@/app/activity/experience-actions";
+import {resolveMyVisitExperienceAction as action346} from "@/app/activity/experience-actions";
+import {setVisitExperienceStatusAction as action347} from "@/app/activity/experience-actions";
+import {loadPersonalQr as action348} from "@/app/qr/actions";
+import {loadPersonalQrCatalog as action349} from "@/app/qr/actions";
+import {checkinPersonalQr as action350} from "@/app/qr/actions";
+import {saveStaffHoursBooking as action351} from "@/app/settings/staff-hours-booking-actions";
+import {marketTrialAction as action352} from "@/app/market/trial-actions";
+import {reconcileMarketReturnAction as action353} from "@/app/market/payment-return-actions";
+import {saveStaffCustomerContacts as action354} from "@/app/settings/staff-customer-contact-actions";
+import {setServiceRelayPlugin as action355} from "@/app/market/scoped-market-actions";
+import {checkinReceiptPaymentAction as action356} from "@/app/market/scoped-market-actions";
+import {setCampaignPluginAction as action357} from "@/app/market/scoped-market-actions";
+import {setPayrollDataPlugin as action358} from "@/app/market/scoped-market-actions";
+import {cancelMarketBankOrder as action359} from "@/app/market/scoped-market-actions";
+import {createMarketBankOrder as action360} from "@/app/market/scoped-market-actions";
+import {refreshMarketBankBilling as action361} from "@/app/market/scoped-market-actions";
+import {bookingDepositBillingAction as action362} from "@/app/market/scoped-market-actions";
+import {connectBookingStripeAction as action363} from "@/app/market/scoped-market-actions";
+import {loadBookingDepositAction as action364} from "@/app/market/scoped-market-actions";
+import {saveBookingDepositAction as action365} from "@/app/market/scoped-market-actions";
+import {installBookingDepositAction as action366} from "@/app/market/scoped-market-actions";
+import {saveBookingPolicy as action367} from "@/app/market/scoped-market-actions";
+import {bookingPolicyPaymentAction as action368} from "@/app/market/scoped-market-actions";
+import {saveBookSms as action369} from "@/app/market/scoped-market-actions";
+import {startCardCheckout as action370} from "@/app/market/scoped-market-actions";
+import {refreshCardPurchase as action371} from "@/app/market/scoped-market-actions";
+import {manageCardSubscription as action372} from "@/app/market/scoped-market-actions";
+import {taxCompanyPaymentAction as action373} from "@/app/market/scoped-market-actions";
+import {marketTrialAction as action374} from "@/app/market/scoped-market-actions";
+import {setVietnamesePlugin as action375} from "@/app/market/scoped-market-actions";
+import {vietnamesePaymentAction as action376} from "@/app/market/scoped-market-actions";
+import {beginBookingDepositCheckoutAction as action377} from "@/app/market/scoped-market-actions";
+import {loadCampaignResultsAction as action378} from "@/app/market/scoped-market-actions";
+import {changeOwnerCampaignAction as action379} from "@/app/market/scoped-market-actions";
+import {loadOwnerCampaignsAction as action380} from "@/app/market/scoped-market-actions";
+import {fundSavedCampaignAction as action381} from "@/app/market/scoped-market-actions";
+import {saveCampaignLimitAction as action382} from "@/app/market/scoped-market-actions";
+import {loadCampaignPostsAction as action383} from "@/app/market/scoped-market-actions";
+import {campaignWalletAction as action384} from "@/app/market/scoped-market-actions";
+import {createCampaignCreativeAction as action385} from "@/app/market/scoped-market-actions";
+import {buyCampaignCreditsAction as action386} from "@/app/market/scoped-market-actions";
+import {saveCampaignTopupAction as action387} from "@/app/market/scoped-market-actions";
+import {campaignCardSetupAction as action388} from "@/app/market/scoped-market-actions";
+import {campaignPaymentControlAction as action389} from "@/app/market/scoped-market-actions";
+import {loadCampaignCardAction as action390} from "@/app/market/scoped-market-actions";
+import {loadCampaignLedgerAction as action391} from "@/app/market/scoped-market-actions";
+import {saveCampaignRemindersAction as action392} from "@/app/market/scoped-market-actions";
+import {updateTaxSettings as action393} from "@/app/market/scoped-market-actions";
+import {downloadPayrollData as action394} from "@/app/market/scoped-market-actions";
+import {createOwnerCampaignAction as action395} from "@/app/market/scoped-market-actions";
+import {runAgainOwnerCampaignAction as action396} from "@/app/market/scoped-market-actions";
+import {loadOwnerCampaignAction as action397} from "@/app/market/scoped-market-actions";
+import {loadCampaignReportAction as action398} from "@/app/market/scoped-market-actions";
+import {connectStaffScan as action399} from "@/app/staff/scan/actions";
+import {createTaxInvitation as action400} from "@/app/tax/flow-actions";
+import {revokeTaxInvitation as action401} from "@/app/tax/flow-actions";
+import {languageAction as action402} from "@/app/settings/language-actions";
 const commands: Record<string,(values:unknown[])=>unknown>={
 "action.0dde0f1e1c260096f8675486": (values: unknown[]) => (action0 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.05073222e31d780f4868f2db": (values: unknown[]) => (action1 as unknown as (...args: unknown[]) => unknown)(...values),
@@ -728,78 +731,81 @@ const commands: Record<string,(values:unknown[])=>unknown>={
 "action.cb40b4e47805aac83680fba2": (values: unknown[]) => (action324 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.1bfbdc4d83449f475b758906": (values: unknown[]) => (action325 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.12f5502676580d765e7cb609": (values: unknown[]) => (action326 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.424821f362cce37338ac2706": (values: unknown[]) => (action327 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.9fd4ab0baf110f64f1724bbc": (values: unknown[]) => (action328 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.b3c9e30ba50c20ac87db234e": (values: unknown[]) => (action329 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.0331240a42531083fcd3a4d7": (values: unknown[]) => (action330 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.0c401bb88ab58561433b2370": (values: unknown[]) => (action331 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.d14797e33bdffa7d9940f9f4": (values: unknown[]) => (action332 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.135d0e25e4ee7c14d97966da": (values: unknown[]) => (action333 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.71559420db869529e30eabcb": (values: unknown[]) => (action334 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.c6936e7df92440098868ffc8": (values: unknown[]) => (action335 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.59a914e15c81c5ff5299612a": (values: unknown[]) => (action336 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.10c2df65d7601ab7a291d3aa": (values: unknown[]) => (action337 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.59d4487eb01643b82c1e02d9": (values: unknown[]) => (action338 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.84de4a64ca07b333163b0f3c": (values: unknown[]) => (action339 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.37bba759b979c3cc4237a556": (values: unknown[]) => (action340 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.ab51fff38ee5ec82fa599d3f": (values: unknown[]) => (action341 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.8d438e025b6861f6b975b5bb": (values: unknown[]) => (action342 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.16defd2dd216687f3b42beff": (values: unknown[]) => (action343 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.92acccabed6bdbf2212e62df": (values: unknown[]) => (action344 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.c5f16ef8fdcbd410e221ea80": (values: unknown[]) => (action345 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.311ccbe0561c4cc6b151c54c": (values: unknown[]) => (action346 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.3f299028beda31c74a4bfbd9": (values: unknown[]) => (action347 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.1e0add9927de2b0400796c32": (values: unknown[]) => (action348 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.a1390de74e42dc7d8ddb5126": (values: unknown[]) => (action349 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.dbc5382c479772dacee7b3dd": (values: unknown[]) => (action350 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.83321d06bbef69d6d3e41786": (values: unknown[]) => (action351 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.4b7ea6dc92cccf8fc2f404a0": (values: unknown[]) => (action352 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.4d05771efc32bc25f34bbb10": (values: unknown[]) => (action353 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.5a61e921f840a2702977290b": (values: unknown[]) => (action354 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.024c947a0018235f2b83d5f9": (values: unknown[]) => (action355 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.671ce27addf0433f20d41a42": (values: unknown[]) => (action356 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.260073d50f77d394bbb355e9": (values: unknown[]) => (action357 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.38b125f11f2debf3d2e84225": (values: unknown[]) => (action358 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.799aa9385f35d81e9ea25552": (values: unknown[]) => (action359 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.158a809f6da0d70d4da813a5": (values: unknown[]) => (action360 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.99a2868578cf4a7e365b84dd": (values: unknown[]) => (action361 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.e686079c94f45c3457594696": (values: unknown[]) => (action362 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.c5733e8b42de5a31e24a6e15": (values: unknown[]) => (action363 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.1b4c46af13d92bff7c7c6a28": (values: unknown[]) => (action364 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.0a3dc18a52bc5c57a08329c1": (values: unknown[]) => (action365 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.fa3639baa7bfeb70101a9cc8": (values: unknown[]) => (action366 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.930d779792a3e319eb04f93e": (values: unknown[]) => (action367 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.20415f1b7f4bdecb75d477ee": (values: unknown[]) => (action368 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.091bd9c55a5cfea4a738b997": (values: unknown[]) => (action369 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.3da10973a3be715bacf8ec51": (values: unknown[]) => (action370 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.009aab30da714034df4a3d51": (values: unknown[]) => (action371 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.38c335cf27692c69f549245d": (values: unknown[]) => (action372 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.1a81df27cdd64727a512e181": (values: unknown[]) => (action373 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.f37132b5ab32e9bd95c8565f": (values: unknown[]) => (action374 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.d22ad726324772cb16ead0ee": (values: unknown[]) => (action375 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.204c37655f2adabfd044ad5b": (values: unknown[]) => (action376 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.03ec4a1b39c1623e4f4e53dc": (values: unknown[]) => (action377 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.cc894ce3c717353c7e48cf25": (values: unknown[]) => (action378 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.ddbf1fb1f855c497fe0a9a12": (values: unknown[]) => (action379 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.f80abe3f8cfa46585075fff3": (values: unknown[]) => (action380 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.a86789ecdd75e9cf3e1fa1cd": (values: unknown[]) => (action381 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.da68162edbd218f7afb9421d": (values: unknown[]) => (action382 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.4f739d349f67f5d86c6e057c": (values: unknown[]) => (action383 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.0d3fdef439d9bb393257b486": (values: unknown[]) => (action384 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.b820b11f35e1f3bdb9644801": (values: unknown[]) => (action385 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.2bce9952cd73de746740ddfc": (values: unknown[]) => (action386 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.1909706a256e371ff5e34da8": (values: unknown[]) => (action387 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.a75ee57acaf0df32d61d5a3b": (values: unknown[]) => (action388 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.54d27b141e2cf2d08a4636d8": (values: unknown[]) => (action389 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.63cb17f7ef8ed03c2428ba89": (values: unknown[]) => (action390 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.65bcd033a9784987e28cc2c6": (values: unknown[]) => (action391 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.cee07cb17dd657dde334a6f3": (values: unknown[]) => (action392 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.2313126cb9fd9970909fcc47": (values: unknown[]) => (action393 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.8bfde251f1fcd5b5479cc1dc": (values: unknown[]) => (action394 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.e05100c1181b8cbedf5a16cb": (values: unknown[]) => (action395 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.0f199296d10b4bb1ee2dcdfd": (values: unknown[]) => (action396 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.3b81d6e13509b356448bf6b5": (values: unknown[]) => (action397 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.77f51317d76efeb399346b57": (values: unknown[]) => (action398 as unknown as (...args: unknown[]) => unknown)(...values),
-"action.7e47ed3a57ca2b87d3b268c2": (values: unknown[]) => (action399 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.d1406900042dcc212a34ca47": (values: unknown[]) => (action327 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.8959b50096e733b7a3b1f37d": (values: unknown[]) => (action328 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.ff514f9d84e36817fc2bb279": (values: unknown[]) => (action329 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.424821f362cce37338ac2706": (values: unknown[]) => (action330 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.9fd4ab0baf110f64f1724bbc": (values: unknown[]) => (action331 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.b3c9e30ba50c20ac87db234e": (values: unknown[]) => (action332 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.0331240a42531083fcd3a4d7": (values: unknown[]) => (action333 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.0c401bb88ab58561433b2370": (values: unknown[]) => (action334 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.d14797e33bdffa7d9940f9f4": (values: unknown[]) => (action335 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.135d0e25e4ee7c14d97966da": (values: unknown[]) => (action336 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.71559420db869529e30eabcb": (values: unknown[]) => (action337 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.c6936e7df92440098868ffc8": (values: unknown[]) => (action338 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.59a914e15c81c5ff5299612a": (values: unknown[]) => (action339 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.10c2df65d7601ab7a291d3aa": (values: unknown[]) => (action340 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.59d4487eb01643b82c1e02d9": (values: unknown[]) => (action341 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.84de4a64ca07b333163b0f3c": (values: unknown[]) => (action342 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.37bba759b979c3cc4237a556": (values: unknown[]) => (action343 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.ab51fff38ee5ec82fa599d3f": (values: unknown[]) => (action344 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.8d438e025b6861f6b975b5bb": (values: unknown[]) => (action345 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.16defd2dd216687f3b42beff": (values: unknown[]) => (action346 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.92acccabed6bdbf2212e62df": (values: unknown[]) => (action347 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.c5f16ef8fdcbd410e221ea80": (values: unknown[]) => (action348 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.311ccbe0561c4cc6b151c54c": (values: unknown[]) => (action349 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.3f299028beda31c74a4bfbd9": (values: unknown[]) => (action350 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.1e0add9927de2b0400796c32": (values: unknown[]) => (action351 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.a1390de74e42dc7d8ddb5126": (values: unknown[]) => (action352 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.dbc5382c479772dacee7b3dd": (values: unknown[]) => (action353 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.83321d06bbef69d6d3e41786": (values: unknown[]) => (action354 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.4b7ea6dc92cccf8fc2f404a0": (values: unknown[]) => (action355 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.4d05771efc32bc25f34bbb10": (values: unknown[]) => (action356 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.5a61e921f840a2702977290b": (values: unknown[]) => (action357 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.024c947a0018235f2b83d5f9": (values: unknown[]) => (action358 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.671ce27addf0433f20d41a42": (values: unknown[]) => (action359 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.260073d50f77d394bbb355e9": (values: unknown[]) => (action360 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.38b125f11f2debf3d2e84225": (values: unknown[]) => (action361 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.799aa9385f35d81e9ea25552": (values: unknown[]) => (action362 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.158a809f6da0d70d4da813a5": (values: unknown[]) => (action363 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.99a2868578cf4a7e365b84dd": (values: unknown[]) => (action364 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.e686079c94f45c3457594696": (values: unknown[]) => (action365 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.c5733e8b42de5a31e24a6e15": (values: unknown[]) => (action366 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.1b4c46af13d92bff7c7c6a28": (values: unknown[]) => (action367 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.0a3dc18a52bc5c57a08329c1": (values: unknown[]) => (action368 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.fa3639baa7bfeb70101a9cc8": (values: unknown[]) => (action369 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.930d779792a3e319eb04f93e": (values: unknown[]) => (action370 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.20415f1b7f4bdecb75d477ee": (values: unknown[]) => (action371 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.091bd9c55a5cfea4a738b997": (values: unknown[]) => (action372 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.3da10973a3be715bacf8ec51": (values: unknown[]) => (action373 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.009aab30da714034df4a3d51": (values: unknown[]) => (action374 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.38c335cf27692c69f549245d": (values: unknown[]) => (action375 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.1a81df27cdd64727a512e181": (values: unknown[]) => (action376 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.f37132b5ab32e9bd95c8565f": (values: unknown[]) => (action377 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.d22ad726324772cb16ead0ee": (values: unknown[]) => (action378 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.204c37655f2adabfd044ad5b": (values: unknown[]) => (action379 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.03ec4a1b39c1623e4f4e53dc": (values: unknown[]) => (action380 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.cc894ce3c717353c7e48cf25": (values: unknown[]) => (action381 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.ddbf1fb1f855c497fe0a9a12": (values: unknown[]) => (action382 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.f80abe3f8cfa46585075fff3": (values: unknown[]) => (action383 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.a86789ecdd75e9cf3e1fa1cd": (values: unknown[]) => (action384 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.da68162edbd218f7afb9421d": (values: unknown[]) => (action385 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.4f739d349f67f5d86c6e057c": (values: unknown[]) => (action386 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.0d3fdef439d9bb393257b486": (values: unknown[]) => (action387 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.b820b11f35e1f3bdb9644801": (values: unknown[]) => (action388 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.2bce9952cd73de746740ddfc": (values: unknown[]) => (action389 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.1909706a256e371ff5e34da8": (values: unknown[]) => (action390 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.a75ee57acaf0df32d61d5a3b": (values: unknown[]) => (action391 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.54d27b141e2cf2d08a4636d8": (values: unknown[]) => (action392 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.63cb17f7ef8ed03c2428ba89": (values: unknown[]) => (action393 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.65bcd033a9784987e28cc2c6": (values: unknown[]) => (action394 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.cee07cb17dd657dde334a6f3": (values: unknown[]) => (action395 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.2313126cb9fd9970909fcc47": (values: unknown[]) => (action396 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.8bfde251f1fcd5b5479cc1dc": (values: unknown[]) => (action397 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.e05100c1181b8cbedf5a16cb": (values: unknown[]) => (action398 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.0f199296d10b4bb1ee2dcdfd": (values: unknown[]) => (action399 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.3b81d6e13509b356448bf6b5": (values: unknown[]) => (action400 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.77f51317d76efeb399346b57": (values: unknown[]) => (action401 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.7e47ed3a57ca2b87d3b268c2": (values: unknown[]) => (action402 as unknown as (...args: unknown[]) => unknown)(...values),
 };
 export async function runAppLocalCommand(name:string, values:unknown[]){const action=commands[name];if(!action)throw Object.assign(new Error("Unsupported form"),{status:404});return await action(values);}
