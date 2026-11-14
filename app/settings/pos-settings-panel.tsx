@@ -5,6 +5,7 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { PluginMarketSettings } from "./plugin-market-settings";
 import { DeviceInputSettings, CustomerDisplayPreferencesEditor } from "@/app/pos/portable/device-input-settings";
 import { WindowsPosDownloadLinks } from "@/components/windows-pos-download";
+import { PortableNativeModeSettings } from "@/app/pos/portable/portable-native-mode-settings";
 import { parseLoginUserAgent } from "@/lib/account-security-shared";
 import { SettingsGroupForm } from "@/app/pos/settings/settings-group-form";
 import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
@@ -41,6 +42,7 @@ export function PosSettingsPanel({
   const save = (form: FormData) => saveDirectPosGroup(data.salonId, form);
   return (
     <div className="grid gap-4">
+      <PortableNativeModeSettings />
       {data.canManagePlugins && <PluginMarketSettings key={data.salonId} salonId={data.salonId} group="pos" />}
       <SettingsDetails open>
         <summary className="cursor-pointer font-semibold">

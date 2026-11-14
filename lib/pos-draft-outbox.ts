@@ -15,6 +15,7 @@ export class DraftOutbox<T> {
   private attempts = 0;
   private stopped = false;
   private listeners = new Set<() => void>();
+  private pendingFlushes = new Set<() => void>();
   storageError = false;
 
   constructor(private options: {
@@ -72,13 +73,17 @@ export class DraftOutbox<T> {
 
   async pump() {
     if (this.stopped || this.running || this.state.blocked || !this.pending || !this.options.online()) return;
+    // Subscribers may flush from the persistence notification. Fence the whole
+    // attempt before notifying them so it cannot dispatch the same head twice.
+    this.running = true;
     if (!this.state.head && this.state.next) {
       this.state.head = { id: this.options.id(), expectedVersion: this.state.version, payload: this.state.next };
       this.state.next = null;
-      // Persist the exact operation BEFORE dispatch, including its identity.
-      this.save();
     }
-    this.running = true;
+    // Retry the same head after disk recovery. Its exact identity must be
+    // durable before every dispatch, including a failed earlier save attempt.
+    this.save();
+    if (this.stopped || this.storageError) { this.running = false; return; }
     let result: DraftReply;
     try { result = await this.options.send(this.state.head!); }
     catch { result = { kind: "retry" }; }
@@ -98,18 +103,28 @@ export class DraftOutbox<T> {
   }
 
   async flush(timeoutMs = 10_000): Promise<boolean> {
-    if (!this.pending) return !this.state.blocked;
+    if (this.stopped) return false;
+    if (!this.pending) {
+      // A server acknowledgement may have arrived while local disk was full.
+      // Commit that acknowledgement without replaying its completed request.
+      if (this.storageError) this.save();
+      return !this.state.blocked && !this.storageError;
+    }
     if (!this.options.online() || this.state.blocked) return false;
-    void this.pump();
     return new Promise((resolve) => {
-      const timeout = setTimeout(() => { unsubscribe(); resolve(false); }, timeoutMs);
+      const finish = (saved: boolean) => { clearTimeout(timeout); unsubscribe(); this.pendingFlushes.delete(stopped); resolve(saved); };
+      const stopped = () => finish(false);
+      const timeout = setTimeout(() => finish(false), timeoutMs);
       const unsubscribe = this.subscribe(() => {
-        if (!this.pending || this.state.blocked) {
-          clearTimeout(timeout); unsubscribe(); resolve(!this.pending && !this.state.blocked);
+        if (this.stopped || this.storageError || !this.pending || this.state.blocked) {
+          finish(!this.stopped && !this.storageError && !this.pending && !this.state.blocked);
         }
       });
+      this.pendingFlushes.add(stopped);
+      // Subscribe first: a failed synchronous save also completes this flush.
+      void this.pump();
     });
   }
 
-  stop() { this.stopped = true; clearTimeout(this.timer); }
+  stop() { this.stopped = true; clearTimeout(this.timer); this.pendingFlushes.forEach(finish => finish()); }
 }

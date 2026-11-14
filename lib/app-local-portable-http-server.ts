@@ -10,6 +10,7 @@ import { GET as workspaceGET } from "@/app/api/pos/portable/workspace/route";
 import { GET as staffGET } from "@/app/api/pos/portable/staff/route";
 import { GET as ticketsGET } from "@/app/api/pos/portable/tickets/route";
 import { GET as connectionGET } from "@/app/api/pos/connection/route";
+import { GET as offlineStaffGET } from "@/app/api/pos/portable/offline-staff/route";
 import { POST as operationsPOST } from "@/app/api/pos/portable/operations/route";
 import { POST as draftPOST } from "@/app/api/pos/portable/draft/route";
 import { POST as preparePOST } from "@/app/api/pos/portable/device/route";
@@ -29,7 +30,7 @@ export async function readAppLocalPortableHttpResource(name: string, args: Recor
   await requireAppLocalPortableScope(options.scope);
   const current = await headers(), forwarded = new Headers(); if (current.get("cookie")) forwarded.set("cookie", current.get("cookie")!);
   const url = new URL(rule.path, "https://reylumi.com"); url.search = new URLSearchParams(args as Record<string, string>).toString();
-  const handlers = { "portable.http.workspace": workspaceGET, "portable.http.staff": staffGET, "portable.http.tickets": ticketsGET, "portable.http.connection": connectionGET };
+  const handlers = { "portable.http.workspace": workspaceGET, "portable.http.staff": staffGET, "portable.http.tickets": ticketsGET, "portable.http.connection": connectionGET, "portable.http.offline-staff": () => offlineStaffGET() };
   const data = await wire(await handlers[name as keyof typeof handlers](new Request(url, { headers: forwarded, signal: options.signal })));
   if (options.signal?.aborted) throw options.signal.reason;
   const etag = '"' + createHash("sha256").update(JSON.stringify([options.scope, name, args, data])).digest("hex") + '"';

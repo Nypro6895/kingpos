@@ -1,6 +1,7 @@
-
+import type { Metadata } from "next";
 import { SalonIdentityContext } from "@/components/salon-member-badge";
 import { PortableOfflineShell } from "@/app/pos/portable/portable-offline-shell";
+import { PortableNativeStorageBoundary } from "@/app/pos/portable/portable-native-storage-boundary";
 import Image from "next/image";
 import { Suspense } from "react";
 import { PortablePanels } from "@/app/pos/portable/portable-panels";
@@ -21,6 +22,18 @@ import { PORTABLE_POS_CAPABILITIES } from "@/lib/pos-portable-capabilities";
 import { PORTABLE_POS_ROUTE_LINKS } from "@/lib/pos-portable-routes";
 import { WorkspaceLanguageProvider, WorkspaceText } from "@/components/workspace-language";
 import { marketServiceClient } from "@/lib/market-payments";
+
+// Available in the initial server HTML, including login and every Portable tab.
+export const metadata: Metadata = {
+  title: "Reylumi POS Portable",
+  applicationName: "Reylumi POS Portable",
+  manifest: "/pos/portable/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Reylumi POS",
+    statusBarStyle: "default",
+  },
+};
 
 function ReylumiLogo() {
   return (
@@ -124,7 +137,7 @@ export default async function PortablePosLayout({
       data-portable-shell
       data-pos-persistent-workspace
     >
-      <SalonIdentityContext salonId={session.salon_id}><WorkspaceLanguageProvider portableSession enabled={vietnamese} portableEnabled={vietnamese} expiresAt={languageExpiry ?? null}><PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
+      <PortableNativeStorageBoundary scope={`${session.salon_id}:${session.key_id}`}><SalonIdentityContext salonId={session.salon_id}><WorkspaceLanguageProvider portableSession enabled={vietnamese} portableEnabled={vietnamese} expiresAt={languageExpiry ?? null}><PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
         <PortableWorkspaceTabs
           canConfirmBookings={session.capabilities.includes(PORTABLE_POS_CAPABILITIES.bookCreate)}
           localPanels
@@ -140,7 +153,7 @@ export default async function PortablePosLayout({
         <PortableOfflineShell />
         <PortableShellRefresh />
         <PortableTouchKeyboard />
-      </PortableWorkspaceStateProvider></WorkspaceLanguageProvider></SalonIdentityContext>
+      </PortableWorkspaceStateProvider></WorkspaceLanguageProvider></SalonIdentityContext></PortableNativeStorageBoundary>
     </main>
   );
 }

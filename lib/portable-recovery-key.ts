@@ -6,11 +6,12 @@ export function isNativePortableDevice(): boolean {
 }
 
 /** Browser tabs stay independent; an installed app must survive a new WebView. */
-export function portableRecoveryStorageKey({ scope, operationScope, tabId, desktop, native, storage }: {
-  scope: string; operationScope?: string; tabId: string; desktop: boolean; native: boolean;
+export function portableRecoveryStorageKey({ scope, operationScope, tabId, desktop, native, durableNative = false, storage }: {
+  scope: string; operationScope?: string; tabId: string; desktop: boolean; native: boolean; durableNative?: boolean;
   storage: Pick<Storage, "getItem" | "setItem">;
 }) {
   if (desktop && operationScope) return PREFIX + operationScope + ":desktop";
+  if (durableNative && operationScope) return PREFIX + operationScope + ":native-device";
   const legacy = PREFIX + scope + ":" + tabId;
   if (!native) return legacy;
   const slot = "kingpos:portable-native-recovery:v1:" + scope;

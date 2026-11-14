@@ -8,6 +8,11 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   exit 1
 fi
 command -v xcodegen >/dev/null || { echo "Install XcodeGen before running this check." >&2; exit 1; }
+task_simulator_family="${REYLUMI_SIMULATOR_FAMILY:-iphone}"
+case "$task_simulator_family" in
+  iphone|ipad) ;;
+  *) echo "REYLUMI_SIMULATOR_FAMILY must be iphone or ipad." >&2; exit 1 ;;
+esac
 # Integrity of an inherited manifest is insufficient: require this source's rebuilt package.
 node ../scripts/ios/local-bundle-release.mjs verify
 # These tests exercise the real installed client, not only a generated fixture.
@@ -34,20 +39,21 @@ task_run_dir="$(mktemp -d "$PWD/build/check.XXXXXX")"
 xcodebuild -version
 xcodegen generate
 
-# Select an installed iPhone instead of assuming a particular device name.
+# Select an installed device in the requested family without assuming its name.
 xcrun simctl list devices available --json > "$task_run_dir/devices.json"
-task_simulator_id="$(python3 - "$task_run_dir/devices.json" <<'PY'
+task_simulator_id="$(python3 - "$task_run_dir/devices.json" "$task_simulator_family" <<'PY'
 import json, sys
+prefix = {"iphone": "iPhone", "ipad": "iPad"}[sys.argv[2]]
 with open(sys.argv[1], encoding="utf-8") as stream:
     devices = json.load(stream)["devices"]
 for runtime, entries in devices.items():
     if ".iOS-" not in runtime:
         continue
     for device in entries:
-        if device.get("isAvailable") and device["name"].startswith("iPhone"):
+            if device.get("isAvailable") and device["name"].startswith(prefix):
             print(device["udid"])
             sys.exit(0)
-sys.exit("No available iPhone Simulator is installed in this Xcode environment.")
+sys.exit("No available " + prefix + " Simulator is installed in this Xcode environment.")
 PY
 )"
 
@@ -239,7 +245,7 @@ test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle/manifest.json"
 verify_local_package "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle"
 node ../scripts/ios/local-bundle-release.mjs verify "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle"
-python3 - "$task_run_dir" "$task_simulator_id" <<'PY'
+python3 - "$task_run_dir" "$task_simulator_id" "$task_simulator_family" <<'PY'
 import hashlib, json, os, pathlib, plistlib, subprocess, sys
 root = pathlib.Path.cwd()
 run = pathlib.Path(sys.argv[1])
@@ -251,6 +257,7 @@ receipt = {
     "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
     "xcode": subprocess.check_output(["xcodebuild", "-version"], text=True).strip(),
     "simulator": sys.argv[2], "simulatorTests": "passed", "deviceArchive": "unsigned",
+    "simulatorFamily": sys.argv[3],
     "simulatorSigning": "ad-hoc; own application-identifier and Keychain access group verified",
     "simulatorEntitlements": plistlib.loads((run / "SimulatorEntitlements.plist").read_bytes()),
     "installableOnIPhone": False, "runDirectory": str(run.relative_to(root)),

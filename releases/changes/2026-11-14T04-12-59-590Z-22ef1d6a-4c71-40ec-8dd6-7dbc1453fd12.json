@@ -1,0 +1,35 @@
+{
+  "files": [
+    "app/layout.tsx",
+    "app/manifest.ts",
+    "app/(app)/pos/portable/layout.tsx",
+    "app/pos/portable",
+    "lib/portable-device-storage.ts",
+    "lib/portable-operations.ts",
+    "ios/Reylumi",
+    "ios/ReylumiTests"
+  ],
+  "changeId": "ipad-portable-app-20261113",
+  "source": {
+    "commit": "ec2c292bb574d5db53a5bd4ea3c85dbfea376e9c"
+  },
+  "status": "working",
+  "dependencies": [],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "kind": "change",
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Implementation and isolated checks"
+    }
+  ],
+  "summary": "Context-aware Portable Home Screen installation and professional iPad Portable native mode with durable device storage",
+  "id": "22ef1d6a-4c71-40ec-8dd6-7dbc1453fd12",
+  "recordedAt": "2026-11-14T04:12:59.590Z",
+  "worktree": "C:\\Reylumi-worktrees\\ipad-portable-app-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

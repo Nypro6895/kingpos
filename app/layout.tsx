@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   metadataBase: REYLUMI_METADATA_BASE,
   title: "Reylumi",
   description: "Reylumi beauty booking and salon workspace",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     title: "Reylumi",

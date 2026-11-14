@@ -13,6 +13,7 @@ import { prepareLocalPromotionImages, saveLocalPromotionImages, useLocalPromotio
 import { DEFAULT_CUSTOMER_DISPLAY_PROMO_SLIDE_URL } from "@/lib/pos-display-default-assets";
 import { desktopDevice, type DesktopUpdateState } from "@/lib/portable-device-storage";
 import { dialogOutsideClick, dialogOutsidePointerDown } from "@/lib/dialog-outside-dismiss";
+import { PortableNativeModeSettings } from "./portable-native-mode-settings";
 import "./device-input-settings.css";
 
 const subscribeDesktop = () => () => {};
@@ -93,6 +94,7 @@ export function DeviceInputSettingsButton({ desktopOnly=false }: {desktopOnly?:b
   return <><button type="button" aria-label={t("Device settings")} title={t("Device settings")} onClick={()=>setOpen(true)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-orange-500"><WorkspaceNavigationIcon name="gear" className="h-5 w-5" /></button>
     {open&&createPortal(<dialog ref={dialog} onPointerDown={dialogOutsidePointerDown} onClick={dialogOutsideClick} aria-label={t("Device settings")} onClose={()=>setOpen(false)} className="portable-device-settings" data-touch-keyboard="off"><header><h2><WorkspaceText text="Settings" /></h2><button type="button" aria-label={t("Close settings")} onClick={()=>dialog.current?.close()}>×</button></header>
       <DeviceInputSettings />
+      <PortableNativeModeSettings />
       <ServiceDisplaySettings />
       <section className="device-setting-section" aria-label={t("Customer display")}><h3><WorkspaceText text="Customer display" /></h3>
         {desktop&&<div className="device-list-row"><span><WorkspaceText text="Customer screen" /></span><button type="button" onClick={()=>{setError("");void desktopDevice()?.display?.open().catch(()=>setError("Open the POS tab first, then try again."));}}><WorkspaceText text="Open" /></button></div>}

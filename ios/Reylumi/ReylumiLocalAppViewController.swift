@@ -12,6 +12,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     private(set) var webView: WKWebView!
     private let launchPanel = ReylumiLaunchView()
     private let startPath: String
+    private lazy var portableBridge = ReylumiPortableBridge(origin: origin, transport: transport)
     private var pending: [String: (kind: String, task: Task<Void, Never>)] = [:]
     private var foregroundObserver: NSObjectProtocol?
     private var resetObserver: NSObjectProtocol?
@@ -97,10 +98,12 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
             if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" }
         }
         configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        portableBridge.install(in: configuration)
         #if DEBUG
         configureWebViewForTesting?(configuration)
         #endif
         webView = WKWebView(frame: .zero, configuration: configuration)
+        portableBridge.webView = webView
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
@@ -336,12 +339,14 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         let path = webView.url.map { $0.path + ($0.query.map { "?" + $0 } ?? "") } ?? startPath
         for operation in pending.values where operation.kind != "command" { operation.task.cancel() }
         transport.invalidatePage()
+        portableBridge.lock()
         webView.configuration.userContentController.removeAllUserScripts()
         let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         var script = "window.__reylumiAppLocalContext=\(metadata);\n"
         if transport.diagnostics.isEnabled { script += "window.__reylumiDiagnosticsEnabled=true;\n" }
         for name in ["AppViewport", "AppLocalBridge"] { if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" } }
         webView.configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        portableBridge.install(in: webView.configuration)
         guard lastProcessRecovery.map({ Date().timeIntervalSince($0) >= 60 }) ?? true else { launchPanel.showError(); return }
         lastProcessRecovery = Date()
         loadBundle(path: path)
@@ -426,6 +431,11 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         present(controller, animated: true)
     }
     func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) { downloads.removeValue(forKey: ObjectIdentifier(download)) }
+    func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
+        if let reply = portableBridge.prompt(prompt, frame: frame) { completionHandler(reply); return }
+        // Installed app pages do not use arbitrary browser text prompts.
+        completionHandler(nil)
+    }
     deinit {
         startupFrameLink?.invalidate()
         if let foregroundObserver { NotificationCenter.default.removeObserver(foregroundObserver) }
@@ -446,6 +456,7 @@ final class ReylumiAppContainer: UIViewController {
     private let installedBundle: ReylumiLocalBundle?
     private let offlineRoutes: ReylumiOfflineRouteStore
     private let localTransport: ReylumiLocalAppTransport?
+    private let portableMode: ReylumiPortableMode
     private(set) var local: ReylumiLocalAppViewController?
     private var hosted: ReylumiViewController?
     private var handoffTask: Task<Void, Never>?
@@ -456,6 +467,7 @@ final class ReylumiAppContainer: UIViewController {
     private var pendingHostedCheckinPath: String?
     init(origin: URL = URL(string: "https://reylumi.com")!, bundle: ReylumiLocalBundle? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil, transport: ReylumiLocalAppTransport? = nil) {
         self.origin = origin; self.installedBundle = bundle; self.offlineRoutes = offlineRoutes ?? ReylumiOfflineRouteStore(origin: origin); self.localTransport = transport
+        self.portableMode = ReylumiPortableMode(origin: origin)
         super.init(nibName: nil, bundle: nil)
     }
     required init?(coder: NSCoder) { fatalError("Use init(origin:)") }
@@ -465,12 +477,12 @@ final class ReylumiAppContainer: UIViewController {
             // A new process starts at the role home. Foreground resumes this
             // controller in place; explicit auth/payment returns keep their path.
             let initialIsBundled = initialCheckinPath.flatMap { URLComponents(string: $0)?.path }.map(bundle.routeExists) ?? true
-            let hint = initialIsBundled ? (initialCheckinPath ?? "/") : "/"
+            let hint = initialIsBundled ? (initialCheckinPath ?? portableMode.launchPath) : portableMode.launchPath
             if !initialIsBundled { pendingHostedCheckinPath = initialCheckinPath }
             let controller = ReylumiLocalAppViewController(bundle: bundle, origin: origin, startPath: hint, transport: localTransport)
             local = controller; controller.onOpenOnline = { [weak self] path in self?.openOnline(path) }
             embed(controller)
-        } else { let controller = ReylumiViewController(origin: origin, initialURL: initialCheckinPath.flatMap { URL(string: $0, relativeTo: origin)?.absoluteURL }); hosted = controller; embed(controller) }
+        } else { let path = initialCheckinPath ?? (portableMode.mode == .portable ? portableMode.launchPath : nil); let controller = ReylumiViewController(origin: origin, initialURL: path.flatMap { URL(string: $0, relativeTo: origin)?.absoluteURL }); hosted = controller; embed(controller) }
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -490,7 +502,7 @@ final class ReylumiAppContainer: UIViewController {
     func openOnline(_ path: String) {
         guard presentedViewController == nil, let url = URL(string: path, relativeTo: origin)?.absoluteURL,
               NavigationPolicy(origin: origin).isInternal(url), !NavigationPolicy(origin: origin).isExcluded(url) else { return }
-        let controller = ReylumiViewController(origin: origin, initialURL: url)
+        let controller = ReylumiViewController(origin: origin, initialURL: url, portableTransport: local?.transport)
         controller.onNavigationFailure = { [weak self, weak controller] in
             guard let self, let controller else { return }
             // A failed/empty hosted page must not trap the user without an exit.

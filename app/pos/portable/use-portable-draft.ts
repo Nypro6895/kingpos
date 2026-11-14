@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DraftOutbox, type DraftOutboxState, type DraftReply } from "@/lib/pos-draft-outbox";
 import { portableCheckpoint } from "@/lib/portable-operations";
-import { desktopDevice, portableDeviceStorage } from "@/lib/portable-device-storage";
+import { desktopDevice, iosPortableDevice, portableDevice, portableDeviceStorage } from "@/lib/portable-device-storage";
 import { publishLocalDisplaySnapshot } from "@/lib/pos-local-display";
 import type { PosLiveDraftCustomer, PosLiveDraftReceiptLine } from "@/types/pos-desk";
 import { acquirePortableRecoveryWriter, isNativePortableDevice, portableRecoveryStorageKey } from "@/lib/portable-recovery-key";
@@ -70,7 +70,20 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
       let tabId = sessionStorage.getItem("kingpos:portable-tab");
       if (!tabId) { tabId = crypto.randomUUID(); sessionStorage.setItem("kingpos:portable-tab", tabId); }
       const native = isNativePortableDevice();
-      key = portableRecoveryStorageKey({ scope, operationScope, tabId, desktop: Boolean(desktopDevice()), native, storage: portableDeviceStorage });
+      const durableNative = Boolean(iosPortableDevice() && portableDevice());
+      key = portableRecoveryStorageKey({ scope, operationScope, tabId, desktop: Boolean(desktopDevice()), native, durableNative, storage: portableDeviceStorage });
+      if (durableNative && operationScope && portableDeviceStorage.getItem(key) === null) {
+        // Upgrade only this known live draft. Never guess among other windows'
+        // carts, change an outbox ID, or erase the browser copy before commit.
+        const slot = localStorage.getItem("kingpos:portable-native-recovery:v1:" + scope);
+        const previousKey = slot?.startsWith("kingpos:portable-draft:v1:" + scope + ":") ? slot : "kingpos:portable-draft:v1:" + scope + ":" + tabId;
+        const legacyKey = localStorage.getItem(previousKey) !== null ? previousKey : "kingpos:portable-draft:v1:" + scope + ":native";
+        const legacy = localStorage.getItem(legacyKey);
+        if (legacy) {
+          const value = JSON.parse(legacy);
+          if (value.savedAt > await portableCheckpoint(operationScope, legacyKey)) portableDeviceStorage.setItem(key, legacy);
+        }
+      }
       if (native) {
         releaseWriter = await acquirePortableRecoveryWriter(key);
         if (!active) { releaseWriter?.(); return; }
