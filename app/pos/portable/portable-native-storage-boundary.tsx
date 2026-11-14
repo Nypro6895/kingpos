@@ -2,15 +2,17 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { WorkspaceText } from "@/components/workspace-language";
+import { iosPortableDevice } from "@/lib/portable-device-storage";
 import { preparePortableNativeStorage } from "@/lib/portable-native-client";
 import { getAppLocalHost } from "@/lib/app-local-host";
 
 type State = "checking" | "ready" | "failed" | "locked" | "expired";
 
 /** Do not mount an editor until the native vault has durable scoped authority. */
-export function PortableNativeStorageBoundary({ scope, children }: { scope: string; children: ReactNode }) {
-  const [result, setResult] = useState<{ scope: string; state: State }>({ scope, state: "checking" });
-  const [openedScope, setOpenedScope] = useState<string | null>(null);
+export function PortableNativeStorageBoundary({ scope, children, nativeExpected = false }: { scope: string; children: ReactNode; nativeExpected?: boolean }) {
+  const needsAdmission = nativeExpected || Boolean(iosPortableDevice());
+  const [result, setResult] = useState<{ scope: string; state: State }>({ scope, state: needsAdmission ? "checking" : "ready" });
+  const [openedScope, setOpenedScope] = useState<string | null>(needsAdmission ? null : scope);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let active = true;
@@ -21,7 +23,7 @@ export function PortableNativeStorageBoundary({ scope, children }: { scope: stri
     const reset = () => { revoked = true; publish("checking"); setAttempt(value => value + 1); };
     window.addEventListener("kingpos:portable-lock", lock);
     window.addEventListener("reylumi:app-local-reset", reset);
-    publish("checking");
+    if (iosPortableDevice()) publish("checking");
     void preparePortableNativeStorage(scope).then(readiness => {
         if (!active || revoked) return;
         setOpenedScope(scope);
