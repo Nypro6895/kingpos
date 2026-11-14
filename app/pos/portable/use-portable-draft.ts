@@ -73,7 +73,7 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
       queue.current?.stop(); persistRecovery.current = null; setReady(false);
     };
     const invalidateWriter = () => { if (durableNative && !locked) { writerEpoch++; writerNeedsReadmission = true; setReady(false); } };
-    const retryInitialization = () => { if (durableNative && initialSetup && active && !locked) setInitializationRevision(value => value + 1); };
+    const retryInitialization = () => { if (durableNative && initialSetup && active && !locked && writerNeedsReadmission) setInitializationRevision(value => value + 1); };
     window.addEventListener("kingpos:portable-lock", lock);
     window.addEventListener("kingpos:native-portable-lock", lock);
     window.addEventListener("reylumi:app-local-reset", invalidateWriter);

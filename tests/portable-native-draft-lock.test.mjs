@@ -27,7 +27,7 @@ async function fixture(hold, work) {
   try {
     const context = await browser.newContext();
     await context.addInitScript(hold => {
-      window.draftFixture = { calls: [], values: {}, replies: [], hold, posts: [], release() { this.replies.shift()?.(); } };
+      window.draftFixture = { calls: [], values: {}, replies: [], hold, posts: [], owner: null, nextWriter: 0, release() { this.replies.shift()?.(); } };
       const state = window.draftFixture;
       window.__reylumiNativePayments = 1;
       window.webkit = { messageHandlers: { reylumi: {} } };
@@ -38,10 +38,13 @@ async function fixture(hold, work) {
       }, async request(input) {
         state.calls.push(structuredClone(input));
         if (input.action === 'writer.acquire') {
+          if (state.owner) return { acquired: false };
+          const token = 'synthetic-writer-' + ++state.nextWriter;
+          state.owner = token;
           if (state.hold) await new Promise(resolve => state.replies.push(resolve));
-          return { acquired: true, token: 'synthetic-writer' };
+          return { acquired: true, token };
         }
-        if (input.action === 'writer.release') return { released: true };
+        if (input.action === 'writer.release') { if (state.owner === input.token) state.owner = null; return { released: true }; }
         throw Error('Unexpected native request');
       } };
       const original = window.fetch.bind(window);
@@ -86,5 +89,36 @@ test('locking a ready native draft retains its input and pending work without re
     assert.equal(await page.getByLabel('Amount').inputValue(), '199.00');
     assert.deepEqual(await page.evaluate(() => window.draftFixture.values), saved);
     assert.equal(await page.evaluate(() => window.draftFixture.calls.filter(call => call.action === 'writer.acquire').length), 1);
+  });
+});
+
+test('readiness during a pending initial acquire does not create a false competing window', async () => {
+  await fixture(true, async page => {
+    await page.waitForFunction(() => window.draftFixture.replies.length === 1);
+    await page.evaluate(() => window.dispatchEvent(new Event('kingpos:native-readiness')));
+    await page.waitForTimeout(100);
+    await page.evaluate(() => { window.draftFixture.hold = false; window.draftFixture.release(); });
+    await page.waitForTimeout(150);
+    assert.equal(await page.locator('output').getAttribute('data-ready'), 'true');
+    assert.equal(await page.evaluate(() => window.draftFixture.calls.filter(call => call.action === 'writer.acquire').length), 1);
+  });
+});
+
+test('readiness after a genuine native reset retries an invalidated initial acquire', async () => {
+  await fixture(true, async page => {
+    await page.waitForFunction(() => window.draftFixture.replies.length === 1);
+    await page.evaluate(() => {
+      // Native reset revokes the old owner before the new prepare completes.
+      window.draftFixture.owner = null;
+      window.dispatchEvent(new Event('kingpos:native-writer-reset'));
+      window.draftFixture.hold = false;
+      window.dispatchEvent(new Event('kingpos:native-readiness'));
+    });
+    await page.locator('output[data-ready="true"]').waitFor();
+    await page.evaluate(() => window.draftFixture.release());
+    await page.waitForFunction(() => window.draftFixture.calls.some(call => call.action === 'writer.release'));
+    assert.equal(await page.locator('output').getAttribute('data-ready'), 'true');
+    assert.equal(await page.evaluate(() => window.draftFixture.calls.filter(call => call.action === 'writer.acquire').length), 2);
+    assert.equal(await page.evaluate(() => window.draftFixture.owner), 'synthetic-writer-2');
   });
 });

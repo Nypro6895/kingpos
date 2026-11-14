@@ -18,6 +18,8 @@ hoặc binary đã cài trên iPad.
 - Biểu tượng Reylumi đã lưu trước đó giữ điểm mở cũ. Mở Portable rồi thêm
   **biểu tượng mới**; không tự đổi đích của biểu tượng cũ. Đăng nhập POS trong
   cửa sổ vừa cài, vì phiên Safari và cửa sổ đã cài có thể độc lập.
+- Cách cài từ Safari vẫn dùng bộ nhớ trình duyệt. Kho SQLite bên dưới chỉ áp
+  dụng cho app Reylumi native.
 
 ## Chế độ Portable trong app Reylumi
 
@@ -48,13 +50,17 @@ hoặc binary đã cài trên iPad.
   Receipt mới cũng phải có đúng quyền ghi của draft; cập nhật trạng thái
   hàng đợi đã có vẫn giữ ID và không mất sau khi đóng cửa sổ.
 - Dữ liệu WebKit cũ được sao chép khi nâng cấp, giữ nguyên ID/payload/trạng
-  thái, thứ tự và checkpoint lịch sử. Không xóa bản gốc trong lúc migration.
+  thái, thứ tự và checkpoint lịch sử. Chỉ sao chép draft từ recovery slot hiện
+  tại đã biết và hàng đợi đúng POS; không đoán draft của tab/POS khác. Không
+  xóa bản gốc trong lúc migration.
 - Editor chỉ được mở sau khi native xác nhận lease/scope và migration hoàn
   tất. Khóa, hết hạn hoặc đổi quyền che/inert editor; ticket đã lưu không bị
   xóa. Quyền POS khác không được đọc hoặc sửa namespace của POS trước.
 - Khóa Portable thu hồi ngay quyền đọc/ghi của mọi cửa sổ native cùng máy.
   Cache offline hoặc sự kiện reset không được tự mở khóa; cần xác nhận online
   mới. Việc khóa không xóa draft/hàng đợi hoặc đăng xuất tài khoản Personal.
+- Dữ liệu chưa đồng bộ nằm trên thiết bị. Mã hóa bằng khóa riêng máy và loại
+  khỏi backup không cung cấp khôi phục sau khi xóa app hoặc mất thiết bị.
 - Giao diện lấy từ bundle được ký trong app. App chuẩn bị các panel GET được
   phép và staff verifier; chỉ báo sẵn sàng offline khi các phần cần thiết đã
   thực sự có. Không tải hoặc cache API mutation để giả lập thành công.
@@ -77,7 +83,7 @@ theo phần cứng iPad riêng. Không suy ra khả năng dùng máy thật từ
 
 ## Kiểm tra
 
-- Bộ kiểm tra tập trung cuối cùng: **43/43 đạt**, không skip; production build
+- Bộ kiểm tra tập trung cuối cùng: **45/45 đạt**, không skip; production build
   Next và TypeScript đạt trên backend QA cục bộ, chặn dispatch ra ngoài.
 - PWA: 8 ca hành vi và HTML thật của Next đạt; iPad dọc/ngang, desktop,
   installed/native suppression, prompt accept/dismiss/failure, metadata đầu
