@@ -52,6 +52,9 @@ hoặc binary đã cài trên iPad.
 - Editor chỉ được mở sau khi native xác nhận lease/scope và migration hoàn
   tất. Khóa, hết hạn hoặc đổi quyền che/inert editor; ticket đã lưu không bị
   xóa. Quyền POS khác không được đọc hoặc sửa namespace của POS trước.
+- Khóa Portable thu hồi ngay quyền đọc/ghi của mọi cửa sổ native cùng máy.
+  Cache offline hoặc sự kiện reset không được tự mở khóa; cần xác nhận online
+  mới. Việc khóa không xóa draft/hàng đợi hoặc đăng xuất tài khoản Personal.
 - Giao diện lấy từ bundle được ký trong app. App chuẩn bị các panel GET được
   phép và staff verifier; chỉ báo sẵn sàng offline khi các phần cần thiết đã
   thực sự có. Không tải hoặc cache API mutation để giả lập thành công.
@@ -64,11 +67,18 @@ không tự xóa khi lease hết hạn; cần kết nối lại để xác nhậ
 Đây là khác biệt có chủ đích với cơ chế Windows không giới hạn tuổi shell,
 không phải cam kết iPad hoạt động vô hạn không mạng.
 
+Hàng đợi nghiệp vụ offline vẫn phụ thuộc quyền server hiện có
+`KINGPOS_PORTABLE_DRAFT_OUTBOX=1` và grant `localCommands` của đúng POS.
+App không tự bật quyền này. Khi tích hợp cần kiểm tra cấu hình phát hành và
+grant thực tế; chỉ hiện sẵn sàng offline sau khi chuẩn bị đủ dữ liệu được phép.
+
 Máy in chuyên dụng Windows, màn hình phụ và thiết bị thanh toán cần tích hợp
 theo phần cứng iPad riêng. Không suy ra khả năng dùng máy thật từ Chromium.
 
 ## Kiểm tra
 
+- Bộ kiểm tra tập trung cuối cùng: **43/43 đạt**, không skip; production build
+  Next và TypeScript đạt trên backend QA cục bộ, chặn dispatch ra ngoài.
 - PWA: 8 ca hành vi và HTML thật của Next đạt; iPad dọc/ngang, desktop,
   installed/native suppression, prompt accept/dismiss/failure, metadata đầu
   tiên của Portable/Ticket/Explore. Không lỗi trang/overflow trên ảnh login.
@@ -81,6 +91,10 @@ theo phần cứng iPad riêng. Không suy ra khả năng dùng máy thật từ
 - Workflow QA dùng commit chính xác, iPad Simulator và archive không ký;
   không upload TestFlight, không đổi tester, không deploy web. Kết quả và
   artifact được ghi tại `artifacts/ipad-portable-app-20261113/`.
+- Mẫu regression rộng hơn có 5 lỗi fixture/assertion đã tái hiện nguyên vẹn
+  trên baseline `ec2c292` với cùng dependency và hash file. Chúng thuộc
+  keyboard/report/turn tests cũ; không dùng kết quả này để tuyên bố toàn bộ
+  test repository đạt. Chi tiết: `baseline-regression-comparison.json`.
 
 Trước khi công bố sẵn sàng sử dụng tại tiệm: tích hợp đúng production/native
 baseline hiện hành, build/upload kênh được cho phép và nghiệm thu iPad thật:

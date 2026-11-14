@@ -16,11 +16,11 @@ private actor PortableVaultUnavailableHTTP: ReylumiLocalHTTPClient {
 /// signed-resource scheme handler, and the native encrypted vault. All leases
 /// and customer information are synthetic; networking is always unavailable.
 final class PortableStoreWebViewTests: XCTestCase {
-    private let origin = URL(string: "https://reylumi.com")!
     private let scope = "00000000-0000-4000-8000-000000000002:00000000-0000-4000-8000-000000000003"
 
     @MainActor
     func testNewOfflineWebViewRestoresNativeDraftAndReceiptThenExplicitLockRevokesAccessWithoutDiscardingWork() async throws {
+        let origin = URL(string: "https://portable-vault-wk-" + UUID().uuidString.lowercased() + ".invalid")!
         let (base, bundleDirectory) = try AppLocalTestFixture.bundle()
         let manifestFile = bundleDirectory.appendingPathComponent("manifest.json")
         var manifest = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: manifestFile)) as? [String: Any])
@@ -133,7 +133,18 @@ final class PortableStoreWebViewTests: XCTestCase {
         XCTAssertEqual(deniedAfterLock, true)
         _ = try await cold.evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'storage.prepare',scope:\(scopeJSON)}).then(()=>window.fixtureUnexpectedUnlock=true).catch(()=>window.fixtureUnlockDenied=true)")
         try await wait("window.fixtureUnlockDenied===true", in: cold)
+        // The previously admitted second window must lose both vault and
+        // writer authority immediately when another scene explicitly locks POS.
+        let rivalReadDeniedAfterLock = try await rival.evaluateJavaScript("(()=>{try{window.__reylumiPortableDevice.storage.get(\(keyJSON));return false}catch(e){return e.code==='storage-locked'}})()") as? Bool
+        let rivalWriteDeniedAfterLock = try await rival.evaluateJavaScript("(()=>{try{window.__reylumiPortableDevice.storage.set(\(keyJSON),'{\"replacement\":true}');return false}catch(e){return e.code==='storage-locked'}})()") as? Bool
+        XCTAssertEqual(rivalReadDeniedAfterLock, true)
+        XCTAssertEqual(rivalWriteDeniedAfterLock, true)
+        _ = try await rival.evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'writer.acquire',scope:\(scopeJSON),key:\(keyJSON)}).then(()=>window.fixtureUnexpectedWriter=true).catch(()=>window.fixtureWriterDeniedAfterLock=true)")
+        try await wait("window.fixtureWriterDeniedAfterLock===true", in: rival)
+        _ = try await rival.evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'storage.prepare',scope:\(scopeJSON)}).then(()=>window.fixtureUnexpectedUnlock=true).catch(()=>window.fixtureUnlockDenied=true)")
+        try await wait("window.fixtureUnlockDenied===true", in: rival)
         XCTAssertEqual(try secondStore.list(scope: scope).count, 1, "Lock revokes access without discarding unsynced work")
+        XCTAssertEqual(try secondStore.get(key, scope: scope), draft, "Explicit lock preserves the encrypted draft without making it accessible to either WebView")
         let posts = await network.posts
         XCTAssertEqual(posts, 0, "Restart and local vault recovery must never replay a business mutation")
     }

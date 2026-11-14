@@ -277,5 +277,27 @@ test('native admission failure never mounts an editor; reset and lease expiry re
     assert.equal(await retained.inputValue(), 'Unsubmitted synthetic draft');
     assert.equal(await retained.evaluate(input => input.closest('[inert]')?.hidden), true);
     assert.equal(await page.evaluate(() => window.editorUnmounts || 0), 0);
+    // Renew the expired view, then simulate an explicit lock from another
+    // native scene. Later transport/writer resets cannot automatically reopen it.
+    await page.evaluate(() => window.dispatchEvent(new Event('reylumi:app-local-reset')));
+    await page.waitForFunction(() => window.nativeFixture.prepare.length === 1);
+    await page.evaluate(() => { window.nativeFixture.leaseMS = 3600000; window.nativeFixture.allow(); });
+    await page.getByRole('button', { name: 'POS editor' }).waitFor();
+    const preparationsBeforeLock = await page.evaluate(() => window.nativeFixture.calls.filter(call => call.action === 'storage.prepare').length);
+    await page.evaluate(() => window.dispatchEvent(new Event('kingpos:native-portable-lock')));
+    await page.getByText('POS is locked. Your saved tickets remain on this iPad.').waitFor();
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event('reylumi:app-local-reset'));
+      window.dispatchEvent(new Event('kingpos:native-writer-reset'));
+      return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    assert.equal(await page.locator('[data-portable-native-storage="locked"]').count(), 1);
+    assert.equal(await page.getByRole('button', { name: 'POS editor' }).count(), 0);
+    assert.equal(await page.evaluate(() => window.nativeFixture.prepare.length), 0);
+    assert.equal(await page.evaluate(() => window.nativeFixture.calls.filter(call => call.action === 'storage.prepare').length), preparationsBeforeLock, 'an explicit native lock must not turn either later reset event into new admission');
+    assert.equal(await retained.inputValue(), 'Unsubmitted synthetic draft');
+    assert.equal(await retained.evaluate(input => input.closest('[inert]')?.hidden), true);
+    assert.equal(await page.evaluate(() => window.editorMounts), 1);
+    assert.equal(await page.evaluate(() => window.editorUnmounts || 0), 0);
   });
 });

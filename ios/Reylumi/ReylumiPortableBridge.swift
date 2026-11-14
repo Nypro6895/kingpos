@@ -21,17 +21,25 @@ enum ReylumiPortableBridgePolicy {
 /// encrypted storage before JavaScript can acknowledge a draft save.
 @MainActor
 final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
+    private final class WeakBridge {
+        weak var value: ReylumiPortableBridge?
+        init(_ value: ReylumiPortableBridge) { self.value = value }
+    }
     private static var stores: [String: ReylumiPortableStore] = [:]
+    private static var bridges: [WeakBridge] = []
+    private static var portableLockRevisions: [String: Int] = [:]
+    private static var portableLockTasks: [String: Task<Void, Never>] = [:]
     private let origin: URL
     private let mode: ReylumiPortableMode
     private let store: ReylumiPortableStore
     private let transport: ReylumiLocalAppTransport?
     private let nonce = UUID().uuidString
-    private var active: (scope: String, expiry: Date, nonce: String, epoch: Int, resources: [String], needsStaff: Bool, offlineEnabled: Bool, operationKinds: Set<String>)?
+    private var active: (scope: String, expiry: Date, nonce: String, epoch: Int, resources: [String], needsStaff: Bool, offlineEnabled: Bool, operationKinds: Set<String>, lockRevision: Int)?
     private var pending = 0
     private var registered = false
     private var admissionRevision = 0
     private var documentGeneration = 0
+    private var onlineLockRevision = 0
     private let writers = ReylumiPortableWriterRegistry.shared
     weak var webView: WKWebView?
 
@@ -44,6 +52,8 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
         else if let bundle = try? ReylumiLocalBundle.installed(), bundle.manifest.productionReady == true { self.transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest) }
         else { self.transport = nil }
         super.init()
+        Self.bridges.removeAll { $0.value == nil }
+        Self.bridges.append(WeakBridge(self))
     }
     func install(in configuration: WKWebViewConfiguration) {
         if !registered { configuration.userContentController.addScriptMessageHandler(self, contentWorld: .page, name: "portableDevice"); registered = true }
@@ -54,6 +64,30 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
         configuration.userContentController.addUserScript(WKUserScript(source: "window.__reylumiPortableHost=\(metadata);\n" + resource, injectionTime: .atDocumentStart, forMainFrameOnly: true))
     }
     func lock() { active = nil; admissionRevision += 1; writers.releaseAll(owner: self) }
+    /// Explicit Portable lock is device-wide across scenes and hosted/bundled
+    /// views. Personal account authority and the durable outbox are untouched.
+    private static func lockPortable(origin: URL) -> Task<Void, Never> {
+        let identity = origin.absoluteString
+        let revision = (portableLockRevisions[identity] ?? 0) + 1
+        portableLockRevisions[identity] = revision
+        let previous = portableLockTasks[identity]
+        bridges.removeAll { $0.value == nil }
+        let matching = bridges.compactMap(\.value).filter { $0.origin.absoluteString == identity }
+        var transports: [ReylumiLocalAppTransport] = []
+        var seen = Set<ObjectIdentifier>()
+        for bridge in matching {
+            bridge.lock()
+            bridge.webView?.evaluateJavaScript("window.dispatchEvent(new Event('kingpos:native-portable-lock'))", completionHandler: nil)
+            if let transport = bridge.transport, seen.insert(ObjectIdentifier(transport)).inserted { transports.append(transport) }
+        }
+        let task = Task { @MainActor in
+            await previous?.value
+            for transport in transports { await transport.lockPortable() }
+            if Self.portableLockRevisions[identity] == revision { Self.portableLockTasks[identity] = nil }
+        }
+        portableLockTasks[identity] = task
+        return task
+    }
     func documentWillNavigate() {
         let hadAuthority = active != nil
         documentGeneration += 1
@@ -62,7 +96,7 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
     }
     private func authorized(_ scope: String? = nil) -> (scope: String, expiry: Date)? {
         guard let active, let transport, active.expiry > Date(), active.nonce == transport.nonce,
-              active.epoch == transport.scopeEpoch else { lock(); return nil }
+              active.epoch == transport.scopeEpoch, active.lockRevision == (Self.portableLockRevisions[origin.absoluteString] ?? 0) else { lock(); return nil }
         // A late request for a previous scope must not revoke a newly admitted
         // workspace. It receives no data and cannot mutate that workspace.
         guard scope == nil || scope == active.scope else { return nil }
@@ -101,8 +135,8 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
         }
         guard let current = webView?.url, ReylumiPortableBridgePolicy.portablePath(current.path) else { replyHandler(error("Open POS Portable to access this device's saved tickets.", code: "untrusted-page"), nil); return }
         if action == "storage.lock" {
-            lock()
-            Task { @MainActor [weak self] in await self?.transport?.lockPortable(); replyHandler(["ok": true], nil) }
+            let revocation = Self.lockPortable(origin: origin)
+            Task { @MainActor in await revocation.value; replyHandler(["ok": true], nil) }
             return
         }
         pending += 1
@@ -119,8 +153,17 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
                     // Check the actual permitted Portable view. A check-in-only
                     // device must not borrow or require the POS desk capability.
                     let path = current.path
-                    let value = try await transport.context(path: path)
-                    guard self.admissionRevision == revision, self.valid(body, frame: message.frameInfo), let lease = ReylumiLocalSession.verified(value, generation: transport.generation),
+                    let lockRevision = Self.portableLockRevisions[self.origin.absoluteString] ?? 0
+                    await Self.portableLockTasks[self.origin.absoluteString]?.value
+                    guard self.admissionRevision == revision, lockRevision == (Self.portableLockRevisions[self.origin.absoluteString] ?? 0) else { replyHandler(self.error(), nil); return }
+                    let requiresOnline = lockRevision > self.onlineLockRevision
+                    let value: [String: Any]
+                    if requiresOnline { value = try await transport.freshContext(path: path) }
+                    else { value = try await transport.context(path: path) }
+                    let checked = value["onlineValidatedAt"] as? Double ?? 0
+                    guard !requiresOnline || value["offline"] as? Bool == false && abs(Date().timeIntervalSince1970 * 1000 - checked) <= 30_000,
+                          self.admissionRevision == revision, lockRevision == (Self.portableLockRevisions[self.origin.absoluteString] ?? 0),
+                          self.valid(body, frame: message.frameInfo), let lease = ReylumiLocalSession.verified(value, generation: transport.generation),
                           lease.authority == "portable", lease.scope == scope, lease.compatible(path: path),
                           lease.permitsPrivateReads, ![401, 403, 409, 503].contains(value["grantStatus"] as? Int ?? 0),
                           value["offlineState"] as? String != "unconfirmed",
@@ -130,7 +173,8 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
                     let resources = [("portable.pos.use", "portable.workspace"), ("portable.checkin.use", "portable.check-in"), ("portable.book.view", "portable.book"), ("portable.today.view", "portable.ticket"), ("portable.report.view", "portable.report")].filter { capabilities.contains($0.0) }.map { $0.1 }
                     let localCommands = (value["grant"] as? [String: Any])?["localCommands"] as? Bool == true
                     let operationKinds = Set([("portable.pos.use", "receipt"), ("portable.pos.use", "visit"), ("portable.checkin.use", "attendance"), ("portable.book.create", "booking")].filter { capabilities.contains($0.0) }.map { $0.1 })
-                    self.active = (scope, lease.expiresAt, transport.nonce, transport.scopeEpoch, resources, capabilities.contains("portable.checkin.use"), localCommands && descriptor["offlineEnabled"] as? Bool == true, operationKinds)
+                    self.active = (scope, lease.expiresAt, transport.nonce, transport.scopeEpoch, resources, capabilities.contains("portable.checkin.use"), localCommands && descriptor["offlineEnabled"] as? Bool == true, operationKinds, lockRevision)
+                    if requiresOnline { self.onlineLockRevision = lockRevision }
                     // A replaceable data-cache miss cannot prevent an online
                     // draft from committing to the separate durable vault.
                     let ready = (try? await self.offlineReady(scope: scope)) ?? false

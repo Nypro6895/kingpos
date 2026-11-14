@@ -100,3 +100,16 @@ test('late preparation cannot unlock after reset and a stale acquire cannot repl
   assert.equal(f.calls.at(-1).writerToken, 'new-token');
   assert.ok(f.calls.some(call => call.action === 'writer.release' && call.token === 'old-token'));
 });
+
+test('native Portable lock hides access without echoing another lock request', async () => {
+  let resolveLock;
+  const f = fixture({ reply: body => body.action === 'storage.lock' ? new Promise(resolve => { resolveLock = resolve; }) : { ok: true } });
+  await f.device.request({ action: 'storage.prepare', scope: 'salon:device' });
+  const locking = f.device.request({ action: 'storage.lock' });
+  f.fire('kingpos:native-portable-lock');
+  assert.throws(() => f.device.storage.get('draft'), /unlock POS Portable/);
+  assert.equal(f.calls.filter(call => call.action === 'storage.lock').length, 1);
+  resolveLock({ ok: true });
+  assert.equal((await locking).ok, true, 'the initiating native lock may acknowledge its own revocation event');
+  assert.throws(() => f.device.storage.get('draft'), /unlock POS Portable/);
+});

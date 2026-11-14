@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { WorkspaceText } from "@/components/workspace-language";
 import { iosPortableDevice } from "@/lib/portable-device-storage";
 import { preparePortableNativeStorage } from "@/lib/portable-native-client";
@@ -14,24 +14,29 @@ export function PortableNativeStorageBoundary({ scope, children, nativeExpected 
   const [result, setResult] = useState<{ scope: string; state: State }>({ scope, state: needsAdmission ? "checking" : "ready" });
   const [openedScope, setOpenedScope] = useState<string | null>(needsAdmission ? null : scope);
   const [attempt, setAttempt] = useState(0);
+  const lockedScope = useRef<string | null>(null);
   useEffect(() => {
     let active = true;
     let revoked = false;
     let expiry: ReturnType<typeof setTimeout> | undefined;
     const publish = (state: State) => { if (active) setResult({ scope, state }); };
-    const lock = () => { revoked = true; publish("locked"); };
-    const reset = () => { revoked = true; publish("checking"); setAttempt(value => value + 1); };
+    const lock = () => { lockedScope.current = scope; revoked = true; publish("locked"); };
+    const reset = () => { if (lockedScope.current === scope) return; revoked = true; publish("checking"); setAttempt(value => value + 1); };
     window.addEventListener("kingpos:portable-lock", lock);
+    window.addEventListener("kingpos:native-portable-lock", lock);
     window.addEventListener("reylumi:app-local-reset", reset);
     window.addEventListener("kingpos:native-writer-reset", reset);
-    if (iosPortableDevice()) publish("checking");
-    void preparePortableNativeStorage(scope).then(readiness => {
+    if (lockedScope.current === scope) publish("locked");
+    else {
+      if (iosPortableDevice()) publish("checking");
+      void preparePortableNativeStorage(scope).then(readiness => {
         if (!active || revoked) return;
         setOpenedScope(scope);
         publish("ready");
         if (readiness) expiry = setTimeout(() => publish("expired"), Math.max(0, Math.min(2_147_483_647, Date.parse(readiness.expiresAt) - Date.now())));
-    }).catch(() => { if (!revoked) publish("failed"); });
-    return () => { active = false; clearTimeout(expiry); window.removeEventListener("kingpos:portable-lock", lock); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("kingpos:native-writer-reset", reset); };
+      }).catch(() => { if (!revoked) publish("failed"); });
+    }
+    return () => { active = false; clearTimeout(expiry); window.removeEventListener("kingpos:portable-lock", lock); window.removeEventListener("kingpos:native-portable-lock", lock); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("kingpos:native-writer-reset", reset); };
   }, [scope, attempt]);
   const state = result.scope === scope ? result.state : "checking";
   const message = state === "checking" ? "Opening POS storage…" : state === "locked" ? "POS is locked. Your saved tickets remain on this iPad." : state === "expired" ? "Reconnect to renew this POS session. Your saved tickets remain on this iPad." : "Could not open device storage. Your saved tickets remain on this iPad.";

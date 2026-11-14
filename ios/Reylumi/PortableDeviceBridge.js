@@ -20,6 +20,7 @@
     const reply = await handler.postMessage({ ...input, ...(typeof receiptKey === 'string' ? { writerToken: writers.get(receiptKey) } : {}), version: 1, nonce, path: location.pathname + location.search + location.hash });
     if (!reply || reply.__portableError) throw failure(reply?.__portableError);
     if (requestedEpoch !== epoch && input.action !== 'mode.get' && input.action !== 'mode.set') {
+      if (input.action === 'storage.lock') return reply;
       // A late acquire must not overwrite a new document's token map. Release
       // only its exact native token; it cannot evict a newer owner's claim.
       if (input.action === 'writer.acquire' && reply.acquired === true && typeof reply.token === 'string') {
@@ -59,5 +60,6 @@
   window.addEventListener('kingpos:portable-lock', lock);
   window.addEventListener('reylumi:app-local-reset', invalidate);
   window.addEventListener('kingpos:native-writer-reset', invalidate);
+  window.addEventListener('kingpos:native-portable-lock', invalidate);
   window.addEventListener('pagehide', invalidate);
 })();
