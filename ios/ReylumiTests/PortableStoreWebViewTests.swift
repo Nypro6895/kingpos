@@ -176,10 +176,13 @@ private final class PortableVaultWKSession: NSObject, WKUIDelegate {
         self.bridge = bridge; self.handler = handler
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .nonPersistent()
+        // Match the bundled app's restricted custom-scheme execution policy.
+        config.limitsNavigationsToAppBoundDomains = true
         config.setURLSchemeHandler(handler, forURLScheme: ReylumiLocalBundle.scheme)
         config.preferences.javaScriptCanOpenWindowsAutomatically = true
         bridge.install(in: config)
         let web = WKWebView(frame: CGRect(x: 0, y: 0, width: 1024, height: 768), configuration: config)
+        XCTAssertTrue(web.configuration.limitsNavigationsToAppBoundDomains)
         self.web = web
         window = UIWindow(frame: web.frame)
         super.init()
