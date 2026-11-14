@@ -29,8 +29,17 @@ final class AppViewportTests: XCTestCase {
                 && (constraint.secondItem as? UILayoutGuide) === controller.view.safeAreaLayoutGuide
                 && constraint.secondAttribute == .bottom
         })
-        XCTAssertEqual(webView.configuration.userContentController.userScripts.count, 2)
-        for script in webView.configuration.userContentController.userScripts {
+        let scripts = webView.configuration.userContentController.userScripts
+        let expectedScripts = [
+            "AppViewport": "styles.dataset.reylumiAppViewport = ''",
+            "NativeBridge": "Object.defineProperty(window, '__reylumiNativePayments', {value: 1})",
+            "PortableDeviceBridge": "const handler = window.webkit?.messageHandlers?.portableDevice;"
+        ]
+        XCTAssertEqual(scripts.count, expectedScripts.count)
+        for (name, marker) in expectedScripts {
+            XCTAssertEqual(scripts.filter { $0.source.contains(marker) }.count, 1, "Expected exactly one bundled \(name) script")
+        }
+        for script in scripts {
             XCTAssertEqual(script.injectionTime, .atDocumentStart)
             XCTAssertTrue(script.isForMainFrameOnly)
         }
