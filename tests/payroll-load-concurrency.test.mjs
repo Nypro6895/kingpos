@@ -18,7 +18,7 @@ function fixture(source,{owner=true,failShop=false,delay=12}={}){
  loadStaffRows:()=>read('staff',staff),loadStaffPayrollSettings:()=>read('settings',settings),
  calculateLivePayrollForAuth:async(_auth,_period,seed={})=>{await Promise.all([seed.staffRows??deps.loadStaffRows(),seed.staffSettings??deps.loadStaffPayrollSettings(),seed.salonSetting??deps.loadSalonPayrollSetting()]);return read('live',live)},
  loadLatestPayrollSnapshot:()=>read('statement',null),loadPayrollServiceAnalytics:()=>read('analytics',{services:[]}),emptyPayrollServiceAnalytics:()=>({services:[]}),
- loadPayrollLiveHistory:()=>read('history',[{id:'event'}]),loadPayrollRecordedFacts:()=>read('recorded',{checks:[]}),compareLivePayrollToStatement:()=>({changed:false}),
+ loadPayrollLiveHistory:()=>read('history',[{id:'event'}]),loadPayrollRecordedFacts:()=>read('recorded',{checks:[]}),loadPayrollIssuedChecks:()=>read('issued',{status:'available',checks:[{id:'issued-check'}]}),compareLivePayrollToStatement:()=>({changed:false}),
  buildTaxCompanyLinesForAuth:async({live})=>({lines:live.lines,summary:{tax:50}}),getStaffPresentationsByStaffId:()=>read('presentations',new Map()),getPayrollPeriodOptions:()=>[],getPayrollScheduleSetup:()=>({}),latestSettingsWithStaff:()=>settings,getPayrollStatusView:()=>({kind:'live'}),isOwnerMembership:m=>m.role_code==='OWNER',
  };
  const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,exports={};new Function('exports',...Object.keys(deps),code)(exports,...Object.values(deps));
@@ -26,11 +26,15 @@ function fixture(source,{owner=true,failShop=false,delay=12}={}){
 }
 test('shared reads run once; canonical Payroll values equal the previous implementation',async()=>{
  const old=fixture(baseline,{delay:1}),next=fixture(current,{delay:1});
- const a=await old.run({includeAnalytics:false}),b=await next.run({includeAnalytics:false});const {shopMoney,...rest}=b;
- assert.deepEqual(rest,a);assert.equal(shopMoney,null);
+ const a=await old.run({includeAnalytics:false}),b=await next.run({includeAnalytics:false});const {shopMoney,issuedChecks,...rest}=b;
+ assert.deepEqual(rest,a);assert.equal(shopMoney,null);assert.deepEqual(issuedChecks,{status:'available',checks:[]});assert.equal(next.calls.some(x=>x.name==='issued'),false);
  for(const name of ['timezone','schedule','staff','settings'])assert.equal(next.calls.filter(x=>x.name===name).length,1,name);
  const liveAt=next.calls.find(x=>x.name==='live').at;
  for(const name of ['history','recorded','statement'])assert.ok(next.calls.find(x=>x.name===name).at<liveAt,name+' should start independently');
+});
+test('issued references load only when requested by the admitted salon Owner',async()=>{
+ const owner=fixture(current,{delay:1});assert.deepEqual((await owner.run({includeAnalytics:false,includeCheckReferences:true})).issuedChecks,{status:'available',checks:[{id:'issued-check'}]});assert.equal(owner.calls.filter(x=>x.name==='issued').length,1);
+ const manager=fixture(current,{owner:false,delay:1});assert.deepEqual((await manager.run({includeAnalytics:false,includeCheckReferences:true})).issuedChecks,{status:'available',checks:[]});assert.equal(manager.calls.some(x=>x.name==='issued'),false);
 });
 test('Shop preloads only for an authorized owner and failures stay explicit',async()=>{
  const owner=fixture(current,{delay:1});assert.deepEqual((await owner.run({includeAnalytics:false,includeShopMoney:true})).shopMoney,{data:owner.shop,error:null});

@@ -1,0 +1,63 @@
+BASIC PAGE LOADING — WAVE 2: MY PLACE, SERVICES, NOTIFICATIONS
+2026-11-13 America/Chicago. Implementation only; no deployment/native upload.
+
+SCOPE AND SOURCE
+
+Continue the owner's priority: fix ordinary whole-page loading before deeper My Pay, payroll or Tax work. Review why each original load exists and preserve its authority, editing and state transitions.
+
+Source: C:/Reylumi-worktrees/basic-page-loading-wave2-20261113, branch perf/basic-page-loading-wave2-20261113, based on Wave 1 commit 6b65ca8d7732cd13c042012892b82ab41ddb4082. Depends on basic-page-loading-20261113, which depends on the Forum candidate. Canonical dirty checkout and prior frozen candidates were not changed. This source is a scoped integration candidate, not the current production release baseline.
+
+INTENT, CHANGE AND IMPACT
+
+1. My Place
+Original account context already provides admitted user/workspace/salon rows. The route nevertheless awaited requests, phone inspection and owner invitations together before returning any page content. Those reads have real purposes: requests/invites control their actions; phone inspection supplies profile verification and precedes profile-dependent controls. They are not unnecessary data.
+
+Hosted route now returns the actual shared view from admitted context and streams those three optional results into small independent Suspense fragments. Real workspace search, known owner/staff rows, Details and original document workspace switching no longer wait for optional requests/invites/phone. Counts and request/invite rows wait for their real result; pending is not a settled empty list.
+
+Unknown phone inspection, including non-ok inspection results and thrown reads, is distinct from false verification. Profile-dependent controls stay withdrawn until inspection is known. An already mounted personal-profile editor is hidden and inert while verification is unknown, preserving its unsent draft for a successful retry. Initial unknown does not mount an editor. Request/invite failures show local retry and do not discard known workspace rows. Existing create/salon/activity/apply panels, request operations, locks, Save/Cancel and navigateToWorkspace remain.
+
+Native retains its original settled page.my-place reader and DTO, using a neutral bundled MyPlaceLoading frame until acceptance. This wave does not split native context/phone/request transport or claim the native workspace list appears before that composite read.
+
+2. Services
+The full workspace DTO intentionally includes view/manage authority, staff/add-on/booking readiness and the editor's source values. It remains necessary. The existing private catalog pilot and its disabled/default flags remain unchanged.
+
+ServicesManager now has an explicit unresolved state. Its real toolbar can render without an invented accepted DTO: pending disables form controls and hides catalog counts, empty-catalog/read-only claims, editor/drawers and save bar. Native keeps that manager mounted while the existing scoped page.services reader resolves; accepting a DTO enables the original view without replacing toolbar/query state. Background reads keep accepted data and existing drafts. Authoritative DTO data remains NonNullable; presentation null does not widen transport acceptance.
+
+Hosted leaf/loading/auth fallbacks use the same public-only pending manager before original admission/view permission/workspace reads complete. Cold hosted Suspense replaces its fallback with the loaded client; this is visual continuity, not permanent toolbar DOM identity across that replacement. Original context/view/manage gates still precede protected content/actions. Original editing, beforeunload/document-link discard confirmation, same-scope refresh, Save/Cancel, expected salon and scoped catalog invalidation remain. Saving is explicitly rejected while unresolved/no-manage, and Save all is disabled after manage permission loss.
+
+3. Notifications
+Original route awaited both the first feed page and pending action summary. Existing authorized client GET, scoped 15-second cache, pagination/window reconciliation, viewed events, focus/poll and retained Activity already own subsequent reads.
+
+Hosted now mounts the actual authenticated client in explicit pending mode and delegates the first feed to that existing GET/cache reader. The original pending summary streams independently into a bound action slot. Header/All/Unread remain available while the feed waits. No empty pending seed becomes current. Warm cache can satisfy an ordinary return without a duplicate first feed read. Summary internals still perform their original count/notification reads; this is not zero server notification reads.
+
+Tradeoff: cold feed starts after client hydration instead of its old SSR feed-list read. The change removes the full-page feed gate and supports existing warm-cache reuse; it does not establish lower total cold-feed latency. No total-latency percentage is claimed.
+
+Viewed metadata can patch/cache only an accepted current feed, preventing an external shell-viewed event from creating a fresh empty cache during a cold pending read. Request generations and scope/reset withdrawal reject late rows and old private action slots. No authenticated scope means no private seed, first GET or write. Authoritative denial still revokes the shared cache and invokes existing reauthorization/reload behavior; Retry cannot reopen a revoked scope. A new admitted source can recover separately. Mark all viewed keeps one POST and the existing refresh listener owns one subsequent GET.
+
+Native keeps the original composite page.notifications reader, showing a neutral frame while it waits. It does not mount a competing client GET. Accepted client is keyed by admitted scope. Native JSON metadata retains required settled feed/cursor/action fields and excludes deferred web-only presentation props.
+
+STATIC AND DYNAMIC DATA
+
+Titles, icons, labels, toolbar/frame structure and disabled pending controls are code bundled with the app. No server wait is needed to invent those structures. Already admitted My Place context can be reused within its current authority; it is not a permanent public/static copy.
+
+Workspace membership/roles, phone verification, invitations/requests, service values/permissions/readiness, notifications and action summaries remain dynamic, scoped and read through their existing authority. No service prices, role grants, invitation absence or zero notification list is hardcoded. Notifications keeps its existing 15-second/10-minute policy; no new durable private cache or freshness lease is introduced. There is no SQL, financial formula, POS/Portable, Tax no-store, My Pay or capability-policy change.
+
+FINAL VERIFICATION
+
+- 98/98 assembled targeted checks passed, zero failures/skips: actual My Place/Services/Notifications views and routes, native registry/read-engine integration, existing notification UI behavior and Wave 1 Forum/Settings/Scan/QR/Membership/Rewards/More/directory regressions. artifacts/basic-page-loading-wave2/targeted-tests.log.
+- Held-read tests verify search/header identity where the same actual client remains mounted; optional reader independence; no pending-empty cache; filter races; scoped late response/reset/revocation; polling while visible; pagination/cursors/reading anchor; exact document workspace handoff; dirty draft/Save/Cancel/navigation behavior; deep links and read/manage denial.
+- Native integration fixture executes actual registries and read/cache engine with view adapters. Actual-view draft/empty-seed/read ownership behavior is covered separately by focused view tests; it is not physical native acceptance.
+- Final production Next webpack build and TypeScript passed; offline manifest has 569 assets, 11,552,311 bytes. See artifacts/basic-page-loading-wave2/build.log and frozen handoff receipt. All 17 product/test input hashes stayed unchanged throughout final checks.
+- Safari16 native bundle verify-only: 403 pinned actions, 1007 modules, zero unsupported actions, assetsWritten:false. Future native distribution still requires a rebuilt bundle and appropriate assembled app build.
+- Scoped ESLint: 17 files, zero errors; one pre-existing Services dirty-effect __vt dependency warning. The original effect is byte-identical to base (1017 bytes, SHA256 080d86539886dfe4f11d0b4683a481849135a2b00ecbc2b7b3de226d7b8257c1). No new warning remains. CRLF-aware diff check passes.
+- Actual loopback Next QA: 13 route visits across Guest/Personal/Staff/Owner; final evidence artifacts/basic-page-loading-wave2/actual-qa-accepted/page-results.json and screenshots. Guest sign-in redirects and Staff Services -> original workspace-selection guard are expected, not bypassed access. These observations do not claim Tax Company or physical-device acceptance in this wave.
+- Independent cross-review identified and corrected same-user profile draft loss on phone-unknown refresh and cold Viewed-event false-empty caching; both have regression tests. No remaining confirmed blocker in this scoped patch.
+- Existing broader settings-all-children-runtime fixture fails in unchanged BookingSetupGuide before its Services case: app/settings/booking-setup-guide.tsx:31 expects setup.services, omitted by that test's Booking fixture at line49. It is recorded as a current fixture/source mismatch, not a passing whole-Settings test or proven baseline runtime result. No unrelated Booking edit was made.
+
+LIMITS AND HANDOFF
+
+Three additional page groups are implemented. This is not a whole-app completion percentage or proof that all loads are eliminated. Some changes retain actual clients; some only replace generic loading with safe route structure while necessary fresh/private data still loads. Initial admission/context latency remains intentional.
+
+Local exact-source preview: http://127.0.0.1:4361/my-place, registered to this chat; loopback synthetic QA auth/backend only, background dispatch disabled. Owner controls the viewer. Initial QA snapshots raced pending redirects/hydration; final run waits for the relevant guard/feed completion. Early harness observations are retained and are not used as accepted data/latency evidence.
+
+No deployment, production verification, native archive/upload, Safari/iOS device acceptance or real customer/financial transaction is claimed. Completion is needs-integration for web/iOS: freeze the exact scoped files/hashes, then assemble with Wave 1/Forum against the then-current production/native baseline and run release checks under the existing policy. Native bundled JS imports changed, so native distribution needs rebuilding/assessment during authorized release.

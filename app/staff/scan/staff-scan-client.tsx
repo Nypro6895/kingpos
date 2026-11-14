@@ -15,7 +15,7 @@ import styles from "./scan.module.css";
 
 const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
-export function StaffScanClient({ salonId, staffId, initial, initialError }: { salonId: string; staffId: string; initial: StaffScanWorkspace | null; initialError?: string }) {
+export function StaffScanClient({ salonId, staffId, initial, initialError, initialReadAt }: { salonId: string; staffId: string; initial: StaffScanWorkspace | null; initialError?: string; initialReadAt?: number }) {
   const [data, setData] = useState(initial);
   const [error, setError] = useState(initialError ?? "");
   const [scanError, setScanError] = useState("");
@@ -25,20 +25,24 @@ export function StaffScanClient({ salonId, staffId, initial, initialError }: { s
   const [editing, setEditing] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
   const [storageWarning, setStorageWarning] = useState("");
-  const loading = useRef(false), pending = useRef(false), epoch = useRef(0);
+  const loading = useRef<number | null>(null), pending = useRef(false), epoch = useRef(0);
+  const firstActivation = useRef(true), initialSnapshot = useRef({ data: initialError ? null : initial, readAt: initialReadAt });
   const closeCamera = useCallback(() => setCamera(false), []);
+  const reconcileDrafts = useCallback((workspace: StaffScanWorkspace) => {
+    const active = new Set(workspace.current.flatMap(ticket => ticket.offers.filter(o => o.staffId === workspace.staffId && ["working", "done"].includes(o.status)).map(o => o.id)));
+    setStorageWarning(reconcileStaffScanDrafts(salonId, workspace.staffId, active) ? "" : staffDraftStorageWarning);
+  }, [salonId]);
   const refresh = useCallback(async () => {
-    if (loading.current || !navigator.onLine) return;
-    loading.current = true;
+    if (loading.current === epoch.current || !navigator.onLine) return;
     const requestEpoch = epoch.current;
+    loading.current = requestEpoch;
     try {
       const result = await loadStaffScan({ salonId, staffId });
       if (requestEpoch !== epoch.current) return;
       if (!result.data) { setError(result.error ?? "Could not refresh Scan."); return; }
       setData(result.data); setError("");
       // Reconcile first, then drop drafts for settled/reassigned work. Never replay.
-      const active = new Set(result.data.current.flatMap(ticket => ticket.offers.filter(o => o.staffId === result.data!.staffId && ["working", "done"].includes(o.status)).map(o => o.id)));
-      setStorageWarning(reconcileStaffScanDrafts(salonId, result.data.staffId, active) ? "" : staffDraftStorageWarning);
+      reconcileDrafts(result.data);
       setEditing(current => {
         if (!current) return null;
         const ticket = result.data!.current.find(t => t.visitId === current);
@@ -46,12 +50,24 @@ export function StaffScanClient({ salonId, staffId, initial, initialError }: { s
         return null;
       });
     } catch { if (requestEpoch === epoch.current) setError("Reconnect to refresh. POS can still finish your saved work."); }
-    finally { loading.current = false; }
-  }, [salonId, staffId]);
+    finally { if (loading.current === requestEpoch) loading.current = null; }
+  }, [salonId, staffId, reconcileDrafts]);
   useEffect(() => {
     const connection = () => { setOnline(navigator.onLine); if (navigator.onLine) void refresh(); };
     const reset = () => { epoch.current++; setData(null); setEditing(null); setCamera(false); setError(""); setScanError(""); };
-    const initialTimer = setTimeout(connection, 0);
+    const seed = firstActivation.current ? initialSnapshot.current : null;
+    firstActivation.current = false;
+    initialSnapshot.current = { data: null, readAt: undefined };
+    // The server just loaded this seed through the original Staff guard. Reuse
+    // it once; Activity reveal, reconnect, realtime and polling still reconcile.
+    const initialTimer = setTimeout(() => {
+      setOnline(navigator.onLine);
+      // A prefetched response can be older by the time it mounts. Unknown,
+      // expired or clock-skewed seeds still take the original refresh path.
+      const age = seed?.readAt === undefined ? Infinity : Date.now() - seed.readAt;
+      if (seed?.data && Number.isFinite(age) && age >= 0 && age < 15_000) reconcileDrafts(seed.data);
+      else if (navigator.onLine) void refresh();
+    }, 0);
     const unsubscribe = subscribePosChanges(salonId, change => { if (["waiting", "tickets", "staff", "catalog"].includes(change.resource)) void refresh(); });
     const timer = setInterval(() => { if (document.visibilityState === "visible") void refresh(); }, 15000);
     window.addEventListener("online", connection); window.addEventListener("offline", connection);
@@ -62,7 +78,7 @@ export function StaffScanClient({ salonId, staffId, initial, initialError }: { s
       epoch.current++;
       clearTimeout(initialTimer); clearInterval(timer); unsubscribe(); window.removeEventListener("online", connection); window.removeEventListener("offline", connection); window.removeEventListener("reylumi:experience-reset", reset);
     };
-  }, [refresh, salonId]);
+  }, [refresh, salonId, reconcileDrafts]);
   async function connect(input: { visitId: string } | { code: string }) {
     if (pending.current || !online) return;
     pending.current = true; setBusy(true); setCamera(false); setError(""); setScanError(""); setNotice("");

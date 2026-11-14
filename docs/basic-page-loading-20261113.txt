@@ -1,0 +1,66 @@
+BASIC PAGE LOADING — SCAN QR AND ORDINARY PAGE FRAMES
+2026-11-13 America/Chicago. Implementation only; no deployment or native upload.
+
+USER SCOPE
+
+Prioritize basic whole-page loading similar to Forum, starting with Scan QR and comparable ordinary pages. Defer My Pay, payroll calculations, Tax correctness fixes and deeper financial/data-architecture work. Review the purpose of existing guards and read flows before changing them.
+
+SOURCE / INTEGRATION
+
+Isolated worktree C:/Reylumi-worktrees/basic-page-loading-20261113, based on a14389b (the previously validated Forum candidate). Canonical C:/Reylumi/kingpos and the frozen Forum candidate were not edited. This change depends on forum-tab-performance-20261112. Future release must integrate scoped patches against the then-current production baseline, not publish this whole checkout as a current release source.
+
+IMPLEMENTED ORDINARY GROUPS
+
+1. Staff Scan /staff/scan
+The leaf previously awaited Staff identity and the entire Scan workspace before returning its title/button. It now streams the existing neutral Scan frame through a leaf Suspense and route-specific loading fallback. The identical neutral frame may appear during the existing retained-page auth gate. It contains no identity, customer, code, camera or action capability. Original getStaffPortalIdentity and scoped loadStaffScan remain before the protected client.
+
+The successful authorized server seed receives an initialReadAt completion timestamp. Exactly the first activation can reuse it when its known age is 0–<15 seconds; missing/failed/old/future-clock seeds take the original refresh path. Same-scope draft reconciliation still runs. This is not a new authorization lease or a durable cache. Realtime/reconnect/poll and Activity reveal continue to read current work. An epoch-owned in-flight guard fixes a reproduced case where a hidden pending read prevented a fresh reveal read and its old finally could interfere with a new request.
+
+The existing client now owns ordinary reveal reconciliation without a duplicate full RSC refresh; generic 30-second auth validation is retained. The original online HTTPS exception, Staff binding, plugin availability, camera/decoder, connect/save/cancel, ticket revision, POS Submit and draft authority remain. This does not turn Scan into a newly bundled native route or promise zero document navigation in the installed app.
+
+2. Personal QR /qr
+A public-only frame with My QR / Personal ID / disabled Scan salon QR appears while the original user and workspace/catalog readers wait. Route-specific loading and the existing Activity reset/auth gate use the same safe frame; native named-read cold loading also shows it instead of generic Opening. No code or camera is shown before fresh accepted data. Existing query handoff, viewer+entry+visit+scan keys, unknown/secret reset policy, code expiry, idempotent check-in and all actions remain.
+
+This preserves a necessary fresh-capability load while avoiding a blank generic page. A cold Suspense fallback is replaced by the real client when ready: this is visual continuity, not a claim of permanent header DOM identity or faster RPCs.
+
+3. Membership /membership
+The exact public reading route has an explicit browse policy. Its existing public frame streams before mutable published plans/copy; no prices are hardcoded. Monthly/Annual state is retained on ordinary return. Original public RPCs and admin preview/default framed presentation remain. Secret/hash/action/unknown-child rules stay conservative. Authenticated shell validation still applies where required.
+
+4. Rewards /rewards
+The exact ordinary wallet route has an authenticated memory browsing policy. Its existing scoped named wallet hook already owns refresh/reconnect, epoch rejection, transient-error retention and reset; ordinary return does not also refresh the entire RSC tree. Server authorization and fresh balances/actions remain unchanged. Gift Cards is a mixed bearer/transfer/payment surface and was not switched to a blanket browsing policy.
+
+5. Installed More /more
+The actual menu can render from already admitted explicit workspace access flags while page.more checks the optional Campaign entitlement. Campaign remains absent until the resource accepts installed:true. Same read identity, command guards and original menu links remain. Missing/ambiguous access, unavailable scope, error or denial do not expose this early menu. Reset/new-account scope rejects a late previous result.
+
+6. Hosted Customers /customers
+The original actor, customers.view, management controls and timezone admission precede the actual toolbar. Only metrics/list/duplicates/pagination wait under a keyed Suspense. The search input and toolbar stay mounted while rows complete. Existing query/page arguments, merge forms and permissions remain; no dummy customer or total is shown. This is post-admission row streaming, not a claim that private initial admission is bypassed or that an installed cold DTO was split.
+
+7–8. Hosted Saved posts and Following
+/more/saved-post (including saved-designs alias) and /more/following render their original filter/search controls after user admission, with rows/pagination in keyed Suspense. Search text typed while rows wait survives their completion. Removal actions, source identifiers, pagination and legacy favorite-shop/favorite-customer redirects are preserved. Other More sections are not claimed optimized by this particular streaming change.
+
+DESIGN BOUNDARIES
+
+- pendingFallback is opt-in and public chrome only. The shared ExperiencePageBoundary still hides private children during reset/auth checks and waits for the original revision/grant outcomes. No global unknown policy is relaxed.
+- Resource, account, salon, period and permission identities are retained. No global cache rewrite, new SQL, financial formula, mutation retry or capability grant is introduced.
+- Existing POS/Portable lock/cart/outbox, Check Writer, Tax no-store and Payroll edit/navigation guards are outside this patch.
+- Published reference content can change; it is reconciled through its original readers. Operational/private values are not bundled as static data.
+
+VERIFICATION
+
+- Assembled focused suite: 63 tests passed, zero failures/skips, including new Scan/QR/pending-frame/native More/server streaming cases and existing Forum/Settings regressions. artifacts/basic-page-loading/targeted-tests.log.
+- Held real-page/component checks: neutral frames before identity/read; original rejection prevents private reads; disabled pending camera; reset/late-response isolation; seed age and Activity hide/reveal; actual menu before optional entitlement; real search/filter DOM survives row completion. Tests use real components/read engines with synthetic transports; they are not native-device evidence.
+- Full production Next webpack build and TypeScript passed. Offline manifest: 566 assets, 11,347,252 bytes. artifacts/basic-page-loading/build.log.
+- Scoped ESLint: zero errors/warnings; CRLF-aware diff check passed.
+- Safari16 native bundle verification: 403 pinned actions, 1006 modules, zero unsupported actions, assetsWritten:false. It verifies compatibility without replacing the frozen distributed bundle.
+- Actual local Next QA with synthetic accounts and loopback-only backend: 14 route visits across Guest/Personal/Staff/Owner, all HTTP 200 with no observed not-found/overflow/pageerror in the final recheck. Includes legacy redirects and Owner workspace selection. artifacts/basic-page-loading/actual-qa-recheck/page-results.json and screenshots.
+- Actual Scan comparison against a14389b on the same synthetic Staff/backend: after waiting for client hydration and observing the next 1,200 ms, extra scoped client read POSTs fell from 1 to 0. Both sources still perform the original server read. This measures one duplicate action request, not total DB queries or an end-to-end speed percentage. artifacts/basic-page-loading/actual-scan-comparison.json. The retained initial comparison before waiting for hydration observed 0/0 and is not used as evidence of a reduction.
+- Initial QA harness observed navigation aborts while document workspace handoff/legacy redirects were still pending. Recheck awaits the original document handoff and final alias target; all 14 visits completed. The first log remains as evidence; no product change was made to those redirects.
+- Existing standalone reward-wallet-ui.mjs still expects a More link while the unchanged Beauty summary says View all. Its fixture does not execute this patch's boundary/policy. This old assertion failure is recorded, not counted as passed or silently fixed. artifacts/basic-membership-rewards/existing-wallet-ui.log.
+
+LIMITS / NEXT ACCEPTANCE
+
+No whole-app improvement percentage is claimed. These eight groups have different changes: some avoid a redundant route/read, others make authorized/static chrome visible while their original data still loads. Do not equate regional loading with reduced server latency or universal retained DOM.
+
+Local QA Staff Scan is disabled by the synthetic salon's current feature state; that gate remains visible and correct. Camera permission/fallback and enabled-workspace cases are covered by actual-component synthetic tests, not physical camera QA. No hosted production, Safari/native-iOS installed build, physical iPhone, payment or real customer journey is accepted by this local work. A future native release must rebuild the bundle from the assembled source and evaluate/upload the required new app build through the existing release policy.
+
+Local exact-source dev preview: http://127.0.0.1:4359/staff/scan, registered to this chat. It uses isolated QA auth/data, not production. The owner controls whether the preview viewer is open.

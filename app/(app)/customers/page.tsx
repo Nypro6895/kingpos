@@ -8,15 +8,17 @@ import { formatCustomerDateTime as formatDateTime } from "@/lib/customer-date-ti
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import {
   getCurrentSalonCustomerList,
+  CUSTOMER_PERMISSIONS,
   type CustomerListItem,
   type CustomerListPagination,
 } from "@/lib/customers";
 import { AutomaticCustomerMerge } from "@/app/customers/automatic-customer-merge";
 import { DuplicateMergeForms } from "@/app/customers/duplicate-merge-forms";
-import { hasPermission } from "@/lib/permissions";
+import { hasPermission, requirePermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
+import { LoadingStatus } from "@/components/loading-feedback";
 
 type CustomersPageProps = {
   searchParams: Promise<{
@@ -227,17 +229,18 @@ function customerListHref({ page, q }: { page: number; q: string }) {
 }
 
 async function CustomersPage({ searchParams }: CustomersPageProps) {
-  const __vt = await getWorkspaceTranslation();
-
-  const { error, merged, page, q } = await searchParams;
-  await requireSalonManagePageContext("/customers");
-  const { context, customers, pagination } = await getCurrentSalonCustomerList({
-    page,
-    search: q,
-  });
-
-  const canManageCustomers = await hasPermission("customers.manage", context);
-  const timezone = await getContextBusinessTimezone(context);
+  const [{ error, merged, page, q }, context, __vt] = await Promise.all([
+    searchParams,
+    requireSalonManagePageContext("/customers"),
+    getWorkspaceTranslation(),
+  ]);
+  // Admit the actor and directory permission before rendering its real controls.
+  // Metrics/duplicate candidates belong to the rows, not the search toolbar.
+  await requirePermission(CUSTOMER_PERMISSIONS.view, context);
+  const [canManageCustomers, timezone] = await Promise.all([
+    hasPermission("customers.manage", context),
+    getContextBusinessTimezone(context),
+  ]);
 
   return (
     <main className="min-w-0 w-full px-4 py-4 sm:px-6 sm:py-6">
@@ -278,18 +281,26 @@ async function CustomersPage({ searchParams }: CustomersPageProps) {
       </WorkspaceToolbar>
 
       {merged !== undefined && <p role="status" className="py-2 text-sm">Merged {Number(merged) || 0} duplicate records.</p>}
-      {canManageCustomers && context.currentSalon && <AutomaticCustomerMerge salonId={context.currentSalon.id} />}
       <section>
-        <CustomerList
-          timezone={timezone}
-          canManageCustomers={canManageCustomers}
-          customers={customers}
-          pagination={pagination}
-          query={q?.trim() ?? ""}
-        />
+        <Suspense key={JSON.stringify([context.user.id, context.currentSalon.id, page ?? "", q ?? ""])} fallback={<LoadingStatus text="Loading customers…" />}>
+          <CustomerRows page={page} query={q} timezone={timezone} canManageCustomers={canManageCustomers} />
+        </Suspense>
       </section>
     </main>
   );
+}
+
+async function CustomerRows({ page, query, timezone, canManageCustomers }: {
+  page?: string;
+  query?: string;
+  timezone: string;
+  canManageCustomers: boolean;
+}) {
+  const { context, customers, pagination } = await getCurrentSalonCustomerList({ page, search: query });
+  return <>
+    {canManageCustomers && context.currentSalon && <AutomaticCustomerMerge salonId={context.currentSalon.id} />}
+    <CustomerList timezone={timezone} canManageCustomers={canManageCustomers} customers={customers} pagination={pagination} query={query?.trim() ?? ""} />
+  </>;
 }
 
 export default withExperiencePage(CustomersPage);

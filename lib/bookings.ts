@@ -1,4 +1,6 @@
 import "server-only";
+import { attachTicketFinancialSources } from "@/lib/pos-ticket-financial-sources";
+import { ticketFinancialView } from "@/lib/pos-ticket-financial-view";
 
 import {
   getCurrentBusinessContext,
@@ -616,7 +618,7 @@ function paymentStatusFromTotals(
 function buildTicketSummary(
   ticket: PosTicketWithRelations,
 ): BookingWorkspaceTicketSummary {
-  const totals = calculateTicketTotals({
+  const totals = ticketFinancialView(ticket,calculateTicketTotals({
     discountType: ticket.discount_type,
     discountValue: ticket.discount_value,
     items: ticket.ticket_items ?? [],
@@ -624,7 +626,7 @@ function buildTicketSummary(
     taxRate: ticket.tax_rate,
     tipType: ticket.tip_type,
     tipValue: ticket.tip_value,
-  });
+  })).totals;
 
   return {
     closedAt: ticket.closed_at,
@@ -1164,7 +1166,7 @@ export async function getCurrentSalonBookingWorkspace(
   ];
   const requestUsersById = await loadRequestUsers(supabase, userIds);
   const ticketsByBookingId = mapTicketsToBookings(
-    ticketsResult.data ?? [],
+    (await hasPermission("tickets.view",context)) || (await hasPermission("tickets.manage",context)) ? await attachTicketFinancialSources(supabase,salon.id,ticketsResult.data ?? []) : ticketsResult.data ?? [],
     loadedBookingRows,
   );
   const mappedBookings = mapBookings({

@@ -99,7 +99,7 @@ export function Section({
   children,
 }: {
   title: string;
-  count: number;
+  count: ReactNode;
   action?: ReactNode;
   children: ReactNode;
 }) {

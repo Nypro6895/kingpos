@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { readForum, writeForum } from "./actions";
@@ -10,6 +10,7 @@ import { ForumQuickCompose } from "./quick-compose";
 import { ForumDiscoveryCard } from "./discovery-card";
 import { ForumAvatar, ForumIcon } from "./forum-avatar";
 import { forumRelativeTime } from "@/lib/forum-presentation";
+import { createForumReadCache, forumReadCacheKey, type ForumListMode } from "@/lib/forum-read-cache";
 import { ContinuationFeed, ForumLoadMore } from "./continuation-feed";
 import { ForumCampaignSlot } from "@/components/explore-advertising";
 import { BlockUserButton } from "@/components/block-user-button";
@@ -18,6 +19,7 @@ const STATES = "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD M
 type View = "feed" | "sections" | "chat" | "saved" | "following" | "mine" | "topic" | "write" | "manage";
 type Moderation = { op: string; kind?: string; id: string; label: string };
 type Detail = { topic: ForumTopic; replies: ForumReply[] };
+const topicList = (view: View): view is ForumListMode => ["feed", "saved", "following", "mine"].includes(view);
 const time = (v: string) => new Date(v).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
 
@@ -26,6 +28,14 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
   const [view, setView] = useState<View>("feed");
   const [topics, setTopics] = useState(initialTopics.slice(0, 20));
   const [topicsMore, setTopicsMore] = useState(initialTopics.length > 20);
+  // This cache belongs to this mounted, authenticated Forum only. It never
+  // persists private forum reads or shares them with another account/scope.
+  const [topicCache] = useState(() => {
+    const cache = createForumReadCache<ForumTopic>();
+    cache.put(forumReadCacheKey({ mode: "feed" }), { rows: initialTopics.slice(0, 20), more: initialTopics.length > 20 }, cache.getEpoch());
+    return cache;
+  });
+  const [topicsKey, setTopicsKey] = useState(forumReadCacheKey({ mode: "feed" }));
   const [detail, setDetail] = useState<Detail | null>(null);
   const [messages, setMessages] = useState<ForumMessage[]>([]);
   const [reports, setReports] = useState<ForumReport[]>([]);
@@ -67,6 +77,8 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
   const draftLoaded = useRef(false);
   const menu = useRef<HTMLDetailsElement>(null);
   const profile = useRef<HTMLDetailsElement>(null);
+  const routeState = useRef({ view, topicId, section, focusReply });
+  useLayoutEffect(() => { routeState.current = { view, topicId, section, focusReply }; }, [view, topicId, section, focusReply]);
   useEffect(() => {
     const refs = [menu, profile];
     const outside = (event: PointerEvent) => refs.forEach(ref => {
@@ -83,18 +95,48 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
   const activeSections = context.sections.filter(x => !x.archived);
   const canModerate = context.can_moderate;
   const sectionName = (id: string) => context.sections.find(x => x.id === id)?.name ?? "Section";
+  const listKey = topicList(view) ? forumReadCacheKey({ mode: view, q: search, state, section, unanswered }) : "";
+  const listSnapshot = listKey ? topicCache.get(listKey) : undefined;
+  // A new tab must never paint the previous tab's rows, even before its effect
+  // starts. Warm tabs can use their own accepted snapshot immediately.
+  const visibleTopics = listKey && topicsKey !== listKey ? listSnapshot?.rows ?? [] : topics;
+  const visibleTopicsMore = listKey && topicsKey !== listKey ? listSnapshot?.more ?? false : topicsMore;
+  const reading = loading || Boolean(listKey && topicsKey !== listKey && !listSnapshot);
+  const serverContext = useRef(initialContext);
+  const privacyMarker = useRef<{ observed: boolean; value: string | null }>({ observed: false, value: null });
 
   useEffect(() => {
+    if (serverContext.current === initialContext) return;
+    request.current++; navigation.current++; topicCache.clear();
+    let alive = true;
+    queueMicrotask(() => {
+      if (!alive) return;
+      serverContext.current = initialContext;
+      setContext(initialContext); setTopics([]); setMessages([]); setDetail(null); setLoading(false);
+      setRevision(value => value + 1);
+    });
+    return () => { alive = false; };
+  }, [initialContext, topicCache]);
+
+  useLayoutEffect(() => {
+    const readMarker = () => { try { return localStorage.getItem("reylumi:block-change") ?? ""; } catch { return null; } };
     const refreshPrivacy = () => {
       request.current++; navigation.current++;
+      topicCache.clear(); firstLoad.current = false; seenTopic.current = "";
       setTopics([]); setMessages([]); setDetail(null);
       setPrivacyRevision(value => value + 1); setRevision(value => value + 1);
     };
-    const stored = (event: StorageEvent) => { if (event.key === "reylumi:block-change") refreshPrivacy(); };
-    window.addEventListener("reylumi:user-blocks-changed", refreshPrivacy);
+    const current = readMarker(), previous = privacyMarker.current;
+    // Activity removes listeners while hidden. Recheck the durable privacy
+    // marker before painting retained data; unavailable storage requires a read.
+    if (previous.observed && (current === null || previous.value === null || current !== previous.value)) refreshPrivacy();
+    privacyMarker.current = { observed: true, value: current };
+    const changed = () => { privacyMarker.current.value = readMarker(); refreshPrivacy(); };
+    const stored = (event: StorageEvent) => { if (event.key === "reylumi:block-change" || event.key === null) changed(); };
+    window.addEventListener("reylumi:user-blocks-changed", changed);
     window.addEventListener("storage", stored);
-    return () => { window.removeEventListener("reylumi:user-blocks-changed", refreshPrivacy); window.removeEventListener("storage", stored); };
-  }, [user]);
+    return () => { window.removeEventListener("reylumi:user-blocks-changed", changed); window.removeEventListener("storage", stored); };
+  }, [user, topicCache]);
 
   function quickCompose(id: string) {
     setEditingTopic(null);
@@ -103,29 +145,38 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
   }
 
   function navigate(next: View, id = "", nextSection = section) {
-    try { sessionStorage.setItem('forum-position:'+user+':'+(topicId || view), String(window.scrollY)); } catch {}
     if (menu.current) menu.current.open = false;
     if (profile.current) profile.current.open = false;
-    navigation.current++; seenTopic.current=""; restoredPosition.current="";
-    request.current++;
-    setFocusReply(""); if(next==="topic" && id!==topicId)setReply(""); setView(next); setTopicId(id); setError(""); setNotice(""); setLoading(false);
-    if (next === "topic") setDetail(null);
     const url = new URL(window.location.href);
     url.searchParams.delete("topic"); url.searchParams.delete("view"); url.searchParams.delete("reply");
     if (nextSection) url.searchParams.set("section", nextSection); else url.searchParams.delete("section");
     if (next === "topic") url.searchParams.set("topic", id);
     else if (next !== "feed") url.searchParams.set("view", next);
+    if (next === view && id === topicId && nextSection === section && !focusReply) {
+      // Query order and unrelated tracking parameters do not change this read.
+      if (url.href !== window.location.href) window.history.replaceState(null, "", url);
+      return;
+    }
+    try { sessionStorage.setItem('forum-position:'+user+':'+(topicId || view), String(window.scrollY)); } catch {}
+    navigation.current++; seenTopic.current=""; restoredPosition.current="";
+    request.current++;
+    setFocusReply(""); if(next==="topic" && id!==topicId)setReply(""); setView(next); setTopicId(id); setError(""); setNotice(""); setLoading(false);
+    if (next === "topic") setDetail(null);
     window.history.pushState(null, "", url); window.scrollTo({top:0, behavior:"instant"});
   }
 
   useEffect(() => {
     function restore() {
-      navigation.current++; request.current++; seenTopic.current=""; restoredPosition.current=""; setDetail(null); setReply("");
       const p = new URLSearchParams(window.location.search), id = p.get("topic"), v = p.get("view");
-      setSection(p.get("section") ?? ""); setFocusReply(/^[0-9a-f-]{36}$/i.test(p.get("reply") ?? "") ? p.get("reply")! : "");
-      if (id && /^[0-9a-f-]{36}$/i.test(id)) { setTopicId(id); setView("topic"); }
-      else if (["sections", "chat", "saved", "following", "mine", "write", "manage"].includes(v ?? "")) { setTopicId(""); setView(v as View); }
-      else { setTopicId(""); setView("feed"); }
+      const nextId = id && /^[0-9a-f-]{36}$/i.test(id) ? id : "";
+      const nextView: View = nextId ? "topic" : ["sections", "chat", "saved", "following", "mine", "write", "manage"].includes(v ?? "") ? v as View : "feed";
+      const nextSection = p.get("section") ?? "", nextReply = /^[0-9a-f-]{36}$/i.test(p.get("reply") ?? "") ? p.get("reply")! : "";
+      const current = routeState.current;
+      // Activity reattaches this effect on reveal. Restoring the same URL must
+      // not cancel the fresh read started by that reveal or clear its drafts.
+      if (current.view === nextView && current.topicId === nextId && current.section === nextSection && current.focusReply === nextReply) return;
+      navigation.current++; request.current++; seenTopic.current=""; restoredPosition.current=""; setDetail(null); setReply("");
+      setSection(nextSection); setFocusReply(nextReply); setTopicId(nextId); setView(nextView);
     }
     let alive = true;
     window.addEventListener("popstate", restore);
@@ -153,6 +204,7 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
 
   useEffect(() => {
     const seq = ++request.current; pagePending.current=false;
+    const epoch = topicCache.getEpoch();
     let canceled = false;
     if (["write", "sections"].includes(view)) return;
     if (view === "manage" && !canModerate) return;
@@ -161,24 +213,37 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
     async function load() {
     await Promise.resolve();
     if (canceled) return;
+    if (listKey) {
+      const saved = topicCache.get(listKey);
+      if (saved?.fresh) {
+        setTopics(saved.rows); setTopicsMore(saved.more); setTopicsKey(listKey); setLoading(false); setError("");
+        return;
+      }
+    }
     let mode: string = view === "topic" ? "topic" : view === "manage" ? panel : view;
     if (mode === "sections") mode = "context";
     if (view === "manage" && panel === "sections") { void refreshContext().catch(e => setError(e.message)); return; }
     setLoading(true); setError("");
     void readForum({ mode, id: topicId, reply_id: focusReply, q: view === "manage" ? "" : search, state: view === "manage" ? "" : state, section: view === "manage" ? "" : section, unanswered: view === "manage" ? false : unanswered }).then(response => {
-      if (canceled || seq !== request.current) return;
-      if (response.error) { setError(response.error); return; }
+      if (canceled || seq !== request.current || epoch !== topicCache.getEpoch()) return;
+      // Read errors currently do not distinguish revoked access from temporary
+      // outages. Fail closed rather than retain a now-unauthorized snapshot.
+      if (response.error) { topicCache.clear(); setTopics([]); setTopicsKey(listKey); setMessages([]); setDetail(null); setError(response.error); return; }
       if (view === "topic") { const d = response.data as Detail; setReplyMore(d.replies.length > 30); setDetail({ ...d, replies: d.replies.slice(0, 30) }); }
       else if (view === "chat") { const m = response.data as ForumMessage[]; setChatMore(m.length > 40); setMessages(m.slice(-40)); setChatHistory(false); }
       else if (view === "manage" && panel === "reports") setReports(response.data as ForumReport[]);
       else if (view === "manage" && panel === "restrictions") setRestrictions(response.data as ForumRestriction[]);
       else if (view === "manage" && panel === "audit") setAudit(response.data as ForumAudit[]);
-      else { const rows = response.data as ForumTopic[]; setTopics(rows.slice(0, 20)); setTopicsMore(rows.length > 20); }
-    }).catch(() => { if (seq === request.current) setError("Unable to load forum. Please retry."); }).finally(() => { if (seq === request.current) setLoading(false); });
+      else {
+        const rows = response.data as ForumTopic[], next = { rows: rows.slice(0, 20), more: rows.length > 20 };
+        if (listKey && !topicCache.put(listKey, next, epoch)) return;
+        setTopics(next.rows); setTopicsMore(next.more); setTopicsKey(listKey);
+      }
+    }).catch(() => { if (seq === request.current && !canceled) { topicCache.clear(); setTopics([]); setTopicsKey(listKey); setMessages([]); setDetail(null); setError("Unable to load forum. Please retry."); } }).finally(() => { if (seq === request.current && !canceled) setLoading(false); });
     }
     void load();
     return () => { canceled = true; };
-  }, [view, topicId, focusReply, search, state, section, unanswered, panel, revision, canModerate, refreshContext]);
+  }, [view, topicId, focusReply, search, state, section, unanswered, panel, revision, canModerate, refreshContext, listKey, topicCache]);
 
   // Chat is the only live surface. No background sockets or polling on other pages.
   useEffect(() => {
@@ -187,11 +252,11 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
     async function poll() {
       if (document.visibilityState !== "visible" || running) return;
       running = true;
-      const started = navigation.current;
+      const started = navigation.current, epoch = topicCache.getEpoch();
       try {
         const response = await readForum({ mode: "chat" });
-        if (!alive || started !== navigation.current) return;
-        if (response.error) { setError(response.error); return; }
+        if (!alive || started !== navigation.current || epoch !== topicCache.getEpoch()) return;
+        if (response.error) { topicCache.clear(); setTopics([]); setDetail(null); setMessages([]); setError(response.error); return; }
         const rows = response.data as ForumMessage[];
         setMessages(rows.slice(-40)); setChatMore(rows.length > 40);
       } catch { if (alive) setError("Connection interrupted. Chat will retry automatically."); }
@@ -200,7 +265,7 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
     const timer = setInterval(() => void poll(), 12000);
     document.addEventListener("visibilitychange", poll);
     return () => { alive = false; clearInterval(timer); document.removeEventListener("visibilitychange", poll); };
-  }, [view, chatHistory]);
+  }, [view, chatHistory, topicCache]);
 
   async function mutate(input: ForumInput, success: string) {
     if (busy) return null;
@@ -208,6 +273,7 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
     try {
       const response = await writeForum(input);
       if (response.error) { setError(response.error); return null; }
+      topicCache.invalidate(); request.current++;
       setNotice(success); setRevision(n => n + 1);
       if (["restrict", "unrestrict", "section_save", "section_move"].includes(String(input.op))) await refreshContext();
       return response.data;
@@ -222,6 +288,7 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
       {!deleted && <button onClick={() => setModeration({ op: "report", kind, id, label: "Report content" })}>Report</button>}
       {!deleted && author && author !== user && <BlockUserButton userId={author} label="Block user" onBlocked={() => {
         request.current++; navigation.current++;
+        topicCache.clear();
         setTopics(rows => rows.filter(row => row.author_id !== author));
         setMessages(rows => rows.filter(row => row.author_id !== author));
         if (detail?.topic.author_id === author) { setDetail(null); navigate("feed"); }
@@ -251,36 +318,44 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
     if (!detail || followPending.current) return;
     followPending.current=true; setBusy(true); const id=detail.topic.id, enabled=!detail.topic.following;
     try { const result=await writeForum({op:"follow",id,enabled}); if(result.error) setError(result.error);
-      else setDetail(old=>old?.topic.id===id ? {...old,topic:{...old.topic,following:enabled}} : old);
+      else { topicCache.invalidate(); request.current++; setRevision(value => value + 1); setDetail(old=>old?.topic.id===id ? {...old,topic:{...old.topic,following:enabled}} : old); }
     } catch { setError("Không lưu được lựa chọn theo dõi. Vui lòng thử lại."); }
     finally { followPending.current=false;setBusy(false); }
   }
   useEffect(()=>{
     if(view!=="topic" || !detail || loading || detail.topic.id!==topicId) return;
-    if(seenTopic.current!==topicId) { seenTopic.current=topicId; void writeForum({op:"seen",id:topicId}).catch(()=>{}); }
+    if(seenTopic.current!==topicId) {
+      seenTopic.current=topicId;
+      const id=topicId, epoch=topicCache.getEpoch();
+      void writeForum({op:"seen",id}).then(result=>{
+        if(result.error) return;
+        const markRead=(row:ForumTopic)=>row.id===id ? {...row,unread_replies:0} : row;
+        if(topicCache.mapRows(markRead,epoch)) setTopics(rows=>rows.map(markRead));
+      }).catch(()=>{});
+    }
     const restoreKey=topicId+":"+focusReply; if(restoredPosition.current===restoreKey)return;restoredPosition.current=restoreKey;
     const target=focusReply ? document.getElementById('forum-reply-'+focusReply) : null;
     if(target) { target.scrollIntoView({block:"center"}); return; }
     try { const offset=Number(sessionStorage.getItem('forum-position:'+user+':'+topicId)); if(offset>0) window.scrollTo({top:offset,behavior:"instant"}); } catch {}
-  },[view,topicId,detail?.topic.id,loading,focusReply,user]);
+  },[view,topicId,detail?.topic.id,loading,focusReply,user,topicCache]);
 
   async function moreTopics() {
-    if (busy || loading || pagePending.current) return;
-    const last = topics.at(-1); if (!last) return;
-    pagePending.current=true; setLoading(true); const seq = request.current;
-    try { const r = await readForum({ mode: view === "manage" ? "removed" : view, q: view === "manage" ? "" : search, state: view === "manage" ? "" : state, section: view === "manage" ? "" : section, unanswered: view === "manage" ? false : unanswered, before: last.created_at, cursor_id: last.id, before_pinned: last.pinned }); if (seq !== request.current) return; if (r.error) setError(r.error); else { const rows = r.data as ForumTopic[]; setTopics(old => [...old, ...rows.slice(0, 20)]); setTopicsMore(rows.length > 20); } }
+    if (busy || reading || pagePending.current) return;
+    const last = visibleTopics.at(-1); if (!last) return;
+    pagePending.current=true; setLoading(true); const seq = request.current, epoch = topicCache.getEpoch();
+    try { const r = await readForum({ mode: view === "manage" ? "removed" : view, q: view === "manage" ? "" : search, state: view === "manage" ? "" : state, section: view === "manage" ? "" : section, unanswered: view === "manage" ? false : unanswered, before: last.created_at, cursor_id: last.id, before_pinned: last.pinned }); if (seq !== request.current || epoch !== topicCache.getEpoch()) return; if (r.error) { topicCache.clear(); setTopics([]); setTopicsKey(listKey); setError(r.error); } else { const rows = r.data as ForumTopic[], known = new Set(visibleTopics.map(row => row.id)), next = { rows: [...visibleTopics, ...rows.slice(0, 20).filter(row => !known.has(row.id))], more: rows.length > 20 }; if (listKey) topicCache.put(listKey, { ...next, updatedAt: topicCache.get(listKey)?.updatedAt }, epoch); setTopics(next.rows); setTopicsKey(listKey); setTopicsMore(next.more); } }
     finally { if (seq === request.current) { pagePending.current=false; setLoading(false); } }
   }
   async function olderChat() {
     if (!messages[0] || loading) return;
-    setLoading(true); const seq = request.current;
-    try { const r = await readForum({ mode: "chat", before_id: messages[0].id }); if (seq !== request.current) return; if (r.error) setError(r.error); else { const a = r.data as ForumMessage[]; setMessages(old => [...a.slice(-40), ...old]); setChatMore(a.length > 40); setChatHistory(true); } }
+    setLoading(true); const seq = request.current, epoch = topicCache.getEpoch();
+    try { const r = await readForum({ mode: "chat", before_id: messages[0].id }); if (seq !== request.current || epoch !== topicCache.getEpoch()) return; if (r.error) { topicCache.clear(); setMessages([]); setError(r.error); } else { const a = r.data as ForumMessage[]; setMessages(old => [...a.slice(-40), ...old]); setChatMore(a.length > 40); setChatHistory(true); } }
     finally { if (seq === request.current) setLoading(false); }
   }
   async function moreReplies() {
     const last = detail?.replies.at(-1); if (!last || loading) return;
-    setLoading(true); const seq = request.current;
-    try { const r = await readForum({ mode: "topic", id: topicId, after: last.created_at, cursor_id: last.id }); if (seq !== request.current) return; if (r.error) setError(r.error); else { const d = r.data as Detail; setReplyMore(d.replies.length > 30); setDetail(old => old ? { ...d, replies: [...old.replies, ...d.replies.slice(0, 30)] } : d); } }
+    setLoading(true); const seq = request.current, epoch = topicCache.getEpoch();
+    try { const r = await readForum({ mode: "topic", id: topicId, after: last.created_at, cursor_id: last.id }); if (seq !== request.current || epoch !== topicCache.getEpoch()) return; if (r.error) { topicCache.clear(); setDetail(null); setError(r.error); } else { const d = r.data as Detail; setReplyMore(d.replies.length > 30); setDetail(old => old ? { ...d, replies: [...old.replies, ...d.replies.slice(0, 30)] } : d); } }
     finally { if (seq === request.current) setLoading(false); }
   }
 
@@ -310,10 +385,10 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
     </div>
     {showSearch && <div className={s.searchPanel}><div className={s.search}><input autoFocus type="search" aria-label="Search forum" placeholder="Tìm trong diễn đàn…" value={query} maxLength={150} onChange={e=>{setQuery(e.target.value);if(view==="topic")navigate("feed");}}/></div><div className={s.filters}><select aria-label="State" value={state} onChange={e=>setState(e.target.value)}><option value="">Tất cả tiểu bang</option>{STATES.map(x=><option key={x}>{x}</option>)}</select><label><input type="checkbox" checked={unanswered} onChange={e=>setUnanswered(e.target.checked)}/>Chưa có trả lời</label></div></div>}
     {context.restriction && <div className={s.warning}>Your {context.restriction.scope === "all" ? "forum participation" : context.restriction.scope} is restricted{context.restriction.expires_at ? ` until ${time(context.restriction.expires_at)}` : " until further notice"}. {context.restriction.reason} <Link href="/support">Contact support</Link></div>}
-    {error && <div className={s.warning} role="alert">{error} <button onClick={() => setRevision(n => n + 1)}>Retry loading</button></div>}
+    {error && <div className={s.warning} role="alert">{error} <button onClick={() => { if (listKey) topicCache.invalidate(listKey); setRevision(n => n + 1); }}>Retry loading</button></div>}
     {notice && <p className={s.notice} role="status">{notice}</p>}
-    {loading && <p className={s.loading} role="status">Loading…</p>}
-    {["feed","saved","following","mine"].includes(view) && <><div aria-busy={loading}>{topics.map((topic,index)=><Fragment key={topic.id}>{topicRow(topic)}{view==="feed"&&<ForumQuickCompose sections={activeSections} postIndex={index+1} onCompose={quickCompose}/>}<ForumCampaignSlot postIndex={index+1}/><ForumDiscoveryCard sections={activeSections.filter(x=>x.id!==section)} postIndex={index+1} onSelect={id=>{setSection(id);navigate("feed","",id);}}/></Fragment>)}</div>{!topics.length&&!loading&&<div className={s.empty}><h2>{view==="following"?"Chưa có bài đang follow":"Chưa có bài viết"}</h2><p>{view==="following"?"Mở một bài và chọn Follow this post. Bài bạn đăng hoặc đã trả lời cũng xuất hiện ở đây.":"Chia sẻ câu chuyện của bạn hoặc thử bỏ bộ lọc."}</p></div>}{topicsMore&&<ForumLoadMore enabled={!loading&&!error} load={()=>void moreTopics()}><button disabled={loading} onClick={moreTopics}>Xem thêm bài viết</button></ForumLoadMore>}</>}
+    {reading && <p className={s.loading} role="status">Loading…</p>}
+    {["feed","saved","following","mine"].includes(view) && <><div aria-busy={reading}>{visibleTopics.map((topic,index)=><Fragment key={topic.id}>{topicRow(topic)}{view==="feed"&&<ForumQuickCompose sections={activeSections} postIndex={index+1} onCompose={quickCompose}/>}<ForumCampaignSlot postIndex={index+1}/><ForumDiscoveryCard sections={activeSections.filter(x=>x.id!==section)} postIndex={index+1} onSelect={id=>{setSection(id);navigate("feed","",id);}}/></Fragment>)}</div>{!visibleTopics.length&&!reading&&<div className={s.empty}><h2>{view==="following"?"Chưa có bài đang follow":"Chưa có bài viết"}</h2><p>{view==="following"?"Mở một bài và chọn Follow this post. Bài bạn đăng hoặc đã trả lời cũng xuất hiện ở đây.":"Chia sẻ câu chuyện của bạn hoặc thử bỏ bộ lọc."}</p></div>}{visibleTopicsMore&&<ForumLoadMore enabled={!reading&&!error} load={()=>void moreTopics()}><button disabled={reading} onClick={moreTopics}>Xem thêm bài viết</button></ForumLoadMore>}</>}
     {view === "sections" && <div className={s.sections}>{activeSections.map(x => <button key={x.id} onClick={() => { setSection(x.id); navigate("feed"); }}><span><strong>{x.name}</strong><small>{x.description}</small></span><span>→</span></button>)}</div>}
     {view === "write" && <form className={s.compose} onSubmit={submitPost}><div className={s.row}><h2>{editingTopic ? "Edit topic" : "New topic"}</h2><button type="button" onClick={() => navigate("feed")}>Back</button></div><p className={s.meta}>Draft text is saved for this browser session.</p><label>Title<input required minLength={5} maxLength={180} value={draft.title} onChange={e => setDraft({ ...draft, title: e.target.value })} placeholder="What would you like to share?" /></label><div className={s.pickers}><label>Section<select disabled={Boolean(editingTopic)} required value={draft.section} onChange={e => setDraft({ ...draft, section: e.target.value })}>{activeSections.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label><label>State<select disabled={Boolean(editingTopic)} value={draft.state} onChange={e => setDraft({ ...draft, state: e.target.value })}><option value="">Nationwide</option>{STATES.map(x => <option key={x}>{x}</option>)}</select></label></div><label>Content<textarea required maxLength={20000} rows={9} value={draft.body} onChange={e => setDraft({ ...draft, body: e.target.value })} placeholder="Your experience could help another salon owner…" /></label><p className={s.meta}>Never include customer contact details, payroll records or other private information.</p><button className={s.primary} disabled={busy}>{busy ? "Saving…" : editingTopic ? "Save changes" : "Publish topic"}</button></form>}
     {view === "topic" && detail?.topic.id === topicId && <><article className={s.detail}><div className={s.row}><span className={s.category}>{sectionName(detail.topic.section_id)} · {detail.topic.state ?? "Nationwide"}</span>{controls("topic", detail.topic.id, detail.topic.author_id, Boolean(detail.topic.deleted_at), detail.topic)}</div><h2>{detail.topic.title}</h2><div className={s.meta}><ForumAvatar src={detail.topic.author_avatar}/>{detail.topic.author_name} · {time(detail.topic.created_at)}</div><p className={s.body}>{detail.topic.body}</p><button className={s.followPost} aria-pressed={Boolean(detail.topic.following)} disabled={busy} onClick={()=>void followPost()}>{detail.topic.following ? "Following this post" : "Follow this post"}</button>{detail.topic.locked && <p className={s.meta}>Thảo luận đã khóa</p>}</article><h3>Bình luận · {detail.replies.length}{replyMore?"+":""}</h3>{focusReply && <button onClick={()=>{setFocusReply("");const u=new URL(window.location.href);u.searchParams.delete("reply");window.history.replaceState(null,"",u);setRevision(n=>n+1);}}>Xem từ bình luận đầu</button>}{detail.replies.map(x => <article className={`${s.reply} ${x.deleted_at ? s.deleted : ""}`} key={x.id} id={"forum-reply-"+x.id} data-unread={focusReply===x.id || undefined}><div className={s.row}><div className={s.meta}><ForumAvatar src={x.author_avatar}/>{x.author_name} · {time(x.created_at)}</div>{controls("reply", x.id, x.author_id, Boolean(x.deleted_at))}</div><p className={s.body}>{x.body}</p>{x.deleted_at && <span className={s.meta}>Deleted · visible to moderators</span>}</article>)}{replyMore && <button disabled={loading} onClick={moreReplies}>More replies →</button>}{!detail.topic.locked && !detail.topic.deleted_at && <form className={s.replyForm} onSubmit={async e => { e.preventDefault(); const started=navigation.current, body=reply; if (await mutate({ op: "reply", id: topicId, body }, "Reply posted.") && navigation.current===started) setReply(current=>current===body?"":current); }}><label><span className={s.srOnly}>Reply as {context.display_name}</span><textarea placeholder="Viết bình luận…" required maxLength={10000} rows={1} value={reply} onChange={e => setReply(e.target.value)} /></label><button className={s.primary} disabled={busy}>Gửi</button></form>}{!replyMore && !detail.topic.deleted_at && <ContinuationFeed key={topicId+":"+privacyRevision} topicId={topicId} renderTopic={topicRow} renderDiscovery={index=><><ForumQuickCompose sections={activeSections} postIndex={index} onCompose={quickCompose}/><ForumDiscoveryCard sections={activeSections.filter(x=>x.id!==detail.topic.section_id)} postIndex={index} onSelect={id=>{setSection(id);navigate("feed","",id);}}/></>}/>}</>}

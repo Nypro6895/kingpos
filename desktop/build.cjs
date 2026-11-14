@@ -25,7 +25,7 @@ await build({ targets: Platform.WINDOWS.createTarget(['nsis'], Arch.x64), config
   electronDist: process.env.KINGPOS_ELECTRON_DIST || undefined,
   appId: release || online ? 'com.kingpos.portable' : 'com.kingpos.portable.test', productName: release || online ? 'KingPOS Portable' : 'KingPOS Portable Test',
   directories: { output: process.env.KINGPOS_DESKTOP_BUILD_DIR || 'dist', buildResources: 'build' },
-  files: ['checkin-receipt.cjs','main.cjs','preload.cjs','display-preload.cjs','policy.cjs','vault.cjs','offline-shell.cjs','update-plan.cjs','config.json','unavailable.html','unavailable.js','package.json'],
+  files: ['checkin-receipt.cjs','main.cjs','preload.cjs','display-preload.cjs','policy.cjs','vault.cjs','offline-shell.cjs','update-plan.cjs','update-installer.cjs','config.json','unavailable.html','unavailable.js','package.json'],
   asar: true, artifactName: '${productName}-Setup-${version}.${ext}',
   forceCodeSigning: release,
   win: { target: 'nsis', icon: 'build/icon.ico', signtoolOptions: release ? { publisherName: config.publisher } : undefined, verifyUpdateCodeSignature: release, signExecutable: release },

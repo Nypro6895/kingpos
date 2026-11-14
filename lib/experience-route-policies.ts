@@ -67,7 +67,18 @@ export function getExperienceRoutePolicy(href: string, kind: "page" | "handler" 
   if (/^\/(?:terms|privacy|legal|community|business-terms|help)$/.test(path)) return browse("legal", false, 60 * 60_000, 24 * 60 * 60_000);
   if (path === "/contact-support") return none("support-form");
   if (path.startsWith("/help/")) return browse("legal", false, 60 * 60_000, 24 * 60 * 60_000);
+  // Published membership copy/plans remain mutable public reference data.
+  if (path === "/membership") return browse("membership", false, 60_000);
+  // The wallet owns authorized return/reconnect reads; revealing its frame
+  // must not also refresh the entire server-rendered page.
+  if (path === "/rewards") return { ...browse("rewards", true), revalidateOnShow: false };
   if (path === "/") return browse("home", true);
+  if (path === "/forum") {
+    // Reading tabs load their own data through the original authorized RPCs.
+    // Compose and management keep their existing action-state reset boundary.
+    return url.searchParams.getAll("view").some(view => view === "write" || view === "manage")
+      ? none("forum-action", true) : browse("forum", true);
+  }
   if (/^\/explore\/favorites(?:\/|$)/.test(path)) return browse("favorites", true);
   if (/^\/explore\/beauty(?:\/|$)/.test(path) && url.searchParams.has("customerId")) return browse("beauty-relationship", true);
   if (/^\/explore(?:\/|$)/.test(path)) return browse("explore", false, 30_000, 30 * 60_000);

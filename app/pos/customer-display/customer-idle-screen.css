@@ -17,3 +17,11 @@
 .customer-idle-default .customer-idle-custom-copy{flex:none}
 .customer-idle-hero:has(.customer-idle-begin){display:grid;grid-template-rows:minmax(0,1fr) auto}
 .customer-idle-hero .customer-idle-begin{position:static;justify-self:start;margin:16px 24px 24px}
+.customer-gift-toolbar{left:auto;right:76px;max-width:calc(100% - 96px)}
+.customer-display-kiosk-surface:has(>.customer-gift-toolbar){padding-top:84px}
+.customer-display-kiosk-surface:has(>.customer-gift-toolbar)>.customer-display-auto-scale{display:flex;flex-direction:column}
+.customer-display-kiosk-surface:has(>.customer-gift-toolbar)>.customer-display-auto-scale>:last-child{flex:1;min-height:0;height:0}
+.customer-gift-toolbar .customer-gift-card{height:auto;flex-direction:row;align-items:center;gap:20px;padding:6px 14px;border-radius:12px}
+.customer-gift-toolbar .customer-gift-summary{gap:8px}.customer-gift-toolbar .customer-gift-summary h2{font-size:16px;white-space:nowrap}.customer-gift-toolbar .customer-gift-summary p{display:none}
+.customer-gift-toolbar .gc-gift-icon{width:28px;height:28px;padding:0;border-radius:0;background:transparent}.customer-gift-toolbar .customer-gift-actions{gap:12px}.customer-gift-toolbar .customer-gift-actions button{font-size:14px!important}
+@media(max-width:560px){.customer-gift-toolbar{position:absolute;top:12px;right:64px;left:auto;margin:0;max-width:calc(100% - 76px)}.customer-gift-toolbar .customer-gift-card{padding:4px 8px;gap:10px}.customer-gift-toolbar .customer-gift-summary h2{display:none}.customer-gift-toolbar .gc-gift-icon{width:24px;height:24px}.customer-gift-toolbar .customer-gift-actions{gap:8px}.customer-gift-toolbar .customer-gift-actions button{font-size:12px!important}.customer-gift-toolbar .customer-gift-actions button+button{padding-left:8px!important}}

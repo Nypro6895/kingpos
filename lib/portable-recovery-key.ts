@@ -1,3 +1,5 @@
+import { iosPortableDevice, portableDevice } from "./portable-device-storage";
+
 const PREFIX = "kingpos:portable-draft:v1:";
 
 export function isNativePortableDevice(): boolean {
@@ -6,11 +8,12 @@ export function isNativePortableDevice(): boolean {
 }
 
 /** Browser tabs stay independent; an installed app must survive a new WebView. */
-export function portableRecoveryStorageKey({ scope, operationScope, tabId, desktop, native, storage }: {
-  scope: string; operationScope?: string; tabId: string; desktop: boolean; native: boolean;
+export function portableRecoveryStorageKey({ scope, operationScope, tabId, desktop, native, durableNative = false, storage }: {
+  scope: string; operationScope?: string; tabId: string; desktop: boolean; native: boolean; durableNative?: boolean;
   storage: Pick<Storage, "getItem" | "setItem">;
 }) {
   if (desktop && operationScope) return PREFIX + operationScope + ":desktop";
+  if (durableNative && operationScope) return PREFIX + operationScope + ":native-device";
   const legacy = PREFIX + scope + ":" + tabId;
   if (!native) return legacy;
   const slot = "kingpos:portable-native-recovery:v1:" + scope;
@@ -25,6 +28,19 @@ export function portableRecoveryStorageKey({ scope, operationScope, tabId, deskt
 
 /** Native windows sharing a recovery slot must not overwrite each other's work. */
 export async function acquirePortableRecoveryWriter(key: string): Promise<(() => void) | null> {
+  const native = iosPortableDevice();
+  if (native && portableDevice()) {
+    const scope = key.slice(PREFIX.length).split(":").slice(0, 2).join(":");
+    const reply = await native.request<{ acquired: boolean; token?: string }>({ action: "writer.acquire", scope, key });
+    if (!reply.acquired) return null;
+    if (!reply.token) throw new Error("Unable to confirm this POS window's draft storage.");
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      void native.request({ action: "writer.release", key, token: reply.token }).catch(() => {});
+    };
+  }
   if (!navigator.locks) return null;
   return new Promise(resolve => {
     void navigator.locks.request("kingpos:native-draft:" + key, { ifAvailable: true }, async lock => {

@@ -38,6 +38,8 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     private let policy: NavigationPolicy
     private let offlineRoutes: ReylumiOfflineRouteStore
     private let initialURL: URL?
+    private let portableTransport: ReylumiLocalAppTransport?
+    private lazy var portableBridge = ReylumiPortableBridge(origin: policy.origin, transport: portableTransport)
     private var offlineEpoch = 0
     var onUsableDestination: ((URL) -> Void)?
     var onNavigationFailure: (() -> Void)?
@@ -57,11 +59,12 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         return try await webView.evaluateJavaScript("(()=>{const e=document.activeElement;return !(e&&e.getClientRects().length&&(e.matches('input:not([type=button]):not([type=submit]):not([type=reset]),textarea')||e.isContentEditable))})()") as? Bool == true
     }
 
-    init(origin: URL? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil, initialURL: URL? = nil) {
+    init(origin: URL? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil, initialURL: URL? = nil, portableTransport: ReylumiLocalAppTransport? = nil) {
         let origin = origin ?? URL(string: Bundle.main.object(forInfoDictionaryKey: "ReylumiServerURL") as? String ?? "https://reylumi.com")!
         self.policy = NavigationPolicy(origin: origin)
         self.offlineRoutes = offlineRoutes ?? ReylumiOfflineRouteStore(origin: origin)
         self.initialURL = initialURL.flatMap { NavigationPolicy(origin: origin).isInternal($0) && !NavigationPolicy(origin: origin).isExcluded($0) ? $0 : nil }
+        self.portableTransport = portableTransport
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -154,7 +157,9 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
                 configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
             }
         }
+        portableBridge.install(in: configuration)
         webView = WKWebView(frame: .zero, configuration: configuration)
+        portableBridge.webView = webView
         webView.isOpaque = false
         webView.backgroundColor = .white
         webView.scrollView.backgroundColor = .white
@@ -391,6 +396,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     override var preferredStatusBarStyle: UIStatusBarStyle { .darkContent }
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         guard !retiredNavigations.contains(where: { $0 === navigation }) else { return }
+        portableBridge.documentWillNavigate()
         if navigation !== activeNavigation {
             retireCurrentNavigation()
             startup.begin(pendingRequest)
@@ -428,6 +434,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { showLoadError(error, navigation: navigation) }
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { showLoadError(error, navigation: navigation) }
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        portableBridge.documentWillNavigate()
         let recovery = startup.retryRequest(origin: policy.origin, currentURL: webView.url)
         navigationWatchdog?.cancel()
         retireCurrentNavigation()
@@ -579,6 +586,16 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         let controller = UIAlertController(title: "Reylumi", message: message, preferredStyle: .alert)
         controller.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completionHandler(false) })
         controller.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler(true) })
+        present(controller, animated: true)
+    }
+
+    func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
+        if let reply = portableBridge.prompt(prompt, frame: frame) { completionHandler(reply); return }
+        guard frame.isMainFrame, let url = frame.request.url, policy.isInternal(url), presentedViewController == nil else { completionHandler(nil); return }
+        let controller = UIAlertController(title: "Reylumi", message: prompt, preferredStyle: .alert)
+        controller.addTextField { $0.text = defaultText }
+        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completionHandler(nil) })
+        controller.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler(controller.textFields?.first?.text) })
         present(controller, animated: true)
     }
 

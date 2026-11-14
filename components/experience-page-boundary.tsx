@@ -6,18 +6,19 @@ import { getExperienceRoutePolicy } from "@/lib/experience-route-policies";
 import { useExperienceScope } from "@/components/experience-scope";
 import { PageLoadingSkeleton } from "@/components/loading-feedback";
 
-const RESOURCE_VIEWS = new Set(["/market", "/notifications", "/staff/today", "/staff/my-work", "/staff/appointments", "/staff/workday", "/activity", "/bookings", "/reports"]);
+const RESOURCE_VIEWS = new Set(["/market", "/notifications", "/staff/today", "/staff/my-work", "/staff/appointments", "/staff/workday", "/staff/scan", "/activity", "/bookings", "/reports"]);
 
 /** Activity cleans effects when hidden; keep browsing state but reset action flows. */
-export function ExperiencePageBoundary({ children, admin = false, renderRevision = "" }: { children: ReactNode; admin?: boolean; renderRevision?: string }) {
+export function ExperiencePageBoundary({ children, admin = false, renderRevision = "", pendingFallback }: { children: ReactNode; admin?: boolean; renderRevision?: string; pendingFallback?: ReactNode }) {
   const pathname = usePathname();
   const query = useSearchParams().toString();
   const href = pathname + (query ? `?${query}` : "");
   const policy = getExperienceRoutePolicy(href);
-  // Settings sections are local History API navigation. Each section owns its
-  // reader and sensitive sections discard their forms when hidden. Refreshing
-  // the whole RSC tree for each section races that local navigation.
-  const lifecycleHref = pathname === "/settings" ? pathname : href;
+  // Settings sections and Forum reading tabs own their local query navigation
+  // and readers. Refreshing the whole RSC tree races those reads and hides
+  // their header/tabs. Forum actions and sensitive URLs keep their own policy.
+  const localQueryNavigation = pathname === "/settings" || policy.family === "forum";
+  const lifecycleHref = localQueryNavigation ? pathname : href;
   const lifecyclePolicy = pathname === "/settings" ? getExperienceRoutePolicy(pathname) : policy;
   const scope = useExperienceScope();
   const contextScope = scope?.context.scope;
@@ -127,7 +128,7 @@ export function ExperiencePageBoundary({ children, admin = false, renderRevision
     {refreshFailed ? <div role="status" className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3 text-sm">
       <span>The page could not update. Check your connection and try again.</span>
       <button type="button" className="min-h-11 shrink-0 underline" onClick={refreshServerView}>Try again</button>
-    </div> : checking ? <PageLoadingSkeleton /> : null}
+    </div> : checking ? (pendingFallback ?? <PageLoadingSkeleton />) : null}
     <Activity mode={checking ? "hidden" : "visible"}><div className="contents" key={activation}>{children}</div></Activity>
   </div>;
 }

@@ -22,7 +22,7 @@ export type AppLocalFavoritesData = {
 };
 export type AppLocalStaffIdentityData = { resourceScope: string; staffId: string; salonId: string };
 export type AppLocalMyPlaceData = Omit<ComponentProps<typeof MyPlaceClient>, "error">;
-export type AppLocalServicesData = Pick<ComponentProps<typeof ServicesManager>, "data">;
+export type AppLocalServicesData = { data: NonNullable<ComponentProps<typeof ServicesManager>["data"]> };
 export type AppLocalServicesCatalogAdmissionData = { schemaVersion: 1; partition: CatalogPartition };
 export type AppLocalServicesCatalogData = ServicesCatalog;
 export type AppLocalMoreData = { roleKind: RoleNavigationKind; campaignInstalled: boolean };

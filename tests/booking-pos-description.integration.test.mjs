@@ -21,7 +21,7 @@ test('booking conversion fails atomically before the missing-column fix and pres
   const booking=crypto.randomUUID(),customer=crypto.randomUUID();
   f.sql(`alter table bookings disable trigger enforce_booking_time_policy;
     insert into customers(id,location_id,name) values('${customer}','${salon}','Isolated QA customer');
-    insert into bookings(id,salon_id,customer_id,start_at,end_at,status) values('${booking}','${salon}','${customer}',now()+interval '2 days',now()+interval '2 days 30 minutes','confirmed');
+    insert into bookings(id,salon_id,customer_id,start_at,end_at,status,confirmation_status) values('${booking}','${salon}','${customer}',now()-interval '30 minutes',now()+interval '15 minutes','confirmed','confirmed');
     insert into booking_lines(salon_id,booking_id,service_name_snapshot,service_category_snapshot,service_description_snapshot,quantity,unit_price,line_total,line_status)
     values('${salon}','${booking}','Booked manicure','Nails','Description fixed at booking',2,12.50,25,'scheduled'),('${salon}','${booking}','Cancelled line','Nails','Ignore',1,99,99,'cancelled');
     alter table pos_ticket_items drop column service_description_snapshot;`);

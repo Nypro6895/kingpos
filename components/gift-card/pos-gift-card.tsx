@@ -1,30 +1,60 @@
 "use client";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { GiftModalLayer } from "./gift-modal-layer";
-import { CustomerGiftDialog } from "./customer-gift-dialog";
-import { GiftArtwork, GiftSymbol } from "./gift-artwork";
-import type { GiftReply, GiftSession, GiftTransport } from "@/types/gift-card";
-import { giftCents, giftMoney } from "@/types/gift-card";
-import { giftApi } from "./gift-api";
-import { GiftQr as QrCodeTile } from "./gift-qr";
-import { giftPublicLink } from "@/lib/gift-public-link";
+import {useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState} from "react";
+import {CustomerGiftDialog} from "./customer-gift-dialog";
+import {GiftArtwork} from "./gift-artwork";
+import type {GiftDesign,GiftReply,GiftSession,GiftTransport} from "@/types/gift-card";
+import {giftMoney} from "@/types/gift-card";
+import {giftApi} from "./gift-api";
+import {giftPublicLink} from "@/lib/gift-public-link";
+import {giftDismissArgs,giftScreenClosed,giftScreenPrompted,rememberGiftScreen} from "./gift-screen-lifecycle";
 import "./gift-card.css";
 
-export type GiftCheckout = () => Promise<GiftReply | null>;
-export function giftLink(kind: "card" | "mobile", token: string) { return giftPublicLink(kind, token, typeof location === "undefined" ? undefined : location); }
-export function GiftPosControl({ token, receipt, onCheckout, onDelivery, onSession, transport }: { token?: string; receipt: Record<string, unknown>; onCheckout?: (fn: GiftCheckout) => void; onDelivery?: (session: GiftSession) => void; onSession?: (session: GiftSession) => void; transport?: GiftTransport }) {
-  const api = useMemo(()=>transport??giftApi("pos"),[transport]); const [session,setSession]=useState<GiftSession>(); const [available,setAvailable]=useState(false); const [installed,setInstalled]=useState(false); const [open,setOpen]=useState(false); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
-  const receiptKey=JSON.stringify(receipt); const current=useRef(session); const lock=useRef(false); const setSnapshot=useCallback((s?:GiftSession)=>{if(!s)return;if(!current.current||s.id!==current.current.id||s.revision>=current.current.revision){if(current.current&&(s.prompt??0)>(current.current.prompt??0))setOpen(true);current.current=s;setSession(s);onSession?.(s);}},[onSession]);
+export type GiftCheckout=()=>Promise<GiftReply|null>;
+export function giftLink(kind:"card"|"mobile",token:string){return giftPublicLink(kind,token,typeof location==="undefined"?undefined:location);}
+
+type GiftPosProps={token?:string;receipt:Record<string,unknown>;onCheckout?:(fn:GiftCheckout)=>void;onDelivery?:(session:GiftSession)=>void;onSession?:(session:GiftSession)=>void;transport?:GiftTransport};
+export function GiftPosControl(props:GiftPosProps){return <GiftPosState key={props.token??"unpaired"} {...props}/>;}
+function GiftPosState({token,receipt,onCheckout,onDelivery,onSession,transport}:GiftPosProps) {
+  const api=useMemo(()=>transport??giftApi("pos"),[transport]);
+  const [session,setSession]=useState<GiftSession>();const [available,setAvailable]=useState(false);const [installed,setInstalled]=useState(false);
+  const [open,setOpen]=useState(false);const [error,setError]=useState("");const [busy,setBusy]=useState(false);
+  const [lastDelivery,setLastDelivery]=useState<GiftSession>();const [reviewDelivery,setReviewDelivery]=useState<GiftSession>();
+  const [payment,setPayment]=useState<{sessionId:string;method:string}>();
+  const paymentRef=useRef(payment);
+  useLayoutEffect(()=>{paymentRef.current=payment;},[payment]);
+  const current=useRef(session);const lock=useRef(false);const receiptKey=JSON.stringify(receipt);
   const latestReceipt=useRef({token,key:receiptKey});
   useLayoutEffect(()=>{latestReceipt.current={token,key:receiptKey};},[token,receiptKey]);
+  const setSnapshot=useCallback((next?:GiftSession,expectedSession?:string)=>{
+    if(!next||current.current?.id===next.id&&current.current.revision>next.revision)return;
+    if(expectedSession&&current.current&&current.current.id!==expectedSession&&next.id!==current.current.id)return;
+    const previous=current.current;current.current=next;setSession(next);onSession?.(next);
+    if(next.status==="completed"&&next.purchase&&next.delivery&&!next.collected){setLastDelivery(next);try{sessionStorage.setItem("kingpos:last-gift-sale",next.id);}catch{/* Optional recovery shortcut. */}}
+    if(giftScreenClosed(next)||previous&&previous.id!==next.id||next.status==="completed"&&onDelivery||previous?.qrVisible&&!next.qrVisible&&next.entry==="scan")setOpen(false);
+    if(giftScreenPrompted(next,previous)&&!(next.status==="completed"&&onDelivery))setOpen(true);
+  },[onSession,onDelivery]);
+  useEffect(()=>{
+    let active=true;
+    try{const id=sessionStorage.getItem("kingpos:last-gift-sale");if(id)void api("read",{sessionId:id}).then(reply=>{if(active&&reply.session?.delivery&&!reply.session.collected)setLastDelivery(reply.session);}).catch(()=>{});}catch{/* Kiosk storage can be disabled. */}
+    return()=>{active=false;};
+  },[api,token]);
   useEffect(()=>{
     if(!token)return;let active=true;
-    const run=async()=>{try{const reply=await api("sync",{token,receipt:JSON.parse(receiptKey)});if(!active)return;setAvailable(true);setInstalled(reply.installed===true);setSnapshot(reply.session);}catch{if(active)setAvailable(false);}};
+    const run=async()=>{try{const expected=current.current?.id;const reply=await api("sync",{token,receipt:JSON.parse(receiptKey)});if(!active)return;setAvailable(true);setInstalled(reply.installed===true);setSnapshot(reply.session,expected);}catch{if(active)setAvailable(false);}};
     const timer=setTimeout(()=>void run(),250);return()=>{active=false;clearTimeout(timer);};
   },[api,token,receiptKey,setSnapshot]);
   useEffect(()=>{
     if(!available||!session?.id)return;let active=true;let pending=false;
-    const timer=setInterval(async()=>{if(pending||document.hidden)return;pending=true;try{const reply=await api("read",{sessionId:session.id});if(active)setSnapshot(reply.session);}catch{/* Keep the last confirmed screen; mutations still require a live server. */}finally{pending=false;}},1200);
+    const timer=setInterval(async()=>{
+      if(pending||document.hidden)return;pending=true;
+      try{
+        const bound=latestReceipt.current;
+        const expected=current.current?.id;
+        const reply=current.current?.status!=="open"||Date.parse(current.current.expires)<=Date.now()
+          ?await api("sync",{token:bound.token,receipt:JSON.parse(bound.key)}):await api("read",{sessionId:session.id});
+        if(active&&latestReceipt.current===bound)setSnapshot(reply.session,expected);
+      }catch{/* Keep the confirmed selection. A mutation still requires a live server. */}finally{pending=false;}
+    },1200);
     return()=>{active=false;clearInterval(timer);};
   },[api,available,session?.id,setSnapshot]);
   useEffect(()=>{
@@ -37,59 +67,103 @@ export function GiftPosControl({ token, receipt, onCheckout, onDelivery, onSessi
       if(!s.amount&&!s.purchase){if(hadSelection)throw new Error("Ticket changed. Reapply the gift card before Submit.");return null;}
       if(!navigator.onLine)throw new Error("Connect before submitting gift cards. This payment cannot be queued offline.");
       if(s.amount&&!s.approved)throw new Error("Ask the customer to confirm their gift card first.");
-      const result=await api("submit",{sessionId:s.id,revision:s.revision});setSnapshot(result.session);if(result.session?.purchase&&result.session.delivery&&!result.session.collected)onDelivery?.(result.session);setOpen(!onDelivery&&Boolean(result.session?.purchase));return result;
+      const paymentMethod=paymentRef.current?.sessionId===s.id?paymentRef.current.method:undefined;
+      if(s.purchase>0&&!paymentMethod)throw new Error("Choose how the Gift sale was paid: Cash, Card or Other.");
+      const result=await api("submit",{sessionId:s.id,revision:s.revision,...(paymentMethod?{paymentMethod}:{})});setSnapshot(result.session);if(result.session?.purchase&&result.session.delivery&&!result.session.collected)onDelivery?.(result.session);setOpen(!onDelivery&&Boolean(result.session?.purchase));return result;
     });
   },[api,onCheckout,onDelivery,setSnapshot]);
-  async function action(op:string,args:Record<string,unknown>={}) { if(lock.current||!current.current)return;lock.current=true;setBusy(true);setError("");try{const s=current.current;const reply=await api(op,{sessionId:s.id,revision:s.revision,...args});setSnapshot(reply.session);if(reply.message)setError(reply.message);}catch(e){if(op==='open'&&e instanceof Error&&e.message.includes('Session changed')){try{const fresh=await api('read',{sessionId:current.current!.id});setSnapshot(fresh.session);if(fresh.session){const retry=await api('open',{sessionId:fresh.session.id,revision:fresh.session.revision,...args});setSnapshot(retry.session);}}catch(retryError){setError((retryError as Error).message);}}else setError(e instanceof Error?e.message:"Gift card action failed");}finally{lock.current=false;setBusy(false);} }
+  async function action(op:string,args:Record<string,unknown>={}) {
+    if(lock.current||!current.current)return;lock.current=true;setBusy(true);setError("");
+    const bound=latestReceipt.current;
+    try{
+      let s=current.current;
+      if(op==="open"&&(s.status!=="open"||Date.parse(s.expires)<=Date.now())){
+        const latest=latestReceipt.current;const reply=await api("sync",{token:latest.token,receipt:JSON.parse(latest.key)});
+        if(latestReceipt.current!==latest)throw new Error("Ticket changed. Open Gift cards again.");
+        if(reply.session){s=reply.session;setSnapshot(s);}
+      }
+      const reply=await api(op,{sessionId:s.id,revision:s.revision,...args});if(latestReceipt.current!==bound)throw new Error("Ticket changed. Open Gift cards again.");setSnapshot(reply.session,s.id);if(reply.message)setError(reply.message);
+    }catch(e){
+      if(op==="open"&&latestReceipt.current===bound&&e instanceof Error&&e.message.includes("Session changed")){
+        try{const fresh=await api("read",{sessionId:current.current!.id});setSnapshot(fresh.session);if(fresh.session){const retry=await api("open",{sessionId:fresh.session.id,revision:fresh.session.revision,...args});setSnapshot(retry.session);}}
+        catch(retryError){setError((retryError as Error).message);}
+      }else setError(e instanceof Error?e.message:"Gift card action failed");
+    }finally{lock.current=false;setBusy(false);}
+  }
+  function dismiss(){const s=current.current;setOpen(false);if(!s)return;rememberGiftScreen(s);void api("dismiss",giftDismissArgs(s)).then(r=>setSnapshot(r.session,s.id)).catch(()=>{});}
   const loadAppearance=useCallback(()=>api("appearance"),[api]);
   if(!available)return null;
-  return <div className="gc" data-gift-pos><GiftEntryCard busy={busy} canBuy={installed} onUse={()=>{setOpen(true);void action("open",{mode:"use",entry:"code"});}} onBuy={()=>{setOpen(true);void action("open",{mode:"buy",entry:"code"});}} summary={session?.amount ? "Applied: "+giftMoney(session.amount) : session?.purchase ? "To purchase: "+giftMoney(session.purchase) : undefined}/>
-    {open&&session&&<GiftDialog loadAppearance={loadAppearance} session={session} staff installed={installed} busy={busy} error={error} action={action} onClose={()=>setOpen(false)} wallet={async()=>{const r=await api("wallet",{sessionId:session.id});return r.cards??[];}}>
-      {session.status==="open"&&(session.amount>0||session.purchase>0)&&<div className="gc-grid"><p className="gc-note">Amount due: {giftMoney(session.total+session.purchase-session.amount)}. Gift card sale: {giftMoney(session.purchase)}. Gift card reduction: {giftMoney(session.amount)}.</p>
-      <p className="gc-help">Close this panel, then use Submit to complete the sale. Gift purchases are excluded from this ticket’s discount and tip.</p></div>}
+  const selection=session?.status==="open"?session:undefined;
+  async function reviewLastGift(){if(!lastDelivery)return;try{const reply=await api("read",{sessionId:lastDelivery.id});if(reply.session?.delivery&&!reply.session.collected){setReviewDelivery(reply.session);}else{setLastDelivery(undefined);setError("This gift card has already been collected or its delivery link has expired.");}}catch(e){setError(e instanceof Error?e.message:"Reconnect to open the gift card.");}}
+  return <div className="gc" data-gift-pos><GiftEntryCard busy={busy} canBuy={installed} onUse={()=>void action("open",{mode:"use",entry:"code"})} onBuy={()=>void action("open",{mode:"buy",entry:"code"})} summary={selection?.amount?"Applied: "+giftMoney(selection.amount):selection?.purchase?"To purchase: "+giftMoney(selection.purchase):undefined}/>
+    {!!selection?.purchase&&<fieldset className="gc-sale-payment"><legend>Payment received</legend><div>{([['cash','Cash'],['credit_card','Card'],['other','Other']] as const).map(([method,label])=><button key={method} type="button" disabled={busy} aria-pressed={payment?.sessionId===selection.id&&payment.method===method} onClick={()=>setPayment({sessionId:selection.id,method})}>{label}</button>)}</div><p>Record the payment, then Submit to save this ticket.</p></fieldset>}
+    {lastDelivery?.delivery&&!lastDelivery.collected&&<button className="gc-last-delivery" type="button" onClick={()=>void reviewLastGift()}>View last gift card · {giftMoney(lastDelivery.purchase)}</button>}
+    {reviewDelivery&&<GiftDeliveryReceipt key={reviewDelivery.id} session={reviewDelivery} review onClose={()=>setReviewDelivery(undefined)}/>}
+    {!open&&error&&<p className="gc-note gc-error" role="alert">{error}</p>}
+    {open&&session&&<GiftDialog key={session.id} loadAppearance={loadAppearance} session={session} staff installed={installed} busy={busy} error={error} action={action} onClose={dismiss} wallet={async()=>{const r=await api("wallet",{sessionId:session.id});return r.cards??[];}}>
+      {session.status==="open"&&(session.amount>0||session.purchase>0)&&<p className="gc-approved-help">Amount due: {giftMoney(session.total+session.purchase-session.amount)}. Close this panel, then use Submit to complete the sale.</p>}
     </GiftDialog>}
   </div>;
 }
 
-export function GiftDeliveryReceipt({session,onClose}:{session:GiftSession|null;onClose:()=>void}) { return session?<GiftDialog session={session} staff onClose={onClose} action={async()=>{}}/>:null; }
-
-function StaffGiftDialog({ session:s, staff=false, installed=true, busy=false, error="", action, onClose, wallet, children, loadAppearance }: { session:GiftSession; staff?:boolean; installed?:boolean; busy?:boolean; error?:string; action:(op:string,args?:Record<string,unknown>)=>Promise<void>; onClose:()=>void; wallet?:()=>Promise<import("@/types/gift-card").GiftCardView[]>; children?:React.ReactNode; loadAppearance?:()=>Promise<GiftReply> }) {
-  const [appearance,setAppearance]=useState<GiftReply>();
-  useEffect(()=>{let alive=true;void loadAppearance?.().then(value=>{if(alive)setAppearance(value);}).catch(()=>{});return()=>{alive=false;};},[loadAppearance]);
-  const previewDesign=s.mode==="use" && s.card?.design?.elements?.length ? s.card.design : appearance?.design;
-  const [code,setCode]=useState("");const [pin,setPin]=useState("");const [amount,setAmount]=useState("100");const [applyDraft,setApplyDraft]=useState({base:s.amount,value:String(s.amount/100)});const applyAmount=applyDraft.base===s.amount?applyDraft.value:String(s.amount/100);const setApplyAmount=(value:string)=>setApplyDraft({base:s.amount,value});const [walletCards,setWalletCards]=useState<import("@/types/gift-card").GiftCardView[]>([]);const [localError,setLocalError]=useState("");const initialFocus=useRef<HTMLButtonElement>(null);
-  const [keypad,setKeypad]=useState(false);const [field,setField]=useState<"code"|"pin">("code");
-  const closeRef=useRef(onClose);useLayoutEffect(()=>{closeRef.current=onClose;},[onClose]);
-  useEffect(()=>{const before=document.activeElement as HTMLElement; initialFocus.current?.focus();const key=(e:KeyboardEvent)=>{if(e.key==="Escape")closeRef.current();if(e.key==="Tab"){const container=initialFocus.current?.closest('[role="dialog"]');const items=Array.from(container?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href]')??[]);if(!items.length)return;const first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};document.addEventListener("keydown",key);return()=>{document.removeEventListener("keydown",key);before?.focus();};},[]);
-  return <GiftModalLayer onClose={onClose}><div className="gc gc-overlay"><section className="gc-modal gc-approved-dialog gc-staff-modal" role="dialog" aria-modal="true" aria-label="Gift card"><header><div className="gc-approved-heading"><GiftSymbol /><div><h2>Gift cards</h2><small>A little luxury, beautifully given.</small></div></div><button ref={initialFocus} onClick={onClose} aria-label="Close gift card">×</button></header>
-    {s.status==="completed"?<><p className="gc-note gc-ok">{s.purchase?"Gift card sale saved.":"Gift card use saved."}</p>{s.delivery&&!s.collected?<div className="gc-qr"><h3>Your gift card is ready</h3><QrCodeTile value={giftLink("card",s.delivery)} label="Scan to receive gift card"/><p>Scan to open and save. No app required.</p><a className="gc-button" href={giftLink("card",s.delivery)} target="_blank" rel="noreferrer">Open / share / save image</a></div>:<p>{s.purchase?"Saved to the customer's account or already collected.":`Gift card used: ${giftMoney(s.amount)}. Open the receipt for your payment details.`}</p>}</>:<>
-    <div className="gc-approved-tabs"><button aria-pressed={s.mode==="use"} disabled={busy} onClick={()=>void action("open",{mode:"use",entry:"code"})}>Use a gift card</button><button aria-pressed={s.mode==="buy"} disabled={busy||!installed} onClick={()=>void action("open",{mode:"buy",entry:"code"})}>Buy a gift card</button></div>
-    {s.mode==="buy"?<div className="gc-approved-columns">{<aside className="gc-gift-aside"><GiftArtwork design={previewDesign} salonName={appearance?.salonName}/><p className="gc-help">A thoughtful gift. A beautiful experience.</p></aside>}<div className="gc-approved-form gc-grid"><h3 className="gc-form-title">Give a moment of beauty</h3><p>Select an amount. After purchase, keep the card or share it whenever you want.</p><div className="gc-row">{[25,50,100].map(v=><button key={v} aria-pressed={amount===String(v)} onClick={()=>setAmount(String(v))}>${v}</button>)}</div><label>Gift card amount<input aria-label="Gift card amount" value={amount} inputMode="decimal" onChange={e=>setAmount(e.target.value)}/></label><button className="gc-primary" disabled={busy} onClick={()=>{try{const cents=giftCents(amount);setLocalError("");void action("buy",{amount:cents});}catch(e){setLocalError((e as Error).message);}}}>Add {amount&&Number(amount)>0?`$${amount}`:"gift card"} to purchase</button>{s.purchase>0&&<p className="gc-note">{giftMoney(s.purchase)} requested. {staff?"Complete the POS sale to activate.":"Staff will complete the POS sale and activate your card."}</p>}</div></div>:<>
-      <div className="gc-approved-columns">{<aside className="gc-gift-aside"><GiftArtwork design={previewDesign} salonName={appearance?.salonName}/><button className="gc-phone-option" disabled={busy} onClick={()=>void action("open",{mode:"use",entry:s.entry==="scan"?"code":"scan"})}><PhoneScanIcon/><span><strong>{s.entry==="scan"?"Enter card details":"Scan with your phone"}</strong><small>{s.entry==="scan"?"Use your card number and PIN.":"Scan a QR code to connect your phone."}</small></span></button></aside>}<div className="gc-approved-form gc-grid">      <div className="gc-tabs gc-entry-tabs"><button aria-pressed={s.entry==="code"} onClick={()=>void action("open",{mode:"use",entry:"code"})}>Enter code</button><button aria-pressed={s.entry==="scan"} onClick={()=>void action("open",{mode:"use",entry:"scan"})}>Scan on phone</button></div>
-      {staff&&wallet&&<button onClick={async()=>{try{setWalletCards(await wallet());}catch(e){setLocalError((e as Error).message);}}}>Customer wallet</button>}
-      {walletCards.map(c=><button key={c.id} disabled={busy} onClick={()=>void action("wallet_request",{cardId:c.id})}>•••• {c.last4} · {giftMoney(c.balance)} · Request approval</button>)}
-      {s.entry==="scan"&&s.qrVisible?<div className="gc-qr"><QrCodeTile value={giftLink("mobile",s.mobile)} label="Scan to use your gift card"/><p>Scan with your phone. QR closes on both screens when opened.</p><small>Session expires {new Date(s.expires).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}.</small></div>:s.entry==="scan"?<p className="gc-note">Phone connected. Complete your selection on your phone, or choose Enter code.</p>:<><h3 className="gc-form-title">Enter your card details</h3><label>Card number<span className="gc-field"><input autoComplete="off" aria-label="Card code" maxLength={160} value={code} onFocus={()=>setField("code")} onChange={e=>{const raw=e.target.value;const match=/#card=([a-f0-9]{64})/i.exec(raw);if(match){setCode("");void action("code",{token:match[1].toLowerCase()});}else setCode(raw.toUpperCase());}} placeholder="XXXX XXXX XXXX XXXX"/><button className="gc-field-key" type="button" aria-label="Open card number keypad" aria-expanded={keypad && field==="code"} onClick={()=>{setField("code");setKeypad(v=>field!=="code"||!v);}}>⌨</button></span></label><label>Security PIN<span className="gc-field"><input autoComplete="off" type="password" aria-label="Security PIN" maxLength={8} value={pin} onFocus={()=>setField("pin")} onChange={e=>setPin(e.target.value.toUpperCase())} placeholder="Enter PIN"/><button className="gc-field-key" type="button" aria-label="Open PIN keypad" aria-expanded={keypad && field==="pin"} onClick={()=>{setField("pin");setKeypad(v=>field!=="pin"||!v);}}>⌨</button></span></label><small>Find the PIN on your gift card.</small>{keypad&&<div className="gc-grid"><div className="gc-row"><button aria-pressed={field==="code"} onClick={()=>setField("code")}>Card code</button><button aria-pressed={field==="pin"} onClick={()=>setField("pin")}>PIN</button></div><div className="gc-keypad" style={{gridTemplateColumns:"repeat(4,1fr)"}}>{[..."1234567890ABCDEF","⌫"].map(key=><button key={key} type="button" aria-label={`Type ${key}`} onClick={()=>{const setter=field==="code"?setCode:setPin;setter(v=>key==="⌫"?v.slice(0,-1):(v+key).slice(0,field==="code"?16:8));}}>{key}</button>)}</div></div>}<button className="gc-primary" disabled={busy||!code||pin.length<8} onClick={async()=>{await action("code",{code,pin});setPin("");setKeypad(false);}}>Check & apply <span aria-hidden="true">→</span></button><p className="gc-help gc-confirm-help">Your card is verified before it is applied to this visit.</p></>}</div></div>
-      {s.card&&<div className="gc-note gc-grid"><strong>•••• {s.card.last4} · {giftMoney(s.card.balance)} available</strong><p>Apply {giftMoney(s.amount)} · {s.approved?"Authorized":"Customer confirmation needed"}</p>{s.approved&&<><label>Amount to apply<input aria-label="Amount to apply" value={applyAmount} inputMode="decimal" onChange={e=>setApplyAmount(e.target.value)}/></label><button disabled={busy} onClick={()=>{try{void action("amount",{amount:giftCents(applyAmount)});}catch(e){setLocalError((e as Error).message);}}}>Update applied amount</button></>}</div>}
-    </>}
-    {(s.amount>0||s.purchase>0)&&<button disabled={busy} onClick={()=>void action("cancel")}>Remove gift card selection</button>}
-    {children}</>}
-    {(error||localError)&&<p className="gc-note gc-error" role="alert">{error||localError}</p>}
-  </section></div></GiftModalLayer>;
+export function GiftDeliveryReceipt({session,onClose,review=false}:{session:GiftSession|null;onClose:()=>void;review?:boolean}) {
+  const api=useMemo(()=>giftApi("pos"),[]);const [snapshot,setSnapshot]=useState<GiftSession>();
+  const [now,setNow]=useState(Date.now);
+  const sessionId=session?.id;
+  const shown=snapshot?.id===session?.id?snapshot:session;const close=useRef(onClose);
+  useLayoutEffect(()=>{close.current=onClose;},[onClose]);
+  useEffect(()=>{
+    if(!sessionId)return;let active=true;let pending=false;
+    const timer=setInterval(async()=>{setNow(Date.now());if(pending||document.hidden)return;pending=true;try{const reply=await api("read",{sessionId});if(active&&reply.session)setSnapshot(previous=>previous?.id===reply.session!.id&&previous.revision>reply.session!.revision?previous:reply.session);}catch{/* The local completion deadline still closes offline. */}finally{pending=false;}},1200);
+    return()=>{active=false;clearInterval(timer);};
+  },[api,sessionId]);
+  const closed=Boolean(shown&&(review?shown.collected||Date.parse(shown.expires)<=now||shown.status!=="completed":giftScreenClosed(shown,now)));
+  useEffect(()=>{if(closed)close.current();},[closed]);
+  const loadAppearance=useCallback(()=>api("appearance"),[api]);
+  if(!shown||closed)return null;
+  const dismiss=()=>{close.current();if(!review){rememberGiftScreen(shown);void api("dismiss",giftDismissArgs(shown)).catch(()=>{});}};
+  return <GiftDialog key={shown.id} session={review?{...shown,completedAt:undefined}:shown} staff onClose={dismiss} loadAppearance={loadAppearance} action={async()=>{}}/>;
 }
 
-export function GiftCustomerControl({ token, transport }: { token: string; transport?: GiftTransport }) {
-  const api=useMemo(()=>transport??giftApi("display",token),[transport,token]);const [s,setS]=useState<GiftSession>();const [installed,setInstalled]=useState(false);const [open,setOpen]=useState(false);const [error,setError]=useState("");const [busy,setBusy]=useState(false);const current=useRef<GiftSession|undefined>(undefined);const lastMode=useRef("");const actionLock=useRef(false);
-  const receive=useCallback((r:GiftReply)=>{if(typeof r.installed==="boolean")setInstalled(r.installed);const next=r.session;if(!next)return;if(current.current?.id===next.id&&current.current.revision>next.revision)return;const previous=current.current;current.current=next;setS(next);if(previous?.qrVisible&&!next.qrVisible&&next.entry==='scan')setOpen(false);const signature=`${next.id}:${next.mode}:${next.entry}:${next.qrVisible}:${next.status}:${next.prompt}`;if(signature!==lastMode.current&&(next.qrVisible||next.status==="completed"||next.mode==="buy"||(next.prompt??0)>(previous?.prompt??0))){setOpen(true);}lastMode.current=signature;},[]);
-  useEffect(()=>{let active=true;let pending=false;const refresh=async()=>{if(pending)return;pending=true;try{const r=await api("read");if(active)receive(r);}catch{/* Do not interrupt check-in if gift card schema/network unavailable. */}finally{pending=false;}};void refresh();const interval=setInterval(()=>{if(!document.hidden)void refresh();},1200);return()=>{active=false;clearInterval(interval);};},[api,receive]);
-  const act=async(op:string,args:Record<string,unknown>={})=>{if(actionLock.current||!current.current)return;actionLock.current=true;setBusy(true);setError("");try{const r=await api(op,{revision:current.current.revision,...args});receive(r);if(r.message)setError(r.message);}catch(e){setError((e as Error).message);}finally{actionLock.current=false;setBusy(false);}};
-  const loadAppearance=useCallback(()=>api("appearance"),[api]);
-  if(!installed&&!s)return null;
-  return <div className="gc"><GiftEntryCard busy={busy} canBuy={installed} onUse={()=>{setOpen(true);if(s)void act("open",{mode:"use",entry:"code"});}} onBuy={()=>{setOpen(true);if(s)void act("open",{mode:"buy",entry:"code"});}}/>{open&&(s?<GiftDialog loadAppearance={loadAppearance} session={s} installed={installed} busy={busy} error={error} action={act} onClose={()=>setOpen(false)}/>:<GiftModalLayer onClose={()=>setOpen(false)}><div className="gc-overlay"><section className="gc-modal gc-grid gc-customer-modal" role="dialog" aria-modal="true" aria-label="Gift card"><h2>Gift cards</h2><p>Ask staff to open the sale. You can enter your card or choose an amount here as soon as the POS is connected.</p><button onClick={()=>setOpen(false)}>Close</button></section></div></GiftModalLayer>)}</div>;
+export function GiftCustomerControl({token,transport,checkout=false,onSession}:{token:string;transport?:GiftTransport;checkout?:boolean;onSession?:(session:GiftSession|null)=>void}) {
+  const api=useMemo(()=>transport??giftApi("display",token),[transport,token]);
+  const [session,setSession]=useState<GiftSession>();const [installed,setInstalled]=useState(false);const [open,setOpen]=useState(false);const [error,setError]=useState("");const [busy,setBusy]=useState(false);
+  const current=useRef<GiftSession|undefined>(undefined);const actionLock=useRef(false);
+  const changed=useRef(onSession);useLayoutEffect(()=>{changed.current=onSession;},[onSession]);
+  const [appearance,setAppearance]=useState<GiftReply>();
+  const [reviewCard,setReviewCard]=useState(false);
+  useEffect(()=>()=>{changed.current?.(null);},[]);
+  const receive=useCallback((reply:GiftReply,expectedSession?:string)=>{
+    if(typeof reply.installed==="boolean")setInstalled(reply.installed);
+    const next=reply.session;if(!next||current.current?.id===next.id&&current.current.revision>next.revision)return;
+    if(expectedSession&&current.current&&current.current.id!==expectedSession&&next.id!==current.current.id)return;
+    const previous=current.current;current.current=next;setSession(next);changed.current?.(next);
+    if(next.approved||previous?.id!==next.id)setReviewCard(false);
+    else if(previous?.approved&&previous.amount>0&&next.status==="open"&&!next.approved&&next.amount===0)setReviewCard(true);
+    if(giftScreenClosed(next)||previous&&previous.id!==next.id||previous?.qrVisible&&!next.qrVisible&&next.entry==="scan")setOpen(false);
+    if(giftScreenPrompted(next,previous))setOpen(true);
+  },[]);
+  useEffect(()=>{
+    let active=true;let pending=false;
+    const refresh=async()=>{if(pending)return;pending=true;try{const expected=current.current?.id;const reply=await api("read");if(active)receive(reply,expected);}catch{/* Gift cards must not block check-in during a network outage. */}finally{pending=false;}};
+    void refresh();const timer=setInterval(()=>{if(!document.hidden)void refresh();},1200);return()=>{active=false;clearInterval(timer);};
+  },[api,receive]);
+  async function action(op:string,args:Record<string,unknown>={}){
+    if(actionLock.current||!current.current)return;actionLock.current=true;setBusy(true);setError("");
+    try{const s=current.current;const reply=await api(op,{sessionId:s.id,revision:s.revision,...args});receive(reply,s.id);if(op==="cancel")setReviewCard(false);if(reply.message)setError(reply.message);}
+    catch(e){setError(e instanceof Error?e.message:"Gift card action failed");}finally{actionLock.current=false;setBusy(false);}
+  }
+  function dismiss(){const s=current.current;setOpen(false);if(!s)return;rememberGiftScreen(s);void api("dismiss",giftDismissArgs(s)).then(reply=>receive(reply,s.id)).catch(()=>{});}
+  const loadAppearance=useCallback(async()=>{const result=await api("appearance");setAppearance(result);return result;},[api]);
+  useEffect(()=>{if(!checkout)return;let active=true;void api("appearance").then(result=>{if(active)setAppearance(result);}).catch(()=>{});return()=>{active=false;};},[checkout,api]);
+  if(!installed&&!session)return null;
+  return <div className="gc"><GiftEntryCard checkout={checkout} design={session?.status==="open"&&session.mode==="use"?session.card?.design??appearance?.design:appearance?.design} salonName={session?.status==="open"&&session.mode==="use"?session.card?.salonName??appearance?.salonName:appearance?.salonName} busy={busy||!session} canBuy={installed} onUse={()=>void action("open",{mode:"use",entry:"code"})} onBuy={()=>void action("open",{mode:"buy",entry:"code"})} summary={session?.status==="open"&&session.approved&&session.amount?"Selected: "+giftMoney(session.amount):session?.status==="open"&&session.purchase?"To purchase: "+giftMoney(session.purchase):undefined}/>
+    {!open&&error&&<p className="gc-note gc-error" role="alert">{error}</p>}
+    {checkout&&reviewCard&&!open&&<p className="gc-help" role="status">Please review and apply your gift card again.</p>}
+    {open&&session&&<GiftDialog key={session.id} loadAppearance={loadAppearance} session={session} installed={installed} busy={busy} error={error} action={action} onClose={dismiss}/>}
+  </div>;
 }
 
 function GiftIcon(){return <svg className="gc-gift-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><rect x="7" y="20" width="34" height="23" rx="2"/><path d="M5 14h38v9H5zM24 14v29M24 14C8 14 10 1 17 5c4 2 7 9 7 9Zm0 0C40 14 38 1 31 5c-4 2-7 9-7 9Z"/></svg>}
-
-function GiftEntryCard({busy,canBuy,onUse,onBuy,summary}:{busy:boolean;canBuy:boolean;onUse:()=>void;onBuy:()=>void;summary?:string}){return <section className="gc customer-gift-card" aria-label="Gift cards"><div className="customer-gift-summary"><GiftIcon/><div><h2>Gift cards</h2><p>A thoughtful gift.<br/>A beautiful experience.</p></div></div><div className="customer-gift-actions"><button type="button" disabled={busy} onClick={onUse}>Use a card <span aria-hidden="true">→</span></button><button type="button" disabled={busy||!canBuy} onClick={onBuy}>Buy a card <span aria-hidden="true">→</span></button></div>{summary&&<p className="gc-help gc-selection-summary" role="status">{summary}</p>}</section>}
-function PhoneScanIcon(){return <svg className="gc-phone-icon" viewBox="0 0 32 40" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="6" y="2" width="21" height="36" rx="3"/><path d="M12 6h9M14 34h5M11 12h4v4h-4zM19 12h4v4h-4zM11 20h4v4h-4zM20 20h3v7h-5v-3"/></svg>}
-
-export function GiftDialog(props:Parameters<typeof StaffGiftDialog>[0]) {return props.staff ? <StaffGiftDialog {...props}/> : <CustomerGiftDialog {...props}/>;}
+function GiftEntryCard({busy,canBuy,onUse,onBuy,summary,checkout,design,salonName}:{busy:boolean;canBuy:boolean;onUse:()=>void;onBuy:()=>void;summary?:string;checkout?:boolean;design?:GiftDesign;salonName?:string}){return <section className={`gc customer-gift-card${checkout?" customer-checkout-gift-entry":""}`} aria-label="Gift cards">{checkout?<><div className="customer-checkout-gift-preview"><GiftArtwork design={design} salonName={salonName}/></div><div><h2>Gift cards</h2><p>Use your card, or give a little beauty.</p></div></>:<div className="customer-gift-summary"><GiftIcon/><div><h2>Gift cards</h2><p>A thoughtful gift.<br/>A beautiful experience.</p></div></div>}<div className="customer-gift-actions"><button type="button" disabled={busy} onClick={onUse}>Use a card <span aria-hidden="true">→</span></button><button type="button" disabled={busy||!canBuy} onClick={onBuy}>Buy a card <span aria-hidden="true">→</span></button></div>{summary&&<p className="gc-help gc-selection-summary" role="status">{summary}</p>}</section>}
+export function GiftDialog(props:Parameters<typeof CustomerGiftDialog>[0]){return <CustomerGiftDialog {...props}/>;}

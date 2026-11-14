@@ -9,6 +9,11 @@ import {
 } from "@/app/payroll/actions";
 import { useActionState, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import type { PayrollStaffLineWithDailyTotals } from "@/types/payroll";
+import type { PayrollIssuedChecks } from "@/types/payroll-issued-checks";
+import { StaffPaymentTable } from "./staff-payment-table";
+import styles from "./payroll-mobile.module.css";
 
 const INITIAL_STATE: PayrollStaffInputAutosaveState = {
   message: null,
@@ -61,6 +66,9 @@ export function StaffIncomeAutosaveInputs({
   staffId,
   taxBonus,
   inputUpdatedAt = null,
+  line,
+  printCheckHref,
+  issuedChecks,
 }: {
   bonusAmount: number;
   bonusPayoutMethod: string;
@@ -73,6 +81,9 @@ export function StaffIncomeAutosaveInputs({
   staffId: string;
   taxBonus: boolean;
   inputUpdatedAt?: string | null;
+  line?: PayrollStaffLineWithDailyTotals;
+  printCheckHref?: string;
+  issuedChecks?: PayrollIssuedChecks;
 }) {
   const __vt = useWorkspaceTranslation();
   const router = useRouter();
@@ -200,9 +211,18 @@ export function StaffIncomeAutosaveInputs({
           ? "saved"
           : "";
   const baseline = state.baseline && (!inputUpdatedAt || Date.parse(state.baselineAt ?? "") >= Date.parse(inputUpdatedAt)) ? state.baseline : {bonus_amount:bonusAmount,check_number:checkNumber,note};
+  const references = issuedChecks?.checks.filter(check => check.staffId === staffId && check.periodStart === periodStart && check.periodEnd === periodEnd) ?? [];
+  const pluginNumber = references.map(check => check.number).join(", ");
+  const sameNumber = (left: string, right: string) => /^\d+$/.test(left) && /^\d+$/.test(right) ? left.replace(/^0+(?=\d)/, "") === right.replace(/^0+(?=\d)/, "") : left === right;
+  const numberConflict = !!pluginNumber && !!values.check.trim() && (references.length !== 1 || !sameNumber(values.check.trim(), pluginNumber));
+  const bonusControl = <span className={styles.bonusInput}>
+    <span aria-hidden="true">$</span><input aria-label={__vt("Bonus")} type="number" inputMode="decimal" min="0" step="0.01" name="bonus_amount" value={values.bonus} disabled={!canManage}
+      onBlur={submitIfChanged} onChange={event => { const value = event.currentTarget.value; event.currentTarget.defaultValue = value; setValues(current => ({ ...current, bonus: value })); scheduleSave(); }} />
+  </span>;
 
   return (
-    <form action={formAction} data-payroll-autosave="true" className="grid gap-3" ref={formRef}
+    <form action={formAction} data-payroll-autosave="true" aria-busy={pending || displayStatus === "saving"} className={line ? styles.paymentForm : "grid gap-3"} ref={formRef}
+      onSubmit={() => { submittedSignatureRef.current = readSignature(); setLocalStatus("submitted"); }}
       onReset={event => event.preventDefault()}>
       <input name="cycle_type" type="hidden" value={cycleType} />
       <input name="period_start" type="hidden" value={periodStart} />
@@ -214,6 +234,20 @@ export function StaffIncomeAutosaveInputs({
       <input name="expected_note" type="hidden" value={baseline.note ?? ""} />
       {state.status === "error" && <button type="button" className="min-h-11 rounded border px-3 text-sm" onClick={()=>{setLocalStatus("saved");setValues({bonus:bonusAmount.toFixed(2),check:checkNumber??"",source:initialSignature});updateEditState(staffId,false);router.refresh();}}><WorkspaceText text="Discard this draft and reload current amounts"/></button>}
 
+      {line ? <>
+        <StaffPaymentTable line={line} bonusInput={bonusControl} />
+        <div className={styles.checkNumberRow}>
+          <label htmlFor={`check-number-${staffId}`}><WorkspaceText text="Check #" /></label>
+          <input id={`check-number-${staffId}`} name={pluginNumber ? undefined : "check_number"} aria-label={__vt("Check number")} placeholder={__vt("Enter check number")} value={pluginNumber || values.check}
+            readOnly={!!pluginNumber} disabled={!canManage || issuedChecks?.status === "unavailable"} onBlur={submitIfChanged}
+            onChange={event => { const value = event.currentTarget.value; event.currentTarget.defaultValue = value; setValues(current => ({ ...current, check: value })); scheduleSave(); }} />
+          {pluginNumber && <input type="hidden" name="check_number" value={values.check} />}
+          {issuedChecks?.status === "unavailable" && <input type="hidden" name="check_number" value={values.check} />}
+          {printCheckHref && <Link href={printCheckHref}><WorkspaceText text="Print check" /></Link>}
+        </div>
+        {pluginNumber && <p className={styles.paymentStatus}><WorkspaceText text="From Check Writer" />{numberConflict && <> · <WorkspaceText text="The manual check number differs. Review Check Writer history before changing it." /></>}</p>}
+        {issuedChecks?.status === "unavailable" && <p role="status" className={styles.paymentStatus}><WorkspaceText text="Check Writer numbers could not load. Refresh before editing the check number." /></p>}
+      </> : <>
       <div className="grid grid-cols-[54px_max-content] items-center gap-x-2">
         <label className="text-zinc-500" htmlFor={`bonus-amount-${staffId}`}>
           <WorkspaceText text="Bonus:" />
@@ -256,6 +290,7 @@ export function StaffIncomeAutosaveInputs({
         />
       </div>
 
+      </>}
       {canManage ? (
         <p
           aria-live="polite"

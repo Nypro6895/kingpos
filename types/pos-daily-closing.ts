@@ -66,6 +66,11 @@ export type DailyPosClosingInputs = {
 export type DailyPosReconciliationStatus = "balanced" | "short" | "over";
 
 export type DailyPosReportTotals = {
+  giftSales?: number;
+  giftServicePaid?: number;
+  giftTipPaid?: number;
+  rewardDiscount?: number;
+  ordinaryDiscount?: number;
   expectedTip?: number;
   serviceDifference?: number | null;
   tipDifference?: number | null;

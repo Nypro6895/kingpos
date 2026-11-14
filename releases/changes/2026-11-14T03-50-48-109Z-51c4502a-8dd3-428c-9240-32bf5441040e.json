@@ -1,0 +1,88 @@
+{
+  "kind": "change",
+  "changeId": "gift-ticket-qa-seller-20261113",
+  "status": "needs-integration",
+  "summary": "Correct unsupported Gift seller attribution; fix named Gift-only labels, Gift search and narrow Ticket toolbar; verify shared POS/Ticket/Report flows",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "components/app-local-ticket-detail.tsx",
+    "docs/gift-ticket-unified-20261113.md",
+    "docs/gift-ticket-qa-seller-20261113.md",
+    "lib/pos-ticket-financial-view.ts",
+    "lib/pos-ticket-receipt.ts",
+    "types/pos-ticket.ts",
+    "tests/gift-counter-sale.integration.test.mjs",
+    "tests/gift-ticket-financial-view.test.mjs",
+    "tests/gift-ticket-ui.test.mjs",
+    "tests/gift-ticket-actual-flow.test.mjs",
+    "releases/changes/2026-11-14T03-14-43-456Z-a105fa7f-1b8e-448c-9306-b93e50893e9e.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\gift-ticket-unified-20261113\\artifacts\\gift-ticket-qa-seller\\frozen-source\\ddcc04c40ea4f6709041c69869d56c7f533b4506",
+    "commit": "ddcc04c40ea4f6709041c69869d56c7f533b4506"
+  },
+  "dependencies": [
+    "gift-ticket-unified-20261113"
+  ],
+  "validation": [
+    {
+      "name": "Full-schema Gift/Reward settlement, audit, permissions, void and reconciliation",
+      "result": "passed",
+      "evidence": "28/28; artifacts/gift-ticket-qa-seller/sql.log"
+    },
+    {
+      "name": "Full-schema customer checkout, Reward estimate, tip revision and customer isolation",
+      "result": "passed",
+      "evidence": "7/7; artifacts/gift-ticket-qa-seller/checkout-sql.log"
+    },
+    {
+      "name": "Actual Next Portable/Owner routes, API and isolated database",
+      "result": "passed",
+      "evidence": "10 journeys; artifacts/gift-ticket-qa-seller/actual-app/results.json; no page errors"
+    },
+    {
+      "name": "Product components and financial/authority regressions",
+      "result": "passed",
+      "evidence": "32/32 initial, 20/20 affected final; 52 responsive layout cases; ui-flows.log, ui-final.log"
+    },
+    {
+      "name": "Check-in lifecycle, default/owner artwork and existing Ticket editor",
+      "result": "passed",
+      "evidence": "12/12 checks plus six browser editor cases; checkin-design.log, editor.log"
+    },
+    {
+      "name": "Ticket date/search layout, midnight synchronization and history regression",
+      "result": "passed",
+      "evidence": "Previously failing 320px check now passes unchanged at five widths; toolbar-after.log"
+    },
+    {
+      "name": "Production webpack, TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "build.log, offline.log; 572 assets, 12330175 bytes; background dispatch disabled"
+    },
+    {
+      "name": "Scoped ESLint, whitespace, exact frozen hashes and patch application",
+      "result": "passed",
+      "evidence": "Zero lint errors, one pre-existing unused staff warning; frozen-source.json and patch check against b676bc6e5e773d6eb2b1b4caf5b9323650514267"
+    },
+    {
+      "name": "Current production integration and newly installed Windows/iOS acceptance",
+      "result": "pending",
+      "evidence": "No deployment or new native binary; inspected installed KingPOS 0.7.5 separately from the local source"
+    }
+  ],
+  "notes": "Owner requested QA and permits an empty Gift seller. Keep actor_id/actorName as recording-operator audit; never infer a Gift seller or performed staff. Preserve payroll, service-only benefits, receipt/visit authority, consent and idempotency. The actual-app fixture has no Realtime provider; source API/polling plus separate paired lifecycle tests are the bounded evidence. Freeze manifest: C:\\Reylumi-worktrees\\gift-ticket-unified-20261113\\artifacts\\gift-ticket-qa-seller\\frozen-source.json. Integrate the dependency and this scoped patch with the current production baseline. No hosted financial transaction, deployment, Windows installer or native upload was performed.",
+  "id": "51c4502a-8dd3-428c-9240-32bf5441040e",
+  "recordedAt": "2026-11-14T03:50:48.109Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-ticket-unified-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

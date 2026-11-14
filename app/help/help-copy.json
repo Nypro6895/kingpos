@@ -527,6 +527,8 @@
   "If a submission fails or its outcome is unclear, reload and verify the history before retrying. Keep the same draft; do not create a second payment to work around a pending result.": "Nếu gửi thất bại hoặc chưa rõ kết quả, tải lại và kiểm tra lịch sử trước khi thử lại. Giữ nguyên bản nháp; không tạo khoản thanh toán thứ hai để vượt qua kết quả đang chờ.",
   "Report / Contact": "Báo lỗi / Liên hệ",
   "Report an issue and continue conversations with our team.": "Báo lỗi và tiếp tục trao đổi với đội ngũ hỗ trợ.",
+  "Contact support without signing in": "Liên hệ với bộ phận hỗ trợ mà không cần đăng nhập",
+  "Sign in to view your requests": "Đăng nhập để xem yêu cầu của bạn",
   "Send a request": "Gửi yêu cầu",
   "Describe what you were doing, the intended salon, and what happened. Avoid passwords, passcodes and full payment details.": "Mô tả thao tác bạn đang thực hiện, tiệm liên quan và vấn đề đã xảy ra. Không gửi mật khẩu, mã bảo mật hoặc đầy đủ thông tin thanh toán.",
   "Without signing in": "Không cần đăng nhập",

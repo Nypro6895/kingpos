@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "forum-tab-performance-20261112",
+  "status": "ready",
+  "summary": "Forum second review: measured 73.9% less controlled tab wait, eliminated full-route refreshes; fixed repeated-tab/reveal cancellation, hidden privacy, seen metadata and late history races.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/forum/forum.tsx",
+    "components/experience-page-boundary.tsx",
+    "lib/experience-route-policies.ts",
+    "lib/forum-read-cache.ts",
+    "tests/forum-read-cache.test.mjs",
+    "tests/forum-route-policy.test.mjs",
+    "tests/forum-tab-navigation-runtime.test.mjs",
+    "docs/forum-tab-performance-20261112.txt",
+    "docs/forum-tab-performance-review-20261112.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\forum-tab-performance-20261112\\artifacts\\forum-review\\frozen",
+    "commit": "5c9af9c38bc9345fab23ec113ee169778b8d27fe"
+  },
+  "validation": [
+    {
+      "name": "67 focused regressions, zero failures/skips",
+      "result": "passed",
+      "evidence": "artifacts/forum-review/targeted-tests.log"
+    },
+    {
+      "name": "Final-source production build, TypeScript and 563 offline assets",
+      "result": "passed",
+      "evidence": "artifacts/forum-review/build.log"
+    },
+    {
+      "name": "Five-run before/after benchmark; exact source hashes match",
+      "result": "passed",
+      "evidence": "artifacts/forum-review/benchmark-results.json"
+    },
+    {
+      "name": "Actual local Next Forum QA: retained DOM; two named reads; zero full route reads or page errors",
+      "result": "passed",
+      "evidence": "artifacts/forum-review/actual-local-result.json"
+    },
+    {
+      "name": "Scoped lint zero errors/no new warnings, CRLF-aware diff, frozen hashes",
+      "result": "passed",
+      "evidence": "docs/forum-tab-performance-review-20261112.txt"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "54bc7770-ffc8-4f5e-a942-24c537f8809f"
+  ],
+  "id": "5fa07857-899d-45c5-9dce-bd72953bb123",
+  "recordedAt": "2026-11-13T05:39:55.377Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-tab-performance-20261112",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/forum/forum.tsx": "bc24771cded2f7aa61c08d87b580b29b095119b1cb956593414ef1d89e97b723",
+    "components/experience-page-boundary.tsx": "9d7159c9b5242fb01e224f940ec77bb18b14751d2e2e46b1d34ec7e908cb5935",
+    "lib/experience-route-policies.ts": "a3a4bea5e41755380acffd73daf2998c5eb6c78c5420f3316c177059c969fcd8",
+    "lib/forum-read-cache.ts": "d8472cf88451aceb78ee0aa2c80116a044d5bddee7138595cb19764a8add242b",
+    "tests/forum-read-cache.test.mjs": "aa3a11bd233c9244b15175936c8fcae7c8c130c2fe6d72853822d736f981c279",
+    "tests/forum-route-policy.test.mjs": "494ac7722986c04cfa2eaa7c44e1c3e9da3d491a4433240018371c6eb3cdbf46",
+    "tests/forum-tab-navigation-runtime.test.mjs": "5a044b5e13f51f4bffa851eeaa89653e1e37eb1f032f0d361f77fec3df9ed06a",
+    "docs/forum-tab-performance-20261112.txt": "59a3676057b81641437acdf4966a0f43f5e667788c9acc77f932169b65e71d48",
+    "docs/forum-tab-performance-review-20261112.txt": "88e9799807d54e9553dedd1f52e0f73243e80c7c2f5cb7cc02097cae74fdbd73"
+  }
+}

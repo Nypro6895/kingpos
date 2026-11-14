@@ -22,7 +22,7 @@ const external={
   '@/lib/staff-legal-name-server':'export const resolveStaffLegalNames=async rows=>rows;',
   '@/lib/payroll-live-history':'export const loadPayrollLiveHistory=async()=>[];',
 };
-const compiled=await build({stdin:{contents:`export * from './lib/payroll-live-dashboard';export * from './lib/payroll-live-money';export * from './lib/payroll-live-projection';export * from './lib/payroll-period-navigation';export {calculateDailyPayroll,buildShopDailyRows,buildShopSummary,calculateLivePayrollForAuth,buildTaxCompanyLinesForAuth} from './lib/payroll';`,resolveDir:root,loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,alias:{'@':root},plugins:[{name:'isolated',setup(b){
+const compiled=await build({stdin:{contents:`export {staffPayrollPaymentRows,staffPayrollRowDisplay,staffTakeHomeDisplay} from './lib/staff-payroll-display';export * from './lib/payroll-live-dashboard';export * from './lib/payroll-live-money';export * from './lib/payroll-live-projection';export * from './lib/payroll-period-navigation';export {calculateDailyPayroll,buildShopDailyRows,buildShopSummary,calculateLivePayrollForAuth,buildTaxCompanyLinesForAuth} from './lib/payroll';`,resolveDir:root,loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,alias:{'@':root},plugins:[{name:'isolated',setup(b){
   b.onResolve({filter:/.*/},args=>Object.hasOwn(external,args.path)?{path:args.path,namespace:'isolated'}:undefined);
   b.onLoad({filter:/.*/,namespace:'isolated'},args=>({contents:external[args.path],loader:'ts'}));
   b.onLoad({filter:/[\\/]lib[\\/]payroll\.ts$/},args=>({contents:fs.readFileSync(args.path,'utf8').replaceAll('function calculateDailyPayroll(','export function calculateDailyPayroll(').replaceAll('function buildShopDailyRows(','export function buildShopDailyRows(').replaceAll('function buildShopSummary(','export function buildShopSummary(').replaceAll('async function calculateLivePayrollForAuth(','export async function calculateLivePayrollForAuth(').replaceAll('async function buildTaxCompanyLinesForAuth(','export async function buildTaxCompanyLinesForAuth('),loader:'ts',resolveDir:path.dirname(args.path)}));
@@ -90,8 +90,7 @@ test('commission, taxable tips and taxable bonus reconcile cash/check/tax withou
   const tables=fixtures();tables.staff_payroll_settings=[{...fixedSetting,pay_type:'commission',fixed_pay_amount:0,commission_rate:60,check_rate:50,tax_rate:20,tax_tips:true,tax_bonus:true,tip_payout_method:'check',bonus_payout_method:'check'}];
   tables.pos_ticket_staff_earnings=[{salon_id:'salon',ticket_id:'ticket',staff_id:'anna',work_date:'2026-10-15',service_total:1000,tip_amount:100,tip_is_manual:false}];
   const data=await api.calculateLivePayrollForAuth(authFor(tables),{startDate:'2026-10-01',endDate:'2026-10-15',cycleType:'semi_monthly',preset:'semi_monthly_first'});
-  // Existing wage rules split net regular pay (600 − 60) 50/50, then add
-  // net tips (80) and net bonus (80) to the check: cash 270, check 430.
+  // Split gross wages first, tax only the check wage, and add net extras to check.
   const line=data.lines[0];assert.equal(line.final_cash_amount,300);assert.equal(line.final_check_amount,400);assert.equal(line.tax_withheld,100);assert.equal(line.final_staff_income,700);
   assert.equal(api.sumMoney(data.shopDailyRows,row=>row.staffObligation),800);
   assert.equal(api.payrollLiveDashboard(data.lines,data.shopDailyRows,'2026-10-25').staffCost,800);
@@ -123,6 +122,15 @@ test('approved payout matrix splits wages before tax and deducts extras tax in t
   const tipNet=taxTips?40:50,bonusNet=taxBonus?80:100;
   const cash=240-(taxCash?48:0)+(tipMethod==='cash'?tipNet:0)+(bonusMethod==='cash'?bonusNet:0);
   const check=288+(tipMethod==='check'?tipNet:0)+(bonusMethod==='check'?bonusNet:0);
+  const display=api.staffPayrollRowDisplay(line);
+  const ledger=api.staffPayrollPaymentRows(line);const cents=x=>Math.round(x*100);
+  assert.equal(ledger.reduce((s,r)=>s+cents(r.tax),0),cents(line.tax_withheld));assert.equal(ledger.reduce((s,r)=>s+cents(r.net),0),cents(line.final_staff_income));
+  assert.equal(ledger[0].tax,72);assert.equal(ledger[1].tax,taxCash?48:0);assert.equal(ledger[2].tax,taxTips?10:0);assert.equal(ledger[3].tax,taxBonus?20:0);
+  assert.equal(display.tip.net,tipNet);assert.equal(display.bonus.net,bonusNet);
+  assert.deepEqual(display.tip.methods,[tipMethod==='cash'?'Cash':'Check']);assert.deepEqual(display.bonus.methods,[bonusMethod==='cash'?'Cash':'Check']);
+  assert.deepEqual(display.tip.tax,taxTips?['Tax','20%']:['No tax']);assert.deepEqual(display.bonus.tax,taxBonus?['Tax','20%']:['No tax']);
+  assert.equal(display.checkFormula.includes('Tip'),tipMethod==='check');assert.equal(display.cashFormula.includes('Tip'),tipMethod==='cash');
+  assert.equal(display.checkFormula.includes('Bonus'),bonusMethod==='check');assert.equal(display.cashFormula.includes('Bonus'),bonusMethod==='cash');
   assert.equal(line.base_check_amount,288);assert.equal(line.base_cash_amount,taxCash?192:240);
   assert.equal(line.final_cash_amount,cash);assert.equal(line.final_check_amount,check);assert.equal(line.final_staff_income,cash+check);
   assert.equal(line.tax_withheld,72+(taxCash?48:0)+(taxTips?10:0)+(taxBonus?20:0));
@@ -154,4 +162,67 @@ test('tax company projection keeps untaxed tip/bonus amounts and flags without m
  assert.equal(data.source,'live');assert.equal(data.lines[0].final_check_amount,288);assert.equal(statement.lines[0].final_check_amount,999);
  assert.equal(data.lines[0].tip_amount,50);assert.equal(data.lines[0].bonus_amount,100);
  assert.equal(data.lines[0].tax_tips_snapshot,false);assert.equal(data.lines[0].tax_bonus_snapshot,false);
+});
+
+test('period-end bonus tax/payout is independent from worked-day rules, including custom ranges',async()=>{
+ const tables=fixtures();
+ tables.staff_payroll_settings=[
+  {...fixedSetting,id:'early',pay_type:'commission',commission_rate:60,check_rate:60,tax_rate:20,effective_from:'2026-10-01',effective_to:'2026-10-14',tip_payout_method:'cash',bonus_payout_method:'check',tax_tips:false,tax_bonus:false},
+  {...fixedSetting,id:'late',pay_type:'commission',commission_rate:70,check_rate:40,tax_rate:15,effective_from:'2026-10-15',effective_to:null,tip_payout_method:'check',bonus_payout_method:'cash',tax_tips:true,tax_bonus:true},
+ ];
+ tables.pos_ticket_staff_earnings=[{salon_id:'salon',ticket_id:'ticket',staff_id:'anna',work_date:'2026-10-14',service_total:1000,tip_amount:50,tip_is_manual:false}];
+ const run=async(startDate,endDate,cycleType='custom')=>(await api.calculateLivePayrollForAuth(authFor(tables),{startDate,endDate,cycleType,preset:'custom'})).lines[0];
+ const line=await run('2026-10-01','2026-10-15','semi_monthly');
+ const row=api.staffPayrollRowDisplay(line);
+ assert.equal(line.final_cash_amount,375);assert.equal(line.final_check_amount,288);assert.equal(row.bonus.net,85);
+ assert.deepEqual(row.bonus.tax,['Tax','15%']);assert.deepEqual(row.bonus.methods,['Cash']);
+ assert.deepEqual(row.tip.tax,['No tax']);assert.deepEqual(row.tip.methods,['Cash']);
+ const partial=await run('2026-10-14','2026-10-14');
+ assert.equal(partial.bonus_amount,0);assert.deepEqual(partial.period_staff_input_snapshot.bonusSettings,[]);
+ assert.equal(api.staffPayrollRowDisplay(partial).checkFormula.includes('20%'),true);
+});
+
+test('mixed work dates show mixed formulas while sliced dates retain only their applied rules',async()=>{
+ const tables=fixtures();
+ tables.staff_payroll_settings=[
+  {...fixedSetting,id:'early',pay_type:'commission',commission_rate:60,check_rate:60,tax_rate:20,effective_from:'2026-10-01',effective_to:'2026-10-07',tip_payout_method:'cash',tax_tips:false},
+  {...fixedSetting,id:'late',pay_type:'commission',commission_rate:65,check_rate:50,tax_rate:15,effective_from:'2026-10-08',effective_to:null,tip_payout_method:'check',tax_tips:true},
+ ];
+ tables.pos_ticket_staff_earnings=['2026-10-07','2026-10-08'].map((work_date,i)=>({salon_id:'salon',ticket_id:'ticket'+i,staff_id:'anna',work_date,service_total:1000,tip_amount:50,tip_is_manual:false}));
+ const run=async(startDate,endDate)=>(await api.calculateLivePayrollForAuth(authFor(tables),{startDate,endDate,cycleType:'custom',preset:'custom'})).lines[0];
+ const mixed=api.staffPayrollRowDisplay(await run('2026-10-01','2026-10-15'));
+ assert.deepEqual(mixed.checkFormula,['Mixed settings']);assert.deepEqual(mixed.tip.methods,['Cash','Check']);assert.deepEqual(mixed.tip.tax,['Mixed settings']);
+ const sliced=api.staffPayrollRowDisplay(await run('2026-10-08','2026-10-08'));
+ assert.deepEqual(sliced.tip.methods,['Check']);assert.deepEqual(sliced.tip.tax,['Tax','15%']);
+ assert(sliced.checkFormula.includes('15%'));assert(!sliced.checkFormula.includes('20%'));
+});
+
+test('fixed-pay exemption does not hide independent tip and bonus tax settings',async()=>{
+ const tables=fixtures();tables.staff_payroll_settings=[{...fixedSetting,check_rate:60,tax_rate:20,apply_tax_to_fixed_pay:false,tax_tips:true,tax_bonus:true,tip_payout_method:'check',bonus_payout_method:'cash'}];
+ tables.pos_ticket_staff_earnings=[{salon_id:'salon',ticket_id:'ticket',staff_id:'anna',work_date:'2026-10-15',service_total:1000,tip_amount:50,tip_is_manual:false}];
+ const {lines:[line]}=await api.calculateLivePayrollForAuth(authFor(tables),{startDate:'2026-10-01',endDate:'2026-10-15',cycleType:'semi_monthly',preset:'semi_monthly_first'});
+ const row=api.staffPayrollRowDisplay(line);assert.equal(row.checkFormula.includes('Tax'),false);assert.equal(row.cashFormula.includes('Tax'),false);
+ assert.equal(row.tip.net,40);assert.equal(row.bonus.net,80);assert.deepEqual(row.tip.tax,['Tax','20%']);assert.deepEqual(row.bonus.tax,['Tax','20%']);
+ const ledger=api.staffPayrollPaymentRows(line);assert.equal(ledger[0].tax,0);assert.equal(ledger[1].tax,0);assert.equal(ledger[2].tax,10);assert.equal(ledger[3].tax,20);assert.equal(ledger.reduce((s,r)=>s+Math.round(r.net*100),0),Math.round(line.final_staff_income*100));
+});
+
+test('month view keeps independent bonus channels and tax rules from both source periods',async()=>{
+ const tables=fixtures();
+ tables.staff_payroll_settings=[
+  {...fixedSetting,id:'first',pay_type:'commission',commission_rate:60,check_rate:60,tax_rate:20,tax_bonus:false,bonus_payout_method:'cash',effective_from:'2026-10-01',effective_to:'2026-10-15'},
+  {...fixedSetting,id:'second',pay_type:'commission',commission_rate:60,check_rate:60,tax_rate:20,tax_bonus:true,bonus_payout_method:'check',effective_from:'2026-10-16',effective_to:null},
+ ];
+ tables.payroll_period_staff_inputs.push({...tables.payroll_period_staff_inputs[0],id:'second-bonus',period_start:'2026-10-16',period_end:'2026-10-31'});
+ const {lines:[line]}=await api.calculateLivePayrollForAuth(authFor(tables),{startDate:'2026-10-01',endDate:'2026-10-31',cycleType:'custom',preset:'custom'});
+ const before=JSON.stringify(line),row=api.staffPayrollRowDisplay(line);
+ assert.equal(row.bonus.net,180);assert.deepEqual(row.bonus.methods,['Check','Cash']);assert.deepEqual(row.bonus.tax,['Mixed settings']);
+ assert.equal(JSON.stringify(line),before,'display cannot mutate payroll or snapshots');
+ assert.equal(line.final_staff_income,180);assert.equal(line.final_check_amount,80);assert.equal(line.final_cash_amount,100);
+});
+
+test('legacy saved rows never invent a missing bonus tax rate from current wage rules',async()=>{
+ const tables=fixtures();const {lines:[line]}=await api.calculateLivePayrollForAuth(authFor(tables),{startDate:'2026-10-01',endDate:'2026-10-15',cycleType:'semi_monthly',preset:'semi_monthly_first'});
+ const saved={...line,tax_bonus_snapshot:true,tax_rate_used:0,period_staff_input_snapshot:{},is_mixed_rate:true,settings_used_snapshot:[]};
+ const before=JSON.stringify(saved),row=api.staffPayrollRowDisplay(saved);
+ assert.deepEqual(row.bonus.tax,['Tax']);assert.deepEqual(row.tip.tax,['Mixed settings']);assert.deepEqual(row.checkFormula,['Mixed settings']);assert.equal(JSON.stringify(saved),before);
 });

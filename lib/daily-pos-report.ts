@@ -1273,7 +1273,7 @@ async function loadLiveDailyPosReport(
   if(giftFlowResult.error) throw new Error("Gift card source report could not load. Retry before closing the day.");
   const giftFlow = giftCashflow(giftFlowResult.data);
   const totalGiftCardCents = giftFlow.redeemed;
-  const expectedTotalCents = toCents(reconciliation.expectedService) - (usesTicketCutoff ? giftFlow.serviceRedeemed : 0);
+  const expectedTotalCents = toCents(reconciliation.expectedService) + (usesTicketCutoff ? giftFlow.counterSales - giftFlow.serviceRedeemed : 0);
   const differenceCents = reconciliation.serviceDifference === null ? 0 : toCents(reconciliation.serviceDifference);
 
   return {
@@ -1311,11 +1311,16 @@ async function loadLiveDailyPosReport(
       giftCardPaymentTotal: fromCents(totalGiftCardPaymentCents),
       reconciliationStatus: getReconciliationStatus(differenceCents),
       totalDiscount: usesTicketCutoff ? fromCents(totalDiscountCents) : Number(reconciliation.discount),
+      giftSales: fromCents(giftFlow.counterSales),
+      giftServicePaid: fromCents(giftFlow.serviceRedeemed),
+      giftTipPaid: fromCents(giftFlow.tipRedeemed),
+      rewardDiscount: Number(reconciliation.rewardDiscount ?? 0),
+      ordinaryDiscount: Number(reconciliation.ordinaryDiscount ?? reconciliation.discount ?? fromCents(totalDiscountCents)),
       totalGiftCard: fromCents(totalGiftCardCents),
       totalStaffEarned: Number(reconciliation.grossService),
       totalTax: fromCents(totalTaxCents),
-      totalTip: Number(reconciliation.expectedTip),
-      expectedTip: Number(reconciliation.expectedTip),
+      totalTip: Number(reconciliation.earnedTip ?? reconciliation.expectedTip),
+      expectedTip: usesTicketCutoff ? Math.max(0, Number(reconciliation.expectedTip)-fromCents(giftFlow.tipRedeemed)) : Number(reconciliation.expectedTip),
       serviceDifference: reconciliation.serviceDifference,
       tipDifference: reconciliation.tipDifference,
     },

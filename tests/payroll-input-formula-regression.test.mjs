@@ -13,7 +13,9 @@ function engine(source){
  const exports={};new Function('exports','roundMoney','numberValue','serializeSetting','calculateTaxCompanyReporting',js)(exports,v=>Math.round((v+Number.EPSILON)*100)/100,v=>Number.isFinite(Number(v))?Number(v):0,v=>v,tax.exports.calculateTaxCompanyReporting);
  return exports.calculateDailyPayroll;
 }
-const before=engine(execFileSync('git',['show','6115a30:lib/payroll.ts'],{encoding:'utf8',windowsHide:true}));
+// Compare this release with the captured live source, which already contains
+// the approved wage-channel tax allocation. The Oct 29 source predates that fix.
+const before=engine(execFileSync('git',['show','274a3ab4300956a458c564ad6beab44ff85e7264:lib/payroll.ts'],{encoding:'utf8',windowsHide:true}));
 const after=engine(fs.readFileSync('lib/payroll.ts','utf8'));
 const defaults={pay_type:'commission',commission_rate:60,check_rate:50,tax_rate:0,cash_to_tax_company:false,apply_tax_to_fixed_pay:false,tax_tips:false,tip_payout_method:'cash',bonus_payout_method:'check'};
 const input=(setting={},gross=1000,tip=100)=>({businessDate:'2026-10-29',correctionDelta:0,earning:{grossSales:gross,tipAmount:tip},fixedDailyAmount:80,accountId:'account',payrollRunId:'run',salonId:'salon',staffId:'staff',setting:{...defaults,...setting}});
@@ -23,6 +25,17 @@ for(const [name,setting] of [
  ['taxed tips by check',{tax_rate:15,tax_tips:true,tip_payout_method:'check'}],['fixed pay exempt',{pay_type:'fixed',tax_rate:10}],
  ['fixed pay taxable',{pay_type:'fixed',tax_rate:10,apply_tax_to_fixed_pay:true}],['all check',{check_rate:100,tip_payout_method:'check'}],['all cash',{check_rate:0}],
 ])test(`existing calculation preserved: ${name}`,()=>assert.deepEqual(financial(after(input(setting))),financial(before(input(setting)))));
+
+for(const [name,setting,expected] of [
+ ['untaxed wage Cash remains intact',{tax_rate:10},{baseCash:300,baseCheck:270,cash:400,check:270,tax:30}],
+ ['taxed Check tips stay in their own payout channel',{tax_rate:15,tax_tips:true,tip_payout_method:'check'},{baseCash:300,baseCheck:255,cash:300,check:340,tax:60}],
+ ['taxable fixed wages split before Check tax',{pay_type:'fixed',tax_rate:10,apply_tax_to_fixed_pay:true},{baseCash:40,baseCheck:36,cash:140,check:36,tax:4}],
+])test(`approved channel allocation: ${name}`,()=>{
+ const result=after(input(setting));
+ assert.equal(result.baseCashAmount,expected.baseCash);assert.equal(result.baseCheckAmount,expected.baseCheck);
+ assert.equal(result.baseCashAmount+result.tipCashAmount,expected.cash);assert.equal(result.baseCheckAmount+result.tipCheckAmount,expected.check);
+ assert.equal(result.taxWithheld,expected.tax);assert.equal(expected.cash+expected.check+result.taxWithheld,result.staffPay+100);
+});
 test('gross input changes service pay, while declared customer discount never reduces Staff gross',()=>{
  const original=after(input()),changed=after(input({},1100));assert.equal(original.staffPay,600);assert.equal(changed.staffPay,660);
  assert.equal(original.dailyTotal.gross_sales,1000);assert.equal(original.dailyTotal.tip_amount,100);

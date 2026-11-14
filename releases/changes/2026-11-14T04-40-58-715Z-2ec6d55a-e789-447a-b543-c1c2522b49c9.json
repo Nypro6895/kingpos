@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "basic-page-loading-wave2-20261113",
+  "status": "working",
+  "summary": "Continue basic page loading optimization for My Place, Services and Notifications; preserve workspace handoff, edit/draft/action and permission guards; defer My Pay and financial architecture.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "commit": "6b65ca8d7732cd13c042012892b82ab41ddb4082"
+  },
+  "validation": [
+    {
+      "name": "Scoped loading/authority/draft/interaction tests and assembled checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "basic-page-loading-20261113"
+  ],
+  "id": "2ec6d55a-e789-447a-b543-c1c2522b49c9",
+  "recordedAt": "2026-11-14T04:40:58.715Z",
+  "worktree": "C:\\Reylumi-worktrees\\basic-page-loading-wave2-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

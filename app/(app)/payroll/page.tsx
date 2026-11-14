@@ -1,3 +1,4 @@
+import type { PayrollIssuedChecks } from "@/types/payroll-issued-checks";
 import { payrollPageLoadPlan } from "@/lib/payroll-page-load-plan";
 import payrollTheme from "@/app/payroll/payroll-theme.module.css";
 import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
@@ -14,6 +15,7 @@ import { PayrollDailyListing } from "@/app/payroll/payroll-daily-listing";
 import { PayrollDashboard } from "@/app/payroll/payroll-dashboard";
 import { PayrollPeriodRail } from "@/app/payroll/payroll-period-rail";
 import { PayrollTabs } from "@/app/payroll/payroll-tabs";
+import { StaffPayrollDetailsGroup } from "@/app/payroll/staff-payroll-details";
 import { StaffIncomeCard } from "@/app/payroll/staff-income-card";
 import { PayrollPaymentComparison } from "@/app/payroll/payroll-payment-comparison";
 import type {PayrollRecordedFacts} from "@/types/payroll-records";
@@ -339,19 +341,19 @@ function NoPermissionState({ message }: { message: string }) {
   );
 }
 
-function StaffIncomeTab({ canPrintChecks, canManage, lines, period, history, salonId, today, recordedFacts, scope, historyQuery }: {
-  canPrintChecks: boolean; canManage: boolean; lines: PayrollStaffLineWithDailyTotals[]; period: PayrollPeriod; history: PayrollLiveChange[]; salonId: string; today: string;recordedFacts:PayrollRecordedFacts;scope:string; historyQuery?:string;
+function StaffIncomeTab({ canPrintChecks, canManage, lines, period, history, salonId, today, recordedFacts, scope, historyQuery, issuedChecks }: {
+  canPrintChecks: boolean; canManage: boolean; lines: PayrollStaffLineWithDailyTotals[]; period: PayrollPeriod; history: PayrollLiveChange[]; salonId: string; today: string;recordedFacts:PayrollRecordedFacts;scope:string; historyQuery?:string; issuedChecks?:PayrollIssuedChecks;
 }) {
-  return <FinancialHistoryProvider salonId={salonId} surface="payroll" start={period.startDate} end={period.endDate} scope={scope} query={historyQuery} initialChanges={history}><section className="grid gap-3" aria-label="Staff payroll">
+  return <FinancialHistoryProvider salonId={salonId} surface="payroll" start={period.startDate} end={period.endDate} scope={scope} query={historyQuery} initialChanges={history}><StaffPayrollDetailsGroup key={`${salonId}:${period.startDate}:${period.endDate}`}><section className="grid gap-3" aria-label="Staff payroll">
     {!lines.length&&<p className={styles.panel}><WorkspaceText text="No staff income lines for this period." /></p>}
     {lines.map(line => <StaffIncomeCard key={`${period.startDate}:${period.endDate}:${line.staff_id}`} line={line}
       history={<PayrollObjectHistory changes={financialHistoryForObject(history,{staffId:line.staff_id,sourceKinds:["payroll_settings","staff_payroll_settings"]})} label="Pay settings edited"/>}
-      adjustments={<>{canPrintChecks && <Link className="inline-flex min-h-11 items-center px-3 text-sm text-teal-700" href={`/check-writer?start=${period.startDate}&end=${period.endDate}&staff=${line.staff_id}`}><WorkspaceText text="Print check" /></Link>}<StaffIncomeAutosaveInputs inputUpdatedAt={line.input?.updated_at ?? null} bonusAmount={line.bonus_amount} bonusPayoutMethod={line.bonus_payout_method_snapshot} canManage={canManage && period.cycleType !== "custom"} checkNumber={line.check_number} cycleType={period.cycleType} note={line.note} periodEnd={period.endDate} periodStart={period.startDate} staffId={line.staff_id} taxBonus={line.tax_bonus_snapshot} /><InlinePayrollPaymentDetails changes={periodPaymentDetailsForObject(history,{staffId:line.staff_id,sourceKinds:["payroll_period_staff_inputs"]})}/><PayrollObjectHistory changes={financialHistoryForObject(history,{staffId:line.staff_id,sourceKinds:["payroll_period_staff_inputs"]})} label="Bonus edited"/></>}
-      breakdown={<><PayrollPaymentComparison facts={recordedFacts} line={line} period={period} canRecord={canManage} scope={scope} showPayments/><details className="border-t py-3"><summary className="text-sm font-medium"><WorkspaceText text="Breakdown" /></summary>
-        <PayrollDailyListing rows={line.dailyTotals} salonId={salonId} canManage={canManage} today={today} history={history} />
-      </details></>}
+      adjustments={<><StaffIncomeAutosaveInputs line={line} issuedChecks={issuedChecks} printCheckHref={canPrintChecks ? `/check-writer?start=${period.startDate}&end=${period.endDate}&staff=${line.staff_id}` : undefined} inputUpdatedAt={line.input?.updated_at ?? null} bonusAmount={line.bonus_amount} bonusPayoutMethod={line.bonus_payout_method_snapshot} canManage={canManage && period.cycleType !== "custom"} checkNumber={line.check_number} cycleType={period.cycleType} note={line.note} periodEnd={period.endDate} periodStart={period.startDate} staffId={line.staff_id} taxBonus={line.tax_bonus_snapshot} /><InlinePayrollPaymentDetails changes={periodPaymentDetailsForObject(history,{staffId:line.staff_id,sourceKinds:["payroll_period_staff_inputs"]})}/><PayrollObjectHistory changes={financialHistoryForObject(history,{staffId:line.staff_id,sourceKinds:["payroll_period_staff_inputs"]})} label="Bonus edited"/></>}
+      breakdown={<><section className={styles.paymentBreakdown}><h3><WorkspaceText text="Breakdown" /></h3>
+        <PayrollDailyListing compact rows={line.dailyTotals} salonId={salonId} canManage={canManage} today={today} history={history} />
+      </section><details className="border-t py-3"><summary className="text-sm"><WorkspaceText text="Pay and recorded payments" /></summary><PayrollPaymentComparison facts={recordedFacts} line={line} period={period} canRecord={canManage} scope={scope} showPayments/></details></>}
     />)}
-  </section></FinancialHistoryProvider>;
+  </section></StaffPayrollDetailsGroup></FinancialHistoryProvider>;
 }
 
 function ShopIncomeTab({
@@ -889,7 +891,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
 
   try {
     [data, taxPlugin, downloadEnabled] = await Promise.all([getPayrollPageData({
-      includeAnalytics: plan.includeAnalytics,
+      includeCheckReferences: params.tab === "staff", includeAnalytics: plan.includeAnalytics,
       includeShopMoney: plan.includeShopMoney,
       endDate: params.end,
       month: params.month,
@@ -933,7 +935,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
           today={data.today}
           canPrintChecks={canManageConnection}
           canManage={data.access.canManagePayroll}
-          lines={data.live.lines}
+          issuedChecks={data.issuedChecks} lines={data.live.lines}
           history={data.history}
           period={data.period}
           recordedFacts={data.recordedFacts}

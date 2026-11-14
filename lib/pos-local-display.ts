@@ -1,7 +1,7 @@
 import type { PosLiveDraftView } from "@/types/pos-desk";
 import type { PortableDraftPayload } from "@/app/pos/portable/use-portable-draft";
 
-export type LocalReceiptPreview = { cartId: string; revision: string; payload: PortableDraftPayload; completedAt?: string; resetAt?: string };
+export type LocalReceiptPreview = { cartId: string; revision: string; payload: PortableDraftPayload; completedAt?: string; resetAt?: string; settledReceipt?:PosLiveDraftView["settled_receipt"] };
 type LocalTipRequest = { cartId: string; revision: string; id: string; amount: number };
 type LocalCustomerRequest = { cartId: string; revision: string; id: string; customer: NonNullable<PosLiveDraftView["customer"]> };
 export function connectLocalReceipt(token: string, callbacks: {
@@ -58,6 +58,7 @@ export function localReceiptSnapshot(baseline: PosLiveDraftView | null, value: L
     staff_lines: p.staffLines, discount: p.discount, subtotal: p.subtotal, tax: p.tax, tip: p.tip,
     total: p.total, total_before_tip: p.totalBeforeTip, status: value.completedAt ? "closed" : "draft",
     completed_at: value.completedAt ?? null, reset_at: value.resetAt ?? null,
+    settled_receipt: value.completedAt && value.settledReceipt && [value.settledReceipt.giftPurchaseCents,value.settledReceipt.giftPaidCents].every(amount=>Number.isSafeInteger(amount)&&amount>=0&&amount<=10000000) ? value.settledReceipt : undefined,
     customer_handoff_started_at: p.staffLines.length ? baseline?.customer_handoff_started_at ?? null : null };
 }
 export function requestLocalReceiptTip(token: string, preview: LocalReceiptPreview, amount: number) {

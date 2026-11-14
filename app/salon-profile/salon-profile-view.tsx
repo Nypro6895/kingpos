@@ -1,4 +1,6 @@
 "use client";
+import { ExperienceReplyComposer, ExperienceReplyGroup } from "@/components/experience-reply-composer";
+import experienceStyles from "./experiences.module.css";
 import { SalonName } from "@/components/salon-member-badge";
 
 import { VisitReplyControls } from "@/app/activity/visit-reply-controls";
@@ -171,6 +173,7 @@ type ProfileExperience = {
   selectedMood: string | null;
   featuredLookId: string | null;
   experienceFilter: "all" | "issues" | "verified" | "good";
+  verifiedExperiencesOnly?: boolean;
   visibleTimelineCount: number;
   tabScrollPositions: Record<TabId, number>;
 };
@@ -2440,14 +2443,14 @@ function ReviewReplyForm({
   onPosted: () => void;
   review: PublicSalonProfileExperience;
 }) {
-  const __vt = useWorkspaceTranslation();
-
   const [body, setBody] = useState("");
   const [status, setStatus] = useState("");
+  const [posted, setPosted] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isPending || posted) return;
 
     if (!body.trim()) {
       setStatus("Write a reply before posting.");
@@ -2455,6 +2458,8 @@ function ReviewReplyForm({
     }
 
     startTransition(async () => {
+      setStatus("");
+      try {
       const result = await createSalonProfileReviewReplyAction({
         body,
         reviewId: review.id,
@@ -2468,29 +2473,14 @@ function ReviewReplyForm({
 
       setBody("");
       setStatus("Reply posted.");
+      setPosted(true);
       onPosted();
+      } catch { setStatus("Your reply could not be saved. Your draft is still here. Please try again."); }
     });
   }
 
-  return (
-    <form className="mt-4 grid gap-2 border-t border-zinc-100 pt-4" onSubmit={submit}>
-      <textarea
-        className="min-h-20 resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-950 outline-none transition focus:border-zinc-950"
-        maxLength={1000}
-        onChange={(event) => setBody(event.currentTarget.value)}
-        placeholder={__vt("Reply as the salon")}
-        value={body}
-      />
-      <div className="flex items-center justify-between gap-3">
-        <p aria-live="polite" className="text-sm text-zinc-600">
-          <WorkspaceText text={status} />
-        </p>
-        <Button disabled={isPending} type="submit" variant="secondary">
-          <WorkspaceText text={isPending ? "Replying..." : "Reply"} />
-        </Button>
-      </div>
-    </form>
-  );
+  if (posted) return <p role="status" className="mt-3 text-sm text-zinc-600"><WorkspaceText text="Reply posted." /></p>;
+  return <ExperienceReplyComposer body={body} onBodyChange={setBody} pending={isPending} status={status} onSubmit={submit} />;
 }
 
 function experienceStateLabel(experience: PublicSalonProfileExperience) {
@@ -2516,69 +2506,47 @@ function ExperienceCard({
   onPosted: () => void;
   viewerId: string | null;
 }) {
-  const quick = !experience.title?.trim() && !experience.body?.trim() && !experience.replyBody && !(canReplyAsSalon && experience.source === "legacy_review");
-  const canReplyToExperience =
-    canReplyAsSalon && experience.source === "legacy_review";
-  const meta = [
-
-    timeAgo(experience.createdAt),
-  ]
-    .filter(Boolean)
-    .join(" / ");
-
+  const __vt = useWorkspaceTranslation();
+  const canReplyToExperience = canReplyAsSalon && experience.source === "legacy_review";
+  const date = experience.createdAt && Number.isFinite(Date.parse(experience.createdAt))
+    ? new Date(experience.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }) : null;
   return (
-      <article id={`experience-${experience.id}`} className="min-w-0 scroll-mt-28 border-zinc-200/80 bg-white px-4 py-3 rounded-none border-0 shadow-none">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-baseline gap-x-2 text-sm font-semibold text-zinc-950">
-            <span className="break-words">{experience.authorDisplayName}</span>
-            {quick ? <span className="font-normal text-zinc-600"><WorkspaceText text={experienceStateLabel(experience)} /></span> : null}
-          </p>
-          {viewerId && experience.authorUserId && viewerId !== experience.authorUserId ? <BlockUserButton userId={experience.authorUserId} /> : null}
-          {viewerId ? <SocialTextReportButton target={{kind:experience.source === "legacy_review" ? "review" : "experience",id:experience.id,salonId:experience.salonId}}/> : null}
-          {!quick && meta ? <p className="mt-1 text-sm text-zinc-500">{meta}</p> : null}
-            {!quick && experience.editedAt ? <p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Edited" /></p> : null}
+    <article id={`experience-${experience.id}`} className={experienceStyles.card}>
+      <div className={experienceStyles.cardHeader}>
+        <div className="min-w-0">
+          <div className={experienceStyles.identity}>
+            <p className={experienceStyles.author}>{experience.authorDisplayName}</p>
+            <span className={experience.verificationStatus === "verified" ? experienceStyles.verified : experienceStyles.unverified}>
+              {experience.verificationStatus === "verified" ? <span aria-hidden="true">✓ </span> : null}
+              <WorkspaceText text={experience.verificationStatus === "verified" ? "Verified Visit" : "Experience"} />
+            </span>
+          </div>
+          <div className={experienceStyles.meta}>
+            {date ? <time dateTime={experience.createdAt}>{date}</time> : null}
+            {experience.editedAt ? <span><WorkspaceText text="Edited" /></span> : null}
+          </div>
         </div>
-        <span
-          className={[
-            "shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold",
-            experience.verificationStatus === "verified"
-              ? "bg-emerald-50 text-emerald-800"
-              : "bg-zinc-100 text-zinc-600",
-          ].join(" ")}
-        >
-          <WorkspaceText text={experience.verificationStatus === "verified"
-            ? "Verified Visit"
-            : "Experience"} />
-        </span>
+        {viewerId ? <details className={experienceStyles.more}>
+          <summary aria-label={__vt("Experience options")}>•••</summary>
+          <div className={experienceStyles.menu}>
+            <SocialTextReportButton target={{kind:experience.source === "legacy_review" ? "review" : "experience",id:experience.id,salonId:experience.salonId}} />
+            {experience.authorUserId && viewerId !== experience.authorUserId ? <BlockUserButton userId={experience.authorUserId} /> : null}
+          </div>
+        </details> : null}
       </div>
-      {!quick ? <p className="mt-3 text-sm font-semibold text-zinc-950">
-        <WorkspaceText text={experienceStateLabel(experience)} />
-      </p> : null}
-      {experience.title ? (
-        <h3 className="mt-2 font-semibold text-zinc-950"><WorkspaceText text={experience.title} /></h3>
-      ) : null}
-      {experience.body ? (
-          <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-700">
-          {experience.body}
-        </p>
-      ) : null}
-      {experience.replyBody ? (
-        <div className="mt-4 bg-zinc-50 p-4 rounded-none border-0 shadow-none">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
-            <WorkspaceText text="Salon reply" />
-          </p>
-            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-700">
-            {experience.replyBody}
-          </p>
-            {viewerId && experience.replyId ? <SocialTextReportButton target={{kind:experience.source === "legacy_review" ? "review_reply" : "experience_reply",id:experience.replyId,salonId:experience.salonId}}/> : null}
-            {experience.replyCreatedAt ? <p className="mt-2 text-xs text-zinc-500">{timeAgo(experience.replyCreatedAt)}</p> : null}
-        </div>
-      ) : canReplyToExperience ? (
-        <ReviewReplyForm onPosted={onPosted} review={experience} />
-      ) : null}
-        {experience.feedbackState === "issue" ? <p className="mt-3 text-xs leading-5 text-zinc-600"><WorkspaceText text={experience.issueStatus === "resolved" ? "This issue was marked resolved. The original feedback remains unchanged." : experience.issueStatus === "acknowledged" ? "The salon has acknowledged your issue." : "Awaiting a salon response."} /></p> : null}
-        {canReplyAsSalon && experience.source === "experience" ? <VisitReplyControls salonId={experience.salonId} experienceId={experience.id} hasReply={Boolean(experience.replyBody)} issueStatus={experience.feedbackState === "issue" ? experience.issueStatus : null} onChanged={onPosted} /> : null}
+      {experience.title ? <h3 className="mt-2 font-semibold text-zinc-950">{experience.title}</h3> : null}
+      {experience.body ? <p className={experienceStyles.body}>{experience.body}</p> : null}
+      <div className={experienceStyles.feedbackRow}>
+        <span className={experience.feedbackState === "good" ? experienceStyles.positive : experienceStyles.concern}><WorkspaceText text={experienceStateLabel(experience)} /></span>
+      </div>
+      {experience.replyBody ? <div className={experienceStyles.savedReply}>
+        <p className="text-sm font-semibold"><WorkspaceText text="Salon reply" /></p>
+        <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6">{experience.replyBody}</p>
+        {viewerId && experience.replyId ? <SocialTextReportButton target={{kind:experience.source === "legacy_review" ? "review_reply" : "experience_reply",id:experience.replyId,salonId:experience.salonId}} /> : null}
+        {experience.replyCreatedAt ? <p className="mt-1 text-xs text-zinc-500">{timeAgo(experience.replyCreatedAt)}</p> : null}
+      </div> : canReplyToExperience ? <ReviewReplyForm onPosted={onPosted} review={experience} /> : null}
+      {canReplyAsSalon && experience.source === "experience" ? <VisitReplyControls salonId={experience.salonId} experienceId={experience.id} hasReply={Boolean(experience.replyBody)} issueStatus={experience.feedbackState === "issue" ? experience.issueStatus : null} onChanged={onPosted} /> : null}
+      {experience.feedbackState === "issue" && (experience.issueStatus === "resolved" || experience.issueStatus === "acknowledged") ? <p className="mt-3 text-xs leading-5 text-zinc-600"><WorkspaceText text={experience.issueStatus === "resolved" ? "This issue was marked resolved. The original feedback remains unchanged." : "The salon has acknowledged your issue."} /></p> : null}
     </article>
   );
 }
@@ -3347,6 +3315,7 @@ export function SalonProfileView({
   const ownerMenuRef = useRef<HTMLDivElement | null>(null);
   const [experienceFilter, setExperienceFilter] =
     useState<"all" | "issues" | "verified" | "good">("all");
+  const [verifiedExperiencesOnly, setVerifiedExperiencesOnly] = useState(false);
   const [commentTarget, setCommentTarget] = useState<PostCommentTarget | null>(null);
   useTransientOverlay(() => setCommentTarget(null), Boolean(commentTarget));
   const [commentCountOverrides, setCommentCountOverrides] = useState(
@@ -3377,7 +3346,7 @@ export function SalonProfileView({
     key: `${profile.salonId}:${pathname}:${manageData ? "manage" : "public"}`,
   }, {
     enabled: !error,
-    value: () => ({ selectedTab, selectedMood, featuredLookId, experienceFilter,
+    value: () => ({ selectedTab, selectedMood, featuredLookId, experienceFilter, verifiedExperiencesOnly,
       visibleTimelineCount: Math.min(120, visibleTimelineCount), tabScrollPositions: tabScrollPositions.current }),
     validate: isProfileExperience,
     onEmpty() {
@@ -3385,6 +3354,7 @@ export function SalonProfileView({
       setSelectedMood(null);
       setFeaturedLookId(null);
       setExperienceFilter("all");
+      setVerifiedExperiencesOnly(false);
       setVisibleTimelineCount(INITIAL_TIMELINE_ITEM_COUNT);
       for (const tab of TABS) tabScrollPositions.current[tab.id] = 0;
     },
@@ -3394,6 +3364,7 @@ export function SalonProfileView({
       setSelectedMood(state.selectedMood && sortedLooks.some(look => look.mood === state.selectedMood) ? state.selectedMood : null);
       setFeaturedLookId(state.featuredLookId && lookById.has(state.featuredLookId) ? state.featuredLookId : null);
       setExperienceFilter(state.experienceFilter);
+      setVerifiedExperiencesOnly(Boolean(state.verifiedExperiencesOnly));
       setVisibleTimelineCount(Math.max(INITIAL_TIMELINE_ITEM_COUNT, Math.min(state.visibleTimelineCount, data.feed.length + data.looks.length + data.beautyPosts.length, 120)));
       Object.assign(tabScrollPositions.current, state.tabScrollPositions);
     },
@@ -4164,46 +4135,32 @@ export function SalonProfileView({
   }
 
   function renderExperiences() {
-    const visibleExperiences =
-      experienceFilter === "verified"
-        ? data.experiences.filter(
-            (experience) => experience.verificationStatus === "verified",
-          )
-        : experienceFilter === "issues"
-          ? data.experiences.filter(
-              (experience) => experience.feedbackState === "issue",
-            )
-          : experienceFilter === "good" ? data.experiences.filter(experience=>experience.feedbackState==="good") : data.experiences;
-
+    const visibleExperiences = data.experiences.filter(experience =>
+      (!(verifiedExperiencesOnly || experienceFilter === "verified") || experience.verificationStatus === "verified") &&
+      (experienceFilter !== "issues" || experience.feedbackState === "issue") &&
+      (experienceFilter !== "good" || experience.feedbackState === "good")
+    );
     return (
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.45fr)]">
-          <div className="grid gap-4 scroll-mt-24" id="customer-experiences">
-          <h3 className="text-lg font-semibold"><WorkspaceText text="Customer experiences" /></h3>
-            <p className="text-xs leading-5 text-zinc-600"><WorkspaceText text="Experiences include shared reviews. Opinions in LUMI Truth count eligible independent customers, so the totals may differ." /></p>
-          <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
-            {(["all", "verified", "good", "issues"] as const).map((filter) => (
-              <button
-                aria-pressed={experienceFilter === filter}
-                className={[
-                  "min-h-11 rounded-xl border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
-                  experienceFilter === filter
-                    ? "border-zinc-950 bg-zinc-950 text-white"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300",
-                ].join(" ")}
-                key={filter}
-                onClick={() => setExperienceFilter(filter)}
-                type="button"
-              >
-                <WorkspaceText text={filter === "all"
-                  ? "All Experiences"
-                  : filter === "verified"
-                    ? "Verified Visits"
-                    : filter === "good" ? "Good feedback" : "Concerns"} />
-              </button>
-            ))}
+        <div className={experienceStyles.section} id="customer-experiences">
+          <div>
+            <h3 className={experienceStyles.heading}><WorkspaceText text="Customer experiences" /></h3>
+            <p className={experienceStyles.description}><WorkspaceText text="Shared reviews may have different totals." /></p>
+          </div>
+          <div className={experienceStyles.filters}>
+            <div className={experienceStyles.chips}>
+              {(["all", "good", "issues"] as const).map(filter => (
+                <button type="button" key={filter} aria-pressed={experienceFilter === filter || (filter === "all" && experienceFilter === "verified")}
+                  className={(experienceFilter === filter || (filter === "all" && experienceFilter === "verified")) ? experienceStyles.activeChip : experienceStyles.chip}
+                  onClick={() => { if (experienceFilter === "verified") setVerifiedExperiencesOnly(true); setExperienceFilter(filter); }}>
+                  <WorkspaceText text={filter === "all" ? "All" : filter === "good" ? "Positive" : "Concerns"} />
+                </button>
+              ))}
+            </div>
+            <label className={experienceStyles.verifiedFilter}><input type="checkbox" checked={verifiedExperiencesOnly || experienceFilter === "verified"} onChange={event => { setVerifiedExperiencesOnly(event.target.checked); if (experienceFilter === "verified") setExperienceFilter("all"); }} /><WorkspaceText text="Verified visits only" /></label>
           </div>
           {visibleExperiences.length > 0 ? (
-            <div className="grid gap-3">
+            <ExperienceReplyGroup><div className="grid gap-3">
               {visibleExperiences.map((experience) => (
                 <ExperienceCard
                   canReplyAsSalon={capabilities.canReplyAsSalon}
@@ -4213,7 +4170,7 @@ export function SalonProfileView({
                   onPosted={refresh}
                 />
               ))}
-            </div>
+            </div></ExperienceReplyGroup>
           ) : (
             <EmptyState title={__vt("No Experiences yet")}>
               <WorkspaceText text={experienceFilter === "verified"

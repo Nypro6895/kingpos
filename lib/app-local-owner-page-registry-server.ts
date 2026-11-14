@@ -85,7 +85,7 @@ export async function readAppLocalOwnerPageResource(name: string, input: Record<
     const canManageConnection = isOwnerMembership(context.currentMembership);
     const plan = payrollPageLoadPlan(args.tab, canManageConnection);
     const [result, taxPlugin, downloadEnabled] = await Promise.all([
-      runReadWithDeadline(getPayrollPageData({ includeAnalytics: plan.includeAnalytics, includeShopMoney: plan.includeShopMoney, endDate: args.end, month: args.month, payPeriodStart: args.payPeriodStart, preset: args.preset, segment: args.segment, startDate: args.start }), 20000),
+      runReadWithDeadline(getPayrollPageData({ includeCheckReferences: args.tab === "staff", includeAnalytics: plan.includeAnalytics, includeShopMoney: plan.includeShopMoney, endDate: args.end, month: args.month, payPeriodStart: args.payPeriodStart, preset: args.preset, segment: args.segment, startDate: args.start }), 20000),
       plan.taxPlugin ? taxCompanySettings().catch(() => null) : Promise.resolve(null),
       plan.downloadPlugin ? payrollDataPluginInstalled().catch(() => null) : Promise.resolve(null),
     ]);

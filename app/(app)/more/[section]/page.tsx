@@ -27,6 +27,8 @@ import { revalidatePath } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
+import { LoadingStatus } from "@/components/loading-feedback";
 
 type MoreSectionSearchParams = {
   experience?: string | string[];
@@ -397,7 +399,6 @@ function SavedPostsSection({
   if (posts.length === 0) {
     return (
       <div className="grid gap-3">
-        <SavedPostControls filter={filter} query={query} />
         <EmptyState
           actionHref="/explore"
           actionLabel="Explore salons"
@@ -413,7 +414,6 @@ function SavedPostsSection({
 
   return (
     <div className="grid gap-3">
-      <SavedPostControls filter={filter} query={query} />
       <WorkspaceElement as="section" className={styles.gallery} aria-label="Saved posts">
         {posts.map((post, index) => (
           <SavedPostCard key={post.id} post={post} index={index} />
@@ -520,7 +520,6 @@ function FollowingSection({
   if (items.length === 0) {
     return (
       <div className="grid gap-3">
-        <FollowingControls filter={filter} query={query} />
         <EmptyState
           actionHref={query || filter !== "all" ? "/more/following" : "/explore"}
           actionLabel={query || filter !== "all" ? "Clear filters" : "Explore"}
@@ -536,7 +535,6 @@ function FollowingSection({
 
   return (
     <div className="grid gap-3">
-      <FollowingControls filter={filter} query={query} />
       <WorkspaceElement as="section" className={styles.followingList} aria-label="Following">
         {items.map((item) => (
           <FollowingRow item={item} key={item.id} />
@@ -577,25 +575,15 @@ async function MoreSectionPage({
     const savedPostQuery = stringParam(rawSearchParams.q)?.trim() ?? "";
     const filter = parseSavedPostFilter(stringParam(rawSearchParams.filter));
     const page = parseSavedPostPage(stringParam(rawSearchParams.page));
-    const postsPlusOne = await getAccountSavedPosts({
-      filter,
-      limit: SAVED_POST_PAGE_SIZE + 1,
-      offset: (page - 1) * SAVED_POST_PAGE_SIZE,
-      query: savedPostQuery,
-    });
-    const posts = postsPlusOne.slice(0, SAVED_POST_PAGE_SIZE);
-    const hasNext = postsPlusOne.length > SAVED_POST_PAGE_SIZE;
-
     return (
       <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-full max-w-4xl gap-5">
-          <SavedPostsSection
-            filter={filter}
-            hasNext={hasNext}
-            page={page}
-            posts={posts}
-            query={savedPostQuery}
-          />
+          <div className="grid gap-3">
+            <SavedPostControls filter={filter} query={savedPostQuery} />
+            <Suspense key={JSON.stringify([context.user.id, filter, page, savedPostQuery])} fallback={<LoadingStatus text="Loading saved posts…" />}>
+              <SavedPostsContent filter={filter} page={page} query={savedPostQuery} />
+            </Suspense>
+          </div>
         </div>
       </main>
     );
@@ -617,33 +605,15 @@ async function MoreSectionPage({
     const followingQuery = stringParam(rawSearchParams.q)?.trim() ?? "";
     const filter = parseFollowingFilter(stringParam(rawSearchParams.filter));
     const page = parseSavedPostPage(stringParam(rawSearchParams.page));
-    const following = await getAccountFollowing({
-      filter,
-      page,
-      pageSize: FOLLOWING_PAGE_SIZE,
-      query: followingQuery,
-    });
-
-    if (following.totalCount > 0 && page > following.totalPages) {
-      redirect(
-        followingHref({
-          filter,
-          page: following.totalPages,
-          query: followingQuery,
-        }),
-      );
-    }
-
     return (
       <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-full max-w-4xl gap-5">
-          <FollowingSection
-            filter={filter}
-            items={following.items}
-            page={following.page}
-            query={following.query}
-            totalPages={following.totalPages}
-          />
+          <div className="grid gap-3">
+            <FollowingControls filter={filter} query={followingQuery} />
+            <Suspense key={JSON.stringify([context.user.id, filter, page, followingQuery])} fallback={<LoadingStatus text="Loading following…" />}>
+              <FollowingContent filter={filter} page={page} query={followingQuery} />
+            </Suspense>
+          </div>
         </div>
       </main>
     );
@@ -664,6 +634,17 @@ async function MoreSectionPage({
       </div>
     </main>
   );
+}
+
+async function SavedPostsContent({ filter, page, query }: { filter: AccountSavedPostFilter; page: number; query: string }) {
+  const postsPlusOne = await getAccountSavedPosts({ filter, limit: SAVED_POST_PAGE_SIZE + 1, offset: (page - 1) * SAVED_POST_PAGE_SIZE, query });
+  return <SavedPostsSection filter={filter} hasNext={postsPlusOne.length > SAVED_POST_PAGE_SIZE} page={page} posts={postsPlusOne.slice(0, SAVED_POST_PAGE_SIZE)} query={query} />;
+}
+
+async function FollowingContent({ filter, page, query }: { filter: AccountFollowingFilter; page: number; query: string }) {
+  const following = await getAccountFollowing({ filter, page, pageSize: FOLLOWING_PAGE_SIZE, query });
+  if (following.totalCount > 0 && page > following.totalPages) redirect(followingHref({ filter, page: following.totalPages, query }));
+  return <FollowingSection filter={filter} items={following.items} page={following.page} query={following.query} totalPages={following.totalPages} />;
 }
 
 export default withExperiencePage(MoreSectionPage);

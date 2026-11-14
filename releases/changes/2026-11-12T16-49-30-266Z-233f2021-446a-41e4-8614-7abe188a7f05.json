@@ -1,0 +1,80 @@
+{
+  "kind": "change",
+  "changeId": "windows-update-one-click-20261112",
+  "status": "needs-integration",
+  "summary": "One-click Settings update/restart, visible progress/retry, executable download alias and repaired legacy cache; Windows 0.7.6 native candidate built and verified. Active saved draft is distinguished from in-flight Submit/Reset. Web and native release/install remain pending.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/pos/windows-update/latest.yml/route.ts",
+    "app/download/windows.exe/route.ts",
+    "app/download/windows/route.ts",
+    "app/pos/portable/desktop-update.css",
+    "app/pos/portable/desktop-update.tsx",
+    "app/pos/portable/device-settings-panel.tsx",
+    "app/pos/portable/use-portable-draft.ts",
+    "app/pos/pos-desk-client.tsx",
+    "desktop/README.md",
+    "desktop/build.cjs",
+    "desktop/main.cjs",
+    "desktop/package-lock.json",
+    "desktop/package.json",
+    "desktop/tests/installer-smoke.cjs",
+    "desktop/tests/online-updater.electron.cjs",
+    "desktop/tests/update-flow.test.cjs",
+    "desktop/tests/update-installer.test.cjs",
+    "desktop/update-installer.cjs",
+    "tests/portable-desktop.test.mjs",
+    "tests/windows-update-download.test.mjs",
+    "tests/windows-update-feed.test.mjs",
+    "tests/windows-update-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\windows-update-one-click-20261112\\artifacts\\windows-update-qa\\frozen",
+    "commit": "5738b41ec68a7a7acf9d6b3014428876840bf4e7"
+  },
+  "validation": [
+    {
+      "name": "Settings/update/feed/download and native state tests: 19 passed",
+      "result": "passed",
+      "evidence": "CLI final run; tests/windows-update-ui.test.mjs; ui-result.json"
+    },
+    {
+      "name": "Actual Electron encrypted draft/logout/restart/abrupt-exit and operationBusy contract: 1 passed",
+      "result": "passed",
+      "evidence": "tests/portable-desktop.test.mjs final run"
+    },
+    {
+      "name": "Real Electron updater: checksum, cache, legacy repair, actual DOM safeguards and handoff",
+      "result": "passed",
+      "evidence": "native/native-update-result.json; electron.log; final installer SHA256 matches"
+    },
+    {
+      "name": "Actual isolated NSIS install/upgrade/reopen/uninstall and profile preservation",
+      "result": "passed",
+      "evidence": "../portable-installer-20261026/1794501747415/result.json; actualSilentRelaunch=true"
+    },
+    {
+      "name": "Scoped ESLint and production Next build/TypeScript/offline assets",
+      "result": "passed",
+      "evidence": "build-final.log; build-final-result.json; offline asset list generated from .next-updater-build"
+    },
+    {
+      "name": "Windows candidate source and executable hash verification",
+      "result": "passed",
+      "evidence": "candidate-verified.json; frozen-manifest.json"
+    },
+    {
+      "name": "Published feed and installed production-app upgrade acceptance",
+      "result": "pending",
+      "evidence": "Not published or installed. Installed app remains 0.7.5; requires coordinated release and Windows installation confirmation."
+    }
+  ],
+  "dependencies": [],
+  "id": "233f2021-446a-41e4-8614-7abe188a7f05",
+  "recordedAt": "2026-11-12T16:49:30.266Z",
+  "worktree": "C:\\Reylumi-worktrees\\windows-update-one-click-20261112",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

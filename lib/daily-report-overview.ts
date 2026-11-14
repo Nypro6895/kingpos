@@ -1,4 +1,5 @@
 import "server-only";
+import { loadTicketFinancialSourceMap } from "@/lib/pos-ticket-financial-sources";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { DailyPosReport } from "@/types/pos-daily-closing";
 import { requirePermission, hasPermission } from "@/lib/permissions";
@@ -40,7 +41,8 @@ export async function getDailyReportOverview(report: DailyPosReport, context: Cu
   // Include exact linked tickets even when check-in and ticket dates differ.
   const known=new Set(tickets.map(t=>t.id));const missing=[...new Set(visits.map(v=>v.ticket_id).filter((id):id is string=>!!id&&!known.has(id)))];
   if(canReadTickets)for(let i=0;i<missing.length;i+=100){const {data,error}=await db.from("pos_tickets").select(ticketSelect).eq("salon_id",salon).in("id",missing.slice(i,i+100)).returns<OverviewTicket[]>();if(error)throw new Error("Linked tickets could not load.");tickets.push(...data??[]);}
-  const result=buildDailyReportOverview({date,timeZone,visits,tickets,workdays:workdays.data??[],report,notes:canReadTickets?[]:["Ticket details require ticket access."]});
+  const financialSources=await loadTicketFinancialSourceMap(db,salon,tickets.map(ticket=>ticket.id));
+  const result=buildDailyReportOverview({date,timeZone,visits,tickets:tickets.map(ticket=>({...ticket,financial_sources:financialSources[ticket.id]})),workdays:workdays.data??[],report,notes:canReadTickets?[]:["Ticket details require ticket access."]});
   // Summary follows the same ticket-open business date as canonical POS/Payroll.
   result.submittedCount=tickets.filter(t=>t.status==="closed"&&t.opened_at>=bounds.openedFrom&&t.opened_at<=bounds.openedTo).length;
   return result;

@@ -36,13 +36,20 @@ import {
 type StatusFilter = "active" | "all" | "inactive" | "needs_setup" | "online";
 
 type ServicesManagerProps = {
-  data: ServicesWorkspaceData;
+  data: ServicesWorkspaceData | null;
+  pending?: boolean;
+  error?: string;
+  onRetry?: () => void | Promise<void>;
   initialServiceId: string | null;
   embedded?: boolean;
   expectedSalonId?: string;
   catalogScope?: string;
   onSaved?: () => void | Promise<void>;
 };
+
+// Used only for safe local derivations before the original reader resolves.
+// Pending renders never expose these as counts, an empty catalog or authority.
+const UNRESOLVED_WORKSPACE: ServicesWorkspaceData = { services: [], staff: [], addOnLinks: [], canManage: false };
 
 const EMPTY_CREATE_DRAFT: Omit<ServiceConfigInput, "serviceId"> = {
   bookingAddOns: [],
@@ -443,13 +450,18 @@ function CreateServiceDrawer({
 }
 
 export function ServicesManager({
-  data,
+  data: workspace,
+  pending = false,
+  error,
+  onRetry,
   initialServiceId,
   embedded = false,
   expectedSalonId,
   catalogScope,
   onSaved,
 }: ServicesManagerProps) {
+  const awaitingData = pending || !workspace;
+  const data = awaitingData ? UNRESOLVED_WORKSPACE : workspace;
   const __vt = useWorkspaceTranslation();
   const catalogSalonIds = [...new Set(data.services.map(service => service.salon_id))];
   const catalogSalonId = expectedSalonId ?? (catalogSalonIds.length === 1 ? catalogSalonIds[0] : undefined);
@@ -460,9 +472,7 @@ export function ServicesManager({
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState<StatusFilter>("all");
   const [expandedServiceId, setExpandedServiceId] = useState<string | null>(
-    data.services.some((service) => service.id === initialServiceId)
-      ? initialServiceId
-      : null,
+    initialServiceId,
   );
   const [drafts, setDrafts] = useState<Record<string, ServiceConfigInput>>({});
   const [serviceErrors, setServiceErrors] = useState<Record<string, string>>({});
@@ -603,7 +613,7 @@ export function ServicesManager({
 
   function saveAll(onlyServiceId?: string) {
     const savingIds = onlyServiceId ? dirtyIds.filter(id => id === onlyServiceId) : dirtyIds;
-    if (isPending || dirtyIds.length === 0) return;
+    if (awaitingData || !data.canManage || isPending || dirtyIds.length === 0) return;
     const configs = savingIds.map((serviceId) => drafts[serviceId]);
     const firstInvalid = configs.find(
       (config) => !validateServiceConfig(config).valid,
@@ -659,16 +669,16 @@ export function ServicesManager({
   return (
     <main className={embedded ? "services-page settings-inline-services" : "services-page"}>
       <div className="services-page__frame services-page__content">
-        {refreshFailed ? <button type="button" className="services-button" disabled={isPending} onClick={() => startTransition(async () => { if (onSaved) await refreshAfterSave(); else { router.refresh(); setRefreshFailed(false); } })}><WorkspaceText text="Reload service list" /></button> : null}
+        {!awaitingData && refreshFailed ? <button type="button" className="services-button" disabled={isPending} onClick={() => startTransition(async () => { if (onSaved) await refreshAfterSave(); else { router.refresh(); setRefreshFailed(false); } })}><WorkspaceText text="Reload service list" /></button> : null}
 
 
-        {!data.canManage ? (
+        {!awaitingData && !data.canManage ? (
           <p className="services-message">
             <WorkspaceText text="You have read-only access to the service catalog." />
           </p>
         ) : null}
 
-        {message ? (
+        {!awaitingData && message ? (
           <p
             className={classNames(
               "services-message",
@@ -681,7 +691,8 @@ export function ServicesManager({
           </p>
         ) : null}
 
-        <WorkspaceToolbar>
+        <fieldset disabled={awaitingData} className="m-0 min-w-0 border-0 p-0">
+        <WorkspaceToolbar title={embedded ? undefined : "Services"}>
           <label className="services-search min-w-0 flex-1">
             <span className="sr-only"><WorkspaceText text="Search services" /></span>
             <input
@@ -736,8 +747,12 @@ export function ServicesManager({
             </button>
           </div>
         ) : null}
-        {!embedded && <ContextualSupport />}
+        {!awaitingData && !embedded && <ContextualSupport />}
         </WorkspaceToolbar>
+        </fieldset>
+        {awaitingData ? <section className="services-page__empty" aria-busy={!error}>
+          {error ? <div role="alert"><p><WorkspaceText text={error} /></p>{onRetry && <button type="button" className="services-button services-button--secondary" onClick={() => void onRetry()}><WorkspaceText text="Try again" /></button>}</div> : <p role="status"><WorkspaceText text="Loading services…" /></p>}
+        </section> : <>
           <p className="text-xs leading-5 text-zinc-500">
             <WorkspaceText text={category !== "all" || status !== "all" ? `${visibleServices.length} matching · ` : ""} />{summary.active} <WorkspaceText text="active ·" /> {summary.online} <WorkspaceText text="online ·" /> {categories.length}{" "}
             <WorkspaceText text={categories.length === 1 ? "category" : "categories"} />
@@ -897,9 +912,10 @@ export function ServicesManager({
             </div>
           </section>
         )}
+        </>}
       </div>
 
-      {dirtyIds.length > 0 ? (
+      {!awaitingData && dirtyIds.length > 0 ? (
         <div className="services-save-bar" role="status">
           <div className="services-page__frame services-save-bar__inner">
             <p>
@@ -917,7 +933,7 @@ export function ServicesManager({
               </button>
               <button
                 className="services-button services-button--primary"
-                disabled={isPending}
+                disabled={isPending || !data.canManage}
                 onClick={() => saveAll()}
                 type="button"
               >
@@ -928,7 +944,7 @@ export function ServicesManager({
         </div>
       ) : null}
 
-      {showCreate ? (
+      {!awaitingData && showCreate ? (
         <CreateServiceDrawer
           embedded={embedded}
           expectedSalonId={expectedSalonId}
@@ -939,4 +955,9 @@ export function ServicesManager({
       ) : null}
     </main>
   );
+}
+
+/** Neutral route/admission fallback; the real toolbar carries no catalog data. */
+export function ServicesLoading({ error, onRetry }: { error?: string; onRetry?: () => void | Promise<void> }) {
+  return <ServicesManager data={null} pending initialServiceId={null} error={error} onRetry={onRetry} />;
 }

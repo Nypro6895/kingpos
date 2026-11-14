@@ -75,15 +75,19 @@ test('each staff uses its own owner settings when payroll has no entries',()=>{
 });
 const {renderToStaticMarkup}=require('react-dom/server');
 const {StaffMyPay}=load('app/staff/my-work/staff-pay-analysis.tsx');
-test('My Pay renders final payouts, daily tip and total, individual settings without cash percent',()=>{
+test('My Pay renders canonical final payouts and the read-only shared ledger with daily totals',()=>{
   const data={period:staffPeriodAt({cycle_type:'semi_monthly'},'2026-09-25'),periodOptions:[],settings:[],status:{kind:'live',label:'In progress'},latestStatement:null,paystub:null,
-    line:{final_staff_income:125,final_cash_amount:75,final_check_amount:50,base_cash_amount:40,check_net:40,gross_sales:200,staff_commission_gross:120,tip_amount:5,bonus_amount:0,tax_withheld:0,
-      settings_used_snapshot:[{payType:'commission',commissionRate:60,taxRate:20,taxTips:false,taxBonus:true}]},
-    dailyRows:[{id:'one',businessDate:'2026-09-24',commissionGross:60,shopGross:65,tipAmount:5},{id:'two',businessDate:'2026-09-25',commissionGross:60,shopGross:60,tipAmount:0}]};
+    line:{final_staff_income:113,final_cash_amount:65,final_check_amount:48,base_cash_amount:60,base_check_amount:48,check_gross:60,check_net:48,gross_sales:200,staff_commission_gross:120,tip_amount:5,tip_cash_amount:5,tip_check_amount:0,bonus_amount:0,bonus_cash_amount:0,bonus_check_amount:0,tax_withheld:12,
+      pay_type_used:'commission',commission_rate_used:60,fixed_pay_amount_used:0,check_rate_used:50,tax_rate_used:20,cash_to_tax_company_snapshot:false,tip_payout_method_snapshot:'cash',bonus_payout_method_snapshot:'cash',tax_tips_snapshot:false,tax_bonus_snapshot:true,
+      settings_used_snapshot:[{payType:'commission',commissionRate:60,checkRate:50,taxRate:20,cashToTaxCompany:false,tipPayoutMethod:'cash',bonusPayoutMethod:'cash',taxTips:false,taxBonus:true}]},
+    dailyRows:[{id:'one',businessDate:'2026-09-24',commissionGross:60,shopGross:100,tipAmount:5},{id:'two',businessDate:'2026-09-25',commissionGross:60,shopGross:100,tipAmount:0}]};
   const html=renderToStaticMarkup(React.createElement(StaffMyPay,{data}));
-  assert.match(html, /class="extras"><div><dt>Tip<\/dt><dd>\$5\.00<\/dd><\/div><div><dt>Bonus<\/dt><dd>\$0\.00<\/dd>/);
-  for(const value of ['Commission 60%','Tax ','20','Tip · ','No tax','Bonus · ','$75.00','$50.00','$65.00','$60.00','<tfoot>']) assert.ok(html.includes(value),value);
-  assert.ok(!html.includes('Cash %')); assert.ok(!html.includes('$40.00')); assert.ok(!html.includes('Custom range'));
+  assert.match(html, /aria-label="Staff payment calculation"/);
+  for(const value of ['Take-home','Check + Cash · after tax','$113.00','$65.00','$48.00','Commission 60%','Pay breakdown','Gross','Tax','Net','Paid via','Tip','Bonus','$0.00','$100.00','$200.00','<tfoot>']) assert.ok(html.includes(value),value);
+  const disclosure=html.match(/<details[^>]*data-staff-pay-breakdown[^>]*>/)?.[0];
+  assert.ok(disclosure);assert.doesNotMatch(disclosure, /\sopen(?:=|\s|>)/);
+  assert.doesNotMatch(html, /<input|Cash %|Custom range/);
+  assert.ok(html.includes('Tip and Bonus are already included.'));
 });
 
 test('published history preserves old cycles, same-start different ends and deduplicates revisions',()=>{

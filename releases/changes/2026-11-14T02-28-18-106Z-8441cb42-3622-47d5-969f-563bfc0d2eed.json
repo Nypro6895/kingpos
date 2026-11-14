@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "gift-ticket-unified-20261113",
+  "status": "working",
+  "summary": "Unify Gift sales with service Tickets, anonymous Gift-only receipts, source-aware attention/report/reconciliation and matching layouts; preserve service payroll and benefit bases",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261113120000_gift_ticket_unified.sql",
+    "lib/pos-ticket-financial-view.ts",
+    "types/pos-ticket.ts",
+    "lib/pos-tickets.ts",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "app/pos/customer-display/customer-checkout.tsx",
+    "lib/daily-pos-report.ts",
+    "lib/today-statistics.ts",
+    "types/owner-financial-attention.ts"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/gift-ticket-unified-20261113",
+    "commit": "3bdbb17"
+  },
+  "dependencies": [
+    "customer-checkout-benefits-20261112",
+    "checkin-windows-gift-lifecycle-20261111"
+  ],
+  "validation": [
+    {
+      "name": "Approved rule/design audit and existing isolated SQL baseline",
+      "result": "passed",
+      "evidence": "Previous turn: 24 current SQL tests; 9 proposal formula tests; eight proposed screens"
+    }
+  ],
+  "notes": "Owner approved implementation 2026-11-13. Gift is listed with services, optional customer; Gift sale earns no commission/turn and is excluded from discount/Reward/tip bases. Preserve owner artwork, receipt/visit authority, manual staff inputs, payroll, locks, corrections, consent, idempotency and old clients. Implementation only; no deployment or hosted writes.",
+  "id": "8441cb42-3622-47d5-969f-563bfc0d2eed",
+  "recordedAt": "2026-11-14T02:28:18.106Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-ticket-unified-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

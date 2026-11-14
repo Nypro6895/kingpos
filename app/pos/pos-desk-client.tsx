@@ -1313,6 +1313,7 @@ export function PosDeskClient({
         : null,
     operationScope: portableWorkspaceState?.scope,
     busy: hasUnsavedDraftWork,
+    operationBusy: receiptLocked,
     version: liveDraft?.version ?? 0,
     recovery,
     emptyRecovery: {
@@ -3269,6 +3270,17 @@ export function PosDeskClient({
         const giftResult = await giftCheckout.current();
         if (giftResult?.ticketId || giftResult?.giftSaleId) {
           holdCompletedDisplayRef.current = true;
+          if (localFirstDraft) {
+            pendingLocalTip.current = null;
+            completedLocalReceipt.current = {
+              cartId:localCartId.current ??= crypto.randomUUID(),
+              revision:currentPortablePayload.current,
+              payload:JSON.parse(currentPortablePayload.current),
+              settledReceipt:{ticketNumber:giftResult.ticketNumber,giftPurchaseCents:giftResult.session?.purchase??0,giftPaidCents:giftResult.session?.amount??0},
+              completedAt:new Date().toISOString(),resetAt:new Date(Date.now()+30_000).toISOString(),
+            };
+            localCartId.current=crypto.randomUUID();
+          }
           if (localFirstDraft)
             checkpointPortableDraft({
               draft: { ...emptyDraft, giftCardInput: "", note: "" },
@@ -5167,30 +5179,6 @@ export function PosDeskClient({
               onClose={() => setGiftDelivery(null)}
             />
 
-            {giftSession?.status === "open" &&
-              (giftSession.purchase > 0 || giftSession.amount > 0) && (
-                <div
-                  data-gift-sale-summary
-                  className="rounded border border-zinc-200 p-2 text-sm"
-                >
-                  <div>
-                    Gift card purchase:{" "}
-                    {formatMoney(giftSession.purchase / 100)}
-                  </div>
-                  <div>
-                    Gift card reduction: {formatMoney(giftSession.amount / 100)}
-                  </div>
-                  <strong>
-                    Amount due:{" "}
-                    {formatMoney(
-                      (giftSession.total +
-                        giftSession.purchase -
-                        giftSession.amount) /
-                        100,
-                    )}
-                  </strong>
-                </div>
-              )}
             {(draft.customerId || selectedCustomer?.id) && (
               <VisitRewards
                 key={draft.customerId ?? selectedCustomer?.id}
@@ -5297,7 +5285,7 @@ export function PosDeskClient({
             }
             data-pos-receipt-lines
           >
-            {staffLines.length === 0 ? (
+            {staffLines.length === 0 && !(giftSession?.status === "open" && giftSession.purchase>0) ? (
               <p className="rounded border border-dashed border-zinc-300 p-4 text-sm text-zinc-500">
                 <WorkspaceText text="No receipt lines yet." />
               </p>
@@ -5409,6 +5397,7 @@ export function PosDeskClient({
                 );
               })
             )}
+            {giftSession?.status === "open" && giftSession.purchase>0 && <div className="flex items-center justify-between gap-3 rounded-md border border-amber-100 bg-amber-50/60 px-3 py-3 text-sm" data-pos-gift-receipt-line><div><strong><WorkspaceText text="Gift card" /></strong><p className="mt-0.5 text-xs text-zinc-500"><WorkspaceText text="Gift purchase" /></p></div><span className="font-semibold tabular-nums">{formatMoney(giftSession.purchase/100)}</span></div>}
           </div>
 
           <div
@@ -5428,7 +5417,7 @@ export function PosDeskClient({
                       <WorkspaceText text="Subtotal" />
                     </span>
                     <span className="tabular-nums">
-                      {formatMoney(totals.subtotal)}
+                    {formatMoney(totals.subtotal+(giftSession?.status === "open" ? giftSession.purchase/100 : 0))}
                     </span>
                   </div>
                 ) : null}
@@ -5635,15 +5624,16 @@ export function PosDeskClient({
                 </div>
               </>
             )}
+            {giftSession?.status === "open" && giftSession.amount>0 && <div className="flex justify-between gap-3 text-sm text-teal-800" data-pos-gift-payment><span><WorkspaceText text="Paid with Gift card" /></span><span>−{formatMoney(giftSession.amount/100)}</span></div>}
             <div
               className="flex items-end justify-between gap-3 border-t border-zinc-200 pt-2 text-xl font-semibold"
               data-pos-receipt-total
             >
               <span className="text-sm uppercase text-zinc-500">
-                <WorkspaceText text="Total" />
+                <WorkspaceText text={giftSession?.status === "open" && giftSession.amount>0 ? "Amount due" : "Total"} />
               </span>
               <span className="text-2xl tabular-nums">
-                {formatMoney(totals.total)}
+                {formatMoney(giftSession?.status === "open" ? (giftSession.total+giftSession.purchase-giftSession.amount)/100 : totals.total)}
               </span>
             </div>
             {!isPortableSurface || draft.heldTicket ? (

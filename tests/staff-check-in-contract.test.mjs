@@ -88,7 +88,9 @@ test("receipt submit preserves turn facts and increments the queue counter", () 
 
   assert.match(portableReceiptBlock, /insert into public\.pos_ticket_item_turn_parts/);
   assert.match(portableReceiptBlock, /public\.increment_staff_queue_turns/);
-  assert.match(posActions, /"increment_staff_queue_turns"/);
+  // Owner Submit now delegates queue/work facts to the atomic receipt RPC.
+  assert.match(posActions, /"submit_owner_ticket_inputs"/);
+  assert.doesNotMatch(posActions, /"increment_staff_queue_turns"/);
 });
 
 test("large turn queue increment does not bootstrap from the same ticket turn parts", () => {
@@ -227,8 +229,10 @@ test("portable access capability constraint remains a strict allow-list", () => 
 test("standard POS rejects non-working staff when check-in is enabled", () => {
   assert.match(posActions, /async function validateWorkingStaffIds/);
   assert.match(posActions, /Assigned staff must be checked in and working/);
-  assert.match(posActions, /requireWorkingStaff: settings\.staffCheckInEnabled/);
-  assert.match(posActions, /if \(settings\.staffCheckInEnabled\)/);
+  const receiptCore = readFileSync("supabase/migrations/202608160001_portable_receipt_staff_earnings.sql", "utf8");
+  assert.match(receiptCore, /staff_check_in_enabled/);
+  assert.match(receiptCore, /Assigned staff must be checked in and working/);
+  assert.match(posActions, /"submit_owner_ticket_inputs"/);
 });
 
 test("POS settings exposes a dedicated staff check-in save path", () => {
@@ -302,7 +306,7 @@ test("latency-sensitive check-in and POS submits do not await refresh broadcasts
     portableActions.indexOf("export async function correctPortableClosedPosTicketInline"),
   );
 
-  assert.match(attendanceAction, /after\(\(\) => broadcastPosStaffChange/);
+  assert.match(attendanceAction, /after\(\(\)\s*=>\s*broadcastPosStaffChange/);
   assert.doesNotMatch(attendanceAction, /data: await getPortableCheckInData\(\)/);
   assert.doesNotMatch(attendanceAction, /revalidatePath\("\/pos\/portable"\)/);
   assert.doesNotMatch(attendanceAction, /revalidatePath\("\/pos\/portable\/ticket"\)/);
@@ -314,10 +318,10 @@ test("latency-sensitive check-in and POS submits do not await refresh broadcasts
     posDeskClient,
     /isPortableSurface && payload\.source === "attendance"/,
   );
-  assert.match(portableActions, /after\(\(\) => broadcastPosLiveDraftSnapshot\(liveDraft, "pos"\)\)/);
+  assert.match(portableActions, /after\(\(\)\s*=>\s*broadcastPosLiveDraftSnapshot\(liveDraft, "pos"\)\s*,?\s*\)/);
   assert.match(posActions, /after\(\(\) => broadcastWaitingChangeByLiveDraftToken\(input\.token\)\)/);
-  assert.match(posActions, /Promise\.all\(input\.lines\.map\(async \(line\) =>/);
-  assert.match(posActions, /const queueDeltasByStaff = new Map<string, number>\(\)/);
+  assert.match(posActions, /"submit_owner_ticket_inputs"/);
+  assert.doesNotMatch(posActions, /"increment_staff_queue_turns"/);
   assert.doesNotMatch(bookingActions, /await broadcastPosStaffChange/);
 });
 

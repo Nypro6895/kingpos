@@ -6,10 +6,22 @@ import {financialHistoryForObject} from "@/lib/inline-financial-history";
 import type {PayrollStaffDailyTotal} from "@/types/payroll";
 import type {PayrollLiveChange} from "@/types/payroll-live-history";
 import styles from "./payroll-object-history.module.css";
+import paymentStyles from "./payroll-mobile.module.css";
 const money=(amount:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(amount);
 const date=(value:string)=>new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric",year:"numeric"}).format(new Date(`${value}T12:00:00Z`));
-export function PayrollDailyListing({rows,salonId,canManage=false,today,history=[]}:{rows:PayrollStaffDailyTotal[];salonId?:string;canManage?:boolean;today?:string;history?:PayrollLiveChange[]}){
+export function PayrollDailyListing({rows,salonId,canManage=false,today,history=[],compact=false}:{rows:PayrollStaffDailyTotal[];salonId?:string;canManage?:boolean;today?:string;history?:PayrollLiveChange[];compact?:boolean}){
  if(!rows.length)return <p className="text-sm text-zinc-500"><WorkspaceText text="No daily rows for this staff member."/></p>;
+ if(compact)return <div className={paymentStyles.paymentDays}>
+  <div className={paymentStyles.paymentDayHeader}><span><WorkspaceText text="Date"/></span><span><WorkspaceText text="Services"/></span><span><WorkspaceText text="Tip"/></span><span /></div>
+  {rows.map(day=>{
+   const changes=financialHistoryForObject(history,{staffId:day.staff_id,businessDate:day.business_date,sourceKinds:["staff_day","staff_day_financial_inputs","pos_ticket_staff_earnings","ticket"]});
+   return <div className={paymentStyles.paymentDay} key={day.id}>
+    <time dateTime={day.business_date}>{new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(new Date(`${day.business_date}T12:00:00Z`))}</time><span>{money(day.gross_sales)}</span><span>{money(day.tip_amount)}</span>
+    {canManage&&salonId&&today&&day.business_date<=today?<StaffDayFinancialEditor compact salonId={salonId} staffId={day.staff_id} businessDate={day.business_date} serviceTotal={day.gross_sales} tipAmount={day.tip_amount}/>:<span />}
+    {changes.length>0&&<details className={paymentStyles.dayHistory}><summary><WorkspaceText text="Edited"/> · {changes.length}</summary><InlineFinancialHistory changes={changes}/></details>}
+   </div>;
+  })}
+ </div>;
  return <div><div className={styles.dayHeader}><span><WorkspaceText text="Work date"/></span><span><WorkspaceText text="Services"/></span><span><WorkspaceText text="Tips"/></span></div><div>{rows.map(day=>{
   const changes=financialHistoryForObject(history,{staffId:day.staff_id,businessDate:day.business_date,sourceKinds:["staff_day","staff_day_financial_inputs","pos_ticket_staff_earnings","ticket"]});
   return <details className={`${styles.object} ${changes.length?styles.edited:""}`} key={day.id}>

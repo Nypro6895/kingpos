@@ -1,4 +1,5 @@
 import type { ShopMoneyData } from "@/types/shop-money";
+import { loadPayrollIssuedChecks } from "@/lib/payroll-issued-checks";
 import { loadPayrollRecordedFacts } from "@/lib/payroll-records";
 import { loadVisibleTicketAdjustments } from "@/lib/pos-ticket-adjustment-history-server";
 
@@ -2868,7 +2869,11 @@ async function calculateScheduledPayrollForAuth(
       pay_type_used: payTypeUsed,
       payroll_run_id: "",
       paystub: null,
-      period_staff_input_snapshot: serializeInput(input),
+      // Presentation provenance: period bonus uses the setting at period end,
+      // which may differ from every worked day's wage/tip setting.
+      period_staff_input_snapshot: { ...serializeInput(input), bonusSettings: [{
+        ...serializeSetting(latestSetting), settledOn: period.endDate,
+      }] },
       salon_id: auth.salon.id,
       settings_used_snapshot: settingsUsedSnapshot,
       shop_share: roundMoney(grossSales - staffCommissionGross),
@@ -2990,6 +2995,8 @@ async function calculateLivePayrollForAuth(
         inputHistory: [],
         dailyTotals: [],
         liveDailyIncome: [],
+        settings_used_snapshot: [],
+        period_staff_input_snapshot: { bonusSettings: [] },
         ...Object.fromEntries(incomeFields.map((field) => [field, 0])),
       };
       for (const field of incomeFields)
@@ -3018,12 +3025,19 @@ async function calculateLivePayrollForAuth(
             ...(Array.isArray(line.settings_used_snapshot)
               ? line.settings_used_snapshot
               : []),
-            ...(Array.isArray(source.settings_used_snapshot)
-              ? source.settings_used_snapshot
-              : []),
+            ...source.dailyTotals.filter(day => day.business_date >= period.startDate && day.business_date <= period.endDate)
+              .map(day => day.settings_used_snapshot),
           ].map((value) => [JSON.stringify(value), value]),
         ).values(),
       ];
+      // Keep only bonus rules whose settlement belongs to this selected range.
+      // This adds labels only; all amounts above remain the canonical projection.
+      const previousInput = line.period_staff_input_snapshot as { bonusSettings?: Array<Record<string, unknown>> };
+      const sourceInput = source.period_staff_input_snapshot as { bonusSettings?: Array<Record<string, unknown>> };
+      line.period_staff_input_snapshot = { bonusSettings: [
+        ...(previousInput.bonusSettings ?? []),
+        ...(sourceInput.bonusSettings ?? []).filter(s => typeof s.settledOn === "string" && s.settledOn >= period.startDate && s.settledOn <= period.endDate),
+      ] };
       line.is_mixed_rate ||=
         source.is_mixed_rate ||
         line.commission_rate_used !== source.commission_rate_used ||
@@ -4764,6 +4778,7 @@ export async function getPayrollSettingsWorkspace() {
 }
 
 export async function getPayrollPageData(input: {
+  includeCheckReferences?: boolean;
   includeAnalytics?: boolean;
   includeShopMoney?: boolean;
   cycleType?: string | null;
@@ -4842,6 +4857,7 @@ export async function getPayrollPageData(input: {
     recordedFacts,
     staffPresentations,
     shopMoney,
+    issuedChecks,
   ] = await Promise.all([
     liveRead,
     loadLatestPayrollSnapshot(auth, period),
@@ -4866,6 +4882,9 @@ export async function getPayrollPageData(input: {
       getStaffPresentationsByStaffId({ staff, supabase: auth.supabase }),
     ),
     shopMoneyRead,
+    input.includeCheckReferences && auth.access.canViewAllPayroll && isOwnerMembership(auth.context.currentMembership)
+      ? loadPayrollIssuedChecks(auth.supabase, auth.salon.id, period.startDate, period.endDate)
+      : Promise.resolve({ status: "available" as const, checks: [] }),
   ]);
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: timezone,
@@ -4888,6 +4907,7 @@ export async function getPayrollPageData(input: {
     today,
     recordedFacts,
     shopMoney,
+    issuedChecks,
     difference,
     latestStatement,
     live,

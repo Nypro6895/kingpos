@@ -57,8 +57,16 @@ test('Rewardlumi actual schema: salon scope, conversion, two-screen consent, set
   assert.equal(Number(f.sql(`select sum(amount) from pos_payments where ticket_id='${paid.ticketId}'`)),55);
   assert.equal(Number(f.sql(`select count(*) from reward_ledger where event_key like 'redeem:%'`)),1);
   assert.equal(p(customer,'wallet').cards[0].available,100);
+  const sources=rpc(owner,'ticket_financial_sources',{p_salon:salon,p_tickets:[paid.ticketId]});assert.equal(sources[paid.ticketId].rewardDiscount,5);
+  assert.equal(rpc(customer,'ticket_financial_sources',{p_salon:salon,p_tickets:[paid.ticketId]})[paid.ticketId].rewardDiscount,5);
+  denied(other,'ticket_financial_sources',{p_salon:salon,p_tickets:[paid.ticketId]});
+  const attention=f.json(`select coalesce(json_agg(x),'[]') from owner_attention_candidates('${salon}') x where facts->>'ticketId'='${paid.ticketId}'`);
+  assert.equal(attention.filter(row=>row.kind==='reward').length,1);assert.equal(attention.filter(row=>row.kind==='discount').length,0,'Reward-only reduction is not announced a second time as Discount');
  });
  await t.test('Before & After: posting no spendable points; booking pending; paid completed visit credits original author',()=>{
+  // This isolated author must meet the current Auth phone gate. No real SMS,
+  // account or production identity is created by the network-isolated fixture.
+  f.sql(`update auth.users set phone='13125550197',phone_confirmed_at=now() where id='${author.authId}'`);
   f.sql(`select set_config('request.jwt.claim.sub','${author.authId}',false); insert into beauty_profiles(id,user_id) values('${profile}','${author.profileId}');
    insert into beauty_posts(id,profile_id,author_user_id,post_type) values('${post}','${profile}','${author.profileId}','before_after');
    insert into beauty_post_attributions(post_id,salon_id) values('${post}','${salon}');

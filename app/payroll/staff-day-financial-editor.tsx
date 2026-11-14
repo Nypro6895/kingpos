@@ -2,12 +2,13 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { WorkspaceText as Text } from "@/components/workspace-language";
+import { WorkspaceText as Text, useWorkspaceTranslation } from "@/components/workspace-language";
 import { readStaffDayFinancialInput, saveStaffDayFinancialInput } from "./staff-day-financial-actions";
 
-export function StaffDayFinancialEditor({ salonId, staffId, businessDate, serviceTotal, tipAmount }: {
-  salonId: string; staffId: string; businessDate: string; serviceTotal: number; tipAmount: number;
+export function StaffDayFinancialEditor({ salonId, staffId, businessDate, serviceTotal, tipAmount, compact = false }: {
+  salonId: string; staffId: string; businessDate: string; serviceTotal: number; tipAmount: number; compact?: boolean;
 }) {
+  const t = useWorkspaceTranslation();
   const router = useRouter();
   const [opened, setOpened] = useState(false), [pending, setPending] = useState(false), [message, setMessage] = useState("");
   const [baseline, setBaseline] = useState<Awaited<ReturnType<typeof readStaffDayFinancialInput>> | null>(null);
@@ -36,7 +37,7 @@ export function StaffDayFinancialEditor({ salonId, staffId, businessDate, servic
     } catch { setUnknown(true); setMessage("The save result is not confirmed. Retry the same request to check it safely."); }
     finally { setPending(false); }
   }
-  if (!opened) return <button type="button" className="min-h-11 text-sm underline" onClick={open}><Text text="Edit gross / tip" /></button>;
+  if (!opened) return <button type="button" className="min-h-11 text-sm underline" aria-label={compact ? `${t("Edit gross / tip")} · ${businessDate}` : undefined} onClick={open}>{compact ? <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="m16 3 5 5M3 21l5-1L21 7a2 2 0 0 0-4-4L4 16l-1 5Z" /></svg> : <Text text="Edit gross / tip" />}</button>;
   return <form className="my-2 grid min-w-0 gap-2 rounded border border-zinc-200 p-3 text-sm" onSubmit={event => { event.preventDefault(); void save(); }}>
     <p><Text text="Gross service and tip inputs" /> · {businessDate}</p>
     <fieldset disabled={pending || unknown || !baseline} className="grid gap-2 disabled:opacity-60">

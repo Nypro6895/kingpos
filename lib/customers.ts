@@ -1,4 +1,6 @@
 import "server-only";
+import { attachTicketFinancialSources } from "@/lib/pos-ticket-financial-sources";
+import { ticketFinancialView } from "@/lib/pos-ticket-financial-view";
 
 import {
   getCurrentBusinessContext,
@@ -9,7 +11,7 @@ import {
   BOOKING_SELECT,
   BOOKING_STATUS_EVENT_SELECT,
 } from "@/lib/bookings";
-import { requirePermission } from "@/lib/permissions";
+import { hasPermission, requirePermission } from "@/lib/permissions";
 import {
   POS_TICKET_WITH_RELATIONS_SELECT,
 } from "@/lib/pos-tickets";
@@ -522,7 +524,7 @@ async function loadBookingEvents(input: {
 function ticketWithTotals(ticket: PosTicketWithRelations): CustomerTicketSummary {
   return {
     ...ticket,
-    totals: calculateTicketTotals({
+    totals: ticketFinancialView(ticket,calculateTicketTotals({
       discountType: ticket.discount_type,
       discountValue: ticket.discount_value,
       items: ticket.ticket_items ?? [],
@@ -530,11 +532,12 @@ function ticketWithTotals(ticket: PosTicketWithRelations): CustomerTicketSummary
       taxRate: ticket.tax_rate,
       tipType: ticket.tip_type,
       tipValue: ticket.tip_value,
-    }),
+    })).totals,
   };
 }
 
 async function loadCustomerTicketsForCustomers(input: {
+  canReadTicketSources: boolean;
   customerIds: string[];
   salonId: string;
   supabase: NonNullable<
@@ -566,7 +569,7 @@ async function loadCustomerTicketsForCustomers(input: {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map(ticketWithTotals);
+  return (input.canReadTicketSources ? await attachTicketFinancialSources(input.supabase,input.salonId,data??[]) : data??[]).map(ticketWithTotals);
 }
 
 async function loadDuplicateCandidates(input: {
@@ -718,6 +721,7 @@ export async function getCurrentSalonCustomerDetail(
       supabase,
     }),
     loadCustomerTicketsForCustomers({
+      canReadTicketSources: (await hasPermission("tickets.view",base.context)) || (await hasPermission("tickets.manage",base.context)),
       customerIds: groupedCustomerIds,
       salonId: salon.id,
       supabase,

@@ -435,7 +435,7 @@ function getCustomerDisplayTipAmounts(input: {
   const percentages = input.tipSuggestions
     .map((value) => Number(value))
     .filter((value) => Number.isFinite(value) && value > 0)
-    .slice(0, 3);
+    .slice(0, 4);
   const source = percentages.length > 0 ? percentages : [15, 18, 20];
 
   return source.map((percentage) => ({
@@ -1990,6 +1990,9 @@ export async function confirmCustomerDisplayLiveDraftTip(input: {
   requestId: string;
   tipAmount: number;
   token: string;
+  draftId?: string;
+  customerVersion?: number;
+  receiptVersion?: number;
 }): Promise<ActionResult<PosLiveDraftView>> {
   try {
     const supabase = createSupabaseServerClient();
@@ -2002,10 +2005,12 @@ export async function confirmCustomerDisplayLiveDraftTip(input: {
       throw new Error("Tip must be zero or greater.");
     }
 
-    const { data, error } = await supabase.rpc("confirm_pos_live_draft_tip", {
+    const scoped = input.draftId !== undefined;
+    const { data, error } = await supabase.rpc(scoped ? "confirm_pos_live_draft_tip_scoped" : "confirm_pos_live_draft_tip", {
       p_request_id: input.requestId,
       p_tip_amount: roundMoney(input.tipAmount),
       p_token: input.token,
+      ...(scoped ? { p_draft_id: input.draftId, p_customer_version: input.customerVersion, p_receipt_version: input.receiptVersion } : {}),
     });
 
     if (error) {

@@ -1,0 +1,27 @@
+Reviewed source candidate for authorized coordinated release 2026-11-14.
+Baseline web: dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU / 274a3ab4300956a458c564ad6beab44ff85e7264.
+19 recent task events;263 scoped final paths including4 integration test repairs. Final overlay SHA256 f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8.
+Local final production build/TypeScript passed;135 scoped TypeScript files lint with zero errors. Synthetic/PGlite/browser gates,428-file isolated full schema, actual Gift11 journeys, booking/check-in8 cases and payroll7 authenticated cases passed. Native publication and production migration/deployment remain pending at this source commit.
+Native mappings403 actions/27 trace names match deterministic generated source. Required native iPhone/iPad gates run from the immutable source ref after push.
+Older scope dispositions: Market external publisher chain dependency-held; Check Writer code already retained with sales/trial closed and provider/printer acceptance pending; native predecessor intents retained; mobile spacing covered by prior release receipt.
+Detailed evidence: C:/Reylumi/artifacts/release-review-20261114/ and task-local artifacts/native-integration-20261114/.
+Selected original event IDs:
+89c5806d-59b5-4982-afff-1558bc89d9ac
+233f2021-446a-41e4-8614-7abe188a7f05
+55399e26-b007-4dcc-ac9d-aa0128355b1a
+8f8cc595-13df-4dc8-82f4-c62ed75d1699
+3712094d-758f-4942-b609-4447e3cf7ef5
+015e0b98-e252-4467-8b34-0bcb572fa3d6
+7b9caba7-050b-4623-91e8-b25c5dc1628d
+e5c3e586-71b1-4984-8a1a-3dae15a6d71d
+1490db7e-d1a1-45cf-a822-5341fb56085a
+5fa07857-899d-45c5-9dce-bd72953bb123
+214a77f4-7c18-4ffa-bf92-5b859ac53411
+ee718072-cd57-4735-9a5d-ed6eb65411ef
+154ce943-7c0f-46a5-966f-fb9006032093
+51c4502a-8dd3-428c-9240-32bf5441040e
+4f5bf395-4d76-4493-be7b-8b6ade77c7cc
+f2d686b1-a5fa-4470-9a46-ffceb3e0c738
+c2efeefc-0c1f-46b4-bc76-0b16f8654b45
+b39ff95a-25c8-4601-a745-3705ac55c450
+30b4670e-283c-4fc2-aa1f-ff402a6a5603

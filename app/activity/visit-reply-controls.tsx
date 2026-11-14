@@ -1,12 +1,11 @@
 "use client";
-import { useId, useRef, useState, useTransition, type FormEvent } from "react";
-import { WorkspaceText } from "@/components/workspace-language";
+import { useRef, useState, useTransition, type FormEvent } from "react";
+import { ExperienceReplyComposer } from "@/components/experience-reply-composer";
 import { replyToVisitExperienceAction } from "./experience-actions";
 
 export function VisitReplyControls({ salonId, experienceId, hasReply, onChanged }: {
   salonId: string; experienceId: string; hasReply: boolean; issueStatus: string | null; onChanged: () => void;
 }) {
-  const label = useId();
   const request = useRef<string | null>(null);
   const [body, setBody] = useState("");
   const [error, setError] = useState("");
@@ -26,13 +25,5 @@ export function VisitReplyControls({ salonId, experienceId, hasReply, onChanged 
     });
   }
   if (posted) return null;
-  return <div className="mt-4 grid gap-2 border-t border-zinc-100 pt-4">
-    {!posted ? <form onSubmit={reply} className="grid gap-2">
-      <label htmlFor={label} className="text-sm font-semibold"><WorkspaceText text="Reply as the salon" /></label>
-      <textarea id={label} disabled={pending} className="min-h-24 w-full resize-y rounded-lg border border-zinc-300 px-3 py-2 text-base" maxLength={1000} value={body} onChange={event => { setBody(event.target.value); request.current = null; }} />
-      <p className="text-xs text-zinc-600"><WorkspaceText text="You can reply once. Your reply cannot be edited." /></p>
-      <button disabled={pending} type="submit" className="min-h-11 justify-self-start rounded-full bg-brand-teal px-5 font-semibold text-white disabled:opacity-60"><WorkspaceText text={pending ? "Replying..." : "Reply"} /></button>
-    </form> : null}
-    <p role="status" className="text-sm text-zinc-600"><WorkspaceText text={error} /></p>
-  </div>;
+  return <ExperienceReplyComposer body={body} onBodyChange={value => { setBody(value); request.current = null; }} pending={pending} status={error} onSubmit={reply} />;
 }

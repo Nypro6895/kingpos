@@ -1,57 +1,59 @@
 "use client";
-import { useTransientOverlay } from "@/components/overlay-dismissal";
-import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useEffect, useState } from "react";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { desktopDevice, type DesktopUpdateState } from "@/lib/portable-device-storage";
+import "./desktop-update.css";
 
-export function DesktopUpdate() {
-  const __vt = useWorkspaceTranslation();
-
+// Mounted only after an explicit Update click. A status panel leaves business
+// dialogs and the legacy host's fail-closed installer check intact.
+export function DesktopUpdate({ onClose }: { onClose: () => void }) {
+  const t = useWorkspaceTranslation();
   const [state, setState] = useState<DesktopUpdateState | null>(null);
-  const [open, setOpen] = useState(false);
-  useTransientOverlay(() => setOpen(false), open);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(true);
+  const request = useRef<Promise<DesktopUpdateState> | null>(null);
+
+  const start = useCallback(() => {
+    if (request.current) return;
+    const updates = desktopDevice()?.updates;
+    if (!updates) { setError("Updates are unavailable for this edition."); setBusy(false); return; }
+    setBusy(true); setError("");
+    setState(value => value ? { ...value, phase: "checking", message: "", progress: 0 } : null);
+    // Settings uses the browser top layer. Wait for its close/unmount before
+    // invoking either host; never close a receipt or business dialog.
+    request.current = new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+      .then(() => {
+        // Older hosts do not know the operationBusy flag. Protect an in-flight
+        // Submit/Reset before entering their native updater too.
+        const flush = new CustomEvent<{ saved: boolean; operationBusy?: boolean }>("kingpos:desktop-flush", { detail: { saved: false } });
+        window.dispatchEvent(flush);
+        if (flush.detail.operationBusy) throw Error("KINGPOS_OPERATION_BUSY");
+        return updates.now();
+      });
+    void request.current.then(setState).catch(error => setError(error instanceof Error && error.message === "KINGPOS_OPERATION_BUSY"
+      ? "Finish the current operation, then choose Retry update."
+      : "Unable to update. Your current version has been kept. Please try again."))
+      .finally(() => { request.current = null; setBusy(false); });
+  }, []);
   useEffect(() => {
     let live = true;
-    const read = () => { void desktopDevice()?.updates?.state().then(async value => {
-      // Cancel appointments left by older hosts; updates now require an explicit click.
-      if (value.scheduledAt) value = await desktopDevice()!.updates!.later();
-      if (live) setState(value);
-    }).catch(() => {}); };
-    read(); const timer = setInterval(read, 2000);
+    const read = () => { void desktopDevice()?.updates?.state().then(value => { if (live) setState(value); }).catch(() => {}); };
+    read(); const timer = setInterval(read, 1000);
     return () => { live = false; clearInterval(timer); };
   }, []);
-  if (!state?.version) return null;
-  const canDownload = !!desktopDevice()?.updates?.download;
-  const button = "min-h-11 rounded-lg border border-zinc-300 px-4 font-semibold shadow-sm transition hover:bg-zinc-100 active:scale-95 disabled:opacity-50";
-  return <>
-    <button type="button" aria-label={__vt("Update available")} title={__vt("Update available")} onClick={() => setOpen(true)} className="grid h-10 w-10 place-items-center rounded-lg text-amber-700 hover:bg-amber-50">
-      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m12 3 10 18H2L12 3Zm0 6v5m0 3v1"/></svg>
-    </button>
-    {open && createPortal(<div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setOpen(false)}>
-      <section onClick={event => event.stopPropagation()} role="dialog" aria-modal="true" aria-label={__vt("App update")} className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-semibold"><WorkspaceText text="A KingPOS update is available" /></h2>
-        <p className="mt-3 text-sm text-zinc-600"><WorkspaceText text="Version" /> {state.version}<WorkspaceText text=". Your saved tickets will be kept. KingPOS will reopen after updating." /></p>
-        {state.phase === "downloading" && <p className="mt-3 text-sm"><WorkspaceText text="Downloading in the background…" /> {state.progress === undefined ? '' : `${state.progress}%`}</p>}
-        {state.message && <p className="mt-3 text-sm"><WorkspaceText text={state.message} /></p>}
-        {error && <p role="alert" className="mt-3 text-sm text-red-700"><WorkspaceText text={error} /></p>}
-        <div className="mt-6 flex flex-wrap gap-2">
-          <button type="button" className={button} onClick={async () => { try { const next = await desktopDevice()?.updates?.later(); if (next) setState(next); setOpen(false); } catch { setError("Unable to save. Please try again."); } }}><WorkspaceText text="Later" /></button>
-          {desktopDevice()?.updates?.download && ['available', 'error'].includes(state.phase) && <button type="button" disabled={busy} className={button} onClick={async () => {
-            setBusy(true); setError('');
-            try { const next = await desktopDevice()?.updates?.download?.(); if (next) setState(next); }
-            catch { setError('Unable to download. Please try again.'); }
-            finally { setBusy(false); }
-          }}><WorkspaceText text="Download update" /></button>}
-          <button type="button" disabled={busy || (state.phase !== 'ready' && !(canDownload && state.phase === 'available'))} className={button + " bg-orange-600 text-white hover:bg-orange-700"} onClick={() => {
-            setBusy(true); setError('');
-            setOpen(false);
-            setTimeout(() => { void desktopDevice()?.updates?.now().then(next => { setState(next); if (next.message) setOpen(true); }).catch(() => { setError("Unable to update. Please try again."); setOpen(true); }).finally(() => setBusy(false)); }, 100);
-          }}><WorkspaceText text={state.phase === 'ready' || !canDownload ? 'Update now' : 'Download and install'} /></button>
-        </div>
-      </section>
-    </div>, document.body)}
-  </>;
+  useEffect(() => { queueMicrotask(start); }, [start]);
+
+  const active = !error && (busy || ["checking", "downloading", "preparing", "installing"].includes(state?.phase ?? ""));
+  const progress = Math.max(0, Math.min(100, state?.progress ?? 0));
+  const title = error ? "Update needs your attention" : state?.phase === "downloading" ? "Downloading update" : state?.phase === "preparing" ? "Saving your work" : state?.phase === "installing" ? "Installing and restarting" : active ? "Checking for updates" : state?.phase === "idle" ? "KingPOS is up to date" : "Update needs your attention";
+  return createPortal(<aside className="desktop-update-status" role="status" aria-live="polite" aria-label={t("KingPOS update")}>
+    <header><div className="desktop-update-symbol" aria-hidden="true">↻</div><div><h2><WorkspaceText text={title} /></h2><small>KingPOS {state?.version || state?.currentVersion || ""}</small></div>
+      {!active && <button type="button" aria-label={t("Close update status")} onClick={onClose}>×</button>}
+    </header>
+    {state?.phase === "downloading" && <><div className="desktop-update-progress" role="progressbar" aria-label={t("Download progress")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><i style={{ width: `${progress}%` }} /></div><p>{progress}% · <WorkspaceText text="KingPOS will install and reopen when the download is ready." /></p></>}
+    {active && state?.phase !== "downloading" && <p><WorkspaceText text={state?.message || "Your saved tickets will be kept. KingPOS will reopen after updating."} /></p>}
+    {!active && (error || state?.message) && <p><WorkspaceText text={error || state!.message} /></p>}
+    {!active && <footer><button type="button" onClick={onClose}><WorkspaceText text="Close" /></button>{(error || state?.phase !== "idle") && <button type="button" className="desktop-update-primary" onClick={start}><WorkspaceText text="Retry update" /></button>}</footer>}
+  </aside>, document.body);
 }

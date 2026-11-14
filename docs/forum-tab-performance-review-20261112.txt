@@ -1,0 +1,43 @@
+FORUM — SECOND REVIEW AND MEASURED OPTIMIZATION
+2026-11-12 America/Chicago. Implementation/QA only; not deployed.
+
+Measured scope
+Compared base ec2c292bb574d5db53a5bd4ea3c85dbfea376e9c with the corrected Forum source. Five independent runs/version, same Chromium 390x844, six transitions: Following -> Latest -> Following -> Latest -> Chat -> Latest. The real Forum, ExperiencePageBoundary, policies and React Activity run together; transport/auth responses are controlled. Both route-refresh acknowledgements and named reads have a fixed 400 ms simulated delay. Source hashes were frozen and verified after measurement.
+
+Results
+- Median summed wait for the six transitions: 3,883.2 ms -> 1,013.3 ms; 73.9% reduction.
+- Full route refreshes: 30 -> 0 across 30 transitions; 100% removed.
+- Named pane reads: 15 -> 10 across five journeys; 33.3% fewer. This excludes server data work behind route refreshes.
+- Header/tab disappearance: 30/30 -> 0/30 transitions.
+- Same header/tab DOM retained: 0/30 -> 30/30 transitions.
+- Revisited fresh Following median: 844.0 ms -> 27.3 ms; this reuses its accepted memory snapshot.
+- Browser runtime errors: zero in both benchmark variants.
+These are controlled Forum-journey percentages. They do not measure whole-app, physical iPhone/WebKit or real production-network speed. First entry still uses the hosted page and authorized server data; Chat remains live, while write/manage flows keep action resets.
+
+Issues found and corrected during this second review
+1. Repeated active-tab clicks canceled a pending result without scheduling another read. Navigation now compares destination state semantically; harmless query-order/tracking changes only normalize History. Reattaching the same route after hidden Activity also no longer cancels its reveal read.
+2. Block/privacy changes could be missed while Activity removed listeners. A stable layout lifecycle checks the persisted block marker before paint, clears retained payloads and fetches again when changed. Unavailable marker storage also forces safe revalidation on reveal.
+3. A successful seen write left unread badges stale in fresh cached lists. Accepted metadata now patches all relevant list snapshots and active rows without renewing their age or authority; old epochs cannot apply patches.
+4. A delayed Chat history response could restore rows after an overlapping poll denied access. Pagination replies now check the cache/authority epoch before applying results.
+Before-fix reproduction failures were retained separately; the test expectations were not relaxed.
+
+Final verification
+- 67 targeted tests passed, zero failed/skipped. Includes the original 58 checks plus regression coverage for repeated active Following/Chat, query normalization, hidden privacy changes, unavailable storage, seen metadata, overlapping denied Chat history and cache metadata epochs.
+- Production build, TypeScript and offline assets passed after the final URL-guard change: 563 assets, 11,328,351 bytes. This local QA build is not a deployment artifact.
+- Scoped ESLint: zero errors, one identical preexisting exhaustive-deps warning; no new diagnostics.
+- Actual Next app from this worktree was retested against isolated loopback QA data: ordinary read tabs retain header/tab DOM, only two pane-read POSTs in the three-transition smoke journey, zero Forum GET/RSC refresh requests, zero page errors. No real account, post, chat, payment or external service was used.
+- CRLF-aware diff check and source hash comparison passed.
+
+Evidence
+artifacts/forum-review/benchmark-summary.txt
+artifacts/forum-review/benchmark-results.json and benchmark-results.csv
+artifacts/forum-review/benchmark-forum-tabs.mjs and frozen benchmark-source-base/current
+artifacts/forum-review/targeted-tests.log
+artifacts/forum-review/targeted-tests-before-review-fixes.log
+artifacts/forum-review/hidden-privacy-reproduction.log
+artifacts/forum-review/seen-chat-history-reproduction.log
+artifacts/forum-review/eslint-comparison.json
+artifacts/forum-review/build.log
+artifacts/forum-review/actual-local-result.json
+
+Status: no unresolved failing case found in this review's scope. Local browser and synthetic QA results do not establish production or physical-device acceptance. Updated immutable handoff supersedes the previous Forum web candidate after validation; no deployment/native upload was performed.

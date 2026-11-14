@@ -14,6 +14,7 @@ import { clearPortableLocalDrafts } from "@/app/pos/portable/use-portable-draft"
 import { usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
 import { PortableSyncIndicator } from "@/app/pos/portable/portable-sync-indicator";
 import { DesktopTools } from "./desktop-tools";
+import { PortableInstallHelp } from "./portable-install-help";
 import { DeviceInputSettingsButton } from "./device-input-settings";
 import { PortableBookingNotifications } from "./portable-booking-notifications";
 import { PortableFullscreenButton } from "./portable-fullscreen-button";
@@ -249,6 +250,7 @@ export function PortableWorkspaceTabs({
         {items.some(item => item.id === "book") ? <PortableBookingNotifications key={workspace?.scope ?? salonId} salonId={salonId} timezone={salonTimezone} canConfirm={canConfirmBookings} /> : null}
         {workspace?.offlineEnabled ? <PortableSyncIndicator scope={workspace.scope} visible={isPortablePosRoute((optimisticHref ?? pathname).split(/[?#]/, 1)[0], PORTABLE_POS_ROUTES.pos)} /> : null}
         <DesktopTools />
+        <PortableInstallHelp compact />
         <DeviceInputSettingsButton />
         <PortableFullscreenButton />
         <form action={logoutPortablePosAction} onSubmit={clearPortableLocalDrafts} className="shrink-0">

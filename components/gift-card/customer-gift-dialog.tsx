@@ -1,15 +1,16 @@
 "use client";
-import {useEffect,useRef,useState} from "react";
-import {giftCents,giftMoney,hasSavedGiftDesign,type GiftReply,type GiftSession} from "@/types/gift-card";
+import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from "react";
+import {giftCents,giftMoney,hasSavedGiftDesign,type GiftCardView,type GiftReply,type GiftSession} from "@/types/gift-card";
 import {giftPublicLink} from "@/lib/gift-public-link";
 import {GiftQr} from "./gift-qr";
 import {GiftModalLayer} from "./gift-modal-layer";
 import {GiftArtwork,GiftSymbol,PhoneScanSymbol} from "./gift-artwork";
+import {GiftCompletion} from "./gift-completion";
 import "./gift-approved-dialog.css";
 
-type Props={session:GiftSession;installed?:boolean;busy?:boolean;error?:string;action:(op:string,args?:Record<string,unknown>)=>Promise<void>;onClose:()=>void;loadAppearance?:()=>Promise<GiftReply>};
+type Props={session:GiftSession;staff?:boolean;wallet?:()=>Promise<GiftCardView[]>;children?:ReactNode;installed?:boolean;busy?:boolean;error?:string;action:(op:string,args?:Record<string,unknown>)=>Promise<void>;onClose:()=>void;loadAppearance?:()=>Promise<GiftReply>};
 const HEX_KEYS=["1","2","3","A","4","5","6","B","7","8","9","C","0","D","E","F"];
-export function CustomerGiftDialog({session:s,installed=true,busy=false,error="",action,onClose,loadAppearance}:Props){
+export function CustomerGiftDialog({session:s,staff=false,wallet,children,installed=true,busy=false,error="",action,onClose,loadAppearance}:Props){
   const [appearance,setAppearance]=useState<{loader:Props["loadAppearance"];value:GiftReply}>();
   useEffect(()=>{let alive=true;void loadAppearance?.().then(value=>{if(alive)setAppearance({loader:loadAppearance,value});}).catch(()=>{});return()=>{alive=false;};},[loadAppearance]);
   const catalog=appearance && appearance.loader===loadAppearance?appearance.value:undefined;
@@ -18,10 +19,13 @@ export function CustomerGiftDialog({session:s,installed=true,busy=false,error=""
   const amount=purchaseDraft.base===s.purchase?purchaseDraft.value:s.purchase?String(s.purchase/100):"100";
   const [applyDraft,setApplyDraft]=useState({base:s.amount,value:String(s.amount/100)});const applyAmount=applyDraft.base===s.amount?applyDraft.value:String(s.amount/100);
   const [pending,setPending]=useState(false);const lock=useRef(false);const [localError,setLocalError]=useState("");const close=useRef<HTMLButtonElement>(null);
+  const [walletCards,setWalletCards]=useState<GiftCardView[]>([]);
+  const closeAction=useRef(onClose);useLayoutEffect(()=>{closeAction.current=onClose;},[onClose]);
   const [now,setNow]=useState(Date.now);
   useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[]);
   const expires=Date.parse(s.expires);
   const expired=s.status!=="completed"&&(s.status!=="open"||!Number.isFinite(expires)||expires<=now);const disabled=busy||pending||expired;
+  useEffect(()=>{if(expired)closeAction.current();},[expired]);
   async function run(op:string,args:Record<string,unknown>={}){if(disabled||lock.current)return;lock.current=true;setPending(true);setLocalError("");try{await action(op,args);}catch(e){setLocalError(e instanceof Error?e.message:"Gift card action failed");}finally{lock.current=false;setPending(false);}}
   useEffect(()=>{close.current?.focus();},[]);
   const card=s.mode==="use"?s.card:null;
@@ -32,11 +36,12 @@ export function CustomerGiftDialog({session:s,installed=true,busy=false,error=""
   const mode=(next:"use"|"buy")=>{setKeypad(false);setLocalError("");void run("open",{mode:next,entry:"code"});};
   return <GiftModalLayer onClose={onClose}><div className="gc gc-overlay"><section className="gc-modal gc-approved-dialog" role="dialog" aria-modal="true" aria-label="Gift card">
     <header><div className="gc-approved-heading"><GiftSymbol/><div><h2>Gift cards</h2><p>A little luxury, beautifully given.</p></div></div><button ref={close} type="button" className="gc-approved-close" aria-label="Close gift card" onClick={onClose}>×</button></header>
-    {s.status==="completed"?<div className="gc-approved-complete"><GiftArtwork design={catalog?.design} salonName={catalog?.salonName}/><div><h3>{s.purchase?"Your gift card is ready":"Gift card use saved"}</h3>{s.delivery&&!s.collected?<><GiftQr value={giftPublicLink("card",s.delivery,typeof location==="undefined"?undefined:location)} label="Scan to receive gift card"/><p>Scan to open and save. No app required.</p></>:<p>{s.purchase?"Saved to your account or already collected.":`Gift card used: ${giftMoney(s.amount)}. Staff will provide your receipt.`}</p>}</div></div>:<>
+    {s.status==="completed"?<GiftCompletion session={s} appearance={catalog} staff={staff} onClose={onClose}/>:<>
     <div className="gc-approved-tabs"><button type="button" disabled={disabled} aria-pressed={s.mode==="use"} onClick={()=>mode("use")}>Use a gift card</button><button type="button" disabled={disabled||!installed} aria-pressed={s.mode==="buy"} onClick={()=>mode("buy")}>Buy a gift card</button></div>
     <div className="gc-approved-columns"><aside><GiftArtwork design={design} salonName={card?.salonName||catalog?.salonName}/>{card?<p className="gc-approved-caption">Design saved when this card was issued</p>:hasSavedGiftDesign(design)?<p className="gc-approved-caption">Your salon’s saved design</p>:null}
       {s.mode==="use"&&!card&&<button type="button" className="gc-approved-phone" disabled={disabled} onClick={()=>{setKeypad(false);void run("open",{mode:"use",entry:s.entry==="scan"?"code":"scan"});}}><PhoneScanSymbol/><span>{s.entry==="scan"?"Enter card details":"Scan with your phone"}<small>{s.entry==="scan"?"Use your card number and PIN.":"Scan a QR code to connect your phone."}</small></span></button>}
     </aside><div className="gc-approved-form">
+      {staff&&wallet&&s.mode==="use"&&<div className="gc-approved-wallet"><button type="button" disabled={disabled} onClick={()=>{void wallet().then(setWalletCards).catch(e=>setLocalError(e instanceof Error?e.message:"Wallet unavailable"));}}>Customer wallet</button>{walletCards.map(card=><button type="button" key={card.id} disabled={disabled} onClick={()=>void run("wallet_request",{cardId:card.id})}>•••• {card.last4} · {giftMoney(card.balance)} · Request approval</button>)}</div>}
       {s.mode==="buy"?<><h3>Give a moment of beauty</h3><div className="gc-approved-amounts">{[25,50,100].map(value=><button type="button" key={value} disabled={disabled} aria-pressed={Number(amount)===value} onClick={()=>setPurchaseDraft({base:s.purchase,value:String(value)})}>${value}</button>)}</div><label>Gift card amount<input aria-label="Gift card amount" inputMode="decimal" value={amount} placeholder="Gift card amount" onChange={event=>setPurchaseDraft({base:s.purchase,value:event.target.value})}/></label><button type="button" className="gc-primary" disabled={disabled||!installed} onClick={()=>{try{const cents=giftCents(amount);void run("buy",{amount:cents});}catch(e){setLocalError((e as Error).message);}}}>Add {Number(amount)>0?`$${amount}`:"gift card"} to purchase</button><p className="gc-approved-help">Staff will complete the sale to activate your card.</p>{s.purchase>0&&<p className="gc-note">{giftMoney(s.purchase)} requested.</p>}</>:card?<><div className="gc-approved-balance"><span>•••• {card.last4}</span><strong>{giftMoney(card.balance)} available</strong></div>{s.approved?<><label>Amount to apply<input aria-label="Amount to apply" inputMode="decimal" value={applyAmount} onChange={event=>setApplyDraft({base:s.amount,value:event.target.value})}/></label><button type="button" disabled={disabled} className="gc-primary" onClick={()=>{try{const cents=giftCents(applyAmount);if(cents>Math.min(card.balance,s.total))throw new Error("Choose an amount within this ticket and available balance.");void run("amount",{amount:cents});}catch(e){setLocalError((e as Error).message);}}}>Update applied amount</button><p className="gc-approved-help">Staff will finish your payment.</p></>:<p className="gc-note">Customer confirmation needed. Complete authorization on your phone.</p>}</>:s.entry==="scan"?<div className="gc-approved-scan"><h3>Scan with your phone</h3>{s.qrVisible&&!expired?<><p>Use your phone to enter your gift card.</p><GiftQr value={mobile} label="Scan to use your gift card"/><small>For this visit only · Expires {new Date(s.expires).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</small></>:<p className="gc-note">{expired?"Session expired. Ask staff to reopen Gift cards.":"Phone connected. Complete your selection on your phone, or choose Enter card details."}</p>}</div>:<>
       <h3>Enter your card details</h3><label>Card number<span className="gc-approved-field"><input aria-label="Card code" autoComplete="off" value={code} maxLength={160} placeholder="XXXX XXXX XXXX XXXX" disabled={disabled} onFocus={()=>setField("code")} onChange={event=>{const value=event.target.value;const match=/#card=([a-f0-9]{64})/i.exec(value);if(match){setCode("");void run("code",{token:match[1].toLowerCase()});}else setCode(value.toUpperCase());}}/><button type="button" aria-label="Open card number keypad" aria-expanded={keypad&&field==="code"} disabled={disabled} onClick={()=>toggleKeyboard("code")}>⌨</button></span></label>
       <label>Security PIN<span className="gc-approved-field"><input type="password" aria-label="Security PIN" autoComplete="off" maxLength={8} value={pin} placeholder="Enter PIN" disabled={disabled} onFocus={()=>setField("pin")} onChange={event=>setPin(event.target.value.toUpperCase())}/><button type="button" aria-label="Open PIN keypad" aria-expanded={keypad&&field==="pin"} disabled={disabled} onClick={()=>toggleKeyboard("pin")}>⌨</button></span></label><small>Find the PIN on your gift card.</small>
@@ -44,6 +49,7 @@ export function CustomerGiftDialog({session:s,installed=true,busy=false,error=""
       <button type="button" className="gc-primary" disabled={disabled||!code||pin.length!==8} onClick={()=>{void run("code",{code,pin}).finally(()=>{setPin("");setKeypad(false);});}}>Check &amp; apply <span aria-hidden="true">→</span></button><p className="gc-approved-help">Your card is verified before it is applied to this visit.</p>
       </>}
     </div></div>{(s.amount>0||s.purchase>0)&&<button type="button" className="gc-approved-remove" disabled={disabled} onClick={()=>void run("cancel")}>Remove gift card selection</button>}
+    {children}
     {expired&&<p className="gc-note gc-error" role="alert">Session expired. Ask staff to reopen Gift cards.</p>}</>}
     {(error||localError)&&<p className="gc-note gc-error" role="alert">{error||localError}</p>}
   </section></div></GiftModalLayer>;

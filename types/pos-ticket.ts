@@ -21,7 +21,7 @@ export type PosTicket = {
   source_booking_id: string | null;
   ticket_number: string;
   ticket_sequence: number;
-  customer_id: string;
+  customer_id: string | null;
   opened_at: string;
   closed_at: string | null;
   status: PosTicketStatus;
@@ -37,6 +37,21 @@ export type PosTicket = {
 };
 
 export type PosTicketWithRelations = PosTicket & {
+  financial_sources?: {
+    giftSales: Array<{
+      id: string;
+      amountCents: number;
+      last4: string;
+      paymentMethod: "cash" | "credit_card" | "debit_card" | "other";
+      status: "completed" | "voided";
+      /** Recording operator audit only; never a Gift seller or performed-service staff. */
+      actorName: string;
+      createdAt: string;
+    }>;
+    giftRedeemedCents: number;
+    rewardDiscount: number;
+    recordedPayments?: Array<{amount:number;paymentMethod:string;createdAt:string}>;
+  };
   adjustments?: Array<{
     action: "item_corrected" | "item_removed" | "item_replaced";
     event_action?: TicketAdjustmentEventAction;

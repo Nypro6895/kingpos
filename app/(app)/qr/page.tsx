@@ -1,10 +1,14 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { withExperiencePage } from "@/components/experience-page";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import { loadPersonalQr, loadPersonalQrCatalog } from "@/app/qr/actions";
 import { PersonalQrClient } from "@/app/qr/personal-qr-client";
+import { PersonalQrLoading } from "@/app/qr/personal-qr-loading";
 
-async function PersonalQrPage({ searchParams }: { searchParams?: Promise<{ entry?: string; visit?: string; scan?: string }> }) {
+type PersonalQrPageProps = { searchParams?: Promise<{ entry?: string; visit?: string; scan?: string }> };
+
+async function PersonalQrContent({ searchParams }: PersonalQrPageProps) {
   const params = await searchParams ?? {};
   const user = await getCurrentKingUser();
   if (!user) {
@@ -17,4 +21,8 @@ async function PersonalQrPage({ searchParams }: { searchParams?: Promise<{ entry
   const [workspace, catalog] = await Promise.all([loadPersonalQr(user.id), params.entry ? loadPersonalQrCatalog(user.id, params.entry) : null]);
   return <PersonalQrClient key={`${user.id}:${params.entry ?? ""}:${params.visit ?? ""}:${params.scan === "1"}`} viewerId={user.id} customerName={user.display_name ?? "Guest"} initial={workspace.data ?? null} initialError={workspace.error ?? catalog?.error} entry={params.entry} initialCatalog={catalog?.catalog} initialVisitId={params.visit} initialScan={params.scan === "1"} />;
 }
-export default withExperiencePage(PersonalQrPage);
+
+function PersonalQrPage(props: PersonalQrPageProps) {
+  return <Suspense fallback={<PersonalQrLoading />}><PersonalQrContent {...props} /></Suspense>;
+}
+export default withExperiencePage(PersonalQrPage, { pendingFallback: <PersonalQrLoading /> });

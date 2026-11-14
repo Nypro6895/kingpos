@@ -28,18 +28,6 @@ for (const guide of HELP_GUIDES) for (const screen of guide.evidence.screenshots
 }
 export const APP_LOCAL_REFERENCE_ASSETS = [...imagePaths].sort();
 
-/** Public instructions only; private support conversations are never bundled. */
-export const APP_LOCAL_SUPPORT_INSTRUCTIONS = {
-  version: APP_LOCAL_REFERENCE_VERSION, title: "Support",
-  introduction: "Report an issue and continue conversations with our team.",
-  sections: [
-    { title: "Send a request", body: "Describe what you were doing, the intended salon, and what happened. Avoid passwords, passcodes and full payment details.", href: "/support" },
-    { title: "Without signing in", body: "Use the existing secure contact form. Previous guest conversations require their own secure access.", href: "/contact-support" },
-    { title: "Account access", body: "Use account recovery if you cannot sign in. Support instructions do not bypass account or salon permission checks.", href: "/account-recovery" },
-  ],
-  confirmation: "Sending a support request requires a connection and confirmation from the server.",
-} as const;
-
 /** Actual existing UI modules and their required live props; never fabricated data. */
 export const APP_LOCAL_REFERENCE_MODULES = {
   helpHome: { source: "components/app-local-help.tsx", export: "AppLocalHelp", props: ["language", "navigate"], content: "APP_LOCAL_HELP_GUIDES" },

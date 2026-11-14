@@ -6,6 +6,8 @@ import {ContextualSupport} from "@/components/contextual-support";
 import {SubmitButton} from "@/components/submit-button";
 import {addPosPayment,addPosTicketItem,cancelPosTicket,closePosTicket,deletePosPayment,deletePosTicketItem,reopenPosTicket,updatePosTicketDiscount,updatePosTicketItemStaff,updatePosTicketTaxRate,updatePosTicketTip,voidPosTicket} from "@/app/pos-tickets/actions";
 import {calculateTicketTotals} from "@/lib/pos-ticket-calculations";
+import {ticketFinancialView} from "@/lib/pos-ticket-financial-view";
+import {TicketPaymentSummary} from "@/components/ticket-payment-summary";
 import {getTicketTimeline} from "@/lib/pos-ticket-timeline";
 import {buildTicketReceipt} from "@/lib/pos-ticket-receipt";
 import type {PosTicketStaffOption} from "@/lib/pos-tickets";
@@ -429,7 +431,7 @@ export function AppLocalTicketDetail({data,error,returnTo}:{data:AppLocalTicketD
   const canWorkTicket = canManageTickets && isOpen;
   const canVoidOrReopenTicket = canVoidTickets && isClosed;
   const returnPath = `/pos-tickets/${ticket.id}`;
-  const totals = calculateTicketTotals({
+  const serviceTotals = calculateTicketTotals({
     discountType: ticket.discount_type,
     discountValue: ticket.discount_value,
     items: ticket.ticket_items ?? [],
@@ -438,6 +440,8 @@ export function AppLocalTicketDetail({data,error,returnTo}:{data:AppLocalTicketD
     tipType: ticket.tip_type,
     tipValue: ticket.tip_value,
   });
+  const financial = ticketFinancialView(ticket,serviceTotals);
+  const totals = financial.totals;
   const hasItems = (ticket.ticket_items ?? []).length > 0;
   const totalCents = toCents(totals.total);
   const paidCents = toCents(totals.paid);
@@ -473,7 +477,7 @@ export function AppLocalTicketDetail({data,error,returnTo}:{data:AppLocalTicketD
     payments: ticket.payments ?? [],
     salon: data.salon,
     ticket,
-    totals,
+    totals: serviceTotals,
   });
   const timeline = getTicketTimeline(ticket);
   const businessTimezone=data.businessTimezone??"America/Chicago";
@@ -567,7 +571,7 @@ export function AppLocalTicketDetail({data,error,returnTo}:{data:AppLocalTicketD
           ) : null}
         </div>
 
-        {(ticket.ticket_items ?? []).length === 0 ? (
+        {(ticket.ticket_items ?? []).length === 0 && !financial.giftSales.length ? (
           <p className="mt-4 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
             <WorkspaceText text="No services added yet." />
           </p>
@@ -667,6 +671,7 @@ export function AppLocalTicketDetail({data,error,returnTo}:{data:AppLocalTicketD
                   </div>
                 </li>
               ))}
+              {financial.giftSales.map(sale=><li key={sale.id} className="grid grid-cols-12 gap-3 bg-amber-50/50 px-4 py-4 text-sm" data-ticket-gift-item><div className="col-span-12 font-medium sm:col-span-3"><WorkspaceText text="Gift card" /><p className="mt-1 text-xs font-normal text-zinc-500">•••• {sale.last4}{sale.status === "voided" ? " · Voided" : ""}</p></div><div className="col-span-6 text-zinc-500 sm:col-span-2"><WorkspaceText text="Gift purchase" /></div><div className="col-span-6 sm:col-span-2" data-ticket-gift-staff aria-hidden="true" /><div className="col-span-6 sm:col-span-1">1</div><div className="col-span-6 text-right font-medium sm:col-span-2 sm:text-left">{formatMoney(sale.amountCents/100)}</div></li>)}
             </ul>
           </div>
         )}
@@ -893,7 +898,7 @@ export function AppLocalTicketDetail({data,error,returnTo}:{data:AppLocalTicketD
           </div>
         </div>
 
-        {(ticket.payments ?? []).length === 0 ? (
+        {(financial.giftSales.length>0 || financial.giftRedeemed>0) && !canWorkTicket ? <TicketPaymentSummary payments={financial.payments} timeZone={businessTimezone}/> : (ticket.payments ?? []).length === 0 ? (
           <p className="mt-4 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
             <WorkspaceText text="No payments recorded yet." />
           </p>
@@ -1038,6 +1043,7 @@ export function AppLocalTicketDetail({data,error,returnTo}:{data:AppLocalTicketD
                     {formatMoney(receipt.totals.discount)}
                   </dd>
                 </div>
+                {(receipt.totals.reward ?? 0)>0 && <div className="flex justify-between gap-3 text-teal-800"><dt><WorkspaceText text="Reward used" /></dt><dd>−{formatMoney(receipt.totals.reward??0)}</dd></div>}
                 <div className="flex justify-between gap-3">
                   <dt className="text-zinc-600"><WorkspaceText text="Tax" /></dt>
                   <dd className="font-medium text-zinc-950">
@@ -1140,12 +1146,12 @@ export function AppLocalTicketDetail({data,error,returnTo}:{data:AppLocalTicketD
                   returnPath={returnPath}
                   ticketId={ticket.id}
                 />
-                <WorkflowActionForm
+                {!financial.giftSales.length && <WorkflowActionForm
                   action={reopenPosTicket}
                   buttonLabel={__vt("Reopen Ticket")}
                   returnPath={returnPath}
                   ticketId={ticket.id}
-                />
+                />}
               </>
             ) : null}
           </div>

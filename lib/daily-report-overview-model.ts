@@ -1,9 +1,10 @@
 import { calculateTicketTotals } from "./pos-ticket-calculations";
 import type { DailyOverviewVisit, DailyReportOverview } from "@/types/daily-report-overview";
 import type { DailyPosReport } from "@/types/pos-daily-closing";
-import type { PosTicketDiscountType, PosTicketTipType } from "@/types/pos-ticket";
+import type { PosTicketDiscountType, PosTicketTipType, PosTicketWithRelations } from "@/types/pos-ticket";
 
 export type OverviewTicket = {
+  financial_sources?: PosTicketWithRelations["financial_sources"];
   id: string; ticket_number: string | null; customer_id: string | null; opened_at: string; status: string;
   discount_type: PosTicketDiscountType; discount_value: number; tax_rate: number; tip_type: PosTicketTipType; tip_value: number;
   customer: { name: string | null } | null;
@@ -28,12 +29,17 @@ export function buildDailyReportOverview(input: { date: string; timeZone: string
     const lines = items.map(i => {
       const people = new Map<string, { id: string; name: string }>();
       if (i.assigned_staff_id) people.set(i.assigned_staff_id, { id: i.assigned_staff_id, name: i.assigned_staff?.display_name ?? "Staff" });
-      for (const p of i.turn_parts ?? []) people.set(p.staff_id, { id: p.staff_id, name: p.staff?.display_name ?? "Staff" });
+      for (const p of i.turn_parts ?? []) people.set(p.staff_id, { id: p.staff_id, name: p.staff?.display_name ?? people.get(p.staff_id)?.name ?? "Staff" });
       return { name: i.service_name_snapshot, staff: [...people.values()], amount: i.turn_parts?.length ? i.turn_parts.reduce((n,p) => n + Number(p.amount), 0) : Number(i.line_total) };
     });
     const total = calculateTicketTotals({ items: lines.map(l => ({ line_total: l.amount })), discountType: t.discount_type, discountValue: Number(t.discount_value), taxRate: Number(t.tax_rate), tipType: t.tip_type, tipValue: Number(t.tip_value) });
+    let giftTotal=0;
+    for (const sale of t.financial_sources?.giftSales ?? []) {
+      giftTotal+=sale.amountCents/100;
+      lines.push({name:`Gift card · •••• ${sale.last4}`,staff:[],amount:sale.amountCents/100});
+    }
     const status = t.status === "closed" ? "submitted" : t.status === "voided" ? "voided" : t.status === "cancelled" ? "cancelled" : "open";
-    return { id: visit?.id ?? `ticket:${t.id}`, customerName: visit?.customer?.name ?? t.customer?.name ?? "Walk-in", checkedInAt: visit?.checked_in_at ?? null, ticketId: t.id, ticketNumber: t.ticket_number || t.id.slice(0,8), status, lines, amount: status === "submitted" ? total.total : null };
+    return { id: visit?.id ?? `ticket:${t.id}`, customerName: visit?.customer?.name ?? t.customer?.name ?? "Walk-in", checkedInAt: visit?.checked_in_at ?? null, ticketId: t.id, ticketNumber: t.ticket_number || t.id.slice(0,8), status, lines, amount: status === "submitted" ? Math.round((total.total+giftTotal)*100)/100 : null };
   }
   const rows: DailyOverviewVisit[] = [];
   for (const v of input.visits) {

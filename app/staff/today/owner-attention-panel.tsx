@@ -119,6 +119,10 @@ export function OwnerAttentionPanel({ salonId }: { salonId: string }) {
 export function AttentionNotification({ data, item, onSaved }: { data: OwnerAttentionData; item: OwnerAttentionItem; onSaved?: () => void }) {
   if (item.kind === "closing") return <ClosingNotification data={data} item={item} onSaved={onSaved} />;
   const view = attentionPresentation(item);
+  if (["gift_sale","gift_use","reward"].includes(item.kind)) return <article className={`${s.item} ${s.notification}`}>
+    <Link className={s.alertLink} href={item.target_href}><div className={s.row}><h3>{item.label}</h3><span aria-hidden="true">›</span></div><p className={s.meta}>{attentionTime(item,data.timezone,data.today)}</p><p className={s.primaryChange}>{item.detail}</p></Link>
+    <div className={s.notificationActions}><AttentionActions salonId={data.salonId} viewerId={data.viewerId} item={item} onSaved={onSaved} compact /></div>
+  </article>;
   if (!view.ticket) return <article className={`${s.item} ${s.notification}`}>
     <div className={s.message}><h3>{item.label}</h3><p className={s.meta}>{attentionTime(item, data.timezone, data.today)}</p><p className={s.detail}>{item.detail}</p></div>
     <div className={s.notificationActions}><AttentionActions salonId={data.salonId} viewerId={data.viewerId} item={item} onSaved={onSaved} compact /></div>

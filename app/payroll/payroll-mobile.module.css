@@ -239,3 +239,65 @@
 .panel,.taxCard,.toolLink,.output,.schedulePanel{padding-inline:16px}
 .takeHomeCard>.disclosureSummary,.takeHomeBody{padding-inline:0}
 }
+
+/* One compact payroll row; only this card changes, shared disclosures retain their layout. */
+.compactStaffCard { margin-inline:0;width:100%;padding-inline:0; }
+.staffDetailsHeader { display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:6px;padding-block:8px; }
+.staffDetailsHeader > .compactStaffSummary { padding-top:12px; }
+.staffDetailsButton { min-width:44px;min-height:44px;padding:8px 4px;border:0;background:transparent;color:#68766e;font:inherit;font-size:12px;text-decoration:underline;text-underline-offset:3px;cursor:pointer; }
+.staffDetailsButton:focus-visible { outline:2px solid #42634a;outline-offset:2px; }
+.compactStaffCard > .disclosureSummary { align-items:flex-start;gap:6px;padding-block:12px; }
+.compactStaffCard > .disclosureSummary > .chevron { margin-top:1px; }
+.compactStaffSummary { min-width:0;width:100%;display:grid;gap:5px;font-variant-numeric:tabular-nums; }
+.compactPayoutRow { display:grid;grid-template-columns:minmax(42px,.65fr) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start; }
+.compactStaffName { font-weight:650;overflow-wrap:anywhere; }
+.compactPayout { min-width:0; }
+.compactPayoutValue { display:flex;align-items:baseline;justify-content:flex-end;gap:3px;flex-wrap:wrap;font-size:13px; }
+.compactPayoutValue strong { color:var(--payroll-green,#174e3d);white-space:nowrap; }
+.compactPayoutValue .negativePayout { color:#be123c; }
+.compactFormula { display:block;text-align:right;font-size:11px;line-height:1.4;color:#626b65;margin-top:2px;overflow-wrap:anywhere; }
+.compactExtras,.compactRules,.compactWarnings { display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px; }
+.compactExtras { font-size:12px;line-height:1.5; }
+.compactExtras b { font-weight:550; }
+.compactExtraRule,.compactRules,.compactIncludedNote { color:#626b65; }
+.compactRules { font-size:11px;line-height:1.5;gap:2px 6px; }
+.compactRules > span + span::before { content:'·';margin-right:6px; }
+.compactWarnings { font-size:11px; }
+.compactIncludedNote { font-size:12px; }
+@media(min-width:768px) {
+ .compactPayoutRow { grid-template-columns:minmax(100px,1fr) minmax(160px,1fr) minmax(160px,1fr); }
+ .compactPayoutValue { font-size:14px; }
+ .compactFormula,.compactRules { font-size:12px; }
+}
+
+/* Approved payment ledger: every amount is supplied by the existing calculator. */
+.compactStaffCard[data-open=true] > .staffDetailsHeader { background:#eff7ec; }
+.compactStaffCard .takeHomeBody { display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:0 0 12px; }
+.paymentTotals { display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 16px;font-size:14px; }
+.paymentTotals strong,.commissionTotal strong { color:var(--payroll-green,#174e3d);font-weight:650; }
+.commissionTotal { font-size:13px; }
+.paymentTable { width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums; }
+.paymentTable th,.paymentTable td { padding:7px 3px;border-bottom:1px solid #d8dfdf;text-align:right;vertical-align:middle;overflow-wrap:anywhere; }
+.paymentTable thead th { background:#dce9ec;color:#28372f;font-weight:600; }
+.paymentTable th:first-child { text-align:left;width:20%; }
+.paymentTable th:last-child,.paymentTable td:last-child { text-align:center; }
+.paymentTable tbody th { font-weight:550; }
+.paymentTable small { display:block;font-size:11px;color:#626b65;font-weight:400; }
+.page form.paymentForm[data-payroll-autosave],.paymentForm { display:grid;grid-template-columns:minmax(0,1fr);gap:8px;background:transparent;border:0;padding:0;border-radius:0;min-width:0; }
+.bonusInput { display:flex;align-items:center;gap:1px;border:1px solid #aab7b0;border-radius:4px;padding-inline:3px;background:#fff;min-width:0;max-width:90px;margin-left:auto; }
+.page .bonusInput input,.bonusInput input { width:100%;min-width:0;max-width:100%;border:0!important;box-shadow:none;background:transparent;border-radius:0;padding:5px 0;text-align:right;font:inherit;font-size:16px;min-height:36px;appearance:textfield; }
+.bonusInput input::-webkit-inner-spin-button,.bonusInput input::-webkit-outer-spin-button { appearance:none;margin:0; }
+.bonusInput:focus-within { outline:2px solid #42634a;outline-offset:1px; }
+.checkNumberRow { display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;font-size:12px;min-width:0; }
+.page .paymentForm > .checkNumberRow { grid-template-columns:auto minmax(0,1fr) auto; }
+.checkNumberRow input { min-width:0;width:100%;padding:7px; }
+.checkNumberRow a { display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;color:#336b60; }
+.paymentStatus { font-size:11px;color:#626b65; }
+.paymentBreakdown h3 { font-size:14px;font-weight:600;margin-bottom:6px; }
+.paymentDayHeader,.paymentDay { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.85fr) 36px;align-items:center;gap:6px;font-size:12px;font-variant-numeric:tabular-nums; }
+.paymentDayHeader { background:#dce9ec;padding:7px 4px;font-weight:550; }
+.paymentDay { padding:0 4px;border-bottom:1px solid #d8dfdf;min-height:38px; }
+.paymentDay > span,.paymentDayHeader > span:nth-child(n+2) { text-align:right;overflow-wrap:anywhere; }
+.paymentDay > button { min-width:36px;min-height:44px;display:grid;place-items:center;padding:0;border:0;background:transparent; }
+.paymentDay > form,.dayHistory { grid-column:1/-1;min-width:0; }
+@media(min-width:768px) { .paymentTable { font-size:13px; }.paymentTable th,.paymentTable td { padding:9px 6px; }.paymentTotals { font-size:16px; } }

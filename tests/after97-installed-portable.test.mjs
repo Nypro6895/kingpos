@@ -2,6 +2,7 @@ import test from'node:test';import assert from'node:assert/strict';import fs fro
 const names=['portableHoldPosDraft','portablePosHeldTicketState','portableUpdatePosHeldTicket'];
 test('installed Portable binds shared-ticket Save, state and Submit to dedicated paired handlers; crossed grants render no register',async()=>{
  const mocks={
+ '@/components/workspace-language':`export function WorkspaceText({text}){return text} export function useWorkspaceTranslation(){return text=>text}`,
  '@/app/pos/pos-desk-client':`export function PosDeskClient(props){globalThis.__portableProps=props;return null}`,
  '@/lib/app-local-resource':`export const useAppLocalResource=()=>({data:{salonId:'salon-a',defaults:{},services:[],staff:[],today:'2026-11-11',waitingVisits:[]}})`,
  '@/lib/app-local-host':`export const getAppLocalHost=()=>({openOnline(){throw Error('Unexpected online')}})`,

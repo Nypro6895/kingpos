@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "payroll-compact-settings-20261112",
+  "status": "ready",
+  "summary": "Compact shared Staff payroll rows; settings-aware tax/payout labels and historical bonus provenance, preserving final payout arithmetic and existing forms/history.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/payroll/staff-income-card.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "lib/staff-payroll-display.ts",
+    "lib/payroll.ts",
+    "lib/vietnamese-payroll-mobile.json",
+    "tests/payroll-live-dashboard.test.mjs",
+    "tests/payroll-staff-scroll-display.test.mjs",
+    "tests/payroll-compact-settings-browser.mjs",
+    "docs/payroll-compact-settings-20261112.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\payroll-compact-settings-20261112\\artifacts\\payroll-compact-settings-20261112\\source",
+    "commit": "869fad961018cae8119453dd9886f7c8c5f02c40"
+  },
+  "validation": [
+    {
+      "name": "46 focused payroll, payout setting, access, projection and concurrency tests",
+      "result": "passed",
+      "evidence": "artifacts/payroll-compact-settings-20261112/tests.log"
+    },
+    {
+      "name": "50 Chromium component views, EN/VI and 320–1440px",
+      "result": "passed",
+      "evidence": "artifacts/payroll-compact-settings-20261112/browser/results.json"
+    },
+    {
+      "name": "Full production build including TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/payroll-compact-settings-20261112/build-final.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "App-local bundle verify-only, safari16 target, no unsupported actions",
+      "result": "passed",
+      "evidence": "docs/payroll-compact-settings-20261112.md"
+    },
+    {
+      "name": "Authenticated actual local Next payroll route with isolated QA backend, no financial writes",
+      "result": "passed",
+      "evidence": "artifacts/payroll-compact-settings-20261112/local-route-result.json"
+    },
+    {
+      "name": "Scoped git diff whitespace check",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "nativeRelease": {
+    "required": true,
+    "reason": "Shared StaffIncomeCard is embedded in app-local bundle; native bundle/binary must be rebuilt by release coordinator."
+  },
+  "id": "55399e26-b007-4dcc-ac9d-aa0128355b1a",
+  "recordedAt": "2026-11-12T22:00:25.641Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-compact-settings-20261112",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/payroll/staff-income-card.tsx": "4189410c591b56f1e8fb1c8e87407e77d95f2f5bb8381a79869db4e176766309",
+    "app/payroll/payroll-mobile.module.css": "aafad6c2c0d4828ec8e2e3a7f587d5d853a4acb23cc4b812d178f37660734dc2",
+    "lib/staff-payroll-display.ts": "b3035ae53adc4f2c4869d4bec0baf18b913769ca39f441d59b5770b6e0589977",
+    "lib/payroll.ts": "cfa2991860c6d6dffa06b084e90e54ad6a0a2e45749d823bfc0f0b0369b1b401",
+    "lib/vietnamese-payroll-mobile.json": "8a3b43a277d22e04e8da03db7764ef8603da08bd7ed878c431e46aec5a21f7cd",
+    "tests/payroll-live-dashboard.test.mjs": "820b867eda34609a6f701644f36fc3fcb163b965a7b5097df37f96b5509c4f58",
+    "tests/payroll-staff-scroll-display.test.mjs": "a47ac3c4e2481d28cc8d6b69f85ab4aab440e674fe8d31bd75ba8c1ab7403346",
+    "tests/payroll-compact-settings-browser.mjs": "d0a3121d09aaa97454a179df8984b30e60ff684ac9361ca4d73267f1cc31e3e0",
+    "docs/payroll-compact-settings-20261112.md": "233dd12a5f2fc518fb41b52b2b315b7bfcf3af093a2d854a651c7a3f1a259f74"
+  }
+}

@@ -9,11 +9,11 @@ import { PreferencesContext, useSalonLanguage } from "@/components/salon-languag
 const ConfigurationContext = createContext<((initial: SalonLanguageState) => void) | null>(null);
 export function SalonLanguageConfiguration({initial}:{initial:SalonLanguageState}) { const configure=useContext(ConfigurationContext); useEffect(()=>{configure?.(initial);},[configure,initial]); return null; }
 
-export function SalonLanguagePreferences({ initial, children }: { initial: SalonLanguageState; children: ReactNode }) {
-  const [state, setState] = useState(initial), [busy, setBusy] = useState(false), [error, setError] = useState(initial.loadError ?? "");
-  const [lastInitial, setLastInitial] = useState(initial);
+export function SalonLanguagePreferences({ initial: incomingInitial, children }: { initial: SalonLanguageState; children: ReactNode }) {
+  const [state, setState] = useState(incomingInitial), [busy, setBusy] = useState(false), [error, setError] = useState(incomingInitial.loadError ?? "");
+  const [lastInitial, setLastInitial] = useState(incomingInitial);
   const [configured, configure] = useState<SalonLanguageState | null>(null);
-  initial = configured ?? initial;
+  const initial = configured ?? incomingInitial;
   if (lastInitial !== initial) {
     setLastInitial(initial);
     if (state.salonId === null || acceptLanguageSnapshot(state, initial)) { setState(initial); setError(initial.loadError ?? ""); }
@@ -116,14 +116,14 @@ export function LanguageSetting() {
   const [info, setInfo] = useState(false);
   const id = useId();
   return <section aria-label="Language" lang="en" className="min-w-0 rounded-lg border border-zinc-200 p-3">
-    <div className="flex items-center justify-between gap-3">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-center gap-2">
       <label htmlFor={`${id}-choice`} className="text-sm font-semibold">Language</label>
-      <button type="button" aria-label="Language information" aria-expanded={info} aria-controls={`${id}-info`} onClick={() => setInfo(!info)} className="grid h-8 w-8 place-items-center rounded-full border text-sm font-semibold">i</button>
-    </div>
-    {info && <p id={`${id}-info`} className="mt-2 text-sm text-zinc-600">{LANGUAGE_INFO}</p>}
-    <select id={`${id}-choice`} value={effective} disabled={preferences?.busy} onChange={e => void preferences?.choose(e.target.value)} className="mt-2 min-h-11 w-full rounded-md border bg-white px-3 text-sm">
+    <select id={`${id}-choice`} value={effective} disabled={preferences?.busy} onChange={e => void preferences?.choose(e.target.value)} className="min-h-11 min-w-0 w-full rounded-md border bg-white px-2 text-sm">
       {LANGUAGE_CATALOG.map(language => <option key={language.code} value={language.code} disabled={language.code !== "en" && !state.offers.some(o => o.code === language.code && Date.parse(o.expiresAt) > Date.now())}>{language.name}</option>)}
     </select>
+      <button type="button" aria-label="Language information" aria-expanded={info} aria-controls={`${id}-info`} onClick={() => setInfo(!info)} className="grid h-11 w-11 place-items-center rounded-full border text-sm font-semibold">i</button>
+    </div>
+    {info && <p id={`${id}-info`} className="mt-2 text-sm text-zinc-600">{LANGUAGE_INFO}</p>}
     {state.salonId && <p className="mt-2 text-xs text-zinc-500">{state.salonName} · Your choice applies to this salon.</p>}
     {state.selected !== effective && <p role="status" className="mt-2 text-sm text-zinc-600">Your selected language is no longer available or needs your confirmation after a package change. English is being used.</p>}
     {preferences?.error && <p role="alert" className="mt-2 text-sm text-red-700">{preferences.error}</p>}

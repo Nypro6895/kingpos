@@ -1,4 +1,6 @@
 "use server";
+import { loadTicketFinancialSourceMap } from "@/lib/pos-ticket-financial-sources";
+import type { PosTicketWithRelations } from "@/types/pos-ticket";
 import { closingPayload } from "@/lib/daily-closing-input";
 import {
   ticketAdjustmentEventAction,
@@ -438,6 +440,7 @@ export type PortableTicketAdjustmentRow = {
 };
 
 export type PortableTicketRow = {
+  financial_sources?: PosTicketWithRelations["financial_sources"];
   workspaceRevision?: number;
   adjustments: PortableTicketAdjustmentRow[];
   closedAt: string | null;
@@ -590,6 +593,13 @@ export type PortableReportData = {
   timezone: string;
   totals: {
     expectedTip?: number;
+    grossService?: number;
+    giftSales?: number;
+    giftServicePaid?: number;
+    giftTipPaid?: number;
+    earnedTip?: number;
+    rewardDiscount?: number;
+    ordinaryDiscount?: number;
     serviceDifference?: number | null;
     tipDifference?: number | null;
     actualTotal: number;
@@ -2322,6 +2332,7 @@ export async function getPortableTicketData(
     }
   }
 
+  const financialSources=await loadTicketFinancialSourceMap(supabase,portableSession.salon_id,tickets.map(ticket=>ticket.id),{keyId,signature});
   return {
     canEdit,
     date,
@@ -2332,7 +2343,7 @@ export async function getPortableTicketData(
     services: editOptions.services,
     setupMessage: null,
     staff: editOptions.staff,
-    tickets,
+    tickets: tickets.map(ticket=>{const sources=financialSources[ticket.id];const gift=(sources?.giftSales??[]).reduce((sum,sale)=>sum+sale.amountCents/100,0);return {...ticket,financial_sources:sources,subtotal:ticket.subtotal+gift,total:ticket.total+gift,paid:ticket.paid+gift};}),
     timezone: normalizePortableString(payload.timezone) || "America/Chicago",
   };
 }
@@ -2740,6 +2751,13 @@ export async function getPortableReportData(
     totals: {
       actualTotal: Number(totals.actualTotal ?? 0),
       expectedTip: Number(totals.expectedTip ?? totals.tips ?? 0),
+      grossService: Number(totals.grossService ?? 0),
+      giftSales: Number(totals.giftSales ?? 0),
+      giftServicePaid: Number(totals.giftServicePaid ?? 0),
+      giftTipPaid: Number(totals.giftTipPaid ?? 0),
+      earnedTip: Number(totals.earnedTip ?? totals.tips ?? 0),
+      rewardDiscount: Number(totals.rewardDiscount ?? 0),
+      ordinaryDiscount: Number(totals.ordinaryDiscount ?? totals.discounts ?? 0),
       serviceDifference: totals.serviceDifference ?? null,
       tipDifference: totals.tipDifference ?? null,
       discounts: Number(totals.discounts ?? 0),
@@ -2752,7 +2770,7 @@ export async function getPortableReportData(
       serviceCount: Number(totals.serviceCount ?? 0),
       taxes: Number(totals.taxes ?? 0),
       ticketCount: Number(totals.ticketCount ?? 0),
-      tips: Number(totals.expectedTip ?? totals.tips ?? 0),
+      tips: Number(totals.earnedTip ?? totals.tips ?? 0),
     },
   };
 }

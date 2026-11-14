@@ -1,5 +1,6 @@
 "use client";
 import { PersonalQrClient } from "@/app/qr/personal-qr-client";
+import { PersonalQrLoading } from "@/app/qr/personal-qr-loading";
 import type { PersonalQrWorkspace } from "@/types/personal-qr";
 import { MyReviewsList } from "@/app/activity/my-reviews-list";
 import type { MyReviewsData } from "@/types/customer-review";
@@ -24,7 +25,7 @@ import { MarketClient } from "@/app/market/market-client";
 import { BookingDepositProduct } from "@/app/market/booking-deposit-product";
 import { SettingsLoading } from "@/app/settings/settings-loading";
 import { SettingsHubClient } from "@/app/settings/settings-hub-client";
-import { MyPlaceClient } from "@/app/my-place/my-place-client";
+import { MyPlaceClient, MyPlaceLoading } from "@/app/my-place/my-place-client";
 import { ServicesManager } from "@/app/services/services-manager";
 import { ServicesCatalogNativePage } from "@/app/services/services-catalog-native-page";
 import { servicesCatalogNativePilotEnabled } from "./services-catalog-native-flag";
@@ -44,12 +45,15 @@ import type { AppLocalReceiptData, AppLocalSavedPostsData, AppLocalFollowingData
 
 export type AppLocalPageProps = { path: string; context: AppLocalContext | null; navigate: (href: string) => void; host?: AppLocalHost };
 export type AppLocalPage = { id: string; title: string; requiresContext: boolean; Component: ComponentType<AppLocalPageProps>; features: readonly string[] };
-type ReadViewProps<T> = AppLocalPageProps & { name: string; args?: Record<string, unknown>; title: string; children: (data: T, refresh: () => Promise<void>, feedback:{error?:string;refreshing:boolean;verifiedAt?:number;revalidate:()=>Promise<void>}) => ReactNode; publicView?: (scope?: string) => ReactNode };
-function ReadView<T>({ context, name, args = {}, title, children, publicView }: ReadViewProps<T>) {
+type ReadViewProps<T> = AppLocalPageProps & { name: string; args?: Record<string, unknown>; title: string; children: (data: T, refresh: () => Promise<void>, feedback:{error?:string;refreshing:boolean;verifiedAt?:number;revalidate:()=>Promise<void>}) => ReactNode; publicView?: (scope?: string) => ReactNode; pendingView?: ReactNode };
+function ReadView<T>({ context, name, args = {}, title, children, publicView, pendingView }: ReadViewProps<T>) {
   const scope = context?.context.scope;
   const state = useAppLocalResource<T>(scope, name, args, { enabled: Boolean(scope) });
   if (state.data !== undefined && context) return children(state.data, state.refresh,{error:state.error,refreshing:state.refreshing,verifiedAt:state.verifiedAt,revalidate:state.ensureFresh});
   if (publicView) return publicView(scope);
+  if (pendingView && context && state.available && !state.error && !state.accessDenied) return pendingView;
+  if (name === "page.personal-qr") return <PersonalQrLoading error={state.error} onRetry={() => void state.refresh()} />;
+  if (name === "page.my-place") return <MyPlaceLoading error={state.error} onRetry={() => void state.refresh()} />;
   if (name === "customer.activity") return <CustomerJourneyLoading failed={state.error} onRetry={()=>void state.refresh()}/>;
   if (name === "page.settings") return <main className="settings-hub settings-route-loading"><h1>{title}</h1>{state.error?<div role="alert"><p>{state.error}</p><button type="button" onClick={()=>void state.refresh()}>Try again</button></div>:<SettingsLoading/>}</main>;
   return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold">{title}</h1>{state.error ? <div role="alert"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}>Try again</button></div> : <p role="status">{context ? "Opening…" : "Connect to verify your account."}</p>}</main>;
@@ -65,7 +69,7 @@ function HelpPage(props: AppLocalPageProps) {
 function SupportPage(props: AppLocalPageProps) {
   if (props.context?.context.authenticated) return <ReadView<AppLocalSupportData> {...props} name="page.support" title="Support">{data => <AppLocalSupport data={data} from={urlFor(props.path).searchParams.get("from") ?? undefined} />}</ReadView>;
   return <AppLocalHelp support language={urlFor(props.path).searchParams.get("lang") === "vi" ? "vi" : "en"} navigate={href => {
-    if (["/support", "/contact-support", "/account-recovery"].includes(urlFor(href).pathname)) void (props.host ?? getAppLocalHost()).openOnline(href);
+    if (["/support", "/contact-support", "/account-recovery", "/login"].includes(urlFor(href).pathname)) void (props.host ?? getAppLocalHost()).openOnline(href);
     else props.navigate(href);
   }} />;
 }
@@ -86,13 +90,29 @@ function MyPlacePage(props: AppLocalPageProps) { return <ReadView<AppLocalMyPlac
 installServicesCatalogNativeLifecycle(servicesCatalogNativePilotEnabled());
 function ServicesPage(props: AppLocalPageProps) {
   if (servicesCatalogNativePilotEnabled() && (props.host ?? getAppLocalHost()).isNative && urlFor(props.path).searchParams.get("live") !== "1") return <ServicesCatalogNativePage {...props} />;
-  return <ReadView<AppLocalServicesData> {...props} name="page.services" title="Services">{data => <ServicesManager {...data} expectedSalonId={props.context?.context.salonId ?? undefined} catalogScope={props.context?.context.scope} initialServiceId={urlFor(props.path).searchParams.get("service")} />}</ReadView>;
+  return <ServicesDefaultPage {...props} />;
+}
+function ServicesDefaultPage(props: AppLocalPageProps) {
+  const state = useAppLocalResource<AppLocalServicesData>(props.context?.context.scope, "page.services", {}, { enabled: Boolean(props.context?.context.scope) });
+  // The admitted scope owns this original reader. Keep the manager's toolbar
+  // mounted while it resolves; only an accepted DTO may enable its controls.
+  return <ServicesManager data={state.data?.data ?? null} pending={!state.data} error={state.error} onRetry={state.refresh} expectedSalonId={props.context?.context.salonId ?? undefined} catalogScope={props.context?.context.scope} initialServiceId={urlFor(props.path).searchParams.get("service")} />;
 }
 function PersonalQrPage(props: AppLocalPageProps) {
   const url = urlFor(props.path);
   return <ReadView<PersonalQrWorkspace> {...props} name="page.personal-qr" title="My QR">{data => <PersonalQrClient key={props.context!.context.scope+props.path} viewerId={props.context!.context.viewerId!} initial={data} initialVisitId={url.searchParams.get("visit") ?? undefined} entry={url.searchParams.get("entry") ?? undefined} initialScan={url.searchParams.get("scan") === "1"} customerName={props.context!.display.name}/>}</ReadView>;
 }
-function MorePage(props: AppLocalPageProps) { return <ReadView<AppLocalMoreData> {...props} name="page.more" title="More">{data => <AppLocalMore {...data} />}</ReadView>; }
+function MorePage(props: AppLocalPageProps) {
+  const access = props.context?.access;
+  // The admitted workspace already identifies its menu. Only the optional
+  // Campaign link needs page.more's plugin read; it must not hold every link.
+  const roleKind = access && !(access.ownerWorkspace && access.staffWorkspace)
+    ? access.ownerWorkspace ? "owner" : access.staffWorkspace ? "staff" : "personal" : null;
+  return <ReadView<AppLocalMoreData> {...props} name="page.more" title="More"
+    pendingView={roleKind ? <AppLocalMore roleKind={roleKind} campaignInstalled={false} /> : undefined}>
+    {data => <AppLocalMore {...data} />}
+  </ReadView>;
+}
 function ActivityPage(props: AppLocalPageProps) { return <ReadView<CustomerActivityResource> {...props} name="customer.activity" title="Bookings">{(data,refresh,feedback) => <CustomerActivityView activity={data.result} initialTab="history" onRefresh={refresh} onRevalidate={feedback.revalidate} error={feedback.error} refreshing={feedback.refreshing}/>}</ReadView>; }
 function BookingsPage(props: AppLocalPageProps) {
   const url = urlFor(props.path), tab = customerJourneyTab(url.searchParams.get("tab"));
@@ -149,7 +169,7 @@ function OwnerAttentionPage(props: AppLocalPageProps) {
 const definitions = [
   {id:"personal.qr",title:"My QR",requiresContext:true,Component:PersonalQrPage,features:["original-guarded-checkin","spa-navigation"]},
   { id: "help.home", title: "Help", requiresContext: false, Component: HelpPage, features: ["complete-guides", "search", "role-filters", "illustrations", "en-vi"] },
-  { id: "support", title: "Support", requiresContext: false, Component: SupportPage, features: ["public-instructions", "original-request-form", "scoped-inbox", "guest-history-online"] },
+  { id: "support", title: "Support", requiresContext: false, Component: SupportPage, features: ["public-contact", "original-request-form", "scoped-inbox", "guest-history-online"] },
   { id: "support.case", title: "Support", requiresContext: true, Component: SupportCasePage, features: ["original-conversation", "original-replies", "original-evidence-upload"] },
   { id: "market", title: "Market", requiresContext: false, Component: MarketPage, features: ["full-catalog", "search", "categories", "original-feature-panels"] },
   { id: "market.booking-deposit", title: "Booking Deposit", requiresContext: false, Component: DepositPage, features: ["full-product", "original-checkout"] },

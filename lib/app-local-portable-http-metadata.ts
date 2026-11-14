@@ -1,4 +1,5 @@
 export const APP_LOCAL_PORTABLE_HTTP_READS = {
+  "portable.http.offline-staff": { path: "/api/pos/portable/offline-staff", argumentKeys: [] },
   "portable.http.workspace": { path: "/api/pos/portable/workspace", argumentKeys: ["resource", "ids", "date"] },
   "portable.http.staff": { path: "/api/pos/portable/staff", argumentKeys: ["ids"] },
   "portable.http.tickets": { path: "/api/pos/portable/tickets", argumentKeys: ["date"] },

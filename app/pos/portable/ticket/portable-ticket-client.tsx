@@ -17,6 +17,7 @@ import {
   type EditablePosTicket,
 } from "@/app/pos-tickets/closed-ticket-correction-form";
 import { searchTextMatches } from "@/lib/search-normalization";
+import { ticketGiftSearchValues } from "@/lib/pos-ticket-financial-view";
 import { TicketFilters } from "@/app/pos-tickets/ticket-filters";
 
 function formatMoney(value: number) {
@@ -141,6 +142,7 @@ function toEditableTicket(
   services: Array<{ id: string; name: string }>,
 ): EditablePosTicket {
   return {
+    financial_sources: ticket.financial_sources,
     adjustments: ticket.adjustments.map((adjustment) => ({
       action: adjustment.action,
       event_action: adjustment.eventAction,
@@ -249,6 +251,7 @@ function ticketMatchesSearch(
     formatTime(ticket.openedAt, timeZone),
     ticket.closedAt ? formatTime(ticket.closedAt, timeZone) : "",
     String(ticket.serviceCount),
+    ...ticketGiftSearchValues(ticket.financial_sources),
     ...ticket.items.flatMap((item) => [
       item.staffName ?? "",
       item.serviceName,

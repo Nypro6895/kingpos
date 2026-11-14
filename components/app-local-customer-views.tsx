@@ -568,7 +568,7 @@ return function AppLocalCustomerReceipt({receipt}:AppLocalReceiptData){
                 <TotalsRow
                   label="Discount"
                   value={formatMoney(
-                    receipt.totals.discount_amount,
+                    Math.max(0,receipt.totals.discount_amount-(receipt.rewardDiscount??0)),
                     receipt.currency,
                   )}
                 />
@@ -579,6 +579,7 @@ return function AppLocalCustomerReceipt({receipt}:AppLocalReceiptData){
                     receipt.currency,
                   )}
                 />
+                {!!receipt.rewardDiscount&&<TotalsRow label="Reward used" value={formatMoney(receipt.rewardDiscount,receipt.currency)}/>}
                 <TotalsRow
                   label="Tip"
                   value={formatMoney(

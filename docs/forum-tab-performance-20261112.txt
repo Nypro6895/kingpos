@@ -1,0 +1,34 @@
+FORUM TAB PERFORMANCE — IMPLEMENTATION RECEIPT
+2026-11-12 America/Chicago
+
+Scope: optimize Forum first, following the owner's video/source audit. No other page redesign, schema, authorization, provider or release behavior changes.
+Source: isolated worktree C:/Reylumi-worktrees/forum-tab-performance-20261112.
+Base: ec2c292bb574d5db53a5bd4ea3c85dbfea376e9c. Read-only live alias check during implementation: dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU.
+
+Behavior
+- Ordinary Forum reading tabs use authenticated browsing retention and a stable lifecycle across local History query changes. Header/tabs remain mounted while only the selected pane loads.
+- Write/manage and sensitive URL flows retain their action-state reset and original server authorization.
+- Topic lists use separate component-owned memory snapshots for feed/following/saved/mine and every applied filter. Fresh snapshots are reused for 30 seconds; stale data can display during a named read. New tabs never paint another tab's rows.
+- No new persistent storage. Cache bounded to 12 list/filter keys and 200 retained rows per key; active pagination can continue beyond the retained window. Pagination preserves first-page freshness and deduplicates IDs.
+- Successful writes invalidate list snapshots. Block/privacy changes clear them immediately. Request/epoch checks reject older results; failures clear payload/cache because current read errors cannot safely distinguish access withdrawal from service outages. Retry forces the current reader.
+- A new server context is reconciled even if Activity interrupts its queued update. Existing draft/history behavior, scoped admission, server writes/moderation and Chat-only polling remain.
+
+Verification
+- 58 targeted tests passed, zero failures/skips: Forum tab runtime, cache/policy, privacy/block, notifications, SQL authority/moderation/pagination, continuous feed, and shared Settings lifecycle regressions.
+- Browser runtime harness mounts the actual Forum, ExperiencePageBoundary, policy and React Activity. Only Next transport/scope/actions are replaced; external network blocked. Covers cold/warm/stale tabs, DOM identity, query History, drafts, out-of-order results, privacy epochs, failed-write retry, context reconciliation, Chat polling and authorization denial.
+- Actual Next development app from this source tested against the existing isolated loopback QA database, with synthetic QA Owner login and background dispatch/external fetching disabled. No new post, chat, payment or notification was submitted.
+- Actual source navigation Latest → Following → Chat → Latest retained header/tab DOM; two pane-read POSTs, zero Forum GET/RSC refresh requests; no browser page errors. Evidence: artifacts/forum-performance/actual-local-result.json and actual-local-cold-following.png.
+- Production compilation, TypeScript, page generation and offline asset build passed. 563 offline assets, 11,327,312 bytes. This local QA build is not a deployed release artifact.
+- Scoped ESLint: zero errors; one unchanged pre-existing exhaustive-deps warning in the topic position effect. CRLF-aware diff check passed.
+- Live Preview registered http://127.0.0.1:4347/forum to this exact source, using the real app and isolated QA backend. The viewer has its own QA login session; no mock page or production substitution.
+
+Evidence locations (ignored local artifacts)
+artifacts/forum-performance/targeted-tests.log
+artifacts/forum-performance/build.log
+artifacts/forum-performance/actual-local-result.json
+artifacts/forum-performance/actual-local-cold-following.png
+artifacts/forum-tab-navigation-runtime/cold-chat-header-visible.png
+
+Release status
+Implementation complete and queued with an immutable source snapshot. No deployment, TestFlight upload or physical-iPhone acceptance was performed in this task.
+Forum currently uses the hosted web route, so these changes can reach its installed-app flow through a compatible web release; no Swift, bridge contract or installed native assets were changed. Reconfirm current production source before a future release.

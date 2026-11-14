@@ -1,5 +1,6 @@
 import { getContextBusinessDate } from "@/lib/salon-business-clock";
 import "server-only";
+import { attachTicketFinancialSources } from "@/lib/pos-ticket-financial-sources";
 
 import {
   getCurrentBusinessContext,
@@ -657,7 +658,7 @@ export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = 
     tickets,
   });
 
-  return { context, tickets: ticketsWithSourceBookings };
+  return { context, tickets: await attachTicketFinancialSources(supabase, salon.id, ticketsWithSourceBookings) };
 }
 
 export async function getCurrentSalonPosTicket(ticketId: string) {
@@ -730,7 +731,8 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
     tickets: [ticket],
   });
 
-  return { context, ticket: ticketWithSourceBooking };
+  const [withSources] = await attachTicketFinancialSources(supabase, salon.id, [ticketWithSourceBooking]);
+  return { context, ticket: withSources };
 }
 
 export async function getCurrentSalonPosTicketOptions(

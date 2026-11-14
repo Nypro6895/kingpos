@@ -6,14 +6,14 @@ const bundled = await build({stdin:{contents:`export {staffTakeHomeDisplay,staff
 const module={exports:{}};new Function('module','exports',bundled.outputFiles[0].text)(module,module.exports);
 const {staffTakeHomeDisplay,staffCompactSettings,payrollRailChoices,payrollPeriodHref}=module.exports;
 const line={final_cash_amount:202.81,final_check_amount:290.82,tip_cash_amount:8.92,tip_check_amount:0,final_staff_income:493.63,is_mixed_rate:false,pay_type_used:'commission',commission_rate_used:60,check_rate_used:60,tax_rate_used:20,tip_payout_method_snapshot:'cash',settings_used_snapshot:[]};
-test('separates cash tip exactly once and preserves canonical net',()=>{
-  const out=staffTakeHomeDisplay(line);assert.deepEqual(out,{cash:193.89,check:290.82,tip:8.92,net:493.63});
-  assert.equal(Math.round((out.cash+out.check+out.tip)*100),Math.round(out.net*100));
+test('final cash/check already include tip and preserve canonical net',()=>{
+  const out=staffTakeHomeDisplay(line);assert.deepEqual(out,{cash:202.81,check:290.82,tip:8.92,net:493.63});
+  assert.equal(Math.round((out.cash+out.check)*100),Math.round(out.net*100));
 });
 test('taxed tips split over both payout methods retain net tips, bonus and negative checks',()=>{
   const input={...line,final_cash_amount:210.15,final_check_amount:-10.08,tip_cash_amount:8.92,tip_check_amount:6.14,final_staff_income:200.07};
-  const out=staffTakeHomeDisplay(input);assert.deepEqual(out,{cash:201.23,check:-16.22,tip:15.06,net:200.07});
-  assert.equal(Math.round((out.cash+out.check+out.tip)*100),20007);
+  const out=staffTakeHomeDisplay(input);assert.deepEqual(out,{cash:210.15,check:-10.08,tip:15.06,net:200.07});
+  assert.equal(Math.round((out.cash+out.check)*100),20007);
   assert.deepEqual(input.final_check_amount,-10.08);
 });
 test('settings use historical snapshots including mixed cash/tip settings',()=>{

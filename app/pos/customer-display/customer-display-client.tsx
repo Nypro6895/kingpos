@@ -3,6 +3,10 @@ import { SalonName, SalonIdentityContext } from "@/components/salon-member-badge
 
 import { GiftCustomerControl } from "@/components/gift-card/pos-gift-card";
 import { VisitRewards } from "@/components/rewardlumi/visit-rewards";
+import { CustomerCheckoutHeader, CustomerCheckoutReceipt, CustomerCheckoutTip as TipPanel, type TipReceiptScope } from "./customer-checkout";
+import { completedCustomerCheckoutView } from "@/lib/customer-checkout-view";
+import type { RewardView } from "@/types/rewardlumi";
+import type { GiftSession } from "@/types/gift-card";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import "./customer-display-responsive.css";
@@ -314,7 +318,7 @@ function getTipOptions(settings: CustomerDisplaySettings, liveDraft: PosLiveDraf
   const percentages = settings.tipSuggestions
     .map((value) => Number(value))
     .filter((value) => Number.isFinite(value) && value > 0)
-    .slice(0, 3);
+    .slice(0, 4);
   const source = percentages.length > 0 ? percentages : [15, 18, 20];
 
   return source.map((percentage) => ({
@@ -846,7 +850,7 @@ function MoneyKeypad({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-2" data-customer-display-money-keypad>
+    <div className="grid grid-cols-3 gap-2" data-customer-display-money-keypad role="group" aria-label={`${__vt("Custom tip keypad")}: ${formatTipMoney(Number(value || 0))}`}>
       {keys.map((digit) => (
         <button
           aria-label={__vt(`Custom tip digit ${digit}`)}
@@ -886,168 +890,8 @@ function MoneyKeypad({
       >
         <BackspaceIcon />
       </button>
+      <button type="button" className={`${buttonClass} col-span-3`} aria-label={__vt("Custom tip decimal")} disabled={disabled || value.includes(".")} onClick={() => onChange(value ? `${value}.` : "0.")}>.</button>
     </div>
-  );
-}
-
-function TipPanel({
-  confirmedPhone,
-  customTipInput,
-  customTipMode,
-  identityLabel,
-  isTipPending,
-  liveDraft,
-  onChangeCustomer,
-  onConfirmTip,
-  onCustomTipInput,
-  onSetCustomTipMode,
-  tipOptions,
-}: {
-  confirmedPhone: string | null;
-  customTipInput: string;
-  customTipMode: boolean;
-  identityLabel: string;
-  isTipPending: boolean;
-  liveDraft: PosLiveDraftView | null;
-  onChangeCustomer: () => void;
-  onConfirmTip: (amount: number) => void;
-  onCustomTipInput: (value: string) => void;
-  onSetCustomTipMode: (value: boolean) => void;
-  tipOptions: TipOption[];
-}) {
-  const baseTotal = getTipBase(liveDraft);
-  const selectedTip = liveDraft?.tip ?? 0;
-  const isActiveCheckout = liveDraft?.status === "draft";
-  const customTipAmount = roundMoney(Number(customTipInput || 0));
-  const disabled = !isActiveCheckout || isTipPending;
-
-  return (
-    <section
-      className="grid h-full min-h-0 gap-4 bg-stone-50/95 p-5"
-      data-customer-display-interaction-panel
-      data-customer-display-tip
-      data-custom-tip={customTipMode || undefined}
-      style={{ gridTemplateRows: "auto auto minmax(0, 1fr) auto" }}
-    >
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold uppercase text-teal-700">
-            <WorkspaceText text="Customer" />
-          </p>
-          <h2 className="mt-1 break-words text-2xl font-semibold leading-tight text-zinc-950">
-            {identityLabel}
-          </h2>
-          {confirmedPhone ? (
-            <p className="mt-1 text-sm text-zinc-500">{maskPhone(confirmedPhone)}</p>
-          ) : null}
-        </div>
-        <button
-          className="min-h-11 shrink-0 rounded-xl border border-stone-200 bg-white/80 px-3 text-sm font-semibold text-zinc-700 shadow-sm transition active:translate-y-px focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/15"
-          onClick={onChangeCustomer}
-          type="button"
-        >
-          <WorkspaceText text="Change" />
-        </button>
-      </div>
-
-      <div className="rounded-2xl border border-stone-200 bg-white/82 px-4 py-3 shadow-inner">
-        <p className="text-sm font-medium text-zinc-600"><WorkspaceText text="Current total" /></p>
-        <p className="mt-1 text-3xl font-semibold text-zinc-950">
-          {formatMoney(liveDraft?.total ?? 0)}
-        </p>
-      </div>
-
-      {customTipMode ? (
-        <div
-          className="grid min-h-0 gap-3"
-          data-customer-display-custom-tip-content
-          style={{ gridTemplateRows: "auto minmax(0, 1fr)" }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold uppercase text-zinc-500">
-                <WorkspaceText text="Custom tip" />
-              </p>
-              <p className="text-3xl font-semibold text-zinc-950">
-                {formatTipMoney(customTipAmount)}
-              </p>
-            </div>
-            <button
-              className="min-h-11 rounded-xl border border-stone-200 bg-white/80 px-3 text-sm font-semibold text-zinc-700"
-              onClick={() => onSetCustomTipMode(false)}
-              type="button"
-            >
-              <WorkspaceText text="Back" />
-            </button>
-          </div>
-          <MoneyKeypad
-            disabled={disabled}
-            onChange={onCustomTipInput}
-            value={customTipInput}
-          />
-        </div>
-      ) : (
-        <div className="grid min-h-0 content-center gap-3">
-          <p className="text-sm font-medium text-zinc-600">
-            <WorkspaceText text="100% goes to your service team" />
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {tipOptions.map((option) => {
-              const selected = selectedTip === option.amount && option.amount > 0;
-
-              return (
-              <button
-                className={[
-                    "grid min-h-20 place-items-center rounded-2xl border px-2 text-center shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50",
-                    selected
-                      ? "border-teal-700 bg-teal-50 text-zinc-950"
-                      : "border-stone-200 bg-white/90 text-zinc-950 hover:border-teal-400",
-                  ].join(" ")}
-                  disabled={disabled || baseTotal <= 0}
-                  key={option.percentage}
-                  onClick={() => onConfirmTip(option.amount)}
-                  type="button"
-                >
-                  <span className="text-2xl font-semibold">
-                    {option.percentage}%
-                  </span>
-                  <span className="text-sm font-medium text-zinc-500">
-                    {formatTipMoney(option.amount)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              className="min-h-14 rounded-2xl border border-stone-200 bg-white/90 px-3 font-semibold text-zinc-800 shadow-sm transition active:translate-y-px hover:border-teal-400 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={disabled}
-              onClick={() => onSetCustomTipMode(true)}
-              type="button"
-            >
-              <WorkspaceText text="Custom tip" />
-            </button>
-            <button
-              className="min-h-14 rounded-2xl border border-stone-200 bg-white/90 px-3 font-semibold text-zinc-800 shadow-sm transition active:translate-y-px hover:border-teal-400 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={disabled}
-              onClick={() => onConfirmTip(0)}
-              type="button"
-            >
-              <WorkspaceText text="No tip" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      <button
-        className="min-h-14 rounded-2xl bg-teal-700 px-4 font-semibold text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
-        disabled={disabled}
-        onClick={() => onConfirmTip(customTipMode ? customTipAmount : selectedTip)}
-        type="button"
-      >
-        <WorkspaceText text={isTipPending ? "Saving" : customTipMode ? "Apply custom tip" : "Confirm tip"} />
-      </button>
-    </section>
   );
 }
 
@@ -1429,6 +1273,9 @@ function CheckoutShell({
   identityLabel,
   liveDraft,
   settings,
+  reward = null,
+  gift = null,
+  rewardsAvailable = true,
 }: {
   backgroundImageUrl: string;
   children: React.ReactNode;
@@ -1438,7 +1285,20 @@ function CheckoutShell({
   identityLabel: string;
   liveDraft: PosLiveDraftView | null;
   settings: CustomerDisplaySettings;
+  reward?: RewardView | null;
+  gift?: GiftSession | null;
+  rewardsAvailable?: boolean;
 }) {
+  if (displayMode === "tip") return <div className="customer-checkout" data-customer-checkout>
+    <div className="customer-checkout-backdrop" aria-hidden="true" style={{ backgroundImage: `url(${backgroundImageUrl})` }} />
+    <CustomerCheckoutHeader settings={settings} />
+    <main className="customer-checkout-grid" data-customer-display-checkout>
+      <CustomerCheckoutReceipt liveDraft={liveDraft} settings={settings} reward={reward} gift={gift} rewardsAvailable={rewardsAvailable} />
+      <div className="customer-checkout-action-region" data-customer-display-action-region>{children}</div>
+    </main>
+    {error && <p className="customer-checkout-error" role="alert"><WorkspaceText text={error} /></p>}
+    <p className="customer-checkout-footer">Beauty. Connected. Rewarded.</p>
+  </div>;
   return (
     <div className="relative h-full w-full overflow-hidden bg-stone-100">
       <div
@@ -1553,6 +1413,7 @@ function CompletedScreen({
   onReset,
   onFullscreen,
   resetSeconds,
+  gift,
 }: {
   backgroundImageUrl: string;
   isFullscreen: boolean;
@@ -1560,11 +1421,13 @@ function CompletedScreen({
   onReset: () => void;
   onFullscreen: () => void;
   resetSeconds: number | null;
+  gift: GiftSession | null;
 }) {
   const __vt = useWorkspaceTranslation();
 
   const firstName = getFirstName(liveDraft?.customer?.name);
   const nameLabel = firstName ? `, ${firstName}` : "";
+  const {settled,total:completedTotal}=completedCustomerCheckoutView(liveDraft,gift);
 
   return (
     <section
@@ -1600,8 +1463,11 @@ function CompletedScreen({
           <WorkspaceText text="Thank you" />{nameLabel}!
         </h1>
         <p className="mt-5 text-3xl font-semibold text-zinc-950">
-          <WorkspaceText text="Final total" /> {formatMoney(liveDraft?.total ?? 0)}
+          <WorkspaceText text="Final total" /> {formatMoney(completedTotal/100)}
         </p>
+        {settled?.ticketNumber&&<p className="mt-3 text-sm text-zinc-600"><WorkspaceText text="Ticket" /> {settled.ticketNumber}</p>}
+        {!!settled?.giftPurchaseCents&&<p className="mt-2 text-base text-stone-700"><WorkspaceText text="Gift card" /> · {formatMoney(settled.giftPurchaseCents/100)}</p>}
+        {!!settled?.giftPaidCents&&<p className="mt-2 text-base text-teal-800"><WorkspaceText text="Paid with Gift card" /> · {formatMoney(settled.giftPaidCents/100)}</p>}
         <p className="mx-auto mt-5 max-w-2xl text-xl leading-8 text-zinc-800">
           <WorkspaceText text="We appreciate your visit. Please see our team if you need anything else." />
         </p>
@@ -1702,6 +1568,17 @@ export function CustomerDisplayClient({
     settings.customerBackgroundImageUrl ??
     DEFAULT_CUSTOMER_DISPLAY_RECEIPT_BACKGROUND_URL;
   const liveDraftCustomer = liveDraft?.customer;
+  const checkoutIdentity = `${token}:${liveDraft?.id ?? ""}:${liveDraftCustomer?.id ?? "guest"}:${liveDraft?.customer_version ?? 0}`;
+  const [rewardSnapshot, setRewardSnapshot] = useState<{ identity: string; view: RewardView | null } | null>(null);
+  const [giftSnapshot, setGiftSnapshot] = useState<{ identity: string; session: GiftSession | null } | null>(null);
+  const [rewardsAvailable, setRewardsAvailable] = useState(false);
+  const checkoutReward = rewardSnapshot?.identity === checkoutIdentity ? rewardSnapshot.view : null;
+  const checkoutGift = giftSnapshot?.identity === checkoutIdentity ? giftSnapshot.session : null;
+  const receiveCheckoutReward = useCallback((view: RewardView | null) => setRewardSnapshot({ identity: checkoutIdentity, view }), [checkoutIdentity]);
+  const receiveCheckoutGift = useCallback((session: GiftSession | null) => setGiftSnapshot(previous=>!session&&previous?.identity===checkoutIdentity&&previous.session?.status==="completed"?previous:{ identity: checkoutIdentity, session }), [checkoutIdentity]);
+  const tipIdentity = useRef(checkoutIdentity);
+  useEffect(() => { tipIdentity.current = checkoutIdentity; }, [checkoutIdentity]);
+  const tipLock = useRef(false);
   const liveDraftResetAt = liveDraft?.reset_at;
   const liveDraftStatus = liveDraft?.status;
   const checkInFirstName = checkInState?.visit.firstName ?? null;
@@ -1799,7 +1676,7 @@ export function CustomerDisplayClient({
     () => getTipOptions(settings, liveDraft),
     [liveDraft, settings],
   );
-  const tipOptions = localPreviewMode ? fallbackTipOptions : serverTipOptions ?? fallbackTipOptions;
+  const tipOptions = localPreviewMode || !serverTipOptions?.length ? fallbackTipOptions : serverTipOptions;
   const rootClass = [
     "customer-display-kiosk-surface relative h-dvh w-dvw touch-manipulation overflow-hidden overscroll-none text-zinc-950",
     "",
@@ -1827,6 +1704,10 @@ export function CustomerDisplayClient({
     serverOffsetRef.current = nextServerOffsetMs;
     setServerOffsetMs(nextServerOffsetMs);
     const previousSnapshot = liveDraftRef.current;
+    if (previousSnapshot && (previousSnapshot.id !== snapshot.id || previousSnapshot.customer?.id !== snapshot.customer?.id || previousSnapshot.customer_version !== snapshot.customer_version)) {
+      setCustomTipInput(""); setCustomTipMode(false);
+      tipIdentity.current = `${snapshot.token}:${snapshot.id}:${snapshot.customer?.id ?? "guest"}:${snapshot.customer_version ?? 0}`;
+    }
     liveDraftRef.current = snapshot;
     setLiveDraft(snapshot);
     setConnectionState("connected");
@@ -2473,12 +2354,20 @@ export function CustomerDisplayClient({
     );
   }
 
-  async function confirmTip(tipAmount: number) {
+  async function confirmTip(tipAmount: number, closeCustom = true, scope?: TipReceiptScope) {
     if (!Number.isFinite(tipAmount) || tipAmount < 0) {
       setError("Tip must be zero or greater.");
-      return;
+      return false;
     }
 
+    if (scope && (!liveDraft || scope.draftId !== liveDraft.id || scope.customerVersion !== liveDraft.customer_version || scope.receiptVersion !== liveDraft.receipt_version)) {
+      setError("The receipt changed. Please select your tip again.");
+      return false;
+    }
+
+    if (tipLock.current) return false;
+    tipLock.current = true;
+    const identity = checkoutIdentity;
     markCustomerInteraction();
     setIsTipPending(true);
     setError(null);
@@ -2487,23 +2376,28 @@ export function CustomerDisplayClient({
       const preview = localPreview.current;
       if (preview && Date.now() - preview.receivedAt < 2000) {
         const accepted = await requestLocalReceiptTip(token, preview.value, tipAmount);
-        if (!accepted) { setError("The receipt changed. Please select your tip again."); return; }
-        setCustomTipInput(""); setCustomTipMode(false);
-        return;
+        if (!accepted) { setError("The receipt changed. Please select your tip again."); return false; }
+        if (tipIdentity.current !== identity) return false;
+        if (closeCustom) { setCustomTipInput(""); setCustomTipMode(false); }
+        return true;
       }
-      if (!navigator.onLine) { setError("Connect to the POS to confirm your tip."); return; }
+      if (!navigator.onLine) { setError("Reconnect to the POS to save your tip."); return false; }
       const result = await confirmCustomerDisplayLiveDraftTip({
         requestId: getRequestId(), tipAmount, token,
+        ...(scope ?? (liveDraft ? { draftId: liveDraft.id, customerVersion: liveDraft.customer_version, receiptVersion: liveDraft.receipt_version } : {})),
       });
-      if (!result.ok) { setError(result.error); return; }
-      setCustomTipInput("");
-      setCustomTipMode(false);
+      if (tipIdentity.current !== identity) return false;
+      if (!result.ok) { setError(result.error); return false; }
+      if (closeCustom) { setCustomTipInput(""); setCustomTipMode(false); }
       applySnapshot(result.data);
       publishLocalDisplaySnapshot(result.data);
+      return true;
     } catch {
       setError("Tip confirmation could not be verified. Reconnect and check the displayed amount.");
+      return false;
     } finally {
       setIsTipPending(false);
+      tipLock.current = false;
     }
   }
 
@@ -2695,12 +2589,12 @@ export function CustomerDisplayClient({
 
   return (
     <SalonIdentityContext reference={{kind:"display",value:token}}><div className={rootClass} ref={rootRef}>
-      {displayMode !== "attract" && !(displayMode === "phone" && !hasCheckoutHandoff) && <div className="customer-gift-toolbar"><GiftCustomerControl key={token} token={token} /></div>}
+      {displayMode !== "tip" && displayMode !== "attract" && !(displayMode === "phone" && !hasCheckoutHandoff) && <div className="customer-gift-toolbar"><GiftCustomerControl key={token} token={token} onSession={receiveCheckoutGift} /></div>}
       {displayMode === "tip" ? (
         <FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />
       ) : null}
       <div className="customer-display-auto-scale h-full w-full">
-        {(liveDraftCustomer?.id || checkInState?.visit.id) && displayMode !== "completed" && displayMode !== "attract" && <VisitRewards key={liveDraftCustomer?.id ?? checkInState?.visit.id} scope="display" token={token} visitId={checkInState?.visit.id} />}
+        {(liveDraftCustomer?.id || checkInState?.visit.id) && displayMode !== "tip" && displayMode !== "completed" && displayMode !== "attract" && <VisitRewards key={liveDraftCustomer?.id ?? checkInState?.visit.id} scope="display" token={token} visitId={checkInState?.visit.id} />}
         {displayMode === "attract" || (displayMode === "phone" && !hasCheckoutHandoff) ? (
           <CustomerIdleScreen showSalonName={settings.customerShowSalonName} salonLogoUrl={settings.salonLogoUrl} activeEntry={displayMode === "phone"} giftControl={<GiftCustomerControl key={token} token={token} />} token={token} images={attractImages} salonName={settings.salonName ?? "Welcome"} backgroundImageUrl={settings.customerBackgroundImageUrl ?? undefined}
             title={settings.customerLeftAdText} body={settings.customerRightAdText} onBegin={beginFromAttract} fullscreenControl={<FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />}>
@@ -2712,6 +2606,7 @@ export function CustomerDisplayClient({
           </CustomerIdleScreen>
         ) : displayMode === "completed" ? (
           <CompletedScreen
+            gift={checkoutGift}
             backgroundImageUrl={backgroundImageUrl}
             isFullscreen={isFullscreen}
             liveDraft={liveDraft}
@@ -2730,22 +2625,29 @@ export function CustomerDisplayClient({
             identityLabel={identityLabel}
             liveDraft={liveDraft}
             settings={settings}
+            reward={checkoutReward}
+            gift={checkoutGift}
+            rewardsAvailable={rewardsAvailable && connectionState === "connected"}
           >
             {displayMode === "tip" ? (
               <TipPanel
-                confirmedPhone={
-                  confirmedPhone ?? liveDraftCustomer?.phone ?? phoneInput ?? null
-                }
+                key={checkoutIdentity}
+                phone={settings.customerShowCustomerName ? maskPhone(confirmedPhone ?? liveDraftCustomer?.phone ?? phoneInput ?? "") : null}
                 customTipInput={customTipInput}
                 customTipMode={customTipMode}
                 identityLabel={identityLabel}
                 isTipPending={isTipPending}
+                tipError={error}
+                showReceiptStatus={settings.customerShowReceiptStatus}
                 liveDraft={liveDraft}
                 onChangeCustomer={changeCustomer}
                 onConfirmTip={confirmTip}
                 onCustomTipInput={setCustomTipInput}
                 onSetCustomTipMode={setCustomTipMode}
                 tipOptions={tipOptions}
+                Keypad={MoneyKeypad}
+                benefits={liveDraftCustomer?.id ? <VisitRewards key={checkoutIdentity} scope="display" presentation="checkout" token={token} onChange={receiveCheckoutReward} onAvailabilityChange={setRewardsAvailable} /> : undefined}
+                giftControl={<GiftCustomerControl key={checkoutIdentity} checkout token={token} onSession={receiveCheckoutGift} />}
               />
             ) : displayMode === "profile" ? (
               <><CustomerIdentityChoices candidates={identityCandidates} onBack={returnToPhoneEntry} disabled={isCustomerPending} onChoose={id => void createCustomerProfile(id)} /><ProfileCreationPanel hidden={identityCandidates.length > 0}

@@ -1,0 +1,75 @@
+{
+  "kind": "change",
+  "changeId": "payroll-staff-details-accordion-20261112",
+  "status": "ready",
+  "summary": "Staff payroll starts collapsed with explicit Details buttons; each scoped web/app-local list opens only one row and retains hidden form drafts. Financial logic unchanged.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/staff-payroll-details.tsx",
+    "app/payroll/staff-income-card.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/vietnamese-payroll-mobile.json",
+    "tests/payroll-compact-settings-browser.mjs",
+    "docs/payroll-compact-settings-20261112.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\payroll-compact-settings-20261112\\artifacts\\payroll-compact-settings-20261112\\details-source",
+    "commit": "086c7bfbd27504f3a9c9c135d6cd952beed17682"
+  },
+  "dependencies": [
+    "payroll-compact-settings-20261112"
+  ],
+  "validation": [
+    {
+      "name": "50 Chromium views: default closed, keyboard, exclusive rows, independent lists, retained drafts, no overflow",
+      "result": "passed",
+      "evidence": "artifacts/payroll-compact-settings-20261112/browser-details/results.json"
+    },
+    {
+      "name": "46 financial/access regression tests",
+      "result": "passed",
+      "evidence": "artifacts/payroll-compact-settings-20261112/details-logic-tests.log"
+    },
+    {
+      "name": "TypeScript noEmit",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped ESLint: zero errors, seven existing page warnings",
+      "result": "passed"
+    },
+    {
+      "name": "App-local bundle verification: safari16 target, 403 actions, no unsupported actions",
+      "result": "passed"
+    },
+    {
+      "name": "Actual authenticated local payroll Details open/close, no financial writes",
+      "result": "passed",
+      "evidence": "artifacts/payroll-compact-settings-20261112/details-local-route-result.json"
+    },
+    {
+      "name": "git diff whitespace",
+      "result": "passed"
+    }
+  ],
+  "id": "015e0b98-e252-4467-8b34-0bcb572fa3d6",
+  "recordedAt": "2026-11-13T02:53:37.264Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-compact-settings-20261112",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "e64a381a5e5c4b3875bf4bdd7b8d3fd042ad33e014e9b4107d78a7fa286f7d69",
+    "app/payroll/staff-payroll-details.tsx": "3812d6019ad0581f748e81bd428697c23f7badc19c45cffd08969cd9af459a0d",
+    "app/payroll/staff-income-card.tsx": "a78004600fae21402f7a718c9bb02fae872b47cac7a78522407e1505c688bf3c",
+    "app/payroll/payroll-mobile.module.css": "17100264c032e7913ba9496c54cd5bc8d4da2b6f4f2e47b731f3681d1a98dab8",
+    "lib/app-local-owner-payroll-view.tsx": "40060434021d4a7ccf1da51e532f0b670c198710b70e60eb9168d1bbe5992ab3",
+    "lib/vietnamese-payroll-mobile.json": "2aef516de17b39ecf38720bab90f05e3f01cab33196f411de46ae8b15942c193",
+    "tests/payroll-compact-settings-browser.mjs": "23e32e7682802911e1687bde0f83fbedaae1764e59de6db2f52e63c7297faa0b",
+    "docs/payroll-compact-settings-20261112.md": "74ddc59a62c36a4a29c39e613396b28d25efe25aaa6e1a91ec2b26ab40ce68ad"
+  }
+}

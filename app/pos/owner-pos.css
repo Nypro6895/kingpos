@@ -329,6 +329,10 @@
  .owner-checkout[data-owner-reference] .owner-workbench{overflow-y:auto}
  .owner-checkout[data-owner-reference] .owner-amount{min-height:360px;overflow:visible}
 }
-.owner-checkout[data-owner-reference] .owner-compact-toolbar [data-pos-saved-launcher]>span>span{display:block!important}
+.owner-checkout[data-owner-reference] .owner-compact-toolbar [data-pos-saved-launcher]{position:relative;flex:1 0 44px;text-align:center;align-self:stretch}
+.owner-checkout[data-owner-reference] .owner-compact-toolbar [data-pos-saved-launcher]>[data-pos-saved-copy]{display:block;line-height:1.2}
+.owner-checkout[data-owner-reference] .owner-compact-toolbar [data-pos-saved-copy]>span:first-child{display:block;font-size:11px;font-weight:400}
+.owner-checkout[data-owner-reference] .owner-compact-toolbar [data-pos-saved-copy]>[data-pos-saved-summary]{display:none!important}
+.owner-checkout[data-owner-reference] .owner-compact-toolbar [data-pos-saved-launcher]>[data-pos-saved-count]{position:absolute;top:0;right:2px;display:grid;place-items:center;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:#e9f6f4;color:#1d807c;font-size:10px;line-height:1}
 
 .owner-checkout[data-owner-reference] .owner-compact-toolbar [data-pos-saved-save]{display:flex;flex:0 0 48px;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:44px;min-height:48px!important;padding:4px!important;border:0;border-right:1px solid #edf0f1;border-radius:0;background:transparent;box-shadow:none;color:#1d807c;font-size:11px;line-height:1.2}

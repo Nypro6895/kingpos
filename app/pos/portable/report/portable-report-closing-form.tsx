@@ -1,4 +1,5 @@
 "use client";
+import { PosCollectionBreakdown } from "@/components/pos-collection-breakdown";
 import { ClosingBalanceSummary } from "@/app/reports/closing-balance-summary";
 import { ClosingSaveNotice } from "@/app/reports/closing-save-notice";
 import { parseClosingCents } from "@/lib/daily-closing-input";
@@ -113,6 +114,7 @@ function PortableClosingEditor({
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] lg:gap-16">
       {pendingCount>0?<p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 lg:col-span-2">{pendingCount} <WorkspaceText text="ticket(s) on this device are not uploaded yet. Report totals will update after they are uploaded. Check the sync icon for details." /></p>:null}
       <section className="min-w-0 py-2">
+        <PosCollectionBreakdown service={data.totals.grossService??0} gift={data.totals.giftSales??0} discount={data.totals.ordinaryDiscount??data.totals.discounts} reward={data.totals.rewardDiscount??0} giftPaid={data.totals.giftServicePaid??0} earnedTip={data.totals.earnedTip??data.totals.tips} giftTipPaid={data.totals.giftTipPaid??0} expected={data.totals.expectedTotal} expectedTip={data.totals.expectedTip??data.totals.tips}/>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1"><DailyInputInlineHistory businessDate={data.reportDate}/></div>
           <div className="min-h-6 text-sm" aria-live="polite">

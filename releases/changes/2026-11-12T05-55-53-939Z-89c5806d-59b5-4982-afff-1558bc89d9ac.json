@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "changeId": "checkin-windows-gift-lifecycle-20261111",
+  "status": "needs-integration",
+  "summary": "Native Windows POS QA reproduced stuck/reopened gift dialogs; unify approved dialog, synchronize safe dismissal, add timed delivery and staff recovery, isolate next-customer gift sessions, preserve Submit replay and receipt authority",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-idle-screen.css",
+    "components/gift-card/customer-gift-dialog.tsx",
+    "components/gift-card/gift-approved-dialog.css",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/gift-card/gift-completion.tsx",
+    "components/gift-card/gift-screen-lifecycle.ts",
+    "types/gift-card.ts",
+    "supabase/migrations/20261112000000_gift_screen_lifecycle.sql",
+    "tests/checkin-design-ui.test.mjs",
+    "tests/gift-counter-sale.integration.test.mjs",
+    "tests/pos-gift-shared-ui.test.mjs",
+    "tests/rewardlumi-full-schema.integration.test.mjs",
+    "tests/gift-screen-lifecycle-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "a2d3fb3483d836ae0108fa8a1c22648ca434d614",
+    "snapshot": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\frozen"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Installed Windows reproduction and authorized synthetic check-in/gift/service flows",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\RECEIPT.md"
+    },
+    {
+      "name": "Paired dialog lifecycle and staff recovery browser check",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\lifecycle-ui-verified.log"
+    },
+    {
+      "name": "Approved check-in and receipt responsive browser check",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\checkin-ui-verified.log"
+    },
+    {
+      "name": "Single lower POS gift entry regression",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\ui-verified.log"
+    },
+    {
+      "name": "Final migration replay, counter settlement and presentation lifecycle",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\sql-verified.log"
+    },
+    {
+      "name": "Reward/shared settlement regression",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\sql-final.log"
+    },
+    {
+      "name": "Saved appearance, background-only design and native/public links",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\gift-contracts.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\lint.log"
+    },
+    {
+      "name": "Production build, TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\build-verified.log"
+    },
+    {
+      "name": "Frozen scoped source integrity and native compatibility assessment",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\frozen-manifest.json"
+    }
+  ],
+  "id": "89c5806d-59b5-4982-afff-1558bc89d9ac",
+  "recordedAt": "2026-11-12T05:55:53.939Z",
+  "worktree": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

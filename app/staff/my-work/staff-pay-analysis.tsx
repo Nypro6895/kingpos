@@ -9,7 +9,8 @@ import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language
 import { StaffPayPeriodPicker } from "./staff-pay-period-picker";
 import type { StaffPayrollPortalData } from "@/lib/payroll";
 import type { StaffPayrollView, StaffAnalysisView } from "@/lib/staff-my-work-experience";
-import { staffPayRules } from "@/lib/staff-payroll-display";
+import { staffPayRules, staffPayrollRowDisplay } from "@/lib/staff-payroll-display";
+import { StaffPaymentTable } from "@/app/payroll/staff-payment-table";
 import { shiftStaffDate } from "@/lib/staff-payroll-period";
 import styles from "./staff-pay-analysis.module.css";
 
@@ -19,19 +20,17 @@ const date = (value: string) => new Intl.DateTimeFormat("en-US", { month: "short
 
 function Period({ data, tab }: { data: Pick<StaffPayrollPortalData, "period" | "periodOptions">; tab: "payroll" | "analysis" }) {
   if (!data.period) return null;
-  return <div className={styles.payPeriod}><StaffPayPeriodPicker tab={tab} options={data.periodOptions} selected={`${data.period.startDate}:${data.period.endDate}`} /><Link href="/account/tax-documents"><WorkspaceText text="My documents · Current & Archive" /></Link></div>;
+  return <div className={styles.payPeriod}><StaffPayPeriodPicker tab={tab} options={data.periodOptions} selected={`${data.period.startDate}:${data.period.endDate}`} />{tab !== "payroll" && <Link href="/account/tax-documents"><WorkspaceText text="My documents · Current & Archive" /></Link>}</div>;
 }
 
 function PayRules({ data }: { data: StaffPayrollView }) {
   const rules = staffPayRules(data.line, data.settings);
   const changes=financialHistoryForObject(data.history??[],{sourceKinds:["payroll_settings","staff_payroll_settings"]});
-  return <details className={`${styles.disclosure} ${changes.length?inlineStyles.edited:""}`}><summary><WorkspaceText text="How my pay is calculated" />{changes.length>0&&<span className={inlineStyles.badge}><WorkspaceText text="Pay settings edited"/> · {changes.length}</span>}</summary>
+  return <details className={`${styles.disclosure} ${changes.length?inlineStyles.edited:""}`}><summary><WorkspaceText text="Applied settings & changes" />{changes.length>0&&<span className={inlineStyles.badge}><WorkspaceText text="Pay settings edited"/> · {changes.length}</span>}</summary>
     {rules.length === 0 ? <p className={styles.note}><WorkspaceText text="Your payroll settings are not available yet." /></p> : rules.map((rule, index) => <div className={styles.rules} key={index}>
       {rules.length > 1 && <small className={styles.ruleDate}><WorkspaceText text={rule.from ? `From ${date(rule.from)}` : "Period settings"} /><WorkspaceText text={rule.to ? ` to ${date(rule.to)}` : ""} /></small>}
       <p><WorkspaceText text={rule.commission !== null ? `Commission ${number(rule.commission)}%` : rule.fixed !== null ? `Fixed pay ${money(rule.fixed)}/period` : "Multiple pay rates"} /></p>
       <p><WorkspaceText text="Tax" /> {number(rule.tax)}%{rule.fixed !== null && !rule.fixedTax ? <small><WorkspaceText text="Fixed pay · No tax" /></small> : null}</p>
-      <p><WorkspaceText text="Tip ·" /> {rule.tipsTax ? <WorkspaceText text="Tax" /> : "No tax"}</p>
-      <p><WorkspaceText text="Bonus ·" /> {rule.bonusTax ? <WorkspaceText text="Tax" /> : "No tax"}</p>
     </div>)}<InlineFinancialHistory changes={changes}/>
   </details>;
 }
@@ -40,30 +39,38 @@ export function StaffMyPay({ data, salonId="", scope="", historyQuery }: { data:
   if (!data.period) return <p data-continuous-surface className={styles.empty}><WorkspaceText text="No active staff payroll profile is linked to this salon." /></p>;
   const line = data.line;
   const bonusChanges=financialHistoryForObject(data.history??[],{sourceKinds:["payroll_period_staff_inputs"]});
-  const rules = staffPayRules(line, data.settings);
-  const commissions = [...new Set(rules.map(rule => rule.commission))];
-  const taxes = [...new Set(rules.map(rule => rule.tax))];
-  const checks = [...new Set((line?.dailyTotals ?? []).map(day => day.check_rate_used).filter((rate): rate is number => rate !== null))];
-  if (!checks.length && line && !line.is_mixed_rate) checks.push(line.check_rate_used);
+  const display = line ? staffPayrollRowDisplay(line) : null;
 
   const markedPaid = data.paymentEvidence?.markedPaidStatements ?? [];
   const paymentNote = markedPaid.length
     ? "An earlier statement for this period was marked paid. This historical flag does not confirm that the current live amount was paid."
     : "Current income is a live calculation. Review recorded payment evidence separately; no payment status is inferred.";
   return <FinancialHistoryProvider salonId={salonId} surface="payroll" start={data.period.startDate} end={data.period.endDate} scope={scope} query={historyQuery} initialChanges={data.history??[]}><section className={styles.portal}><Period data={data} tab="payroll" />
-    {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={"Current take-home pay"} /></p><small><WorkspaceText text="Calculated" /> · <WorkspaceText text={data.status.label} /></small></div><strong>{money(line.final_staff_income)}</strong></div>
-      <dl className={styles.split}><div><dt><WorkspaceText text="Cash payout" /></dt><dd>{money(line.final_cash_amount)}</dd></div><div><dt><WorkspaceText text="Check payout" /></dt><dd>{money(line.final_check_amount)}</dd></div><div><dt><WorkspaceText text="Tip" /></dt><dd>{money(line.tip_amount)}</dd></div></dl></div> : <p data-continuous-surface className={styles.empty}><WorkspaceText text="No payroll has been calculated for you in this period." /></p>}
-    {line && <><dl className={styles.extras}><div><dt><WorkspaceText text="Tip" /></dt><dd>{money(line.tip_amount)}</dd></div><div><dt><WorkspaceText text="Bonus" /></dt><dd>{money(line.bonus_amount)}</dd></div></dl><p className={styles.note}><WorkspaceText text="Tip and bonus are shown before tax. Their net amounts are included in cash and check payouts." /></p></>}
-<div className={styles.columns}>{line && <section><h2><WorkspaceText text="Pay breakdown" /></h2><dl>
-      <div className={`${styles.row} ${styles.servicesMain}`}><dt><WorkspaceText text="Services" /><small><WorkspaceText text="Before commission" /></small></dt><dd>{money(line.gross_sales)}</dd></div>
-      <div className={styles.row}><dt><WorkspaceText text={commissions.length === 1 && commissions[0] !== null ? `Commission · ${number(commissions[0])}%` : rules.length && rules.every(rule => rule.fixed !== null) ? "Fixed pay" : "Service pay · Multiple rates"} /><small><WorkspaceText text={checks.length === 1 ? `Cash ${number(100 - checks[0])}% · Check ${number(checks[0])}%` : "Cash / Check · Multiple rates"} /></small></dt><dd>{money(line.staff_commission_gross)}</dd></div>
-      <div className={styles.row}><dt><WorkspaceText text="Tip" /></dt><dd>{money(line.tip_amount)}</dd></div>
-      {<div className={inlineStyles.amountInputRow}><dt><WorkspaceText text="Bonus" /></dt><dd>{money(line.bonus_amount)}</dd>{bonusChanges.length>0&&<dd className={inlineStyles.historyFull}><PayrollObjectHistory changes={bonusChanges} label="Bonus edited"/></dd>}</div>}
-      <div className={styles.row}><dt><WorkspaceText text={taxes.length === 1 ? `Tax hold · ${number(taxes[0])}%` : "Tax hold · Multiple rates"} /></dt><dd>{line.tax_withheld > 0 ? "−" : ""}{money(Math.abs(line.tax_withheld))}</dd></div>
-    </dl></section>}
-    <section><h2><WorkspaceText text="Daily breakdown" /></h2><p className={styles.note}><WorkspaceText text="Entered service amounts and tips, before commission and tax."/></p><StaffPayrollDailyRows data={data}/><PayRules data={data} />
-      <details className={styles.disclosure}><summary><WorkspaceText text="Payment details" /></summary>{line&&data.paymentEvidence?.recordedFacts&&<PayrollPaymentComparison facts={data.paymentEvidence.recordedFacts} line={line} period={data.period} showPayments/>}<p className={styles.note}><WorkspaceText text={paymentNote} /><WorkspaceText text={line?.check_number ? ` Check #${line.check_number}.` : ""} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}</details>
-    </section></div>
+    {line ? <div data-continuous-surface className={styles.hero + " " + styles.payHero} data-staff-pay-summary>
+      <div className={styles.total}><div><p><WorkspaceText text="Take-home" /></p><small><WorkspaceText text="Check + Cash · after tax" /></small></div><strong>{money(line.final_staff_income)}</strong></div>
+      <dl className={styles.split}><div><dt><WorkspaceText text="Check" /></dt><dd>{money(line.final_check_amount)}</dd></div><div><dt><WorkspaceText text="Cash" /></dt><dd>{money(line.final_cash_amount)}</dd></div></dl>
+      <p className={styles.calculationStatus}><WorkspaceText text="Current calculation" /> · <WorkspaceText text={data.status.label} /></p>
+    </div> : <p data-continuous-surface className={styles.empty}><WorkspaceText text="No payroll has been calculated for you in this period." /></p>}
+    <div className={styles.paySections}>
+      {line && display && <section>
+        <details className={styles.payBreakdown} data-staff-pay-breakdown>
+          <summary><h2><WorkspaceText text="Pay breakdown" /></h2><span><WorkspaceText text="Details" /></span></summary>
+          <div className={styles.payContext}>
+            <p><WorkspaceText text="Services" /> <strong>{money(line.gross_sales)}</strong></p>
+            <p>{display.settings.filter(parts => parts[0] === "Commission" || parts[0] === "Fixed pay").map((parts, i) => <span key={i}>{i > 0 && " / "}{parts.map((part, j) => <span key={j}>{j > 0 && " "}<WorkspaceText text={part} /></span>)}</span>)}{display.settings.every(parts => parts[0] !== "Commission" && parts[0] !== "Fixed pay") && <WorkspaceText text="Service pay · Multiple rates" />} → <strong>{money(line.staff_commission_gross)}</strong></p>
+            <p className={styles.appliedRates}>{display.settings.filter(parts => parts[0] !== "Commission" && parts[0] !== "Fixed pay").map((parts, i) => <span key={i}>{parts.map((part, j) => <span key={j}>{j > 0 && " "}<WorkspaceText text={part} /></span>)}</span>)}</p>
+          </div>
+          <StaffPaymentTable line={line} showTotal />
+          <p className={styles.includedNote}><WorkspaceText text="Check and Cash include the net amounts assigned to each payment method. Tip and Bonus are already included." /></p>
+          {bonusChanges.length > 0 && <PayrollObjectHistory changes={bonusChanges} label="Bonus edited" />}
+        </details>
+      </section>}
+      <section className={styles.payDaily}><h2><WorkspaceText text="Daily breakdown" /></h2><p className={styles.note}><WorkspaceText text="Entered service amounts and tips, before commission and tax." /></p><StaffPayrollDailyRows data={data} /></section>
+      <PayRules data={data} />
+      <details className={styles.disclosure}><summary><WorkspaceText text="Payment records" /></summary>{line && data.paymentEvidence?.recordedFacts && <PayrollPaymentComparison facts={data.paymentEvidence.recordedFacts} line={line} period={data.period} showPayments />}<p className={styles.note}><WorkspaceText text={paymentNote} /><WorkspaceText text={line?.check_number ? " Check #" + line.check_number + "." : ""} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}</details>
+      <p className={styles.note}><WorkspaceText text="Live calculation does not confirm payment received." /></p>
+      <Link href="/account/tax-documents"><WorkspaceText text="My documents · Current & Archive" /></Link>
+    </div>
   </section></FinancialHistoryProvider>;
 }
 

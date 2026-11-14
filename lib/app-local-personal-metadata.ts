@@ -4,7 +4,11 @@ import type { getSelfBeautyProfilePage } from "./beauty";
 import type { getPostCommentViewer } from "./post-comments";
 import type { CustomerBookingSummary } from "./customer-bookings";
 export type AppLocalBeautyData = { profile: Extract<Awaited<ReturnType<typeof getSelfBeautyProfilePage>>, {ok:true}>["data"]; commentViewer: Awaited<ReturnType<typeof getPostCommentViewer>>; favorites?: Awaited<ReturnType<typeof import("./account-social").getAccountSavedPosts>> | null; booking: CustomerBookingSummary | null };
-export type AppLocalNotificationData = ComponentProps<typeof NotificationCenterClient>;
+type NotificationSeedProps = ComponentProps<typeof NotificationCenterClient>;
+// The native reader still returns a settled JSON seed. Deferred web-only
+// presentation props must not widen the authoritative transport contract.
+export type AppLocalNotificationData = Required<Pick<NotificationSeedProps, "initialItems" | "initialCursor" | "actionItems">>
+  & Pick<NotificationSeedProps, "initialError" | "initialFilter">;
 export const APP_LOCAL_PERSONAL_READS = {
   "page.personal-qr": { argumentKeys: [], cacheable: false },
   "customer.reviews": { argumentKeys: ["page","experience"], cacheable: true },

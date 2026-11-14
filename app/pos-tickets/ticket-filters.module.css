@@ -19,5 +19,9 @@
 .calendar button:focus-visible { outline:2px solid #208080; outline-offset:-2px; }
 .close { display:block; width:100%; margin-top:8px; }
 @media (min-width:640px) { .toolbar { padding-inline:0; } }
+@media (max-width:359px) {
+  .dateButton { min-width:44px; }
+  .dateButton span { display:none; }
+}
 
 

@@ -55,6 +55,22 @@
 .ruleDate { grid-column: 1 / -1; }
 .action { display: block; padding: 12px; border: 1px solid #e6eaee; border-radius: 8px; color: #a64726; font-size: 13px; margin-top: 12px; }
 .note { color: #63717c; font-size: 12px; margin: 0 0 12px; }
+.paySections { display: grid; gap: 16px; min-width: 0; }
+.calculationStatus { margin: 0; padding: 0 16px 10px; color: #63717c; font-size: 12px; }
+.payBreakdown { border-bottom: 1px solid #e6eaee; min-width: 0; }
+.payBreakdown > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; cursor: pointer; list-style: none; }
+.payBreakdown > summary::-webkit-details-marker { display: none; }
+.payBreakdown > summary h2 { margin: 0; }
+.payBreakdown > summary > span { color: #737c79; font-size: 12px; margin-left: auto; }
+.portal .payBreakdown > summary::after { display: none; }
+.payBreakdown > summary:focus-visible { outline: 2px solid #216346; outline-offset: 2px; }
+.payContext { font-size: 12px; padding: 4px 0 10px; }
+.payContext p { margin: 0 0 4px; }
+.appliedRates { display: flex; flex-wrap: wrap; gap: 4px 12px; color: #63717c; }
+.includedNote { color: #63717c; font-size: 12px; line-height: 1.5; margin: 10px 0 12px; }
+.payDaily .table thead, .payDaily .table tfoot { background: #dce9ec; }
+.payDaily .table th, .payDaily .table td { padding: 8px 6px; }
+.payBreakdown tfoot { background: #dce9ec; font-weight: 650; }
 .table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
 .table th { font-weight: 500; color: #63717c; text-align: right; padding: 10px 4px; }
 .table td { text-align: right; font-variant-numeric: tabular-nums; padding: 12px 4px; border-top: 1px solid #e6eaee; }

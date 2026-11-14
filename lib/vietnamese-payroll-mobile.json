@@ -1,5 +1,19 @@
 {
   "Tools": "Công cụ",
+  "Details": "Chi tiết",
+  "Item": "Khoản",
+  "Paid via": "Trả qua",
+  "Take-home": "Thực nhận",
+  "Enter check number": "Nhập số check",
+  "Check number": "Số check",
+  "From Check Writer": "Từ Check Writer",
+  "The check number conflicts with an issued Check Writer check. Review Check Writer history.": "Số check trùng với số khác đã cấp trong Check Writer. Vui lòng xem lại lịch sử Check Writer.",
+  "The manual check number differs. Review Check Writer history before changing it.": "Số check nhập tay khác số đã cấp. Xem lịch sử Check Writer trước khi thay đổi.",
+  "Check Writer numbers could not load. Refresh before editing the check number.": "Chưa tải được số check từ Check Writer. Tải lại trước khi sửa số check.",
+  "Check and Cash total the net amounts paid via each method. Tip and Bonus are already included.": "Check và Cash là tổng tiền sau thuế trả qua từng phương thức. Tip và thưởng đã nằm trong tổng này.",
+  "Mixed settings": "Nhiều cài đặt",
+  "Bonus · before tax": "Thưởng · trước thuế",
+  "Tip and Bonus are after tax and already included in Check / Cash.": "Tip và thưởng là tiền sau thuế, đã nằm trong Check / Cash.",
   "Shop": "Tiệm",
   "Current calculation": "Kết quả tính hiện tại",
   "Changes need saving": "Có thay đổi chưa lưu",
@@ -66,5 +80,10 @@
   "Missing actual input": "Chưa nhập số liệu thực tế",
   "Short {0}": "Thiếu {0}",
   "Over {0}": "Dư {0}",
-  "No activity": "Không có hoạt động"
+  "No activity": "Không có hoạt động",
+  "Check + Cash · after tax": "Check + Cash · sau thuế",
+  "Applied settings & changes": "Setting áp dụng và lịch sử thay đổi",
+  "Payment records": "Lịch sử thanh toán",
+  "Live calculation does not confirm payment received.": "Số liệu đang tính không xác nhận đã nhận thanh toán.",
+  "Check and Cash include the net amounts assigned to each payment method. Tip and Bonus are already included.": "Check và Cash là tổng tiền sau thuế theo từng phương thức thanh toán, đã bao gồm Tip và Bonus."
 }

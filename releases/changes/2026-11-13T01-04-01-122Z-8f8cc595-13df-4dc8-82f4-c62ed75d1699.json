@@ -1,0 +1,71 @@
+{
+  "summary": "Completed: replace the explanatory unauthenticated Support screen with the shared existing public contact landing; preserve hosted guest conversations and authenticated Support.",
+  "dependencies": [],
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Local Next.js public Support, mobile/desktop and Help/contact/login navigation",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\browser-results.json"
+    },
+    {
+      "name": "App-local actual SupportPage CTA dispatch with installed navigation shim",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\app-local-support-cta-results.json"
+    },
+    {
+      "name": "Focused Help diagnostic regressions, scoped ESLint and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\regression-summary.txt"
+    },
+    {
+      "name": "App-local Safari16 compilation with zero unsupported actions",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\app-local-verify-only.txt"
+    },
+    {
+      "name": "Scoped source review and frozen-source hash verification",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\HANDOFF.txt"
+    },
+    {
+      "name": "Existing Help-return fixture suite: missing fixture dependencies; unchanged base reproduces same failure",
+      "result": "failed",
+      "evidence": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\help-return-baseline.txt"
+    }
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "status": "needs-integration",
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\frozen",
+    "commit": "ddc3cfebf21c2cde13e91d200f78087ea7696e16",
+    "patch": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\source.patch"
+  },
+  "files": [
+    "components/public-support-landing.tsx",
+    "components/app-local-help.tsx",
+    "lib/app-local-reference-content.ts",
+    "lib/app-local-page-registry.tsx",
+    "app/(app)/support/page.tsx",
+    "app/help/help-copy.json"
+  ],
+  "changeId": "support-public-contact-20261112",
+  "fileHashes": {
+    "components/public-support-landing.tsx": "1151315dff4a9766f25c64aba9bb9e642ece37aaa1c6414a23e50fa756ee58fd",
+    "components/app-local-help.tsx": "3c6fbb86fa3e6532dd0d50f25cac320f0a475072843266f7278802056faa605e",
+    "lib/app-local-reference-content.ts": "3a4d8555c29b4d1bb432ef3cd7db9ff22e4a02d2e33cee7875339ab923c129bd",
+    "lib/app-local-page-registry.tsx": "84957b126225ae221304dcf7367431957690f1042537ea6ea5c52ab7482bd4e3",
+    "app/(app)/support/page.tsx": "745b510a00c313b57bb5cdc78c1309890eb10a3b4b94f72763cd69d72b939854",
+    "app/help/help-copy.json": "976a4ff9baaa9376eb6ccd038ef9149e68de1915aa928cb3e2af9f009416451f"
+  },
+  "releaseAssessment": "Implementation only. Integrate frozen source against then-current production. App-local bundled UI changed, so native bundle rebuild/update assessment is required; no Swift or bridge-contract change.",
+  "evidence": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\HANDOFF.txt",
+  "id": "8f8cc595-13df-4dc8-82f4-c62ed75d1699",
+  "recordedAt": "2026-11-13T01:04:01.122Z",
+  "worktree": "C:\\Reylumi-worktrees\\support-public-contact-20261112",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

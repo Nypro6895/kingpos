@@ -12,7 +12,9 @@ import { saveCustomerDisplayPreferences, useCustomerDisplayPreferences } from "@
 import { prepareLocalPromotionImages, saveLocalPromotionImages, useLocalPromotionImages } from "@/lib/customer-display-local-images";
 import { DEFAULT_CUSTOMER_DISPLAY_PROMO_SLIDE_URL } from "@/lib/pos-display-default-assets";
 import { desktopDevice, type DesktopUpdateState } from "@/lib/portable-device-storage";
+import { DesktopUpdate } from "./desktop-update";
 import { dialogOutsideClick, dialogOutsidePointerDown } from "@/lib/dialog-outside-dismiss";
+import { PortableNativeModeSettings } from "./portable-native-mode-settings";
 import "./device-input-settings.css";
 
 const subscribeDesktop = () => () => {};
@@ -71,14 +73,13 @@ export function CustomerDisplayPreferencesEditor() {
   </>;
 }
 
-function ApplicationSettings() {
+function ApplicationSettings({ onUpdate }: { onUpdate: () => void }) {
   const t=useWorkspaceTranslation();const [state,setState]=useState<DesktopUpdateState|null>(null);const [busy,setBusy]=useState(false);const [error,setError]=useState("");
   useEffect(()=>{let live=true;const read=()=>{void desktopDevice()?.updates?.state().then(value=>{if(live)setState(value);}).catch(()=>{});};read();const timer=setInterval(read,2000);return()=>{live=false;clearInterval(timer);};},[]);
-  async function update(){setBusy(true);setError("");try{await desktopDevice()?.windowControls?.action?.("updates");const next=await desktopDevice()?.updates?.state();if(next)setState(next);}catch{setError("Unable to check for updates. Please try again.");}finally{setBusy(false);}}
   const available=Boolean(state?.version && ["available","ready","downloading"].includes(state.phase));
-  const label=busy||state?.phase==="checking"?"Checking…":state?.phase==="downloading"?"Downloading…":available?"Update":state?.phase==="idle"?"Up to date":"Check";
+  const label=busy||state?.phase==="checking"?"Checking…":state?.phase==="downloading"?"Downloading…":available?"Update & restart":"Check & update";
   return <section className="device-setting-section" aria-label={t("Application")}><h3><WorkspaceText text="Application" /></h3>
-    <div className="device-list-row"><span><WorkspaceText text="Check for updates" /></span><button type="button" disabled={busy||state?.phase==="checking"||state?.phase==="downloading"||!desktopDevice()?.windowControls?.action} onClick={()=>void update()}><WorkspaceText text={label} /></button></div>
+    <div className="device-list-row"><span><WorkspaceText text="Check for updates" /></span><button type="button" disabled={busy||["checking","downloading","preparing","installing"].includes(state?.phase??"")||!desktopDevice()?.updates?.now} onClick={()=>{setBusy(true);onUpdate();}}><WorkspaceText text={label} /></button></div>
     <div className="device-list-row"><span><WorkspaceText text="About" /></span><span className="device-version">{state?.currentVersion ? `KingPOS ${state.currentVersion}` : "—"}</span></div>
     <div className="device-list-row"><span><WorkspaceText text="Help" /></span><a href="https://reylumi.com/help/windows-portable" target="_blank" rel="noreferrer" aria-label={t("Open help website")} onClick={event=>{const action=desktopDevice()?.windowControls?.action;if(action){event.preventDefault();void action("help").catch(()=>setError("Unable to open Help. Please try again."));}}}><ExternalIcon /></a></div>
     {state?.message && <p role="status"><WorkspaceText text={state.message} /></p>}{error&&<p role="alert"><WorkspaceText text={error} /></p>}
@@ -87,18 +88,21 @@ function ApplicationSettings() {
 
 export function DeviceInputSettingsButton({ desktopOnly=false }: {desktopOnly?:boolean}) {
   const t=useWorkspaceTranslation();const [open,setOpen]=useState(false);const [error,setError]=useState("");const dialog=useRef<HTMLDialogElement>(null);const desktop=useSyncExternalStore(subscribeDesktop,readDesktop,serverDesktop);
+  const [updating,setUpdating]=useState(false);
   useTransientOverlay(() => setOpen(false), open);
   useNativeDialogNavigation(dialog);
   useEffect(()=>{if(open)dialog.current?.showModal();},[open]);if(desktopOnly&&!desktop)return null;
   return <><button type="button" aria-label={t("Device settings")} title={t("Device settings")} onClick={()=>setOpen(true)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-orange-500"><WorkspaceNavigationIcon name="gear" className="h-5 w-5" /></button>
     {open&&createPortal(<dialog ref={dialog} onPointerDown={dialogOutsidePointerDown} onClick={dialogOutsideClick} aria-label={t("Device settings")} onClose={()=>setOpen(false)} className="portable-device-settings" data-touch-keyboard="off"><header><h2><WorkspaceText text="Settings" /></h2><button type="button" aria-label={t("Close settings")} onClick={()=>dialog.current?.close()}>×</button></header>
       <DeviceInputSettings />
+      <PortableNativeModeSettings />
       <ServiceDisplaySettings />
       <section className="device-setting-section" aria-label={t("Customer display")}><h3><WorkspaceText text="Customer display" /></h3>
         {desktop&&<div className="device-list-row"><span><WorkspaceText text="Customer screen" /></span><button type="button" onClick={()=>{setError("");void desktopDevice()?.display?.open().catch(()=>setError("Open the POS tab first, then try again."));}}><WorkspaceText text="Open" /></button></div>}
         <CustomerDisplayPreferencesEditor />
       </section>
-      {desktop&&<ApplicationSettings />}{error&&<p role="alert"><WorkspaceText text={error}/></p>}
+      {desktop&&<ApplicationSettings onUpdate={()=>{dialog.current?.close();setOpen(false);setUpdating(true);}} />}{error&&<p role="alert"><WorkspaceText text={error}/></p>}
     </dialog>,document.body)}
+    {updating&&<DesktopUpdate onClose={()=>setUpdating(false)} />}
   </>;
 }

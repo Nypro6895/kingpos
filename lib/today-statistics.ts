@@ -71,6 +71,7 @@ export function buildDayStatistics(input: {
     const redemption = (ticket.payments ?? []).filter(p => p.payment_method === "gift_card").reduce((sum, p) => sum + Math.round(Number(p.amount) * 100), 0);
     if (redemption > 0) { redeemedCount++; redeemedCents += redemption; }
   }
+  if (input.giftFlow?.counterSalesCount) mix.set("Gift card",{count:input.giftFlow.counterSalesCount,cents:input.giftFlow.counterSales});
   return { checkIns: input.visits ? checkIns : null, closedTickets: input.tickets ? closedTickets : null, hours: hours.map(h => ({ ...h, sales: h.sales === null ? null : Math.round(h.sales * 100) / 100 })), services: input.tickets ? [...mix].map(([label, row]) => ({ label, count: row.count, sales: row.cents / 100 })).sort((a,b) => b.count - a.count || a.label.localeCompare(b.label)) : null, giftCardsSold: input.giftFlow ? { count: input.giftFlow.counterSalesCount, amount: input.giftFlow.counterSales / 100 } : null, giftCardsRedeemed: input.giftFlow ? { count: input.giftFlow.redeemedCount, amount: input.giftFlow.redeemed / 100 } : input.tickets ? { count: redeemedCount, amount: redeemedCents / 100 } : null, promotions: input.tickets ? { count: discountCount, amount: discountCents / 100 } : null, errors: input.errors ?? [] };
 }
 

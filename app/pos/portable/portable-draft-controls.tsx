@@ -309,6 +309,7 @@ export function PortableDraftControls<T>({
               : `Saved tickets (${saved.length})`,
           )}
           aria-expanded={open}
+          title={__vt(sharedSummary ? `${sharedSummary.open} open · ${sharedSummary.ready} ready${saved.length ? ` · ${saved.length} on device` : ""}` : `${saved.length} saved`)}
           disabled={saving || disabled || transferring}
           onClick={() => setOpen(!open)}
           className="flex min-h-20 min-w-0 items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 text-left transition hover:border-teal-300 hover:bg-teal-50 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-teal-700"
@@ -323,11 +324,11 @@ export function PortableDraftControls<T>({
           >
             <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6" />
           </svg>
-          <span className="min-w-0">
+          <span data-pos-saved-copy className="min-w-0">
             <span className="block text-sm font-semibold">
               <WorkspaceText text={compact ? "Saved" : "Saved tickets"} />
             </span>
-            <span className="mt-1 block text-xs text-zinc-500">
+            <span data-pos-saved-summary className="mt-1 block text-xs text-zinc-500">
               <WorkspaceText
                 text={
                   sharedSummary
@@ -348,6 +349,7 @@ export function PortableDraftControls<T>({
               </span>
             )}
           </span>
+          {compact && (sharedSummary?.open || saved.length) > 0 && <span data-pos-saved-count aria-hidden="true" className="hidden">{(sharedSummary?.open ?? 0) + saved.length}</span>}
         </button>
         {active && (
           <button

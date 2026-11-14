@@ -1,6 +1,7 @@
 import { withExperiencePage } from "@/components/experience-page";
+import { Suspense } from "react";
 import { WorkspaceText } from "@/components/workspace-language";
-import { ServicesManager } from "@/app/services/services-manager";
+import { ServicesManager, ServicesLoading } from "@/app/services/services-manager";
 import { ServicesCatalogPilot } from "@/app/services/services-catalog-pilot";
 import { servicesCatalogPilotEnabled } from "@/lib/services-catalog-pilot-flag";
 import { getExperienceContext } from "@/lib/experience-context";
@@ -23,7 +24,7 @@ function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-async function ServicesPage({ searchParams }: ServicesPageProps) {
+async function ServicesContent({ searchParams }: ServicesPageProps) {
   const [params, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/services"),
@@ -59,4 +60,7 @@ async function ServicesPage({ searchParams }: ServicesPageProps) {
   );
 }
 
-export default withExperiencePage(ServicesPage);
+function ServicesPage(props: ServicesPageProps) {
+  return <Suspense fallback={<ServicesLoading />}><ServicesContent {...props} /></Suspense>;
+}
+export default withExperiencePage(ServicesPage, { pendingFallback: <ServicesLoading /> });

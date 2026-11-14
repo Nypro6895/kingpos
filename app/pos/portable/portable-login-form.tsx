@@ -5,6 +5,8 @@ import { SubmitButton } from "@/components/submit-button";
 import { useActionState } from "react";
 import { PortableTouchKeyboard } from "./touch-keyboard";
 import { PortableFullscreenButton } from "./portable-fullscreen-button";
+import { PortableInstallHelp } from "./portable-install-help";
+import { PortableNativeModeSettings } from "./portable-native-mode-settings";
 import "./device-input-settings.css";
 import {
   forgetPortablePosAccessIdAction,
@@ -112,6 +114,8 @@ export function PortablePosLoginForm({
           </SubmitButton>
         </form>
       ) : null}
+      {returnTo === "/pos/portable" && <PortableInstallHelp />}
+      {returnTo === "/pos/portable" && <PortableNativeModeSettings />}
     </div>
   );
 }

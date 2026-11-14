@@ -1,5 +1,7 @@
 import { historyTicketTotals, type HistoryEvidence } from "@/lib/booking-history";
 import "server-only";
+import {loadTicketFinancialSourceMap} from "@/lib/pos-ticket-financial-sources";
+import {ticketFinancialView} from "@/lib/pos-ticket-financial-view";
 
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { POS_PAYMENT_METHOD_LABELS } from "@/lib/pos-payments";
@@ -163,6 +165,7 @@ export type CustomerActivityReceiptService = CustomerActivityService &
   >;
 
 export type CustomerActivityReceipt = {
+  rewardDiscount?: number;
   closedAt: string | null;
   currency: string;
   customerName: string;
@@ -601,6 +604,18 @@ export async function getCustomerActivity(input?: {
       timezone: readString(raw.timezone) ?? "America/Chicago", salon: parseSalon(raw.salon), services: parseServices(raw.services),
       title: "Checked in", visitState:readString(raw.status)??undefined, status: raw.status === "in_service" ? "in_service" as const : "checked_in" as const, total: 0, currency: "USD" }];
   });
+  try {
+    for(const salonId of new Set(purchases.map(purchase=>purchase.salon.id).filter(Boolean))) {
+      const scoped=purchases.filter(purchase=>purchase.salon.id===salonId);
+      const sources=await loadTicketFinancialSourceMap(supabase,salonId,scoped.map(purchase=>purchase.ticketId));
+      for(const purchase of scoped) {
+        const sales=sources[purchase.ticketId]?.giftSales ?? [];
+        purchase.total=Math.round((purchase.total+sales.reduce((sum,sale)=>sum+sale.amountCents/100,0))*100)/100;
+        purchase.services.push(...sales.map(sale=>({id:null,name:`Gift card · •••• ${sale.last4}`,lineTotal:sale.amountCents/100,quantity:1,unitPrice:sale.amountCents/100,staffName:null})));
+        purchase.title=activityTitle(purchase.services,"Purchase");
+      }
+    }
+  } catch { return activityFailure("database_error"); }
   const upcoming = linkedBookings
     .filter((booking) => booking.status === "upcoming")
     .sort(sortUpcoming);
@@ -739,8 +754,16 @@ export async function getCustomerActivityReceipt(
     };
   }
 
-  return {
-    data: mapReceipt(payload.ticket),
-    ok: true,
-  };
+  const mapped=mapReceipt(payload.ticket);
+  if(!mapped)return {data:null,ok:true};
+  try {
+    const sources=await loadTicketFinancialSourceMap(supabase,mapped.salon.id,[mapped.ticketId]);
+    const raw=asRecord(payload.ticket);
+    const view=ticketFinancialView({financial_sources:sources[mapped.ticketId],discount_type:readDiscountType(raw.discountType),discount_value:readNumber(raw.discountValue),tax_rate:readNumber(raw.taxRate),tip_type:readTipType(raw.tipType),tip_value:readNumber(raw.tipValue),opened_at:mapped.openedAt,closed_at:mapped.closedAt,ticket_items:mapped.services.map(service=>({line_total:service.lineTotal})),payments:parsePayments(raw.payments).map(payment=>({amount:payment.amount,payment_method:payment.method,created_at:payment.createdAt}))},mapped.totals);
+    mapped.totals=view.totals;mapped.rewardDiscount=view.reward;
+    mapped.services.push(...view.giftSales.map(sale=>({id:null,name:`Gift card · •••• ${sale.last4}`,staffName:null,lineTotal:sale.amountCents/100,unitPrice:sale.amountCents/100,quantity:1})));
+    const methods:Record<string,PosPaymentMethod>={Cash:"cash",Card:"credit_card","Debit card":"debit_card","Gift card":"gift_card",Other:"other"};
+    mapped.payments=view.payments.map(payment=>({id:null,amount:payment.amount,createdAt:payment.created_time,label:payment.method,method:methods[payment.method]??"other"}));
+    return {data:mapped,ok:true};
+  } catch { return {ok:false,code:"database_error",message:"Receipt details could not be loaded."}; }
 }

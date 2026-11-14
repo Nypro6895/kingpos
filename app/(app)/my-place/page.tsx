@@ -1,6 +1,6 @@
 import { withExperiencePage } from "@/components/experience-page";
 import { listMyOwnerTransferInvites } from "@/lib/owner-transfer";
-import { MyPlaceClient } from "@/app/my-place/my-place-client";
+import { MyPlaceProgressiveClient } from "@/app/my-place/my-place-client";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import { getPlaceRequests } from "@/app/my-place/actions";
 import { inspectProfilePhoneClaim } from "@/lib/customer-identity-claims";
@@ -22,30 +22,30 @@ async function MyPlacePage({ searchParams }: MyPlacePageProps) {
     redirect("/login?next=/my-place");
   }
 
-  const [requests, phoneClaim, ownerInvites] = await Promise.all([
-    getPlaceRequests(),
-    context.user.phone
-      ? inspectProfilePhoneClaim(context.user.phone)
-      : Promise.resolve(null),
-    listMyOwnerTransferInvites()
+  // Context already contains the admitted workspaces. These independent reads
+  // belong to their profile/request fragments, not the workspace list.
+  const requests = getPlaceRequests().catch(() => ({ ok: false as const, message: "Requests could not be loaded. Please retry." }));
+  const phoneVerified = context.user.phone
+    ? inspectProfilePhoneClaim(context.user.phone)
+      .then(claim => claim.ok ? claim.data.verifiedByCurrentUser : null)
+      .catch(() => null)
+    : Promise.resolve(false);
+  const invitations = listMyOwnerTransferInvites()
       .then((invites) => ({ invites, error: undefined }))
       .catch(() => {
         console.error("My Place owner invitations could not be loaded.");
         return { invites: [], error: "Owner invitations could not be loaded. Please retry." };
-      }),
-  ]);
+      });
 
   return (
-    <MyPlaceClient
+    <MyPlaceProgressiveClient
+      key={context.user.id}
       currentWorkspace={context.currentWorkspace}
       user={context.user}
-      phoneVerified={
-        phoneClaim?.ok === true && phoneClaim.data.verifiedByCurrentUser
-      }
+      phoneVerified={phoneVerified}
       error={resolvedSearchParams.error}
       requests={requests}
-      ownerInvites={ownerInvites.invites}
-      ownerInvitesError={ownerInvites.error}
+      invitations={invitations}
       salons={[
         ...context.availableManageSalons,
         ...context.availableStaffSalons,

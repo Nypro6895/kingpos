@@ -407,7 +407,13 @@ function PhoneVerificationDialog({
               <WorkspaceText text="Verify phone number" />
             </h2>
             <p className="mt-2 text-sm font-medium leading-6 text-text-secondary">
-              <WorkspaceText text="Enter the verification code sent to" />{" "}
+              <WorkspaceText
+                text={
+                  sent
+                    ? "Enter the verification code sent to"
+                    : "Send a verification code to"
+                }
+              />{" "}
               <span className="font-bold text-text-primary">
                 {maskPhoneForOtp(claim.normalizedPhone)}
               </span>

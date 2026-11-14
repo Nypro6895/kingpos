@@ -1,4 +1,5 @@
 "use client";
+import { PosCollectionBreakdown } from "@/components/pos-collection-breakdown";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { CompactFilters } from "@/components/compact-filters";
 import styles from "./reports.module.css";
@@ -40,15 +41,6 @@ function getReportHref(date: string, reportOverview?: Pick<OperationalReportData
   }
 
   return `${reportPath}?${params.toString()}#daily-closing`;
-}
-
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <section>
-      <p><WorkspaceText text={label} /></p>
-      <p>{value}</p>
-    </section>
-  );
 }
 
 function NoPermissionState() {
@@ -160,8 +152,6 @@ function StaffReportTable({ rows, salonId, businessDate, canEdit }: { rows: Dail
 
 type Props={expensePeriod?:ReportExpensePeriod|null;viewerId:string;snapshotAt?:number;query?:string;managedRead?:boolean;accountingOverview?:DailyReportOverview;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:Pick<OperationalReportData,"range">;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
 export function OwnerLiveReports(initial:Props){
-  const __vt = useWorkspaceTranslation();
-
  const routeParams=useSearchParams();
  const pathname=usePathname();
  const params=useMemo(()=>initial.query===undefined?routeParams:new URLSearchParams(initial.query),[initial.query,routeParams]);
@@ -262,24 +252,7 @@ export function OwnerLiveReports(initial:Props){
             snapshotTotals={report.snapshotTotals}
           >
             <ReportDetails title="Closing breakdown">
-          <div className={styles.closingBreakdown}>
-            <SummaryCard
-              label={__vt("Total Staff Earned")}
-              value={formatMoney(report.totals.totalStaffEarned)}
-            />
-            <SummaryCard
-              label={__vt("Total Tip")}
-              value={formatMoney(report.totals.totalTip)}
-            />
-            <SummaryCard
-              label={__vt("Total Discount")}
-              value={formatMoney(report.totals.totalDiscount)}
-            />
-            <SummaryCard
-              label={__vt("Gift Card")}
-              value={formatMoney(report.totals.totalGiftCard)}
-            />
-          </div>
+          <PosCollectionBreakdown service={report.totals.totalStaffEarned} gift={report.totals.giftSales??0} discount={report.totals.ordinaryDiscount??report.totals.totalDiscount} reward={report.totals.rewardDiscount??0} giftPaid={report.totals.giftServicePaid??report.totals.totalGiftCard} earnedTip={report.totals.totalTip} giftTipPaid={report.totals.giftTipPaid??0} expected={report.totals.expectedTotal} expectedTip={report.totals.expectedTip??report.totals.totalTip}/>
 
             </ReportDetails>
 <ReportDetails title="Staff Daily Report" meta={report.staffRows.length}>
@@ -318,14 +291,6 @@ export function OwnerLiveReports(initial:Props){
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {report.metadata.excludedVoidedTicketCount}
-                </dd>
-              </div>
-              <div>
-                <dt>
-                  <WorkspaceText text="Gift Card Payments" />
-                </dt>
-                <dd className="mt-1 text-lg font-semibold text-zinc-950">
-                  {formatMoney(report.totals.giftCardPaymentTotal)}
                 </dd>
               </div>
             </dl>

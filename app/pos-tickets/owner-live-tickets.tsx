@@ -11,6 +11,7 @@ import {DailyPosTicketCard} from './closed-ticket-correction-form';
 import {FinancialHistoryProvider} from '@/app/payroll/inline-financial-history';
 import {calculateTicketTotals} from '@/lib/pos-ticket-calculations';
 import {searchTextMatches} from '@/lib/search-normalization';
+import {ticketGiftSearchValues} from '@/lib/pos-ticket-financial-view';
 import type {PosTicketWithRelations} from '@/types/pos-ticket';import type {Staff} from '@/types/staff';import type {Service} from '@/types/service';
 type DateGroup = {
   dateKey: string;
@@ -108,10 +109,12 @@ function ticketMatchesSearch(
   const searchableValues = [
     String(dailyNumber),
     `#${dailyNumber}`,
+    ticket.ticket_number,
     ticket.source_booking_id ? "from appointment" : "",
     ticket.source_booking_id ?? "",
     ticket.customer?.name ?? "",
     formatTime(ticket.opened_at),
+    ...ticketGiftSearchValues(ticket.financial_sources),
     ...(ticket.ticket_items ?? []).flatMap((item) => [
       item.assigned_staff?.display_name ?? "",
       item.service?.name ?? "",

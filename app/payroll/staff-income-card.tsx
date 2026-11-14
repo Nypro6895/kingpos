@@ -1,31 +1,40 @@
 import type { ReactNode } from "react";
 import { WorkspaceText } from "@/components/workspace-language";
-import { staffCompactSettings, staffTakeHomeDisplay } from "@/lib/staff-payroll-display";
+import { staffPayrollRowDisplay, staffTakeHomeDisplay } from "@/lib/staff-payroll-display";
 import type { PayrollStaffLineWithDailyTotals } from "@/types/payroll";
-import { PayrollDisclosure } from "./payroll-disclosure";
+import { StaffPayrollDetails } from "./staff-payroll-details";
+import { StaffPaymentTable } from "./staff-payment-table";
 import styles from "./payroll-mobile.module.css";
 
 const money = (amount: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+function RuleText({ parts }: { parts: string[] }) {
+  return <>{parts.map((part, i) => <span key={`${i}:${part}`}>{i > 0 && " "}<WorkspaceText text={part} /></span>)}</>;
+}
+
 export function StaffIncomeCard({ line, adjustments, history, breakdown }: {
   line: PayrollStaffLineWithDailyTotals; adjustments?: ReactNode; history?: ReactNode; breakdown?: ReactNode;
 }) {
-  const payout = staffTakeHomeDisplay(line), settings = staffCompactSettings(line);
-  return <PayrollDisclosure expandOnDesktop={false} className={`${styles.staffCard} ${styles.takeHomeCard}`} summary={<div className={styles.staffSummary}>
-    <div className={styles.staffIdentity}><strong>{line.staff_display_name_snapshot}</strong>{!line.staff_legal_name_snapshot && <small className="!text-amber-700"><WorkspaceText text="Missing legal name" /></small>}{line.final_check_amount < 0 && <small className="!text-rose-700"><WorkspaceText text="Check amount negative" /></small>}</div>
-    <div className={`${styles.takeHomeMoney} ${[payout.check, payout.cash, payout.tip].some(value => money(value).length > 9) ? styles.longPayout : ""}`}>{([['Check', payout.check], ['Cash', payout.cash], ['Tip', payout.tip], ['Bonus', line.bonus_amount]] as const).map(([label, value]) => <div key={label}><small><WorkspaceText text={label} /></small><strong className={value < 0 ? "text-rose-700" : undefined}>{money(value)}</strong></div>)}</div>
+  const payout = staffTakeHomeDisplay(line), row = staffPayrollRowDisplay(line);
+  return <StaffPayrollDetails name={line.staff_display_name_snapshot} header={<div className={styles.compactStaffSummary}>
+    <div className={styles.compactPayoutRow}>
+      <strong className={styles.compactStaffName}>{line.staff_display_name_snapshot}</strong>
+      {([['Check', payout.check], ['Cash', payout.cash]] as const).map(([label, value]) => <div key={label} className={styles.compactPayout}>
+        <span className={styles.compactPayoutValue}><WorkspaceText text={label} />: <strong className={value < 0 ? styles.negativePayout : undefined}>{money(value)}</strong></span>
+      </div>)}
+    </div>
+    {(!line.staff_legal_name_snapshot || line.final_check_amount < 0) && <div className={styles.compactWarnings}>
+      {!line.staff_legal_name_snapshot && <small className="text-amber-700"><WorkspaceText text="Missing legal name" /></small>}
+      {line.final_check_amount < 0 && <small className="text-rose-700"><WorkspaceText text="Check amount negative" /></small>}
+    </div>}
   </div>}>
     <div className={styles.takeHomeBody}>
-      <dl className={styles.earningsTotals}><div><dt><WorkspaceText text="Gross" /></dt><dd>{money(line.gross_sales)}</dd><small><WorkspaceText text="Service sales" /></small></div><div><dt><WorkspaceText text="Net" /></dt><dd>{money(payout.net)}</dd><small><WorkspaceText text="Total take-home" /></small></div></dl>
-      <dl className={styles.ledger}><div><dt><WorkspaceText text="Total tip · before tax" /></dt><dd>{money(line.tip_amount)}</dd></div>{!adjustments && <div><dt><WorkspaceText text="Bonus" /></dt><dd>{money(line.bonus_amount)}</dd></div>}</dl>
-      {adjustments}
-      <div className={styles.staffSettings} aria-label="Settings applied to this period">
-        <span><WorkspaceText text={settings.fixed ? "Fixed pay" : "Commission"} /> <b>{settings.pay.join(" / ")}</b></span>
-        <span><WorkspaceText text="Cash" /> <b>{settings.cash.join(" / ")}</b></span>
-        <span><WorkspaceText text="Tax" /> <b>{settings.tax.join(" / ")}</b></span>
-        <span><WorkspaceText text="Tip" /> <b>{settings.tip.map(t => <WorkspaceText key={t} text={t} />).reduce<ReactNode[]>((out, node, i) => [...out, ...(i ? [" / "] : []), node], [])}</b></span>
-      </div>
-      {history}
+      <div className={styles.compactRules}>{row.settings.map((parts, i) => <span key={i}><RuleText parts={parts} /></span>)}</div>
+      <div className={styles.paymentTotals}><span><WorkspaceText text="Services" /> <strong>{money(line.gross_sales)}</strong></span><span><WorkspaceText text="Take-home" /> <strong>{money(payout.net)}</strong></span></div>
+      <p className={styles.commissionTotal}>{row.settings.filter(parts => parts[0] === "Commission" || parts[0] === "Fixed pay").map((parts, i) => <span key={i}>{i > 0 && " / "}<RuleText parts={parts} /></span>)} → <strong>{money(line.staff_commission_gross)}</strong></p>
+      {adjustments ?? <StaffPaymentTable line={line} />}
       {breakdown}
+      <p className={styles.compactIncludedNote}><WorkspaceText text="Check and Cash total the net amounts paid via each method. Tip and Bonus are already included." /></p>
+      {history}
     </div>
-  </PayrollDisclosure>;
+  </StaffPayrollDetails>;
 }

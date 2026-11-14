@@ -190,6 +190,7 @@ export type PosLiveDraftReceiptLine = {
 };
 
 export type PosLiveDraftView = {
+  settled_receipt?: {ticketNumber?:string;giftPurchaseCents:number;giftPaidCents:number};
   completed_at: string | null;
   customer: PosLiveDraftCustomer | null;
   customer_handoff_started_at: string | null;

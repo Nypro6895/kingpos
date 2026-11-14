@@ -3,6 +3,7 @@ import { visibleTicketAdjustments, type TicketAdjustmentEventAction } from "@/li
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { WorkspaceText } from "@/components/workspace-language";
 import { CustomerName } from "@/components/customer-name";
+import {TicketGiftDelivery} from "@/components/gift-card/ticket-gift-delivery";
 import {TicketHistoryDisclosure,type TicketLegacyHistoryEntry} from "./ticket-history-disclosure";
 import {FinancialHistoryProvider} from "@/app/payroll/inline-financial-history";
 import type {PosTicketTimelineItem} from "@/types/pos-ticket-timeline";
@@ -14,6 +15,9 @@ import {
   submitLockedStaffFinancialCorrection as ownerSubmitLockedStaffFinancialCorrection,
 } from "@/app/pos-tickets/actions";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
+import { ticketFinancialView } from "@/lib/pos-ticket-financial-view";
+import type { PosTicketWithRelations } from "@/types/pos-ticket";
+import type { PosPayment } from "@/types/pos-payment";
 import type {
   PosTicketDiscountType,
   PosTicketStatus,
@@ -62,6 +66,8 @@ export type TicketCorrectionStaffOption = {
 };
 
 export type EditablePosTicket = {
+  financial_sources?: PosTicketWithRelations["financial_sources"];
+  payments?: PosPayment[];
   salon_id?: string;
   ticket_number?: string;
   workspace_revision?: number;
@@ -1098,7 +1104,9 @@ export function DailyPosTicketCard({
     taxRate: ticket.tax_rate,
     tipType: ticket.tip_type,
     tipValue: ticket.tip_value,
+    payments: ticket.payments ?? [],
   });
+  const financial = ticketFinancialView(ticket,initialTotals);
   const initialStaffTipById = useMemo(
     () => getInitialStaffTips(ticket, initialTotals.tip_amount),
     [initialTotals.tip_amount, ticket],
@@ -1122,7 +1130,7 @@ export function DailyPosTicketCard({
   const [reason, setReason] = useState("");
   const nextKeyRef = useRef(0);
   const correctionIntentRef = useRef<HTMLInputElement>(null);
-  const canCorrectClosedTicket = canEdit && ticket.status === "closed";
+  const canCorrectClosedTicket = canEdit && ticket.status === "closed" && !financial.giftOnly;
   const displayedLines = isEditing ? lines : initialLines;
   const activeLines = lines.filter((line) => !line.remove);
   const totalTipAmount = toMoneyNumber(tipTotal);
@@ -1722,19 +1730,27 @@ export function DailyPosTicketCard({
               ) : null}
             </div>
             <div className="my-2 space-y-1">
-              {displayedLines.length === 0 ? <WorkspaceText text="No services recorded." /> : displayedLines.map(line => (
+              {displayedLines.length === 0 && !financial.giftSales.length ? <WorkspaceText text="No services recorded." /> : displayedLines.map(line => (
                 <div key={line.key} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-baseline gap-2">
                   <span className="min-w-0 break-words font-semibold">{staffDisplayName(line)}{renderTurnDisplay(line)}</span>
                   <span className="min-w-0 break-words text-zinc-600">{serviceName(line)}</span>
                   <span className="tabular-nums">{formatMoney(lineTotal(line))}</span>
                 </div>
               ))}
+              {financial.giftSales.map(sale=><div key={sale.id} data-ticket-gift-item className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-baseline gap-2 rounded bg-amber-50/60 px-2 py-1.5">
+                <span data-ticket-gift-staff aria-hidden="true" />
+                <span className="min-w-0 font-medium"><WorkspaceText text="Gift card" /><small className="ml-1 font-normal text-zinc-500">•••• {sale.last4}{sale.status === "voided" ? " · Voided" : ""}</small></span>
+                <span className="tabular-nums">{formatMoney(sale.amountCents/100)}</span>
+                {canEdit&&ticket.status==="closed"&&sale.status==="completed"&&<div className="col-span-3 flex justify-end"><TicketGiftDelivery ticketId={ticket.id} saleId={sale.id} last4={sale.last4}/></div>}
+              </div>)}
             </div>
-            <div className="flex items-baseline justify-between gap-2 text-xs tabular-nums text-zinc-600">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-zinc-100 pt-2 text-xs tabular-nums text-zinc-600">
               <span><WorkspaceText text="Tip" /> {formatMoney(initialTotals.tip_amount)}</span>
-              <span><WorkspaceText text="Discount" /> {formatMoney(initialTotals.discount_amount)}</span>
-              <span className="font-semibold text-zinc-950"><WorkspaceText text="Total" /> {formatMoney(initialTotals.total)}</span>
+              {financial.ordinaryDiscount>0 && <span><WorkspaceText text="Discount" /> −{formatMoney(financial.ordinaryDiscount)}</span>}
+              {financial.reward>0 && <span className="text-teal-800"><WorkspaceText text="Reward" /> −{formatMoney(financial.reward)}</span>}
+              <span className="ml-auto font-semibold text-zinc-950"><WorkspaceText text="Total" /> {formatMoney(financial.totals.total)}</span>
             </div>
+            {(financial.giftSales.length>0 || financial.giftRedeemed>0 || financial.reward>0) && <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs text-zinc-500" data-ticket-payment-sources><span>{financial.payments.map(payment=>`${payment.method} ${formatMoney(payment.amount)}`).join(" · ")}</span>{financial.giftOnly && <span><WorkspaceText text={ticket.customer ? "Gift only" : "Gift only · Walk-in sale"} /></span>}</div>}
           </div>
           </TicketHistoryDisclosure>
         ) : (<>
@@ -1752,6 +1768,7 @@ export function DailyPosTicketCard({
           ) : (
             displayedLines.map((line) => renderLine(line))
           )}
+          {financial.giftSales.map(sale=><div key={sale.id} className="flex items-center justify-between gap-3 bg-amber-50/60 px-4 py-3 text-sm"><div><strong><WorkspaceText text="Gift card" /> · •••• {sale.last4}</strong><p className="text-xs text-zinc-500"><WorkspaceText text="Gift amount stays unchanged" /></p></div><span>{formatMoney(sale.amountCents/100)}</span></div>)}
         </div>
         </>)}
         {isEditing ? (
@@ -1792,7 +1809,7 @@ export function DailyPosTicketCard({
               {editedTotals.tax_amount > 0 ? <div className="flex justify-between gap-3"><WorkspaceText text="Tax" /><span>{formatMoney(editedTotals.tax_amount)}</span></div> : null}
             </div>
             <div className="flex justify-between gap-3 border-t border-zinc-200 py-4 text-lg font-semibold tabular-nums text-zinc-950" data-receipt-total>
-              <WorkspaceText text="Total" /><span>{formatMoney(editedTotals.total)}</span>
+              <WorkspaceText text="Total" /><span>{formatMoney(editedTotals.total+financial.giftSold)}</span>
             </div>
             <label className="mt-3 block text-sm font-medium text-zinc-700">
               <WorkspaceText text="Reason" />

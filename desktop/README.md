@@ -54,6 +54,29 @@ code are cached for offline use; native host/storage ship in the installer.
 
 ## Updates
 
+0.7.6 fixes the Online update flow. Settings offers **Update & restart** (or
+**Check & update** before discovery). One explicit click downloads the installer,
+shows progress, saves the draft, creates the encrypted backup, installs silently
+and requests reopening. Failure gives an actionable Retry update state and keeps
+the current POS usable. Checking at startup/every 30 minutes still discovers only;
+closing the app does not authorize an installation.
+
+The branded updater endpoint is `/download/windows.exe`; the ordinary public
+download link remains `/download/windows`. electron-updater 6.8.9 ignores
+Content-Disposition when naming its cache. An older extensionless `windows`
+cache is copied to a verified `.exe` before installation. SHA512, signed-channel
+publisher verification, origin policy and native profile identity remain intact.
+The pinned engine's NSIS flags/elevation policy are retained, but the app waits
+for successful process launch before quitting. Windows may still require the
+user to approve installation; its security prompts are never bypassed.
+
+Unfinished business dialogs, a busy POS operation, unsaved drafts, pending uploads
+and failed backups block installation with a retry message. The Settings dialog
+itself is safe to close; older web clients can still use the native menu path.
+Test engine handoff and isolated installer smoke separately from an actual
+installed production-app upgrade. Publishing the web/feed and Windows installer
+is a coordinated release; a local binary build does not update the live feed.
+
 Packaged builds with an enabled feed check on startup and every 30 minutes.
 Downloads happen in the background. The header reminder offers Later and Update now.
 Later leaves the reminder available. Scheduling was removed in 0.6 because Windows

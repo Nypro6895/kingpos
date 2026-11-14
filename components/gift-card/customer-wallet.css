@@ -1,0 +1,49 @@
+.gw-wallet .gw-cards{grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}
+.gw-card{display:grid;gap:12px;min-width:0;padding:14px;border-radius:16px}
+.gw-card-top,.gw-mini{display:flex;align-items:center;gap:12px;min-width:0}
+.gw-card-top>div:last-child,.gw-mini>div:last-child{min-width:0;flex:1;overflow-wrap:anywhere}
+.gw-card-top strong,.gw-card-top small,.gw-mini strong,.gw-mini small{display:block}
+.gw-card-top strong{font-size:14px;line-height:1.35;font-weight:600}
+.gw-card-top small,.gw-mini small{font-size:11px;margin-top:3px}
+.gw-art{--gw-thumb-width:90px;--gw-thumb-scale:.160714286;flex:0 0 var(--gw-thumb-width);width:var(--gw-thumb-width);min-width:0;aspect-ratio:1.65;position:relative;overflow:hidden;border-radius:9px}
+/* Scale the whole design so older pixel-sized text and logos keep their layout. */
+.gw-art .gc-card{position:absolute;top:0;left:0;width:560px;transform:scale(var(--gw-thumb-scale));transform-origin:top left}
+.gw-balance{display:flex;justify-content:space-between;align-items:end;gap:8px;min-width:0}
+.gw-balance>div{min-width:0}
+.gw-balance small{display:block;font-size:11px;margin-bottom:2px}
+.gw-balance strong{font-size:29px;line-height:1.15;font-weight:600;font-variant-numeric:tabular-nums}
+.gw-balance>span{font-size:11px;color:#307451;background:#edf7f0;border-radius:20px;padding:4px 7px;text-transform:capitalize}
+.gw-actions{display:flex;justify-content:center;gap:24px}
+.gw-wallet .gw-card button{min-height:44px;padding:9px 10px;font-weight:600}
+.gw-wallet .gw-actions button.gc-text-action{font-weight:500}
+.gw-card .gw-valid{font-size:11px;margin-top:-2px}
+.gw-overlay{align-items:center}
+.gw-sheet{display:grid;gap:16px;width:min(440px,100%);padding:20px;overscroll-behavior:contain}
+.gc .gw-sheet header{margin:0;position:static;background:transparent;align-items:center}
+.gc .gw-sheet h2{font-size:20px;line-height:1.2}
+.gc .gw-sheet header button{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;font-size:24px;font-weight:400}
+.gw-sheet .gw-mini{padding-bottom:14px;border-bottom:1px solid #e8e2dc}
+.gw-mini .gw-art{--gw-thumb-width:76px;--gw-thumb-scale:.135714286}
+.gw-mini strong{font-size:13px}
+.gw-mini-balance{display:block;font-size:23px;font-weight:600;font-variant-numeric:tabular-nums}
+.gw-warning{font-size:13px;color:#625b55;line-height:1.55}
+.gw-warning strong{display:block;color:#302923;margin-bottom:5px}
+.gw-methods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.gc .gw-methods button{min-height:44px;padding:8px 4px;font-size:12px}
+.gc .gw-methods button.gc-text-action{border-radius:0;text-decoration:none}
+.gc .gw-methods button.gc-text-action[aria-pressed=true]{background:transparent;color:#954018;font-weight:600;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:7px}
+.gc .gw-sheet input{font-size:16px;min-height:46px;min-width:0}
+.gc .gw-sheet button{min-height:44px}
+.gw-confirm{width:100%}
+.gw-checkout,.gw-current{display:grid;justify-items:center;text-align:center;gap:12px;min-width:0}
+.gw-checkout p,.gw-current p{font-size:12px}
+.gw-code{font-size:20px;letter-spacing:.04em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.gw-checkout code,.gw-current code{font-size:17px}
+.gw-current{padding-top:14px;border-top:1px solid #e8e2dc}
+.gw-current h3{font-size:16px}
+.gw-current svg{width:min(190px,100%);height:auto;max-width:100%}
+.gw-sheet .gc-note{font-size:12px;overflow-wrap:anywhere}
+.gw-history>div{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #eee;font-size:13px;text-transform:capitalize}
+.gw-history small{display:block;font-size:11px;text-transform:none;margin-top:3px}
+@media(max-width:650px){.gw-overlay{align-items:flex-end;padding:10px}.gw-sheet{border-radius:20px 20px 12px 12px;max-height:calc(100dvh - 20px);padding:18px 16px}}
+@media(max-width:360px){.gw-art{--gw-thumb-width:76px;--gw-thumb-scale:.135714286}.gw-balance strong{font-size:27px}.gw-sheet{gap:14px}.gw-sheet .gw-mini .gw-art{--gw-thumb-width:64px;--gw-thumb-scale:.114285714}}

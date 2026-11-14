@@ -132,7 +132,8 @@ export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChan
       </section>
       {receipt ? <dl className="grid grid-cols-2 gap-y-1.5 border-b border-border-subtle py-3 text-xs text-text-secondary">
         <dt>Subtotal</dt><dd className="text-right">{money(receipt.totals.subtotal)}</dd>
-        {receipt.totals.discount_amount ? <><dt>Discount</dt><dd className="text-right">&minus;{money(receipt.totals.discount_amount)}</dd></> : null}
+        {receipt.totals.discount_amount-(receipt.rewardDiscount??0)>0 ? <><dt>Discount</dt><dd className="text-right">&minus;{money(receipt.totals.discount_amount-(receipt.rewardDiscount??0))}</dd></> : null}
+        {!!receipt.rewardDiscount&&<><dt>Reward used</dt><dd className="text-right">&minus;{money(receipt.rewardDiscount)}</dd></>}
         {receipt.totals.tax_amount ? <><dt>Tax</dt><dd className="text-right">{money(receipt.totals.tax_amount)}</dd></> : null}
         {receipt.totals.tip_amount ? <><dt>Tip</dt><dd className="text-right">{money(receipt.totals.tip_amount)}</dd></> : null}
         <dt className="text-sm font-semibold text-text-primary">Paid at salon</dt><dd className="text-right text-lg font-semibold text-text-primary">{money(total)}</dd>

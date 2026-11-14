@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {BeautyHomeIcon} from "@/app/beauty/beauty-home-icon";
 import { BeautyProfileClient } from "@/app/beauty/beauty-profile-client";
-import { NotificationCenterClient } from "@/app/notifications/notification-center-client";
+import { NotificationCenterClient, NotificationCenterLoading } from "@/app/notifications/notification-center-client";
 import { getAppLocalHost } from "./app-local-host";
 import { AppLocalRewardWallet } from "./app-local-reward-wallet";
 import { rewardWalletSalonAnchor } from "./reward-wallet-anchor";
@@ -24,9 +24,10 @@ function PersonalPage(props:AppLocalPageProps){
   const title=rewards?"My Rewards":beauty?"Beauty":"Notifications";
   if(!props.context?.context.authenticated)return <main className="p-6"><h1 className="text-2xl font-semibold">{title}</h1><button className="mt-4 rounded border px-4 py-2" onClick={()=>void getAppLocalHost().openOnline("/login?next="+encodeURIComponent(url.pathname+(rewards?url.hash:"")))}>Sign in</button></main>;
   if(rewards)return <AppLocalRewardWallet key={props.context.context.scope} path={props.path} viewerId={props.context.context.viewerId??undefined}/>;
+  if(!beauty&&!resource.data)return <NotificationCenterLoading initialFilter={args.filter as "all"|"unread"} error={resource.error} onRetry={()=>void resource.refresh()}/>;
   if(!resource.data)return <main className="p-6" aria-busy={resource.loading||resource.refreshing}><h1 className="text-2xl font-semibold">{title}</h1>{resource.error?<><p role="alert">{resource.error}</p><button className="mt-4 rounded border px-4 py-2" onClick={()=>void resource.refresh()}>Try again</button></>:<p className="mt-4">Opening…</p>}</main>;
   if(beauty){const data=resource.data as AppLocalBeautyData;return <BeautyProfileClient key={url.pathname} home={url.pathname==="/beauty"} libraryPage={url.pathname==="/beauty/library"} initialSection={url.pathname==="/beauty/library"?"library":"overview"} appointment={url.pathname==="/beauty"?<NextAppointment compact booking={data.booking}/>:undefined} favorites={<NativeFavorites posts={data.favorites}/>} commentViewer={data.commentViewer} initialTimeline={data.profile.timeline} profile={data.profile.profile} visitCandidates={data.profile.visitCandidates}/>;}
-  return <NotificationCenterClient {...resource.data as AppLocalNotificationData}/>;
+  return <NotificationCenterClient key={props.context.context.scope} {...resource.data as AppLocalNotificationData}/>;
 }
 export function getAppLocalPersonalPage(path:string):AppLocalPage|null{
   if(path.startsWith("/")&&!path.startsWith("//")&&!/[\\\u0000-\u001f]/.test(path)&&path.length<=4096){

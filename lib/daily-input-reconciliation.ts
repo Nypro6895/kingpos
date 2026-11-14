@@ -4,6 +4,12 @@ export type DailyInputReconciliation = {
   discount: number;
   expectedService: number;
   expectedTip: number;
+  earnedTip?: number;
+  giftSales?: number;
+  giftServicePaid?: number;
+  giftTipPaid?: number;
+  rewardDiscount?: number;
+  ordinaryDiscount?: number;
   actualService: number | null;
   actualTip: number | null;
   serviceDifference: number | null;

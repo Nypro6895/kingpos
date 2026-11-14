@@ -1,6 +1,6 @@
 export type OwnerAttentionItem = {
   item_key: string;
-  kind: "closing" | "ticket_change" | "discount" | "checkin";
+  kind: "closing" | "ticket_change" | "discount" | "checkin" | "gift_sale" | "gift_use" | "reward";
   business_date: string;
   occurred_at: string;
   label: string;
