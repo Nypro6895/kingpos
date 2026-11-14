@@ -1,0 +1,537 @@
+{
+  "release": "complete-release-20261114",
+  "completedAt": "2026-11-14T07:05:22.915Z",
+  "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+  "immutableSourceRef": "release/complete-20261114-source",
+  "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+  "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+  "web": {
+    "status": "published",
+    "verified": true,
+    "deploymentId": "dpl_F5yYNDU4nXW2epT5pozciBmPfHhv",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "sourceSha256": "731b418d697e34bde56da98550cb7fc2b955bc30d6e2d442fe60b697f285ee42",
+    "overlaySha256": "f73b27bdaa8bda7558cedad08d0f0f01539b4921f304a49df0c64720dcc08d28",
+    "evidence": "C:/Reylumi/artifacts/release-review-20261114/live-source-verified.json; C:/Reylumi/artifacts/release-review-20261114/live-http.json; C:/Reylumi/artifacts/release-review-20261114/web-promotion.json; C:/Reylumi/artifacts/release-review-20261114/sql-review/production-verification.json; C:/Reylumi/artifacts/release-review-20261114/public-chromium-smoke/assessment.json; C:/Reylumi/artifacts/release-review-20261114/windows-live-verified.json",
+    "sourceFiles": 4327,
+    "sourceVerificationFormat": "individual source files (CLI 65)",
+    "archivePresent": false,
+    "inheritedVerifiedBaselineFiles": 4140,
+    "downloadedOverlaySha256Files": 187
+  },
+  "windows": {
+    "at": "2026-11-14T06:50:56.568Z",
+    "verified": true,
+    "version": "0.7.6",
+    "releaseUrl": "https://github.com/Nypro6895/kingpos/releases/tag/desktop-v0.7.6",
+    "sourceCommit": "5738b41ec68a7a7acf9d6b3014428876840bf4e7",
+    "feed": {
+      "version": "0.7.6",
+      "path": "/download/windows.exe",
+      "sha512": "NKjJKnuSUbFK9Y18J+hMXG4ByYgPq2vTt+lnnagydC74FA8yk1Wa186e0gXLtS5YfR65nfbO66wWad4+RJcF4g==",
+      "files": [
+        {
+          "url": "/download/windows.exe",
+          "sha512": "NKjJKnuSUbFK9Y18J+hMXG4ByYgPq2vTt+lnnagydC74FA8yk1Wa186e0gXLtS5YfR65nfbO66wWad4+RJcF4g==",
+          "size": 111709584
+        }
+      ]
+    },
+    "headers": [
+      {
+        "path": "/download/windows",
+        "status": 200,
+        "size": 111709584,
+        "disposition": "attachment; filename=\"KingPOS-Portable-Setup-0.7.6.exe\"",
+        "acceptRanges": "bytes"
+      },
+      {
+        "path": "/download/windows.exe",
+        "status": 200,
+        "size": 111709584,
+        "disposition": "attachment; filename=\"KingPOS-Portable-Setup-0.7.6.exe\"",
+        "acceptRanges": "bytes"
+      }
+    ],
+    "range": {
+      "status": 206,
+      "bytes": 1024,
+      "contentRange": "bytes 0-1023/111709584"
+    },
+    "binary": {
+      "bytes": 111709584,
+      "sha256": "ada031d76ec4969c7d86052f2148249a3b270e640910c65571d2ee393bbdc9ef",
+      "sha512": "NKjJKnuSUbFK9Y18J+hMXG4ByYgPq2vTt+lnnagydC74FA8yk1Wa186e0gXLtS5YfR65nfbO66wWad4+RJcF4g=="
+    },
+    "negotiatedDownload": {
+      "status": 200,
+      "contentEncoding": "br",
+      "bytes": 111709584,
+      "sha256": "ada031d76ec4969c7d86052f2148249a3b270e640910c65571d2ee393bbdc9ef"
+    },
+    "installedApplicationAcceptance": "not changed or claimed"
+  },
+  "ios": {
+    "status": "testflight-available",
+    "verified": true,
+    "version": "1.0.0",
+    "build": "100",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/native-release-final.json; C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/testflight-verified-43567533278.json; C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+  },
+  "nativeValidation": {
+    "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "ipadSimulatorTests": 264,
+    "iphoneSimulatorTests": 264,
+    "hostsPerSuite": 15,
+    "actualInfoPlist": {
+      "bundle": "com.reylumi.ios",
+      "version": "1.0.0",
+      "build": "100",
+      "archiveReceiptSha256": "be357e770624c3ce4be8189dcf3e5d11b0720e20ee24ff049cd069932f268a75",
+      "evidence": "Signed CI receipt reads archived application Info.plist; upload accepted and Apple build identity independently matched"
+    },
+    "bundleSha256": "24f74ebb82542d66b8c123d792ee4109c1e13d378098859e0d2d3f49cca9ee17",
+    "sourceSha256": "f73e499b31c43a5684f5966c96d9c5855ff07316e9ed15a6aea38065b767bebc",
+    "appleProcessingState": "VALID",
+    "testflightAvailable": true,
+    "existingGroupUnchanged": true,
+    "independentSignedIPAInspection": false,
+    "physicalDeviceAcceptance": false
+  },
+  "android": {
+    "newNativeApkRequired": false,
+    "reason": "Native host unchanged; compatible hosted-web changes are live. Existing debug CI build succeeded.",
+    "debugWorkflowRun": 43566248147,
+    "debugSourceCommit": "5738b41ec68a7a7acf9d6b3014428876840bf4e7",
+    "playStorePublished": false,
+    "physicalDeviceAcceptance": false,
+    "evidence": "C:/Reylumi/artifacts/release-review-20261114/device-availability.json"
+  },
+  "database": {
+    "transactionSha256": "4bc6771de2feaddea2dc791861da4f1560fb51471efc9b7f5f3d868c03f17597",
+    "checksPassed": 12,
+    "checksTotal": 12,
+    "selectedMigrations": [
+      {
+        "name": "gift_screen_lifecycle",
+        "source_md5": "0188bdebdb17056f220f5a2b31582a26",
+        "version": "20261112000000"
+      },
+      {
+        "name": "booking_ticket_handoff_completion",
+        "source_md5": "b3aea6d2e33285fe3c863899e8f8acca",
+        "version": "20261112220000"
+      },
+      {
+        "name": "customer_checkout_preview",
+        "source_md5": "1112967efda8bfe952cbd6621674d9a5",
+        "version": "20261113033000"
+      },
+      {
+        "name": "payroll_check_references",
+        "source_md5": "2eb084a526b2f71452146b2c9342ab07",
+        "version": "20261113051000"
+      },
+      {
+        "name": "gift_ticket_unified",
+        "source_md5": "d2ec2943d74574a386d09e756de81f5c",
+        "version": "20261113120000"
+      },
+      {
+        "name": "gift_ticket_delivery_recovery",
+        "source_md5": "be3552b69679d176054c75abd40b4006",
+        "version": "20261113220000"
+      }
+    ],
+    "counts": {
+      "daily_closings": 13,
+      "gift_cards": 4,
+      "gift_sales": 4,
+      "gift_sales_without_ticket": 0,
+      "locked_closings": 8,
+      "migration_ledger": 422,
+      "pos_tickets": 83,
+      "public_functions": 1339
+    },
+    "preservedTableFingerprints": 33,
+    "existingReceiptsPreserved": 80,
+    "historicalGiftOnlyMetadataReceiptsAdded": 3,
+    "notificationRowsUnchanged": 411,
+    "paymentReceiptNotificationsUnchanged": 8,
+    "externalDispatchQueuesUnchanged": true,
+    "evidence": "C:/Reylumi/artifacts/release-review-20261114/sql-review/production-verification.json"
+  },
+  "publicChromium": {
+    "cases": 12,
+    "passed": 12,
+    "failed": 0,
+    "pageErrors": 0,
+    "consoleErrors": 3,
+    "horizontalOverflowCases": [],
+    "blockedWriteRequests": 13,
+    "blockingFindings": [],
+    "scope": "Unauthenticated initial public-render Chromium viewport smoke, isolated context per case",
+    "evidence": "C:/Reylumi/artifacts/release-review-20261114/public-chromium-smoke/assessment.json"
+  },
+  "verification": {
+    "productionBuild": "passed",
+    "typeScript": "passed",
+    "scopedEslint": "0 errors; 12 existing warnings",
+    "offlineAssetBudget": "passed; approximately 11.8 MB",
+    "scopedLogicAndUi": "passed",
+    "evidence": [
+      "C:/Reylumi/artifacts/release-review-20261114/build-final-corrected.log",
+      "C:/Reylumi/artifacts/release-review-20261114/scoped-eslint-final.log",
+      "C:/Reylumi/artifacts/release-review-20261114/financial-lifecycle-final.log",
+      "C:/Reylumi/artifacts/release-review-20261114/actual-gift-app.log",
+      "C:/Reylumi/artifacts/release-review-20261114/booking-checkin-sql.log",
+      "C:/Reylumi/artifacts/release-review-20261114/booking-description.log",
+      "C:/Reylumi/artifacts/release-review-20261114/scope-forum-loading.log",
+      "C:/Reylumi/artifacts/release-review-20261114/scope-wave2.log",
+      "C:/Reylumi/artifacts/release-review-20261114/scope-ui-booking.log",
+      "C:/Reylumi/artifacts/release-review-20261114/scope-support-cta.log",
+      "C:/Reylumi/artifacts/release-review-20261114/gift-otp-tests.log",
+      "C:/Reylumi/artifacts/release-review-20261114/portable-initial-html.log"
+    ]
+  },
+  "changes": [
+    {
+      "changeId": "checkin-windows-gift-lifecycle-20261111",
+      "readyEvent": "539b61c6-340f-447f-97e2-a2f6cf157969",
+      "integratedFromEvent": "89c5806d-59b5-4982-afff-1558bc89d9ac",
+      "channels": [
+        "web"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 13
+    },
+    {
+      "changeId": "windows-update-one-click-20261112",
+      "readyEvent": "9e0407d7-5f2a-44a4-8ea5-56b3ea1922ca",
+      "integratedFromEvent": "233f2021-446a-41e4-8614-7abe188a7f05",
+      "channels": [
+        "web"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 22
+    },
+    {
+      "changeId": "payroll-compact-settings-20261112",
+      "readyEvent": "36c1d90e-c16a-47dc-a252-50deded05fe9",
+      "integratedFromEvent": "55399e26-b007-4dcc-ac9d-aa0128355b1a",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 9
+    },
+    {
+      "changeId": "support-public-contact-20261112",
+      "readyEvent": "ce989450-b3b0-424f-9f98-f5d60e6c043d",
+      "integratedFromEvent": "8f8cc595-13df-4dc8-82f4-c62ed75d1699",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 6
+    },
+    {
+      "changeId": "experiences-approved-mockup-20261112",
+      "readyEvent": "b4bbc6f8-5c6a-4a00-b823-05e0e726f126",
+      "integratedFromEvent": "3712094d-758f-4942-b609-4447e3cf7ef5",
+      "channels": [
+        "web"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 10
+    },
+    {
+      "changeId": "payroll-staff-details-accordion-20261112",
+      "readyEvent": "b554dae9-e351-4e9a-98a8-e6d6ed261e6b",
+      "integratedFromEvent": "015e0b98-e252-4467-8b34-0bcb572fa3d6",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 8
+    },
+    {
+      "changeId": "iphone-three-layout-fixes-20261112",
+      "readyEvent": "78e53ce4-788e-4ccd-a3f8-326de1888443",
+      "integratedFromEvent": "7b9caba7-050b-4623-91e8-b25c5dc1628d",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 10
+    },
+    {
+      "changeId": "customer-checkout-benefits-20261112",
+      "readyEvent": "d72d2016-b14d-4e1e-913c-ef47191ce67e",
+      "integratedFromEvent": "e5c3e586-71b1-4984-8a1a-3dae15a6d71d",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 17
+    },
+    {
+      "changeId": "payroll-payment-ledger-live-20261112",
+      "readyEvent": "70d413f3-3619-4aed-ac27-dd71c729a439",
+      "integratedFromEvent": "1490db7e-d1a1-45cf-a822-5341fb56085a",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 22
+    },
+    {
+      "changeId": "forum-tab-performance-20261112",
+      "readyEvent": "7edf308a-25b3-43d4-85c6-2c0a81dd7a43",
+      "integratedFromEvent": "5fa07857-899d-45c5-9dce-bd72953bb123",
+      "channels": [
+        "web"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 9
+    },
+    {
+      "changeId": "staff-my-pay-ledger-20261113",
+      "readyEvent": "d38cb460-71b6-49b4-a8f9-a7bda810145b",
+      "integratedFromEvent": "214a77f4-7c18-4ffa-bf92-5b859ac53411",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 6
+    },
+    {
+      "changeId": "gift-ticket-unified-20261113",
+      "readyEvent": "cf1485e1-cc40-4ba7-9334-3e52c40de5d6",
+      "integratedFromEvent": "ee718072-cd57-4735-9a5d-ed6eb65411ef",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 48
+    },
+    {
+      "changeId": "phone-otp-sms-target-20261113",
+      "readyEvent": "ea259265-a16c-42df-8c6a-d842973e82c7",
+      "integratedFromEvent": "154ce943-7c0f-46a5-966f-fb9006032093",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 6
+    },
+    {
+      "changeId": "gift-ticket-qa-seller-20261113",
+      "readyEvent": "0b7f4af3-59b3-48bd-b929-5b217c3d002f",
+      "integratedFromEvent": "51c4502a-8dd3-428c-9240-32bf5441040e",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 16
+    },
+    {
+      "changeId": "gift-wallet-pos-recovery-20261113",
+      "readyEvent": "a60b519b-783a-4fa2-b6ba-142c5402f678",
+      "integratedFromEvent": "4f5bf395-4d76-4493-be7b-8b6ade77c7cc",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 18
+    },
+    {
+      "changeId": "basic-page-loading-20261113",
+      "readyEvent": "295feea8-ea14-4922-8fce-73ab47e0df59",
+      "integratedFromEvent": "f2d686b1-a5fa-4470-9a46-ffceb3e0c738",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 21
+    },
+    {
+      "changeId": "gift-action-hierarchy-20261113",
+      "readyEvent": "1235ecfb-890e-4397-a4d1-29b9ee1bfb64",
+      "integratedFromEvent": "c2efeefc-0c1f-46b4-bc76-0b16f8654b45",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 6
+    },
+    {
+      "changeId": "basic-page-loading-wave2-20261113",
+      "readyEvent": "c248e25e-5861-4f37-96d4-4815dd8e51de",
+      "integratedFromEvent": "b39ff95a-25c8-4601-a745-3705ac55c450",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 19
+    },
+    {
+      "changeId": "ipad-portable-app-20261113",
+      "readyEvent": "d5eedb9a-8aa6-4a34-ac19-f6e404182fbf",
+      "integratedFromEvent": "30b4670e-283c-4fc2-aa1f-ff402a6a5603",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+      "files": 53
+    }
+  ],
+  "aggregateReadyEvent": "e6f21bbf-a62b-48af-9dbb-e7bdc5fd5220",
+  "journal": {
+    "webReleaseEvent": "3901b68a-e0c0-486e-80ee-8271530391e7",
+    "iosReleaseEvent": "2200fe32-604d-45dd-9f91-9f5d2c3d3b8d",
+    "webReadyEvents": [
+      "539b61c6-340f-447f-97e2-a2f6cf157969",
+      "9e0407d7-5f2a-44a4-8ea5-56b3ea1922ca",
+      "36c1d90e-c16a-47dc-a252-50deded05fe9",
+      "ce989450-b3b0-424f-9f98-f5d60e6c043d",
+      "b4bbc6f8-5c6a-4a00-b823-05e0e726f126",
+      "b554dae9-e351-4e9a-98a8-e6d6ed261e6b",
+      "78e53ce4-788e-4ccd-a3f8-326de1888443",
+      "d72d2016-b14d-4e1e-913c-ef47191ce67e",
+      "70d413f3-3619-4aed-ac27-dd71c729a439",
+      "7edf308a-25b3-43d4-85c6-2c0a81dd7a43",
+      "d38cb460-71b6-49b4-a8f9-a7bda810145b",
+      "cf1485e1-cc40-4ba7-9334-3e52c40de5d6",
+      "ea259265-a16c-42df-8c6a-d842973e82c7",
+      "0b7f4af3-59b3-48bd-b929-5b217c3d002f",
+      "a60b519b-783a-4fa2-b6ba-142c5402f678",
+      "295feea8-ea14-4922-8fce-73ab47e0df59",
+      "1235ecfb-890e-4397-a4d1-29b9ee1bfb64",
+      "c248e25e-5861-4f37-96d4-4815dd8e51de",
+      "d5eedb9a-8aa6-4a34-ac19-f6e404182fbf",
+      "e6f21bbf-a62b-48af-9dbb-e7bdc5fd5220"
+    ],
+    "iosReadyEvents": [
+      "36c1d90e-c16a-47dc-a252-50deded05fe9",
+      "ce989450-b3b0-424f-9f98-f5d60e6c043d",
+      "b554dae9-e351-4e9a-98a8-e6d6ed261e6b",
+      "78e53ce4-788e-4ccd-a3f8-326de1888443",
+      "d72d2016-b14d-4e1e-913c-ef47191ce67e",
+      "70d413f3-3619-4aed-ac27-dd71c729a439",
+      "d38cb460-71b6-49b4-a8f9-a7bda810145b",
+      "cf1485e1-cc40-4ba7-9334-3e52c40de5d6",
+      "ea259265-a16c-42df-8c6a-d842973e82c7",
+      "0b7f4af3-59b3-48bd-b929-5b217c3d002f",
+      "a60b519b-783a-4fa2-b6ba-142c5402f678",
+      "295feea8-ea14-4922-8fce-73ab47e0df59",
+      "1235ecfb-890e-4397-a4d1-29b9ee1bfb64",
+      "c248e25e-5861-4f37-96d4-4815dd8e51de",
+      "d5eedb9a-8aa6-4a34-ac19-f6e404182fbf",
+      "e6f21bbf-a62b-48af-9dbb-e7bdc5fd5220"
+    ]
+  },
+  "finalQueueAudit": {
+    "at": "2026-11-14T07:05:10.697Z",
+    "passed": true,
+    "totalPending": 112,
+    "selectedRecentPending": 0,
+    "accountedOlderPending": 112,
+    "unaccountedNewEvents": []
+  },
+  "olderPending": {
+    "count": 112,
+    "categories": {
+      "unfinished-or-blocked": 11,
+      "separate-product": 2,
+      "evidence-or-tooling-only": 11,
+      "older-product-review-required": 44,
+      "source-missing-needs-recovery": 1,
+      "external-market-held-or-dependent": 37,
+      "check-writer-combined-awaiting-gates": 5,
+      "publisher-dependency-held": 1
+    },
+    "specialDispositions": {
+      "publisher": {
+        "eventId": "8440f0d3-3379-4671-ba85-9c29f97a7654",
+        "dependency": "market-account-owner-polish-20261028",
+        "status": "whole-event-held",
+        "reason": "Current live Market intentionally lacks the independent external marketplace slice required for external exact-plugin navigation. Original October schema patches conflict with the reassembled November schema/order and later publisher-review locks. No partial publisher source remains.",
+        "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\publisher-preserved-patch.json"
+      },
+      "checkWriter": {
+        "events": [
+          {
+            "changeId": "check-writer-secure-addon-20261027",
+            "eventId": "569f9c54-0d9b-4519-8a53-ddcf9411f9d0"
+          },
+          {
+            "changeId": "check-writer-audit-price-20261028",
+            "eventId": "a487d2ab-008b-41c0-9699-c4107a62c95e"
+          },
+          {
+            "changeId": "check-writer-wait-combined-deploy-20261028",
+            "eventId": "1cab2786-2f31-43b8-93dc-132c5371d5b4"
+          },
+          {
+            "changeId": "check-writer-release-gates-20261028",
+            "eventId": "6db51b3f-1463-4749-93e9-bae876ed2f68"
+          },
+          {
+            "changeId": "check-writer-next-combined-release-20261029",
+            "eventId": "dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0"
+          }
+        ],
+        "status": "baseline-source-preserved-operational-gates-open",
+        "reason": "All original/audit/readiness product paths and all three Check Writer migrations already exist in baseline. Combined-release authorization is satisfied and is independent of external Market; no new transplant required. Retain existing price and closed sales/trial controls. Source presence alone does not resolve old publication receipts or physical/commercial acceptance.",
+        "limits": [
+          "Staging Owner/MFA and encryption persistence/rotation acceptance remains distinct.",
+          "Real checkout/renewal/refund provider acceptance is not inferred from fixtures.",
+          "Windows/AirPrint Letter-stock/MICR and real physical output acceptance remains unverified."
+        ]
+      },
+      "mobileSpacing": {
+        "changeId": "mobile-page-spacing-20261028",
+        "readyEventId": "0f195937-99a2-4cac-a28f-cca7e4a7f49a",
+        "publishedReceiptId": "5d197e2f-983c-4f85-a152-d1fb227bc4e7",
+        "status": "already-covered-by-historical-combined-receipt",
+        "nativeBuild": "64"
+      }
+    },
+    "evidence": "C:/Reylumi/artifacts/release-review-20261114/release-disposition.json"
+  },
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "App Store and Play Store publication are not claimed.",
+    "Running installed Windows 0.7.5 was preserved; release verified the 0.7.6 distribution, not an upgrade of the owner session.",
+    "Hosted Support defaults to English in fresh anonymous Chromium contexts; explicit-language local checks are separate.",
+    "Public Explore POST requests were intentionally blocked; live smoke accepts initial rendering only."
+  ],
+  "rollback": {
+    "performed": false,
+    "webBaseline": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "instruction": "Before any rollback, require current alias to still be this release. Restore only this release web alias if necessary; do not reverse financial metadata or overwrite another release.",
+    "database": "Additive compatible migrations retained; no automatic destructive reverse.",
+    "ios": "Prior build99 availability and installed binaries are preserved."
+  },
+  "evidenceRoot": "C:/Reylumi/artifacts/release-review-20261114"
+}

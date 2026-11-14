@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "iphone-three-layout-fixes-20261112",
+  "status": "ready",
+  "summary": "Coordinator integrated iphone-three-layout-fixes-20261112 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/booking-pos-description.integration.test.mjs",
+    "app/bookings/owner-agenda-row.tsx",
+    "tests/owner-agenda-row-ui.test.mjs",
+    "app/bookings/booking-workspace-client.tsx",
+    "supabase/migrations/20261112220000_booking_ticket_handoff_completion.sql",
+    "components/salon-language-preferences.tsx",
+    "app/pos/owner-pos.css",
+    "app/bookings/booking-workspace.css",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "tests/owner-booking-ticket-handoff.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "7b9caba7-050b-4623-91e8-b25c5dc1628d",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\iphone-three-layout-fixes-20261112\\artifacts\\iphone-three-layout\\frozen-approved-v4"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-13T03:40:49.942Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "78e53ce4-788e-4ccd-a3f8-326de1888443",
+  "recordedAt": "2026-11-14T06:48:39.462Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "tests/booking-pos-description.integration.test.mjs": "90494bf1b610b72b2ceb21bdc14630ae68430baaf495bcf7c98f6d6ae99bd1fb",
+    "app/bookings/owner-agenda-row.tsx": "97764b00e73954aab8546402c4702b06190119bb2e77416bc766cb58ae050720",
+    "tests/owner-agenda-row-ui.test.mjs": "2bade59f4744713a97fc0fb3a47d771d2a8c69c2e4e3081784c04851ecf00217",
+    "app/bookings/booking-workspace-client.tsx": "945fec570bb00f2f81fe8347d4d323674a7a98453a9570c3767f4da2a96b04ee",
+    "supabase/migrations/20261112220000_booking_ticket_handoff_completion.sql": "206361204d48562f579b5b5933fef5400b2c9c8c00a83668c74da582a51f89a7",
+    "components/salon-language-preferences.tsx": "cb260b19502b77951d169dcaee6fb697227ee6d47226aab6a60bcaa5a4fb0b65",
+    "app/pos/owner-pos.css": "ae0f5464cb81d7c708146556b23535cb00bdefe6e021936aa5828e9bdeeaee05",
+    "app/bookings/booking-workspace.css": "cd3d137277e842995ef966e43ff93243d6f08bad9d6c4babf5f17e12e822400f",
+    "app/pos/portable/portable-draft-controls.tsx": "7ffcaa4c3eb2cf6d6b056230b99d4b5aab3da14f4f73f3c5314122864957a356",
+    "tests/owner-booking-ticket-handoff.integration.test.mjs": "5148cbc2fb8d85ae8025accc2c5d5bac63ac6f4a630da57a3d5bd6d4d7835cfe"
+  }
+}

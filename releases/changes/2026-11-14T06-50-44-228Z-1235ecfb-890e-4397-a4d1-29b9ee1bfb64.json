@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "gift-action-hierarchy-20261113",
+  "status": "ready",
+  "summary": "Coordinator integrated gift-action-hierarchy-20261113 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/gift-card/customer-gift-cards.tsx",
+    "components/gift-card/customer-wallet.css",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/ticket-gift-delivery.tsx",
+    "docs/gift-wallet-pos-recovery-20261113.md",
+    "tests/gift-wallet-actions-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "c2efeefc-0c1f-46b4-bc76-0b16f8654b45",
+    "originalSource": {
+      "commit": "19a7f0a4440f3a7ff5ff34bca08c417a3da8d718",
+      "snapshot": "C:\\Reylumi-worktrees\\gift-wallet-recovery-20261113\\artifacts\\gift-action-hierarchy\\frozen-19a7f0a4440f"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-14T04:44:29.674Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [
+    "gift-wallet-pos-recovery-20261113"
+  ],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "1235ecfb-890e-4397-a4d1-29b9ee1bfb64",
+  "recordedAt": "2026-11-14T06:50:44.228Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "components/gift-card/customer-gift-cards.tsx": "c66bf66f9ace200854101d5389ab71fb365f65c3bc5c5c0829597541bf4cf891",
+    "components/gift-card/customer-wallet.css": "794007e98ca5cf533a9015a1096e79d5c5cbf6260be2d7bbf372f8cafd02c1e1",
+    "components/gift-card/gift-card.css": "3b8fc49a0e7c479dd8ee6cac28b56e62ffec3405b084d41135e2c856c14ccec4",
+    "components/gift-card/ticket-gift-delivery.tsx": "879a12abda0d50e84e91d69b12367caa7c34eced3de2f33825602a2b9b321a4d",
+    "docs/gift-wallet-pos-recovery-20261113.md": "1d1a95055588f882fdcca0438cb38d18f4a51436752931828e3551d9846dd321",
+    "tests/gift-wallet-actions-ui.test.mjs": "ef18af23aa0e441aa81fea4e42c2195f4ef1daf5d352c927a2757cd7d4a472dd"
+  }
+}

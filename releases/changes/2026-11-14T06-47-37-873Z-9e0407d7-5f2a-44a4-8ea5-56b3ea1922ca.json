@@ -1,0 +1,100 @@
+{
+  "kind": "change",
+  "changeId": "windows-update-one-click-20261112",
+  "status": "ready",
+  "summary": "Coordinator integrated windows-update-one-click-20261112 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/pos/windows-update/latest.yml/route.ts",
+    "app/download/windows.exe/route.ts",
+    "app/download/windows/route.ts",
+    "app/pos/portable/desktop-update.css",
+    "app/pos/portable/desktop-update.tsx",
+    "app/pos/portable/device-settings-panel.tsx",
+    "app/pos/portable/use-portable-draft.ts",
+    "app/pos/pos-desk-client.tsx",
+    "desktop/README.md",
+    "desktop/build.cjs",
+    "desktop/main.cjs",
+    "desktop/package-lock.json",
+    "desktop/package.json",
+    "desktop/tests/installer-smoke.cjs",
+    "desktop/tests/online-updater.electron.cjs",
+    "desktop/tests/update-flow.test.cjs",
+    "desktop/tests/update-installer.test.cjs",
+    "desktop/update-installer.cjs",
+    "tests/portable-desktop.test.mjs",
+    "tests/windows-update-download.test.mjs",
+    "tests/windows-update-feed.test.mjs",
+    "tests/windows-update-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "233f2021-446a-41e4-8614-7abe188a7f05",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\windows-update-one-click-20261112\\artifacts\\windows-update-qa\\frozen",
+      "commit": "5738b41ec68a7a7acf9d6b3014428876840bf4e7"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-12T16:49:30.266Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "9e0407d7-5f2a-44a4-8ea5-56b3ea1922ca",
+  "recordedAt": "2026-11-14T06:47:37.873Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/api/pos/windows-update/latest.yml/route.ts": "9150c25ece88dd06933122ef4a2faef211321ea378ad07dcb9dd863ed8d10959",
+    "app/download/windows.exe/route.ts": "43fe93fa873969fb78b21dde238a7f5ccd7ea6731ae5a8aed9f9c4a2bfb38438",
+    "app/download/windows/route.ts": "f07a3d5c25c63ec2e0ec4014fa3341549a27c2fe9d95101f737ecb97a2a00fe0",
+    "app/pos/portable/desktop-update.css": "3fe883ec8cef9abc14a31cabbb43c0e53e1f8fd963b4f30ca48b1f2e3eb7e106",
+    "app/pos/portable/desktop-update.tsx": "cafae3af5bab66b225e0af135bfe28b6bc22008d7a5923468fe139116a76617d",
+    "app/pos/portable/device-settings-panel.tsx": "5c6f2dd33774f8fc4746c55dddc8569f046f4331c7c606b47723d230f29f86b1",
+    "app/pos/portable/use-portable-draft.ts": "6d79864719c27c771de66b534d61f63232fbd405af15e7d0af364c174ac06511",
+    "app/pos/pos-desk-client.tsx": "55ce45cadbbfd85470fe4aa24e8564ef885415d367b61d29fcb5405aaf80fc76",
+    "desktop/README.md": "3b31922125c204a875e5bba1ab0c6b5f1d9302b56b8a41a1b7d160caca65543a",
+    "desktop/build.cjs": "d21a3377ea59a9f4b1c4526f76c5cb457ae0fd885e0142678df20e7ff95f54dd",
+    "desktop/main.cjs": "843dde900ec714ec8514b1169c333db6c709c663a90c5bfc1b14732cac0cda44",
+    "desktop/package-lock.json": "00db757de8fa56c88896da8056435507235c6288334ad4448201974a05e6969c",
+    "desktop/package.json": "c31f6deb2d6e13090de82defcd387ee6c77da0717ca5d71181bb53908f4e821f",
+    "desktop/tests/installer-smoke.cjs": "337dcad65e80127b80635c828dc6a441388f6a17c7e78da6240f23c4f4ca37d2",
+    "desktop/tests/online-updater.electron.cjs": "dd31a3aaf79fa7326e10ffa37de6a708e4899149d65367bcab602f9041c0f2d3",
+    "desktop/tests/update-flow.test.cjs": "d67ebea4162a5e3176a3e72472e402b6f7208c5df2f65a55e4b2e61e4e7096a3",
+    "desktop/tests/update-installer.test.cjs": "ceb32092c923edb91f77b3e8124781ee12a13a0fd7792f6483886a5e29ac5995",
+    "desktop/update-installer.cjs": "eecece80ab48112cef2d2b5dab74b6b363d8175ffdca4ffdb15c11ec1eae63cc",
+    "tests/portable-desktop.test.mjs": "41cbfb5fe8b15ce6345bff90c2bfb5b4bd1758e52536a7f09637da782e91f967",
+    "tests/windows-update-download.test.mjs": "ffac64211e8298e8225a0fc287daea97a75045a00cb645b594afd1842eddd126",
+    "tests/windows-update-feed.test.mjs": "faa33dd4cf3909deb11d042d9fa6bd6c65e12ee047c5899faf1eb1e8c31d0914",
+    "tests/windows-update-ui.test.mjs": "fc7714b5297b1a20727372d5b705101174cf9ae50fe4d7afc1ca2c3515f7752f"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "kind": "change",
+  "changeId": "payroll-payment-ledger-live-20261112",
+  "status": "ready",
+  "summary": "Coordinator integrated payroll-payment-ledger-live-20261112 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/payroll-daily-listing.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/staff-day-financial-editor.tsx",
+    "app/payroll/staff-income-autosave-inputs.tsx",
+    "app/payroll/staff-income-card.tsx",
+    "app/payroll/staff-payroll-details.tsx",
+    "app/payroll/staff-payment-table.tsx",
+    "lib/app-local-owner-page-registry-server.ts",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/payroll.ts",
+    "lib/staff-payroll-display.ts",
+    "lib/payroll-issued-checks.ts",
+    "lib/vietnamese-payroll-mobile.json",
+    "types/payroll-issued-checks.ts",
+    "supabase/migrations/20261113051000_payroll_check_references.sql",
+    "tests/payroll-compact-settings-browser.mjs",
+    "tests/payroll-live-dashboard.test.mjs",
+    "tests/payroll-check-references.integration.test.mjs",
+    "tests/payroll-payment-live-browser.mjs",
+    "tests/helpers/payroll-payment-fixture.mjs",
+    "docs/payroll-payment-ledger-live-20261112.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "1490db7e-d1a1-45cf-a822-5341fb56085a",
+    "originalSource": {
+      "commit": "52d25b4a7cf4d2dccbfe6d5f177ee4ba0aa2a69e",
+      "snapshot": "C:\\Reylumi-worktrees\\payroll-compact-settings-20261112\\artifacts\\payroll-payment-ledger-live-20261112\\source"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-13T05:14:17.178Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [
+    "payroll-compact-settings-20261112",
+    "payroll-staff-details-accordion-20261112"
+  ],
+  "supersedesEvents": [
+    "1490db7e-d1a1-45cf-a822-5341fb56085a"
+  ],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "70d413f3-3619-4aed-ac27-dd71c729a439",
+  "recordedAt": "2026-11-14T06:48:39.847Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "d11c8c8f3a83740cbfb1ccc31709e03ee6160a49aadcf8f1fff1b90413f33f4c",
+    "app/payroll/payroll-daily-listing.tsx": "6055e58c947113429be167d71b1fd5520ebe7e8e43ea9bccd384d422ac5a1356",
+    "app/payroll/payroll-mobile.module.css": "236318ceef34e0064175c6f115a603c5fd45961c31539ff0332dcfc9cd23163d",
+    "app/payroll/staff-day-financial-editor.tsx": "a647dc3eb35ddbcdf051d7ab9932e7ab7236308f86afd4246e20421aa8e2e696",
+    "app/payroll/staff-income-autosave-inputs.tsx": "3d5347875718e804e1f41a158f8e2a1de4cc55a93224adda911271bac843449e",
+    "app/payroll/staff-income-card.tsx": "f321fbc33231ed620243c35ea7bfc9a35a863e75796ceb787c7cd9f12880a730",
+    "app/payroll/staff-payroll-details.tsx": "fed7243a8d311c90916bd8eee21d370a19b965d1846d8d74ebb6be992ccb35c6",
+    "app/payroll/staff-payment-table.tsx": "87813f6f64c19eb456ca79afb21af0e8b164ca54cc5428910f547f7593c25eff",
+    "lib/app-local-owner-page-registry-server.ts": "a99fe600a96d77340d10a9d243c2e6f63d4da1d11faa2454fea577a86d583fdc",
+    "lib/app-local-owner-payroll-view.tsx": "227211a75b0ae30fd401cf608a8aef3ac4391933641865ba66eaca50fe91e37e",
+    "lib/payroll.ts": "ce17c97d1f8f4f5f1798660af96af39de67fc32ad6de82e4e6956473bb2f71ce",
+    "lib/staff-payroll-display.ts": "30572c858dfb63a1699ba6d3ed7382c8471883391ccbe30ec38bd020e10b306c",
+    "lib/payroll-issued-checks.ts": "96924b7bec850c52c9a59023487126dd3c48de972f14494daf8bf244bfc05f2d",
+    "lib/vietnamese-payroll-mobile.json": "14e5b4e4d0efc0072d545f00b108e52bc38d9ac1e1d53798099a26383feb45d1",
+    "types/payroll-issued-checks.ts": "58b4dc039c7df838ed0d4e5f9f0bb3c406daa2f2abfb92d497d03f5d12b2bd89",
+    "supabase/migrations/20261113051000_payroll_check_references.sql": "a2278233f078bd368bec994c2c15326fd124a88ea5fd005f656db50db66c41d9",
+    "tests/payroll-compact-settings-browser.mjs": "b1818f7c5592caa298a26165b2ada8b64ff84b2aba1f92531ff392b086162313",
+    "tests/payroll-live-dashboard.test.mjs": "1bf06dcd8b9962fed52a4474198f227e7a984ee122766ced61a08410675b1694",
+    "tests/payroll-check-references.integration.test.mjs": "eb4c8e2bde85d6631aaecc2e43fe598e5b42cabd0bcdd021d84a57dcb065f64b",
+    "tests/payroll-payment-live-browser.mjs": "7dad0175599aa409174bfca0c7624ee9430d663415edcbf764be1d77b25215e0",
+    "tests/helpers/payroll-payment-fixture.mjs": "35dde84cc4aaef29d020fd5de22a085b4e83648eb2dbb2636fdacc21248d22d4",
+    "docs/payroll-payment-ledger-live-20261112.md": "340ae55dfef8b4a35edd8b9d09766bbdd444b20b5859347db71e5e536922bead"
+  }
+}

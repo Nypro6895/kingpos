@@ -1,0 +1,103 @@
+{
+  "kind": "change",
+  "changeId": "basic-page-loading-wave2-20261113",
+  "status": "ready",
+  "summary": "Coordinator integrated basic-page-loading-wave2-20261113 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/my-place/page.tsx",
+    "app/(app)/notifications/page.tsx",
+    "app/(app)/services/page.tsx",
+    "app/my-place/my-place-client.tsx",
+    "app/my-place/place-ui.tsx",
+    "app/notifications/notification-center-client.tsx",
+    "app/services/services-manager.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-personal-metadata.ts",
+    "lib/app-local-personal-registry.tsx",
+    "lib/app-local-platform-types.ts",
+    "app/(app)/services/loading.tsx",
+    "app/notifications/notification-center-frame.tsx",
+    "tests/basic-my-place-loading.test.mjs",
+    "tests/basic-page-wave2-native.test.mjs",
+    "tests/notifications-loading-runtime.test.mjs",
+    "tests/services-loading-runtime.test.mjs",
+    "docs/basic-page-loading-wave2-20261113.txt",
+    "releases/changes/2026-11-14T04-40-58-715Z-2ec6d55a-e789-447a-b543-c1c2522b49c9.json"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "b39ff95a-25c8-4601-a745-3705ac55c450",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\basic-page-loading-wave2-20261113\\artifacts\\basic-page-loading-wave2\\frozen",
+      "commit": "783751346970106168789c62a230f55482786b48",
+      "aggregateSha256": "c43a6770512606213a8e51aa5a3aab3905bf7ab49a9fba66f3f1cd71dbfae3fc"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-14T04:53:57.795Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [
+    "basic-page-loading-20261113"
+  ],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "c248e25e-5861-4f37-96d4-4815dd8e51de",
+  "recordedAt": "2026-11-14T06:50:44.453Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/(app)/my-place/page.tsx": "0cad767f663a005f11186284e2ee62db9f3650a6417308fabed292667dfa906f",
+    "app/(app)/notifications/page.tsx": "b63f123c1d740b0d1a5aacb18a40f35e2c60b48d41415acd4b645db7a9017cdf",
+    "app/(app)/services/page.tsx": "f48628e3f4e7c57b1d6a20793fbdb636d7bc7f724a02f87a852f2ecd7abeb56a",
+    "app/my-place/my-place-client.tsx": "f57fa154f9d79dd60a33d5cb2ec905fd5fe9382cfd5e2717245a1ea5f1cf6073",
+    "app/my-place/place-ui.tsx": "4fec4f5e59d2ef947f91daba5bf071d92ddf25aea27ffb11389714f5da4aac5e",
+    "app/notifications/notification-center-client.tsx": "a9844c2ca4547feb7aa5d21202d3235c81bc802ecad58b931d012888a7a524d5",
+    "app/services/services-manager.tsx": "5ee228dcfc085e873b617b1ce09ff7932a0019c49d1e67098b4f1397e4f4de68",
+    "lib/app-local-page-registry.tsx": "bbe172941818da94187ca4cf53ed8651fd49b8e9f4b780eb4000ba22a14c955b",
+    "lib/app-local-personal-metadata.ts": "d7a0548e17802f6ed2dbb34169a01919571b338ecf30abedecd7b46b23db57ac",
+    "lib/app-local-personal-registry.tsx": "b4113f30ce1a813d9b8a10a9fadd56b6bd008583841df699972152111522e76f",
+    "lib/app-local-platform-types.ts": "bc984e3b2235999bbf9e82ecbdf8464640527c0ff5b2f83f8775e696bb9d437b",
+    "app/(app)/services/loading.tsx": "e0c6da76cc494e1f86bdc52ccd150e9bd16844dd896741f45152bbbf157922c0",
+    "app/notifications/notification-center-frame.tsx": "b3c93720bdd212efc5c6afcf6a93fefd98f25e7dd32ebd9343b59fbf3f0ca88e",
+    "tests/basic-my-place-loading.test.mjs": "316382798841e43dfda9933a4060a4e9e199c639a97ab796a7097f1d3686c3c2",
+    "tests/basic-page-wave2-native.test.mjs": "7ac77ec741b170b11ccbc455867f6f946756dacb6a78aebff738e054272c09b6",
+    "tests/notifications-loading-runtime.test.mjs": "6afc558705687a9c6332046761cc906feea509ae9deb5e90fd0df24fe60b11ec",
+    "tests/services-loading-runtime.test.mjs": "2dac2a43090f5bf84f97e3a4744ad1423b31b82cac14e4a6919e1bdc6f5f4bf6",
+    "docs/basic-page-loading-wave2-20261113.txt": "9fb540be2217cf072894d2aa6652c0f1bf37e973e8664539099b1172773063e0",
+    "releases/changes/2026-11-14T04-40-58-715Z-2ec6d55a-e789-447a-b543-c1c2522b49c9.json": "cdffd92084204412f14a28277e5e79bff22cc012d0a6f9b29b094f8cc60fef9b"
+  }
+}

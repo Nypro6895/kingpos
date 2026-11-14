@@ -1,0 +1,106 @@
+{
+  "kind": "change",
+  "changeId": "basic-page-loading-20261113",
+  "status": "ready",
+  "summary": "Coordinator integrated basic-page-loading-20261113 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/customers/page.tsx",
+    "app/(app)/more/[section]/page.tsx",
+    "app/(app)/qr/loading.tsx",
+    "app/(app)/qr/page.tsx",
+    "app/(app)/staff/scan/loading.tsx",
+    "app/(app)/staff/scan/page.tsx",
+    "app/(legal)/membership/page.tsx",
+    "app/(legal)/membership/website.tsx",
+    "app/qr/personal-qr-loading.tsx",
+    "app/staff/scan/staff-scan-client.tsx",
+    "app/staff/scan/staff-scan-loading.tsx",
+    "components/experience-page-boundary.tsx",
+    "components/experience-page.tsx",
+    "docs/basic-page-loading-20261113.txt",
+    "lib/app-local-page-registry.tsx",
+    "lib/experience-route-policies.ts",
+    "tests/basic-directory-streaming.test.mjs",
+    "tests/basic-membership-rewards-runtime.test.mjs",
+    "tests/basic-more-loading.test.mjs",
+    "tests/basic-qr-frame-runtime.test.mjs",
+    "tests/staff-scan-loading-runtime.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "f2d686b1-a5fa-4470-9a46-ffceb3e0c738",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\basic-page-loading-20261113\\artifacts\\basic-page-loading\\frozen",
+      "commit": "3d0c91405bf16f4bd1c874ba8b08e408c654327a"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-14T04:34:48.113Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [
+    "forum-tab-performance-20261112"
+  ],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "295feea8-ea14-4922-8fce-73ab47e0df59",
+  "recordedAt": "2026-11-14T06:50:43.993Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/(app)/customers/page.tsx": "292cbbc562f1e51fcd71b6a5b960514e8abe5cf04d2998f23f1412aa0f13969d",
+    "app/(app)/more/[section]/page.tsx": "e7fa117648dd469a34154fcda9765737e2229dd044229d6b8ccf743d47a620e4",
+    "app/(app)/qr/loading.tsx": "b2984af67c5948d1d1d5be5f58d8441b1bc0939b96334689ca26f55e76591674",
+    "app/(app)/qr/page.tsx": "7af3283ac80e10dfbdb6654b3b402ca8c0250548bc6aa461f3156bbc58b1f4b3",
+    "app/(app)/staff/scan/loading.tsx": "876273f7d4e3e8d92cd5c96e93201ad6a0466d52e93e0414193380b0d8879160",
+    "app/(app)/staff/scan/page.tsx": "943af84e8dad1b51ff7f3268de92e82b51dc68501f4a0e634dd53a4e96cef322",
+    "app/(legal)/membership/page.tsx": "11aa2710dfd746e4265e4cd779d386cd13b6f70a34ba6fc8daddbbe2de78363c",
+    "app/(legal)/membership/website.tsx": "3c5f2eeec5b132f199c5a94314d7997a54687ad95daa8f55fc3f4ebc77f4d96c",
+    "app/qr/personal-qr-loading.tsx": "9d9affa74e709c44e8f4cd4799a8b16c79a73702ffc729ca09ae4ced088fdc0c",
+    "app/staff/scan/staff-scan-client.tsx": "870c1d382d160bba012ba86bd6ef559d63d2f8a8ab97cea95963ccf678b9ebaf",
+    "app/staff/scan/staff-scan-loading.tsx": "a62262eb53550b6a81c030a3955f853de1ff8e04e20b37bcce334ac63ab9bf7d",
+    "components/experience-page-boundary.tsx": "c875f44baa0d5fdf2d9647e16080959efb2317f99cbf33f7b333160fde029886",
+    "components/experience-page.tsx": "a870658b786c7b62ff5288fe7764078b45ee88348da757eb5c24ade9c91d9d52",
+    "docs/basic-page-loading-20261113.txt": "f9f025b0f506adecfb5fb510a19c5ca6898b51826470e2a05614441fd81e7329",
+    "lib/app-local-page-registry.tsx": "bbe172941818da94187ca4cf53ed8651fd49b8e9f4b780eb4000ba22a14c955b",
+    "lib/experience-route-policies.ts": "6d0e2c55a276b8a08bf14b462da8fb2fdb317532cc319057615570aa724d3d25",
+    "tests/basic-directory-streaming.test.mjs": "3808f36092eab1a529a6c55ec4239d551c908cf8b4fe84aedafeff5874209095",
+    "tests/basic-membership-rewards-runtime.test.mjs": "784b2437b8f6ad24f150e37a4e338e894fae817589bef1b7bec6cd7aeab9ebc0",
+    "tests/basic-more-loading.test.mjs": "b63c95bfed64870feaac4fb428ee5c4e8c2b5d2257a61a380f07ed2d943f7721",
+    "tests/basic-qr-frame-runtime.test.mjs": "fac157786b6e9d83a5454752e11fb8609a8dcf1eda539814b853c631bafa023c",
+    "tests/staff-scan-loading-runtime.test.mjs": "47411020081f04b4c9476e3e6d270036da0b96225d7fd4d995738a49e81b4adb"
+  }
+}
