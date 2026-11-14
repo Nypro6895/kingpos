@@ -95,6 +95,9 @@ final class PortableStoreTests: XCTestCase {
         try store.set(secondKey, value: "{\"amount\":99.5}", scope: otherScope)
         let first = operation(scope: scope), second = operation(scope: scope)
         try store.save(first, scope: scope); try store.save(second, scope: scope)
+        XCTAssertTrue(try store.containsOperation(id: (first["id"] as! String).uppercased(), scope: scope))
+        XCTAssertFalse(try store.containsOperation(id: first["id"] as! String, scope: otherScope))
+        XCTAssertFalse(try store.containsOperation(id: UUID().uuidString, scope: scope))
         let enumerator = try XCTUnwrap(FileManager.default.enumerator(at: directory, includingPropertiesForKeys: nil))
         let sqlite = try XCTUnwrap(enumerator.allObjects.compactMap { $0 as? URL }.first { $0.lastPathComponent == "tickets.sqlite" })
         var connection: OpaquePointer?

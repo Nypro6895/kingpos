@@ -41,21 +41,7 @@ xcodegen generate
 
 # Select an installed device in the requested family without assuming its name.
 xcrun simctl list devices available --json > "$task_run_dir/devices.json"
-task_simulator_id="$(python3 - "$task_run_dir/devices.json" "$task_simulator_family" <<'PY'
-import json, sys
-prefix = {"iphone": "iPhone", "ipad": "iPad"}[sys.argv[2]]
-with open(sys.argv[1], encoding="utf-8") as stream:
-    devices = json.load(stream)["devices"]
-for runtime, entries in devices.items():
-    if ".iOS-" not in runtime:
-        continue
-    for device in entries:
-            if device.get("isAvailable") and device["name"].startswith(prefix):
-            print(device["udid"])
-            sys.exit(0)
-sys.exit("No available " + prefix + " Simulator is installed in this Xcode environment.")
-PY
-)"
+task_simulator_id="$(node ../scripts/ios/select-simulator.mjs "$task_run_dir/devices.json" "$task_simulator_family")"
 
 # Overlap the cold Simulator boot with compilation. Do not shorten any runtime
 # capability test or replace it with a source assertion to make CI faster.

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DraftOutbox, type DraftOutboxState, type DraftReply } from "@/lib/pos-draft-outbox";
 import { portableCheckpoint } from "@/lib/portable-operations";
+import { PORTABLE_NATIVE_READY_CHANGED } from "@/lib/portable-native-client";
 import { desktopDevice, iosPortableDevice, portableDevice, portableDeviceStorage } from "@/lib/portable-device-storage";
 import { publishLocalDisplaySnapshot } from "@/lib/pos-local-display";
 import type { PosLiveDraftCustomer, PosLiveDraftReceiptLine } from "@/types/pos-desk";
@@ -44,6 +45,7 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
   const [status, setStatus] = useState("Connecting…");
   const [ready, setReady] = useState(false);
   const [needsReview, setNeedsReview] = useState(false);
+  const [initializationRevision, setInitializationRevision] = useState(0);
   const discardRef = useRef<(() => void) | null>(null);
   const persistRecovery = useRef<(() => void) | null>(null);
 
@@ -61,8 +63,22 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
     if (!scope) return;
     let active = true;
     let releaseWriter: (() => void) | null = null;
-    let cleanup = () => { releaseWriter?.(); };
+    const durableNative = Boolean(iosPortableDevice() && portableDevice());
+    let initialSetup = true;
+    let writerNeedsReadmission = false, readmitting = false, readmissionRequested = false, writerEpoch = 0, locked = false;
+    const invalidateWriter = () => { if (durableNative) { writerEpoch++; writerNeedsReadmission = true; setReady(false); } };
+    const retryInitialization = () => { if (durableNative && initialSetup && active) setInitializationRevision(value => value + 1); };
+    window.addEventListener("reylumi:app-local-reset", invalidateWriter);
+    window.addEventListener("kingpos:native-writer-reset", invalidateWriter);
+    window.addEventListener(PORTABLE_NATIVE_READY_CHANGED, retryInitialization);
+    const releaseInitialListeners = () => {
+      window.removeEventListener("reylumi:app-local-reset", invalidateWriter);
+      window.removeEventListener("kingpos:native-writer-reset", invalidateWriter);
+      window.removeEventListener(PORTABLE_NATIVE_READY_CHANGED, retryInitialization);
+    };
+    let cleanup = () => { releaseInitialListeners(); releaseWriter?.(); };
     const initialize = async () => {
+    const initializationEpoch = writerEpoch;
     let key: string | null = null;
     let restored: DraftOutboxState<PortableDraftPayload> | undefined;
     let storageUnavailable = false;
@@ -70,8 +86,12 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
       let tabId = sessionStorage.getItem("kingpos:portable-tab");
       if (!tabId) { tabId = crypto.randomUUID(); sessionStorage.setItem("kingpos:portable-tab", tabId); }
       const native = isNativePortableDevice();
-      const durableNative = Boolean(iosPortableDevice() && portableDevice());
       key = portableRecoveryStorageKey({ scope, operationScope, tabId, desktop: Boolean(desktopDevice()), native, durableNative, storage: portableDeviceStorage });
+      if (native || durableNative) {
+        releaseWriter = await acquirePortableRecoveryWriter(key);
+        if (!active) { releaseWriter?.(); return; }
+        if (!releaseWriter) { setReady(false); setStatus("POS is already open in another window. Continue there or close it first."); setNeedsReview(true); return; }
+      }
       if (durableNative && operationScope && portableDeviceStorage.getItem(key) === null) {
         // Upgrade only this known live draft. Never guess among other windows'
         // carts, change an outbox ID, or erase the browser copy before commit.
@@ -84,14 +104,9 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
           if (value.savedAt > await portableCheckpoint(operationScope, legacyKey)) portableDeviceStorage.setItem(key, legacy);
         }
       }
-      if (native) {
-        releaseWriter = await acquirePortableRecoveryWriter(key);
-        if (!active) { releaseWriter?.(); return; }
-        if (!releaseWriter) { setReady(false); setStatus("POS is already open in another window. Continue there or close it first."); setNeedsReview(true); return; }
-      }
       recoveryKey.current = key;
       const submittedAt = operationScope ? await portableCheckpoint(operationScope, key) : 0;
-      if (!active) return;
+      if (!active || initializationEpoch !== writerEpoch) { releaseWriter?.(); releaseWriter = null; return; }
       const raw = portableDeviceStorage.getItem(key);
       if (raw) {
         const saved = JSON.parse(raw);
@@ -116,7 +131,10 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
       } else if (submittedAt > 0 && emptyRecoveryRef.current) {
         recoveryRef.current = emptyRecoveryRef.current; restoreRef.current(emptyRecoveryRef.current);
       }
-    } catch { storageUnavailable = true; }
+    } catch {
+      if (!active || initializationEpoch !== writerEpoch) { releaseWriter?.(); releaseWriter = null; return; }
+      storageUnavailable = true;
+    }
     if (!active) return;
     const outbox = new DraftOutbox<PortableDraftPayload>({
       version: initialVersion.current, restored,
@@ -171,7 +189,34 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
     };
     window.addEventListener("kingpos:desktop-flush", flushDesktop);
     const reconnect = () => { update(); outbox.wake(0); };
-    const lock = () => { outbox.stop(); persistRecovery.current = null; setReady(false); };
+    const readmitWriter = async () => {
+      if (!durableNative || !active || locked || !writerNeedsReadmission || !key) return;
+      readmissionRequested = true;
+      if (readmitting) return;
+      readmitting = true;
+      try {
+        while (readmissionRequested && writerNeedsReadmission && active && !locked) {
+          readmissionRequested = false;
+          const epoch = writerEpoch;
+          releaseWriter?.(); releaseWriter = null;
+          const replacement = await acquirePortableRecoveryWriter(key);
+          if (!active || locked) { replacement?.(); return; }
+          if (epoch !== writerEpoch) { replacement?.(); continue; }
+          if (!replacement) { setNeedsReview(true); setStatus("POS is already open in another window. Continue there or close it first."); return; }
+          releaseWriter = replacement; writerNeedsReadmission = false;
+          // Keep live recovery and the original in-flight UUID; restoring an
+          // older disk snapshot after a host reset could lose recent input.
+          persistRecovery.current?.();
+          setReady(!storageUnavailable && !outbox.storageError);
+          if (!outbox.storageError) outbox.wake(0);
+        }
+      } catch { setStatus("Device storage unavailable — keep this window open"); }
+      finally { readmitting = false; }
+    };
+    initialSetup = false;
+    window.removeEventListener(PORTABLE_NATIVE_READY_CHANGED, retryInitialization);
+    window.addEventListener(PORTABLE_NATIVE_READY_CHANGED, readmitWriter);
+    const lock = () => { locked = true; outbox.stop(); persistRecovery.current = null; setReady(false); };
     discardRef.current = () => {
       outbox.stop(); persistRecovery.current = null;
       try { if (key) portableDeviceStorage.removeItem(key); } catch { /* Reload still works. */ }
@@ -195,11 +240,13 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
       window.removeEventListener("kingpos:desktop-flush", flushDesktop);
       window.removeEventListener("online", reconnect); window.removeEventListener("offline", update);
       window.removeEventListener("reylumi:foreground", reconnect);
+      releaseInitialListeners();
+      window.removeEventListener(PORTABLE_NATIVE_READY_CHANGED, readmitWriter);
     };
     };
     void initialize();
     return () => { active = false; cleanup(); };
-  }, [scope, operationScope]);
+  }, [scope, operationScope, initializationRevision]);
 
   const enqueue = useCallback((payload: PortableDraftPayload) => { queue.current?.enqueue(payload); }, []);
   const flush = useCallback(async () => scope ? (await queue.current?.flush()) ?? false : true, [scope]);

@@ -57,6 +57,8 @@ final class PortableStoreWebViewTests: XCTestCase {
         XCTAssertEqual(blockedBeforeAdmission, true)
         _ = try await XCTUnwrap(warm).evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'storage.prepare',scope:\(scopeJSON)}).then(v=>window.fixtureAdmission=v).catch(e=>window.fixtureError=e.message)")
         try await wait("window.fixtureAdmission?.ok===true", in: XCTUnwrap(warm))
+        _ = try await XCTUnwrap(warm).evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'writer.acquire',scope:\(scopeJSON),key:\(keyJSON)}).then(v=>window.fixtureWriter=v)")
+        try await wait("window.fixtureWriter?.acquired===true", in: XCTUnwrap(warm))
         // The fixture deliberately has no cached business workspace. Native
         // draft access alone must not advertise complete offline preparation.
         let initiallyOfflineReady = try await XCTUnwrap(warm).evaluateJavaScript("window.fixtureAdmission.offlineReady") as? Bool
@@ -66,6 +68,31 @@ final class PortableStoreWebViewTests: XCTestCase {
         let draftJSON = try json(draft)
         let savedSynchronously = try await XCTUnwrap(warm).evaluateJavaScript("(()=>{window.__reylumiPortableDevice.storage.set(\(keyJSON),\(draftJSON));return window.__reylumiPortableDevice.storage.get(\(keyJSON))===\(draftJSON)})()") as? Bool
         XCTAssertEqual(savedSynchronously, true)
+
+        // A second independent native document shares the vault but must not
+        // overwrite this cart, even though its own Web Locks origin is separate.
+        let rivalTransport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: reads, client: network, defaults: defaults, cookies: { [] }, setCookie: { _ in })
+        let rivalSession = PortableVaultWKSession(bundle: bundle, bridge: ReylumiPortableBridge(origin: origin, transport: rivalTransport, store: firstStore))
+        defer { rivalSession.close() }
+        let rival = try XCTUnwrap(rivalSession.web)
+        try await wait("window.fixtureLocal===true&&!!window.__reylumiPortableDevice", in: rival)
+        _ = try await rival.evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'storage.prepare',scope:\(scopeJSON)}).then(v=>window.fixtureAdmission=v)")
+        try await wait("window.fixtureAdmission?.ok===true", in: rival)
+        _ = try await rival.evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'writer.acquire',scope:\(scopeJSON),key:\(keyJSON)}).then(v=>window.fixtureWriter=v)")
+        try await wait("window.fixtureWriter?.acquired===false", in: rival)
+        let rivalWriteDenied = try await rival.evaluateJavaScript("(()=>{try{window.__reylumiPortableDevice.storage.set(\(keyJSON),'{\"replacement\":true}');return false}catch(e){return e.code==='writer-required'}})()") as? Bool
+        XCTAssertEqual(rivalWriteDenied, true)
+        XCTAssertEqual(try firstStore.get(key, scope: scope), draft)
+        _ = try await XCTUnwrap(warm).evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'writer.release',key:\(keyJSON),token:window.fixtureWriter.token}).then(v=>window.fixtureReleased=v.released)")
+        try await wait("window.fixtureReleased===true", in: XCTUnwrap(warm))
+        _ = try await rival.evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'writer.acquire',scope:\(scopeJSON),key:\(keyJSON)}).then(v=>window.fixtureWriter=v)")
+        try await wait("window.fixtureWriter?.acquired===true", in: rival)
+        let transferredWrite = try await rival.evaluateJavaScript("(()=>{window.__reylumiPortableDevice.storage.set(\(keyJSON),\(draftJSON));return true})()") as? Bool
+        XCTAssertEqual(transferredWrite, true)
+        _ = try await rival.evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'writer.release',key:\(keyJSON),token:window.fixtureWriter.token}).then(v=>window.fixtureReleased=v.released)")
+        try await wait("window.fixtureReleased===true", in: rival)
+        _ = try await XCTUnwrap(warm).evaluateJavaScript("window.fixtureWriter=null;void window.__reylumiPortableDevice.request({action:'writer.acquire',scope:\(scopeJSON),key:\(keyJSON)}).then(v=>window.fixtureWriter=v)")
+        try await wait("window.fixtureWriter?.acquired===true", in: XCTUnwrap(warm))
         let operation: [String: Any] = ["id": UUID().uuidString.lowercased(), "scope": scope, "kind": "receipt", "occurredAt": "2026-11-13T12:00:00.000Z", "state": "pending", "payload": ["localDraftKey": key, "lines": [["total": 127.5]]]]
         let operationJSON = try json(operation)
         _ = try await XCTUnwrap(warm).evaluateJavaScript("void window.__reylumiPortableDevice.request({action:'operations.save',operation:\(operationJSON)}).then(v=>window.fixtureQueued=v.ok)")

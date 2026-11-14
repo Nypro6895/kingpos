@@ -42,6 +42,11 @@ hoặc binary đã cài trên iPad.
 - Receipt và checkpoint chống khôi phục lại cart đã nộp cùng một transaction.
   Thứ tự và ID thao tác ổn định qua retry, đóng/mở app và mất mạng. Chỉ outbox
   hiện có gửi thao tác nghiệp vụ; bridge không tự replay request thanh toán.
+- Một draft chỉ có một cửa sổ native được ghi, kể cả khi hai WebView dùng
+  origin khác nhau hoặc mở nhiều cửa sổ iPad. Quyền ghi có token riêng, bị
+  thu hồi khi đổi document/session và không được chiếm lại bằng timeout.
+  Receipt mới cũng phải có đúng quyền ghi của draft; cập nhật trạng thái
+  hàng đợi đã có vẫn giữ ID và không mất sau khi đóng cửa sổ.
 - Dữ liệu WebKit cũ được sao chép khi nâng cấp, giữ nguyên ID/payload/trạng
   thái, thứ tự và checkpoint lịch sử. Không xóa bản gốc trong lúc migration.
 - Editor chỉ được mở sau khi native xác nhận lease/scope và migration hoàn

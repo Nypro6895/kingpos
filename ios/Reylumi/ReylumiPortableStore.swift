@@ -277,6 +277,20 @@ final class ReylumiPortableStore {
         }
     }
 
+    func containsOperation(id: String, scope: String) throws -> Bool {
+        try synchronized {
+            try validateScope(scope)
+            guard let identifier = UUID(uuidString: id) else { throw ReylumiPortableStoreError.invalidOperation }
+            let db = try open()
+            return try statement("SELECT 1 FROM operations WHERE id=? AND scope=? LIMIT 1", database: db) { query in
+                try bind(identifier.uuidString.lowercased(), to: query, at: 1); try bind(scope, to: query, at: 2)
+                let result = sqlite3_step(query)
+                guard result == SQLITE_ROW || result == SQLITE_DONE else { throw ReylumiPortableStoreError.unavailable }
+                return result == SQLITE_ROW
+            }
+        }
+    }
+
     private static func hasForbiddenCredentials(_ value: Any, depth: Int = 0) -> Bool {
         guard depth <= 64 else { return true }
         if let object = value as? [String: Any] {

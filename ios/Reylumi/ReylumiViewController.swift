@@ -396,6 +396,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     override var preferredStatusBarStyle: UIStatusBarStyle { .darkContent }
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         guard !retiredNavigations.contains(where: { $0 === navigation }) else { return }
+        portableBridge.documentWillNavigate()
         if navigation !== activeNavigation {
             retireCurrentNavigation()
             startup.begin(pendingRequest)
@@ -433,6 +434,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { showLoadError(error, navigation: navigation) }
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { showLoadError(error, navigation: navigation) }
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        portableBridge.documentWillNavigate()
         let recovery = startup.retryRequest(origin: policy.origin, currentURL: webView.url)
         navigationWatchdog?.cancel()
         retireCurrentNavigation()

@@ -324,6 +324,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         else if policy.isSafariPayment(url) || url.scheme != "https" { UIApplication.shared.open(url) }
         else { present(SFSafariViewController(url: url), animated: true) }
     }
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) { portableBridge.documentWillNavigate() }
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) { transport.diagnostics.record(.documentCommit); documentCommitted = true }
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         transport.diagnostics.record(.documentFinish)
@@ -339,7 +340,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         let path = webView.url.map { $0.path + ($0.query.map { "?" + $0 } ?? "") } ?? startPath
         for operation in pending.values where operation.kind != "command" { operation.task.cancel() }
         transport.invalidatePage()
-        portableBridge.lock()
+        portableBridge.documentWillNavigate()
         webView.configuration.userContentController.removeAllUserScripts()
         let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         var script = "window.__reylumiAppLocalContext=\(metadata);\n"

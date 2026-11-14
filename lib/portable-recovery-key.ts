@@ -1,3 +1,5 @@
+import { iosPortableDevice, portableDevice } from "./portable-device-storage";
+
 const PREFIX = "kingpos:portable-draft:v1:";
 
 export function isNativePortableDevice(): boolean {
@@ -26,6 +28,19 @@ export function portableRecoveryStorageKey({ scope, operationScope, tabId, deskt
 
 /** Native windows sharing a recovery slot must not overwrite each other's work. */
 export async function acquirePortableRecoveryWriter(key: string): Promise<(() => void) | null> {
+  const native = iosPortableDevice();
+  if (native && portableDevice()) {
+    const scope = key.slice(PREFIX.length).split(":").slice(0, 2).join(":");
+    const reply = await native.request<{ acquired: boolean; token?: string }>({ action: "writer.acquire", scope, key });
+    if (!reply.acquired) return null;
+    if (!reply.token) throw new Error("Unable to confirm this POS window's draft storage.");
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      void native.request({ action: "writer.release", key, token: reply.token }).catch(() => {});
+    };
+  }
   if (!navigator.locks) return null;
   return new Promise(resolve => {
     void navigator.locks.request("kingpos:native-draft:" + key, { ifAvailable: true }, async lock => {

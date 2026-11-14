@@ -31,6 +31,8 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
     private var pending = 0
     private var registered = false
     private var admissionRevision = 0
+    private var documentGeneration = 0
+    private let writers = ReylumiPortableWriterRegistry.shared
     weak var webView: WKWebView?
 
     init(origin: URL, transport: ReylumiLocalAppTransport? = nil, store: ReylumiPortableStore? = nil) {
@@ -51,10 +53,16 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
               let metadata = String(data: data, encoding: .utf8) else { return }
         configuration.userContentController.addUserScript(WKUserScript(source: "window.__reylumiPortableHost=\(metadata);\n" + resource, injectionTime: .atDocumentStart, forMainFrameOnly: true))
     }
-    func lock() { active = nil; admissionRevision += 1 }
+    func lock() { active = nil; admissionRevision += 1; writers.releaseAll(owner: self) }
+    func documentWillNavigate() {
+        let hadAuthority = active != nil
+        documentGeneration += 1
+        lock()
+        if hadAuthority { webView?.evaluateJavaScript("window.dispatchEvent(new Event('kingpos:native-writer-reset'))", completionHandler: nil) }
+    }
     private func authorized(_ scope: String? = nil) -> (scope: String, expiry: Date)? {
         guard let active, let transport, active.expiry > Date(), active.nonce == transport.nonce,
-              active.epoch == transport.scopeEpoch else { self.active = nil; return nil }
+              active.epoch == transport.scopeEpoch else { lock(); return nil }
         // A late request for a previous scope must not revoke a newly admitted
         // workspace. It receives no data and cannot mutate that workspace.
         guard scope == nil || scope == active.scope else { return nil }
@@ -86,6 +94,10 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
             // exit flow owns its draft flush before navigating away.
             mode.set(selected)
             replyHandler(["mode": selected.rawValue], nil); return
+        }
+        if action == "writer.release" {
+            guard let key = body["key"] as? String, let token = body["token"] as? String else { replyHandler(["released": false], nil); return }
+            replyHandler(["released": writers.release(origin: origin, key: key, owner: self, token: token)], nil); return
         }
         guard let current = webView?.url, ReylumiPortableBridgePolicy.portablePath(current.path) else { replyHandler(error("Open POS Portable to access this device's saved tickets.", code: "untrusted-page"), nil); return }
         if action == "storage.lock" {
@@ -129,6 +141,23 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
                     return
                 }
                 guard let admission = self.authorized(body["scope"] as? String) else { replyHandler(self.error(), nil); return }
+                if action == "writer.acquire" {
+                    guard body["scope"] as? String == admission.scope, let key = body["key"] as? String,
+                          key.hasPrefix("kingpos:portable-draft:v1:"), ReylumiPortableStore.validKey(key, scope: admission.scope),
+                          let active = self.active else { replyHandler(self.error("Invalid POS draft writer.", code: "invalid-writer"), nil); return }
+                    let document = self.documentGeneration, epoch = active.epoch, nonce = active.nonce
+                    let token = self.writers.acquire(origin: self.origin, key: key, owner: self) { [weak self] in
+                        guard let self, self.documentGeneration == document, let active = self.active,
+                              active.scope == admission.scope, active.epoch == epoch, active.nonce == nonce,
+                              let transport = self.transport, transport.scopeEpoch == epoch, transport.nonce == nonce,
+                              active.expiry > Date(), let url = self.webView?.url, ReylumiPortableBridgePolicy.portablePath(url.path) else { return false }
+                        let local = url.scheme == ReylumiLocalBundle.scheme && url.host == ReylumiLocalBundle.host && url.port == nil && url.user == nil && url.password == nil
+                        return local || NavigationPolicy(origin: self.origin).isInternal(url)
+                    }
+                    if let token { replyHandler(["acquired": true, "token": token], nil) }
+                    else { replyHandler(["acquired": false], nil) }
+                    return
+                }
                 if action == "offline.status" {
                     let ready = (try? await self.offlineReady(scope: admission.scope)) ?? false
                     guard self.authorized(admission.scope) != nil else { replyHandler(self.error(), nil); return }
@@ -137,9 +166,16 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
                 guard ["operations.list", "operations.checkpoint", "operations.save", "operations.import"].contains(action) else { replyHandler(self.error("Portable request is not supported.", code: "unsupported-action"), nil); return }
                 if action == "operations.save" {
                     guard let operation = body["operation"] as? [String: Any], let id = operation["id"] as? String, let kind = operation["kind"] as? String else { replyHandler(self.error("Invalid POS operation.", code: "invalid-operation"), nil); return }
-                    if self.active?.offlineEnabled != true || self.active?.operationKinds.contains(kind) != true {
-                        guard try self.store.list(scope: admission.scope).contains(where: { ($0["id"] as? String)?.lowercased() == id.lowercased() }) else {
+                    let existing = try self.store.containsOperation(id: id, scope: admission.scope)
+                    if !existing {
+                        guard self.active?.offlineEnabled == true, self.active?.operationKinds.contains(kind) == true else {
                             replyHandler(self.error("Offline changes are not enabled for this POS device. Reconnect before continuing.", code: "offline-not-enabled"), nil); return
+                        }
+                        if kind == "receipt" {
+                            guard let payload = operation["payload"] as? [String: Any], let key = payload["localDraftKey"] as? String,
+                                  self.writers.owns(origin: self.origin, key: key, owner: self, token: body["writerToken"] as? String) else {
+                                replyHandler(self.error("This POS window no longer owns the open ticket. Keep it open and check the other window.", code: "writer-required"), nil); return
+                            }
                         }
                     }
                 }
@@ -163,6 +199,10 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
               let current = webView?.url, ReylumiPortableBridgePolicy.portablePath(current.path),
               let admission = authorized(), let action = body["action"] as? String, let key = body["key"] as? String else { return reply(["ok": false, "error": "Connect and unlock POS Portable before opening saved tickets.", "code": "storage-locked"]) }
         do {
+            if ["storage.set", "storage.remove"].contains(action), key.hasPrefix("kingpos:portable-draft:v1:"),
+               !writers.owns(origin: origin, key: key, owner: self, token: body["writerToken"] as? String) {
+                return reply(["ok": false, "error": "POS is already open in another window. Continue there or close it first.", "code": "writer-required"])
+            }
             switch action {
             case "storage.get": return reply(["ok": true, "value": try store.get(key, scope: admission.scope) as Any? ?? NSNull()])
             case "storage.set":
