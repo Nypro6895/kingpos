@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "openai-public-photo-verifier-20261118",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "docs/openai-public-photo-verifier-20261118.md",
+    "lib/public-image-verifier-openai.ts",
+    "tests/public-image-verifier-openai.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116"
+  ],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-28.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "18a5f8c8-d47f-4427-8b80-dd74dd7c71dd"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-28",
+  "id": "83edbc5e-2094-4b3a-b2f1-f518c8e2610f",
+  "recordedAt": "2026-11-19T19:41:36.772Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "docs/openai-public-photo-verifier-20261118.md": "174d1a67e495cae7a82008432bcb01f3c89323a2be916ebd23072eb7b53c853e",
+    "lib/public-image-verifier-openai.ts": "76a9be68dcd28ba53e9add1c6e48a5d577b0f8ad6359f2c76cae484664b9dbc5",
+    "tests/public-image-verifier-openai.test.mjs": "9218c43e531eb298e801cd062ae6108312ab07df3c59d42baa59e3fc1b39bc06"
+  }
+}

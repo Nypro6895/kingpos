@@ -1,0 +1,69 @@
+{
+  "kind": "change",
+  "changeId": "ipad-approved-optimizations-20261115",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/services/services-manager.tsx",
+    "app/services/services.css",
+    "tests/ipad-personal-header-compact.mjs",
+    "tests/services-loading-runtime.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [
+    "ipad-four-confirmed-fixes-20261115"
+  ],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-11.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "a25e1b95-cc25-4f4b-a21b-92047b4fd489"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-11",
+  "id": "d457615d-e282-4406-b256-d82469e24487",
+  "recordedAt": "2026-11-19T19:41:33.082Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "app/navigation-shell.tsx": "aa64504ebc30f015f9449c4b3c9ff1208cadddfaf7c64d607886ae4857bf2280",
+    "app/services/services-manager.tsx": "cdb85477511233876f9c42f371c124130585a342b4b64ad7275034a64c88ac67",
+    "app/services/services.css": "cbac2c4d00dd2009317750004dd4c92515795455aa81f47272fd03ede0495b31",
+    "tests/ipad-personal-header-compact.mjs": "9ecd0f5629c6fb86a36426d6f6cc872ca9d675419fd6e7010d3631bb44fdc7e3",
+    "tests/services-loading-runtime.test.mjs": "540036b885ea67bdef2eb4e8b43839398bdfb2d664a0e11744e288ec70ca7594"
+  }
+}

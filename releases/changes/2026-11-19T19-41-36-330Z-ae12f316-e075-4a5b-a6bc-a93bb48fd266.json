@@ -1,0 +1,77 @@
+{
+  "kind": "change",
+  "changeId": "app-local-advertising-transport-20261118",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "app/api/app-local/command/route.ts",
+    "docs/app-local-advertising-transport-20261118.md",
+    "lib/app-local-advertising-input.ts",
+    "lib/app-local-command-trace-names.generated.json",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "tests/app-local-advertising-transport.test.mjs",
+    "tests/app-local-shell-auxiliary.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [
+    "ads-reporting-transparency-implementation-20261118"
+  ],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-26.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "883dcb68-7a15-47b7-a945-60a31754eb92"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-26",
+  "id": "ae12f316-e075-4a5b-a6bc-a93bb48fd266",
+  "recordedAt": "2026-11-19T19:41:36.330Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "app/api/app-local/command/route.ts": "0da972292e6a93ecdfecfa1d2eab27a1f5ef29e43e0db1325427d9cc2eb8dc5c",
+    "docs/app-local-advertising-transport-20261118.md": "9228c7a5ad095f7ade545bb30af6fb966afc6901389c66e13083f7713377c9fd",
+    "lib/app-local-advertising-input.ts": "26397011864a589249eeb218fa34b746642654ab7fb78d2240c64e3b7ce656ad",
+    "lib/app-local-command-trace-names.generated.json": "e9dd8526822e2bc8203b5203c00218d9349e2977bcda08550f6f94760afdacfe",
+    "lib/app-local-shell-http-client.ts": "6946709c2c9d8eb8da560d40ea53118731de335ffec3c2609734b052ce63be8d",
+    "lib/app-local-shell-metadata.ts": "e1afa1ac22afa0e77a9fc9580ff0c072a14533e77ae3f3028d5d83281820ab5c",
+    "lib/app-local-shell-server.ts": "d27d05880cb1a529152b4338521fc6dd152da9d51aedcd7281d884a48e0b0363",
+    "tests/app-local-advertising-transport.test.mjs": "97c66ecce1fd7ccef12c9561171d11ba2e3f54d52647bd71905331413f19db82",
+    "tests/app-local-shell-auxiliary.test.mjs": "16821e8cec5162218366342225360be4158d90eed55f62d2764c858780485608"
+  }
+}

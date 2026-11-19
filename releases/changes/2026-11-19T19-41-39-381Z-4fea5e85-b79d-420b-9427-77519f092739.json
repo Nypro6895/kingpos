@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "retained-storage-ownership-20261116",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Server-side retained Storage ownership dependency for native clients; no binary/TestFlight publication",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "docs/retained-storage-ownership-20261116.md",
+    "supabase/migrations/20261116215000_retained_storage_ownership.sql",
+    "tests/retained-storage-ownership.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116"
+  ],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\supplement-retained-ios.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "7842fe92-f7d7-42a6-ba72-c7d4cac8a76e"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "supplement-retained-ios",
+  "id": "4fea5e85-b79d-420b-9427-77519f092739",
+  "recordedAt": "2026-11-19T19:41:39.381Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "docs/retained-storage-ownership-20261116.md": "f04accf0b0b2e6ee86106addd3bd17809242a42bc0aeb61d4e20dc0e16f9c8cf",
+    "supabase/migrations/20261116215000_retained_storage_ownership.sql": "c5d3708079ae32d3da93160322fe1be78bd3a5166e98a242c304374e37e34389",
+    "tests/retained-storage-ownership.integration.test.mjs": "3e59aee4809139759b11a8aaa155834afc44a33066caadc585d93d20d34bcc25"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "kind": "change",
+  "changeId": "ios-commerce-return-acceptance-20261118",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "app/market/payment-return-actions.ts",
+    "docs/ios-commerce-implementation-20261118.md",
+    "lib/campaign-payments.ts",
+    "lib/market-payment-return.ts",
+    "tests/ios-commerce-return-acceptance.test.mjs",
+    "tests/market-card-foreground-ui.test.mjs",
+    "tests/market-safari-booking-deposit-ui.test.mjs",
+    "tests/market-tax-reconciliation.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-13.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "894b6746-2863-41a6-ad98-f7181498ddaa"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-13",
+  "id": "e636edee-1227-49b1-990e-580b446983a6",
+  "recordedAt": "2026-11-19T19:41:33.461Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "app/market/payment-return-actions.ts": "86720aa45f761b3007d42a00c8831d9f1b4a9d7c88a96d1d9e9ad18cd8d130e8",
+    "docs/ios-commerce-implementation-20261118.md": "3f6b6889691da9bc976c64e334cf03468eac27c6f4c31bf12e171acbcffbbba4",
+    "lib/campaign-payments.ts": "48727257a75f6bc05b84aa5a1154a8050d49e15eb27f041ad46e87c66876f6f4",
+    "lib/market-payment-return.ts": "5dc693a43248e7a7e6ab1de2a6e9cb0f3e65435fb385dcfb10cce8c2e8225d69",
+    "tests/ios-commerce-return-acceptance.test.mjs": "37cff2d1824f68092a15639db025598600c10ba58894d6430af808dee4fedcc5",
+    "tests/market-card-foreground-ui.test.mjs": "3b80257bd381e3fa69b485da7f1d52c2b7fa9f9fcf2fd3804e0871db9fc29a61",
+    "tests/market-safari-booking-deposit-ui.test.mjs": "e7a32445a5d826d6e9d922732cc9b0f7728e167de7fe6fff547f47443eb099eb",
+    "tests/market-tax-reconciliation.test.mjs": "eeed7f861775c105bb8c27138e34365cc3deec1e2361b2557950d9677ba4a025"
+  }
+}

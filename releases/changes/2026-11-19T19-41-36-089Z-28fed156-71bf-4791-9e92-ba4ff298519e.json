@@ -1,0 +1,107 @@
+{
+  "kind": "change",
+  "changeId": "ads-reporting-transparency-implementation-20261118",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/reports/report-case-view.tsx",
+    "app/(app)/admin/reports/report-evidence.tsx",
+    "app/(app)/layout.tsx",
+    "app/api/advertising/reports/route.ts",
+    "app/api/campaigns/delivery/route.ts",
+    "app/api/explore/advertising/route.ts",
+    "components/ad-disclosure-controls.tsx",
+    "components/explore-advertising.tsx",
+    "components/owner-sponsored-post.tsx",
+    "docs/ad-reporting-transparency-implementation-20261118.md",
+    "lib/ad-disclosure-ticket.ts",
+    "lib/ad-reporting.ts",
+    "lib/campaign-delivery-area.ts",
+    "lib/platform-admin/report-context.ts",
+    "supabase/migrations/20261119021000_owner_ad_disclosure_trace.sql",
+    "supabase/migrations/20261119022000_platform_ad_disclosure_trace.sql",
+    "tests/ad-disclosure-controls.test.mjs",
+    "tests/ad-disclosure-ticket.test.mjs",
+    "tests/ad-native-controller-transport.test.mjs",
+    "tests/ad-reporting.test.mjs",
+    "tests/owner-ad-disclosure-trace.test.mjs",
+    "tests/owner-campaign-post-layout.browser.test.mjs",
+    "tests/platform-ad-disclosure-trace.test.mjs",
+    "types/ad-disclosure.ts"
+  ],
+  "deletedFiles": [],
+  "dependencies": [
+    "ios-store-completion-20261118"
+  ],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-25.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "84bc3edb-7b61-4141-a076-8a4545ccdbf2"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-25",
+  "id": "28fed156-71bf-4791-9e92-ba4ff298519e",
+  "recordedAt": "2026-11-19T19:41:36.089Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "app/(app)/admin/reports/report-case-view.tsx": "66807a689e88755f0283aa26d322c263b5f2ed9bf27745a1d2c2ef0ca880065e",
+    "app/(app)/admin/reports/report-evidence.tsx": "a2c6541787ea3d1bf6578c42facd8cd48a3a40e30b59fff65d251d8b0c335981",
+    "app/(app)/layout.tsx": "99da249aafd2e0e7a4b8e27892d4f7ceab9b217f6528d84a4f34519462f3c5be",
+    "app/api/advertising/reports/route.ts": "8d61ddc86c3c8e655e9d2a56dd7c0a11362b44ccb7d73d2bab57207a15d9c2c3",
+    "app/api/campaigns/delivery/route.ts": "fce007ab5eb68fa8e85071c7c488148f967718af8d36dc8d21c5af61a59aeaa8",
+    "app/api/explore/advertising/route.ts": "78cad0bf4b27f1a96356966f2f985378972c53ca14b27bd106c33005837557b5",
+    "components/ad-disclosure-controls.tsx": "a32e11176736442d81d1ce2049f346ba04f25e7b7bfdbd3080bc286bfdb88602",
+    "components/explore-advertising.tsx": "a98a578edffe1a1e2ca007c680aa5bdcf1917164c55561b15215ce2efa061b75",
+    "components/owner-sponsored-post.tsx": "161a4a157aeb77b4c022cdfa64b0b28df907149e5878fd6345105db260b5f49a",
+    "docs/ad-reporting-transparency-implementation-20261118.md": "acfa97605effca466774c383c614923e9f2843f3a3788106ba69f176b22a9f42",
+    "lib/ad-disclosure-ticket.ts": "4965a2da0ec7af18c636bdd46de1f1b61ad0c1b3d5216085472a1db884ac0430",
+    "lib/ad-reporting.ts": "9d4b4b83053096a7b3a916a364a90db7f06562420dd8588fac3cb7261ab1ee23",
+    "lib/campaign-delivery-area.ts": "c9040e4a72a1b9168967cc6c71ae522bf92e519c6b0f617ed17dd9a668c25f78",
+    "lib/platform-admin/report-context.ts": "98d06d3ae4b103e5a949f97c15a10754d9e496553be08eb0f75e98806ac8afb3",
+    "supabase/migrations/20261119021000_owner_ad_disclosure_trace.sql": "9ef38d37e8966ff9781bd2aa79965b08cb8c5dec73f7d68cbfa0a65b70d0c396",
+    "supabase/migrations/20261119022000_platform_ad_disclosure_trace.sql": "b2e21c141864a6863b725d98a703cbce0d080451c7c11e4a6afdff13a79ba799",
+    "tests/ad-disclosure-controls.test.mjs": "e0086cdd5b0c3068bdac25ae20e2b2ba131c95dd85f4db09e15da0fa4c9075fb",
+    "tests/ad-disclosure-ticket.test.mjs": "44ad92b3f499dda3a642dc2700da2c40111145f9ef7ca1602d44df78a16e3721",
+    "tests/ad-native-controller-transport.test.mjs": "d1b62d3a55069f467989cbaf8e78a35a408f21525fe48b8d42c365d78d959a3a",
+    "tests/ad-reporting.test.mjs": "0cb482d97fd27d04666b83a5d562db4a54f329ad6f22ee3c904c1efa25dccbe8",
+    "tests/owner-ad-disclosure-trace.test.mjs": "38d745f73332d7837e9a75a06c60886fffd37a975831e1bcd300aae5a9e54a77",
+    "tests/owner-campaign-post-layout.browser.test.mjs": "32fb54b7688ea7c06aa5a04549b88174b3c2d43565cac56ec59b5191ccff7d57",
+    "tests/platform-ad-disclosure-trace.test.mjs": "a8c909d48860787f99a852b7903eb36ca09042c97f2bb962c429c3a45cef72e0",
+    "types/ad-disclosure.ts": "6f3db19b7fcda6195bd7d00e44e1e648d563abed5d8988d2113906311fd9ffb5"
+  }
+}

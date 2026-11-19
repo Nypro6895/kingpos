@@ -1,0 +1,96 @@
+{
+  "kind": "change",
+  "changeId": "android-windows-qa-six-fixes-20261117",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "android/README.md",
+    "android/app/build.gradle",
+    "android/app/src/main/assets/NativeBridge.js",
+    "android/app/src/main/java/com/reylumi/android/MainActivity.java",
+    "android/app/src/main/java/com/reylumi/android/NavigationPolicy.java",
+    "android/app/src/qa/assets/QaNetworkGuard.js",
+    "android/app/src/test/java/com/reylumi/android/QaNavigationPolicyTest.java",
+    "android/tests/qa-bridge.test.mjs",
+    "app/account/account-profile-editor.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/staff/appointments/staff-booking-settings-client.tsx",
+    "components/gift-card/customer-gift-cards.tsx",
+    "components/overlay-dismissal.tsx",
+    "lib/owner-attention-presentation.ts",
+    "supabase/migrations/202611170001_staff_selected_customer_identity.sql",
+    "supabase/migrations/202611170002_owner_attention_display_contract.sql",
+    "tests/android-overlay-avatar-runtime.test.mjs",
+    "tests/gift-paid-return-wallet.test.mjs",
+    "tests/owner-attention-display-contract.test.mjs",
+    "tests/staff-selected-customer-identity.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-08.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "0608d5da-48de-4ef5-ba49-67e90d234dcf"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-08",
+  "id": "60ef4311-7f3e-4a98-9ddd-73fd26fdc2df",
+  "recordedAt": "2026-11-19T19:41:32.450Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "android/README.md": "19e15477ff7389059e19e152b081e49a3f800ae2388a8990799d28e38ec08bde",
+    "android/app/build.gradle": "d415a5436ecaf2001d239b6a820b116605501e59a1e53a659fc5562d16146776",
+    "android/app/src/main/assets/NativeBridge.js": "b978e2966c6f710cb44450fb8557a44c505a712ccb4881bc4493311f3e9be3c8",
+    "android/app/src/main/java/com/reylumi/android/MainActivity.java": "6ddfa1ef3b08770fd934d26b0c8d3bad0d83b78f8cfa2438b3c6f0d57bb8355a",
+    "android/app/src/main/java/com/reylumi/android/NavigationPolicy.java": "69d55ec72958e84a9fc4ab2aa190beff5e439c4476b36bbac713d91ff859ceaf",
+    "android/app/src/qa/assets/QaNetworkGuard.js": "243d3e7035823722112dd4c8227be7d8abafcc74916fe1490b40a31aca0eca5b",
+    "android/app/src/test/java/com/reylumi/android/QaNavigationPolicyTest.java": "b073be819f3c9e7021665f1de9757ab3ed11a043549bc35c092e8676687e99c1",
+    "android/tests/qa-bridge.test.mjs": "224b8c876b31e8a199e702207b06d22ae94edd1ee90ae69bb6cdba5fd3e068c0",
+    "app/account/account-profile-editor.tsx": "e208b460ef57e0db26432ba6aaad5762288f5c46cbde30d1414db44520004450",
+    "app/pos/pos-desk-client.tsx": "dfa7d89ddc9646b076cef589a39afb8203f5cc5ee66fdfb2b61ea85606458b54",
+    "app/staff/appointments/staff-booking-settings-client.tsx": "7d267c481bac9a2e3f1f3840dd7c2fe81b5b4c67e24c06dca9e88fbefde7411d",
+    "components/gift-card/customer-gift-cards.tsx": "f2e38c8039015a6e6b1657dc663ea3186cc19d267e2ddc880930b056c7c4f043",
+    "components/overlay-dismissal.tsx": "3a20ec2922e70b0141a7a80aae64c18a391f70dec8aef02deb89b6f60945a52d",
+    "lib/owner-attention-presentation.ts": "bc90c8e0104ce5b418158c9968834e92e67309d05e253b49c93966f074b0bbb5",
+    "supabase/migrations/202611170001_staff_selected_customer_identity.sql": "a405a715b6dc9378d408400974f732d2a27c547c85190d0084a9373eadcbfc33",
+    "supabase/migrations/202611170002_owner_attention_display_contract.sql": "41621ac821d3df3aa27facaa7de2c6acb7e9070602b5222eea78fbce617830dd",
+    "tests/android-overlay-avatar-runtime.test.mjs": "f5adf0f6a52bfb50d7cd8d098fc346b87b0d9f3888ceb9446f24069814074317",
+    "tests/gift-paid-return-wallet.test.mjs": "06314b1b4543d4d488331e79f002bdd5b607d99af86939cd1d569009e907ede8",
+    "tests/owner-attention-display-contract.test.mjs": "fa1c2837a3e72546da1cd5bfacf045eed06edd02275915bf9b068f02023409c1",
+    "tests/staff-selected-customer-identity.integration.test.mjs": "6b0f03d72deaf26b93f0ab7ffe019ec216d9761e067a4ce035ec15927859b20e"
+  }
+}
