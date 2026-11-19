@@ -3,6 +3,8 @@
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { readAuthResponse, type AuthResponse } from "@/lib/auth-response";
 import { clearImplicitAuthFragment } from "@/lib/auth-fragment";
+import { splitGiftAuthReturn, restoreGiftAuthFragment } from "@/lib/auth-return-fragment";
+import { resumePendingMfa } from "@/lib/mfa-resume-client";
 import { PortableTouchKeyboard } from "@/app/pos/portable/touch-keyboard";
 import { DeviceInputSettingsButton } from "@/app/pos/portable/device-input-settings";
 import { AUTH_OFFLINE_MESSAGE, SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE } from "@/lib/supabase/auth-errors";
@@ -75,10 +77,12 @@ export function LoginForm({
   nextPath = "/explore",
   showRecoveryHelpInitially = false,
   onAuthenticated,
+  resumeMfa = false,
 }: {
   nextPath?: string;
   showRecoveryHelpInitially?: boolean;
   onAuthenticated?: () => void;
+  resumeMfa?: boolean;
 }) {
   const __vt = useWorkspaceTranslation();
 
@@ -87,7 +91,7 @@ export function LoginForm({
   const [showRecoveryHelp, setShowRecoveryHelp] = useState(
     showRecoveryHelpInitially,
   );
-  const [submissionPhase, setSubmissionPhase] = useState<"login" | "verify" | "opening" | null>(null);
+  const [submissionPhase, setSubmissionPhase] = useState<"login" | "verify" | "opening" | null>(resumeMfa ? "verify" : null);
   const isSubmitting = submissionPhase !== null;
   const [mfaChallenge, setMfaChallenge] = useState<AuthResponse["mfa"] | null>(
     null,
@@ -96,6 +100,8 @@ export function LoginForm({
   const submitting = useRef(false);
   const request = useRef<AbortController | null>(null);
   const mounted = useRef(true);
+  const giftFragment = useRef(splitGiftAuthReturn(nextPath).fragment);
+  const serverNextPath = splitGiftAuthReturn(nextPath).serverPath;
 
   useLayoutEffect(() => {
     mounted.current = true;
@@ -109,10 +115,27 @@ export function LoginForm({
   }, []);
 
   useEffect(() => {
+    if (!giftFragment.current && serverNextPath.split("?")[0] === "/gift-cards" && /^#card=[a-f0-9]{64}$/.test(window.location.hash)) giftFragment.current = window.location.hash;
     if (window.location.pathname === "/login") {
       clearImplicitAuthFragment(window.location, window.history);
     }
-  }, []);
+  }, [serverNextPath]);
+
+  useEffect(() => {
+    if (!resumeMfa) return;
+    let active = true;
+    submitting.current = true;
+    void resumePendingMfa().then(({ ok, status, result }) => {
+      if (!active || !mounted.current) return;
+      if (ok && result.mfa) setMfaChallenge(result.mfa);
+      else if (status !== 401) setError(result.error ?? "Unable to continue two-factor verification.");
+    }).catch(() => {
+      if (active && mounted.current) setError(SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE);
+    }).finally(() => {
+      if (active && mounted.current) { submitting.current = false; setSubmissionPhase(null); }
+    });
+    return () => { active = false; };
+  }, [resumeMfa]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -130,12 +153,14 @@ export function LoginForm({
     let navigating = false;
 
     try {
+      const formData = new FormData(event.currentTarget);
+      formData.set("next", serverNextPath);
       const response = await fetchWithDeadline("/api/auth/login", {
         headers: {
           Accept: "application/json",
         },
         method: "POST",
-        body: new FormData(event.currentTarget),
+        body: formData,
         signal: controller.signal,
       }, { timeoutMs: 30_000, totalTimeoutMs: 30_000, maxAttempts: 1 });
       const result = await readAuthResponse(response, "Unable to log in.");
@@ -160,7 +185,7 @@ export function LoginForm({
       }
       navigating = true;
       setSubmissionPhase("opening");
-      router.push(result.redirectTo ?? "/explore");
+      router.push(restoreGiftAuthFragment(result.redirectTo ?? "/explore", giftFragment.current));
       router.refresh();
     } catch {
       navigating = false;
@@ -201,7 +226,7 @@ export function LoginForm({
       const formData = new FormData(event.currentTarget);
       formData.set("factor_id", mfaChallenge.factorId);
       formData.set("challenge_id", mfaChallenge.challengeId);
-      formData.set("next", nextPath);
+      formData.set("next", serverNextPath);
 
       const response = await fetchWithDeadline("/api/auth/mfa/verify", {
         headers: {
@@ -230,7 +255,7 @@ export function LoginForm({
       }
       navigating = true;
       setSubmissionPhase("opening");
-      router.push(result.redirectTo ?? "/explore");
+      router.push(restoreGiftAuthFragment(result.redirectTo ?? "/explore", giftFragment.current));
       router.refresh();
     } catch {
       navigating = false;
@@ -251,6 +276,7 @@ export function LoginForm({
     <div data-login-touch-shell>
       <PortableTouchKeyboard desktopOnly scopeSelector="[data-login-touch-shell]" />
       <div className="flex justify-end"><DeviceInputSettingsButton desktopOnly /></div>
+      {serverNextPath.split("?")[0] === "/gift-cards" ? <p className="mt-4 text-sm text-text-secondary"><WorkspaceText text="After using a sign-in link or account recovery, reopen your original Gift Card link." /></p> : null}
       {error ? (
         <p
           className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"
@@ -339,7 +365,7 @@ export function LoginForm({
         method="post"
         onSubmit={handleSubmit}
       >
-        <input name="next" type="hidden" value={nextPath} />
+        <input name="next" type="hidden" value={serverNextPath} />
         <div>
           <label className="block text-sm font-extrabold text-text-primary" htmlFor="email">
             <WorkspaceText text="Email" />
@@ -362,7 +388,7 @@ export function LoginForm({
             </label>
             <Link
               className="text-sm font-extrabold text-brand-orange underline-offset-4 transition hover:text-brand-orange-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
-              href={nextPath === "/tax" ? "/tax/forgot-password" : `/forgot-password?next=${encodeURIComponent(nextPath)}`}
+              href={serverNextPath === "/tax" ? "/tax/forgot-password" : `/forgot-password?next=${encodeURIComponent(serverNextPath)}`}
             >
               <WorkspaceText text="Forgot password?" />
             </Link>
@@ -418,7 +444,7 @@ export function LoginForm({
       {showRecoveryHelp ? (
         <Link
           className="mt-5 inline-flex w-full justify-center text-sm font-extrabold text-text-secondary underline-offset-4 transition hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
-          href={`/account-recovery?next=${encodeURIComponent(nextPath)}`}
+          href={`/account-recovery?next=${encodeURIComponent(serverNextPath)}`}
         >
           <WorkspaceText text="Lost access or recovery code?" />
         </Link>

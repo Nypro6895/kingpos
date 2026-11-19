@@ -4,7 +4,11 @@ import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   createSupabaseServerClient,
+  clearPendingMfaSessionCookieWriter,
 } from "@/lib/supabase/server";
+import { readMfaAssurance } from "@/lib/supabase/mfa-assurance";
+import { writePendingMfaTransition } from "@/lib/supabase/mfa-session";
+import { splitGiftAuthReturn } from "@/lib/auth-return-fragment";
 import {
   fallbackPostAuthWorkspaceNavigation,
   getPostAuthWorkspaceNavigation,
@@ -18,7 +22,7 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const requestedPath = url.searchParams.get("next");
+  const requestedPath = splitGiftAuthReturn(url.searchParams.get("next") ?? "").serverPath;
   const nextPath = sanitizeAuthReturnPath(requestedPath);
   const supabase = createSupabaseServerClient();
 
@@ -45,6 +49,17 @@ export async function GET(request: Request) {
         url.origin,
       ),
     );
+  }
+
+  const assurance = await readMfaAssurance(supabase, data.session.access_token);
+  if (assurance === "unavailable") {
+    return NextResponse.json({ error: "Two-factor authentication status could not be checked. Please try again later." }, { status: 503, headers: { "Cache-Control": "no-store" } });
+  }
+  if (assurance === "required") {
+    // A callback never sends SMS or reads the private app before verification.
+    const response = NextResponse.redirect(new URL(`/login?mfa=1&next=${encodeURIComponent(nextPath)}`, url.origin));
+    writePendingMfaTransition(response.cookies, { accessToken: data.session.access_token, refreshToken: data.session.refresh_token, rememberLogin: true });
+    return response;
   }
 
   await recordAdvertisingSignup(request, data.user);
@@ -79,5 +94,6 @@ export async function GET(request: Request) {
   }
 
   writeLoginPolicy(response.cookies, data.session.access_token, true);
+  clearPendingMfaSessionCookieWriter(response.cookies);
   return response;
 }

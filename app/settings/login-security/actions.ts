@@ -17,9 +17,13 @@ import {
   createAuthenticatedSupabaseAuthSessionServerClient,
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
+  createUserScopedSupabaseServerClient,
   getCurrentAppLoginSessionId,
   setSupabaseSessionCookies,
+  validateSupabaseAppSession,
 } from "@/lib/supabase/server";
+import { readMfaAssurance } from "@/lib/supabase/mfa-assurance";
+import type { Session } from "@supabase/supabase-js";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import type { KingUser } from "@/types/user";
 import { createHash, randomBytes } from "node:crypto";
@@ -796,6 +800,19 @@ export async function beginTotpEnrollmentAction(): Promise<TotpEnrollmentActionR
   };
 }
 
+async function promoteVerifiedMfaEnrollment(client: AuthSessionSupabaseClient, session: Session) {
+  const assurance = await readMfaAssurance(client, session.access_token);
+  if (assurance !== "verified") return { error: assurance === "unavailable" ? "Two-factor authentication status could not be checked. Please try again later." : "Two-factor verification is required." };
+  try {
+    if (!await validateSupabaseAppSession(session.access_token)) return { error: "Your session expired. Sign in again." };
+  } catch {
+    return { error: "Your account could not be checked. Please try again later." };
+  }
+  // Promote before any request-scoped audit/guard can see the old AAL1 cookie.
+  await setSupabaseSessionCookies(session);
+  return { error: null, supabase: createUserScopedSupabaseServerClient(session.access_token) };
+}
+
 export async function verifyTotpEnrollmentAction(
   input: ActionInput,
 ): Promise<LoginSecurityActionResult> {
@@ -841,13 +858,14 @@ export async function verifyTotpEnrollmentAction(
     };
   }
 
-  await setSupabaseSessionCookies(verification.data);
+  const promoted = await promoteVerifiedMfaEnrollment(authSupabase, verification.data);
+  if (promoted.error) return { error: promoted.error };
 
-  if (context.ok) {
+  if (context.ok && promoted.supabase) {
     await recordSecurityActivity({
       activityType: "two_factor_enabled",
       metadata: { factor_id: factorId, factor_type: "totp" },
-      supabase: context.supabase,
+      supabase: promoted.supabase,
       user: context.user,
     });
   }
@@ -958,13 +976,14 @@ export async function verifyPhoneMfaEnrollmentAction(
     };
   }
 
-  await setSupabaseSessionCookies(verification.data);
+  const promoted = await promoteVerifiedMfaEnrollment(authSupabase, verification.data);
+  if (promoted.error) return { error: promoted.error };
 
-  if (context.ok) {
+  if (context.ok && promoted.supabase) {
     await recordSecurityActivity({
       activityType: "two_factor_phone_enabled",
       metadata: { factor_id: factorId, factor_type: "phone" },
-      supabase: context.supabase,
+      supabase: promoted.supabase,
       user: context.user,
     });
   }

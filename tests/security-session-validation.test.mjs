@@ -11,9 +11,10 @@ class Rejected extends Error{}
 function fixture({allowed=true,error=null,cookie='tracking',authorization=null,identity=true,registered=true}={}){
  let sessionReads=0;
  let enrollments=0;
+ let identityReads=0;
  const values=new Map([['sb-access-token','cookie-access'],['sb-refresh-token','cookie-refresh']]);
  if(cookie)values.set('kingpos-login-session-id',cookie);
- const client={auth:{getUser:async()=>({data:{user:identity?{id:'user'}:null},error:null})},
+ const client={auth:{getUser:async()=>{identityReads++;return {data:{user:identity?{id:'user'}:null},error:null};}},
   from(){const q={select:()=>q,eq:()=>q,maybeSingle:async()=>({data:{status:'active'},error:null})};return q;},
   rpc:(name,_args,options)=>{
    if(name==='check_account_login_session')return {abortSignal(signal){assert.ok(signal instanceof AbortSignal);enrollments++;return Promise.resolve({data:{allowed:true,session_id:sid,registered:true},error:null});}};
@@ -28,7 +29,7 @@ function fixture({allowed=true,error=null,cookie='tracking',authorization=null,i
   './auth-rejection':{AuthRejectionError:Rejected,isConfirmedAuthRejection:e=>e?.code==='bad_jwt'},
   '@/lib/read-context-scope':{getReadRequestTiming:()=>null,memoizeReadValidation:(_k,_a,read)=>read()},'node:crypto':require('node:crypto')};
  const exports={};vm.runInNewContext(source,{exports,Headers,AbortSignal,console:{error(){}},process:{env:{NEXT_PUBLIC_SUPABASE_URL:'https://fixture.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'fixture'}},require:n=>{assert.ok(n in deps,n);return deps[n];}});
- return {...exports,reads:()=>sessionReads,enrollments:()=>enrollments};
+ return {...exports,reads:()=>sessionReads,enrollments:()=>enrollments,identityReads:()=>identityReads};
 }
 test('bound provider session remains usable without optional tracking cookie',async()=>{
  const f=fixture({cookie:null});assert.ok(await f.createAuthenticatedSupabaseServerClient());assert.equal((await f.getSupabaseAuthUser()).id,'user');assert.equal(await f.getCurrentAppLoginSessionId(),sid);
@@ -55,6 +56,16 @@ test('asserted Authorization never falls back to cookie identity or borrows its 
 });
 test('invalid provider identity cannot reach session enrollment',async()=>{
  const f=fixture({identity:false});assert.equal(await f.createAuthenticatedSupabaseServerClient(),null);assert.equal(f.reads(),0);
+});
+
+test('missing provider identity is unavailable for strict readers and optional-null with exactly one identity read per call',async()=>{
+ const strict=fixture({identity:false});
+ await assert.rejects(strict.createAuthenticatedSupabaseServerClient({throwOnUnavailable:true,throwOnRejected:true}),Unavailable);
+ assert.equal(strict.identityReads(),1);assert.equal(strict.reads(),0);
+ await assert.rejects(strict.getSupabaseAuthUser(),Unavailable);
+ assert.equal(strict.identityReads(),2);assert.equal(strict.reads(),0);
+ const optional=fixture({identity:false});assert.equal(await optional.getSupabaseAuthUser({throwOnUnavailable:false}),null);
+ assert.equal(optional.identityReads(),1);assert.equal(optional.reads(),0);
 });
 test('new native/callback session enrolls display metadata only for an explicit security operation',async()=>{
  const f=fixture({registered:false,cookie:null,authorization:'Bearer native-access'});

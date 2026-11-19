@@ -44,7 +44,7 @@ function request(path, headers = {}, body = "action=attempt") {
 const protectedRoutes = [
   "app/(app)/api/auth/login/route.ts", "app/(app)/api/auth/logout/route.ts",
   "app/(app)/api/auth/signup/route.ts", "app/(app)/api/auth/forgot-password/route.ts",
-  "app/(app)/api/auth/mfa/verify/route.ts", "app/(app)/api/staff/invite/signup/route.ts",
+  "app/(app)/api/auth/mfa/verify/route.ts", "app/(app)/api/auth/mfa/challenge/route.ts", "app/(app)/api/staff/invite/signup/route.ts",
   "app/(app)/api/auth/admin-activity/route.ts", "app/(app)/admin/api/support-activity/route.ts",
   "app/(app)/api/security/challenge/route.ts", "app/(legal)/api/contact-support/route.ts",
   "app/api/advertising/reports/route.ts", "app/api/app-local/command/route.ts", "app/api/app-local/read/route.ts",
@@ -130,6 +130,8 @@ test("same-origin login completes and writes its existing cookies for web and na
       "@/lib/account-security": { recordAccountLoginForSession: async () => {} },
       "@/lib/abuse-server": { assertAbuseRequest: async () => {} },
       "@/lib/auth-routing": { sanitizeAuthReturnPath: () => "/explore" },
+      "@/lib/auth-return-fragment": { splitGiftAuthReturn: path => ({ serverPath: path, fragment: "" }) },
+      "@/lib/supabase/mfa-assurance": { readMfaAssurance: async () => "allowed" },
       "@/lib/signup-phone-routing": { resumeSignupPhonePath: () => "/explore" },
       "@/lib/post-auth-routing": { getPostAuthWorkspaceNavigation: async () => ({ redirectTo: "/explore" }) },
     });

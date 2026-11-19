@@ -147,7 +147,7 @@ test("Login and logout routes wire app-owned session tracking", () => {
   assert.match(loginRoute, /recordAccountLoginForSession/);
   assert.match(loginRoute, /response\.cookies\.set\(\s*ACCOUNT_LOGIN_SESSION_COOKIE/);
   assert.match(loginRoute, /loginMfaRequiredResponse/);
-  assert.match(loginRoute, /setPendingMfaSessionCookieWriter/);
+  assert.match(loginRoute, /writePendingMfaTransition/);
   assert.match(mfaVerifyRoute, /auth\.mfa\.verify/);
   assert.match(mfaVerifyRoute, /recordAccountLoginForSession/);
   assert.match(mfaVerifyRoute, /ACCOUNT_LOGIN_SESSION_COOKIE/);

@@ -17,7 +17,11 @@ import {
   clearPendingMfaSessionCookieWriter,
   createPendingMfaSupabaseAuthSessionServerClient,
   getSupabaseCookieOptions,
+  validateSupabaseAppSession,
 } from "@/lib/supabase/server";
+import { readMfaAssurance } from "@/lib/supabase/mfa-assurance";
+import { splitGiftAuthReturn } from "@/lib/auth-return-fragment";
+import { AuthRejectionError } from "@/lib/supabase/auth-rejection";
 import {
   fallbackPostAuthWorkspaceNavigation,
   getPostAuthWorkspaceNavigation,
@@ -33,7 +37,7 @@ function readString(formData: FormData, key: string) {
 }
 
 function errorResponse(message: string, status = 400) {
-  return NextResponse.json({ error: message }, { status });
+  return NextResponse.json({ error: message }, { status, headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function POST(request: Request) {
@@ -42,7 +46,7 @@ export async function POST(request: Request) {
   const factorId = readString(formData, "factor_id");
   const challengeId = readString(formData, "challenge_id");
   const code = readString(formData, "code").replace(/\s+/g, "");
-  const requestedPath = readString(formData, "next");
+  const requestedPath = splitGiftAuthReturn(readString(formData, "next")).serverPath;
   const nextPath = sanitizeAuthReturnPath(requestedPath);
 
   if (!factorId || !challengeId || !code) {
@@ -53,7 +57,9 @@ export async function POST(request: Request) {
     return errorResponse("Two-factor verification could not be found.");
   }
 
-  const pending = await createPendingMfaSupabaseAuthSessionServerClient();
+  let pending;
+  try { pending = await createPendingMfaSupabaseAuthSessionServerClient({ throwOnUnavailable: true }); }
+  catch { return errorResponse("Your sign-in could not be checked. Please try again later.", 503); }
 
   if (!pending) {
     return errorResponse("Two-factor verification expired. Log in again.", 401);
@@ -65,12 +71,22 @@ export async function POST(request: Request) {
     factorId,
   });
 
-  if (verification.error || !verification.data?.access_token) {
+  if (verification.error || !verification.data?.access_token || !verification.data?.refresh_token) {
     return errorResponse(
       verification.error?.message ||
         "The two-factor verification code could not be verified.",
       403,
     );
+  }
+
+  const assurance = await readMfaAssurance(pending.supabase, verification.data.access_token);
+  // A successful verify response alone must never promote an AAL1 session.
+  if (assurance === "unavailable") return errorResponse("Two-factor authentication status could not be checked. Please try again later.", 503);
+  if (assurance !== "verified") return errorResponse("Two-factor verification is required.", 403);
+  try {
+    if (!await validateSupabaseAppSession(verification.data.access_token)) return errorResponse("Your session is no longer available. Log in again.", 401);
+  } catch (error) {
+    return errorResponse(error instanceof AuthRejectionError ? "Your session is no longer available. Log in again." : "Your account could not be checked. Please try again later.", error instanceof AuthRejectionError ? 401 : 503);
   }
 
   const loginSessionId = randomUUID();
@@ -96,7 +112,7 @@ export async function POST(request: Request) {
     }),
   ]);
 
-  const response = NextResponse.json({ redirectTo: navigation.redirectTo });
+  const response = NextResponse.json({ redirectTo: navigation.redirectTo }, { headers: { "Cache-Control": "private, no-store" } });
   const accessTokenMaxAge = pending.rememberLogin
     ? REMEMBERED_LOGIN_MAX_AGE_SECONDS
     : undefined;

@@ -63,8 +63,9 @@ test("admin cookies cannot be forged, transferred to another login, or assigned 
   assert.equal(policy.readAdminSession(policy.newAdminSession(token(), now + 1), token(), now), null);
 });
 
-function refreshFixture({ remember = "1", failed = false, status = 503, authorization = false, pathname = "/settings" } = {}) {
+function refreshFixture({ remember = "1", failed = false, status = 503, authorization = false, pathname = "/settings", assurance = "allowed" } = {}) {
   let calls = 0;
+  let assuranceReads = 0;
   const requestCookies = new Map([["sb-refresh-token", "refresh-old"], ["sb-access-token", token(0)], ["login-id", "login-1"]]);
   if (remember !== undefined) requestCookies.set(policy.REMEMBER_LOGIN_COOKIE, remember);
   const request = { cookies: { get: name => requestCookies.has(name) ? { value: requestCookies.get(name) } : undefined, set: (name, value) => requestCookies.set(name, value) },
@@ -77,17 +78,41 @@ function refreshFixture({ remember = "1", failed = false, status = 503, authoriz
     "@/lib/account-security-shared": { ACCOUNT_LOGIN_SESSION_COOKIE: "login-id" },
     "./session-policy": policy, "node:crypto": require("node:crypto"),
     "./auth-rejection": { isConfirmedAuthRejection: error => error?.code === "refresh_token_not_found" },
+    "./mfa-assurance": { readMfaAssurance: async () => { assuranceReads++; return assurance; } },
+    "./mfa-session": load("lib/supabase/mfa-session.ts", { "@/lib/account-security-shared": { ACCOUNT_LOGIN_SESSION_COOKIE: "login-id" }, "./session-policy": policy }),
   });
-  return { request, run: () => module.refreshRequestSession(request), calls: () => calls, cookies: requestCookies };
+  return { request, run: () => module.refreshRequestSession(request), calls: () => calls, assuranceReads: () => assuranceReads, cookies: requestCookies };
 }
 
 test("parallel refreshes rotate once and forward the new token to the current request", async () => {
   const f = refreshFixture();
   const results = await Promise.all([f.run(), f.run()]);
   assert.equal(f.calls(), 1);
+  assert.equal(f.assuranceReads(), 1, "concurrent refreshes share the fresh MFA assessment");
   assert.equal(f.cookies.get("sb-refresh-token"), "refresh-new");
   assert.equal(results[0].updates.find(v => v.name === "login-id").value, "login-1");
   assert.equal(results[0].updates[0].options.maxAge, policy.REMEMBER_LOGIN_SECONDS);
+});
+
+test("refresh with verified MFA awaiting AAL2 writes pending-only credentials and preserves Remember choice", async () => {
+  const f = refreshFixture({ assurance: "required", remember: "0" });
+  const result = await f.run();
+  assert.equal(result.unavailable, false);
+  assert.equal(f.cookies.get("sb-access-token"), "");
+  assert.equal(f.cookies.get("sb-refresh-token"), "");
+  assert.equal(f.cookies.get("login-id"), "");
+  assert.equal(f.cookies.get("sb-pending-mfa-refresh-token"), "refresh-new");
+  assert.equal(f.cookies.get("sb-pending-mfa-remember"), "0");
+  assert.equal(result.updates.find(v => v.name === "sb-pending-mfa-access-token").options.maxAge, 600);
+  assert.equal(result.updates.find(v => v.name === "sb-access-token").options.maxAge, 0);
+});
+
+test("unknown refreshed MFA assurance is unavailable with original cookies and no promotion", async () => {
+  const f = refreshFixture({ assurance: "unavailable" });
+  const result = await f.run();
+  assert.equal(result.unavailable, true);
+  assert.equal(result.updates.length, 0);
+  assert.equal(f.cookies.get("sb-refresh-token"), "refresh-old");
 });
 
 test("refresh preserves Remember opt-out instead of silently persisting cookies", async () => {

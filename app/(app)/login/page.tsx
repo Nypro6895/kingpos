@@ -2,6 +2,9 @@ import { withExperiencePage } from "@/components/experience-page";
 import { LoginForm } from "@/app/login/login-form";
 import { LegalFooter } from "@/components/legal-footer";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
+import { splitGiftAuthReturn } from "@/lib/auth-return-fragment";
+import { cookies } from "next/headers";
+import { PENDING_MFA_ACCESS_TOKEN_COOKIE } from "@/lib/supabase/mfa-session";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -191,7 +194,8 @@ function MobileBrandVisual() {
 
 async function LoginPage({ searchParams }: LoginPageProps) {
   const { error, message, next } = await searchParams;
-  const nextPath = sanitizeAuthReturnPath(next);
+  const nextPath = splitGiftAuthReturn(sanitizeAuthReturnPath(next)).serverPath;
+  const resumeMfa = Boolean((await cookies()).get(PENDING_MFA_ACCESS_TOKEN_COOKIE)?.value);
 
   return (
     <div className={styles.authViewport}>
@@ -250,6 +254,7 @@ async function LoginPage({ searchParams }: LoginPageProps) {
 
                 <LoginForm
                   nextPath={nextPath}
+                  resumeMfa={resumeMfa}
                   showRecoveryHelpInitially={Boolean(error)}
                 />
 

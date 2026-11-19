@@ -3,12 +3,15 @@ import type { NextRequest } from "next/server";
 import { ACCOUNT_LOGIN_SESSION_COOKIE } from "@/lib/account-security-shared";
 import { REMEMBER_LOGIN_COOKIE, sessionCookieOptions, tokenNeedsRefresh } from "./session-policy";
 import { isConfirmedAuthRejection } from "./auth-rejection";
+import { readMfaAssurance, type MfaAssurance } from "./mfa-assurance";
+import { pendingMfaCookieUpdates } from "./mfa-session";
 
 type CookieUpdate = { name: string; value: string; options: ReturnType<typeof sessionCookieOptions> };
 
 // Coalesce refreshes within a worker. Supabase's reuse window covers other workers.
 // Never persist raw refresh tokens as map keys, or retain completed sessions indefinitely.
-const refreshes = new Map<string, Promise<Awaited<ReturnType<ReturnType<typeof createClient>["auth"]["refreshSession"]>>>>();
+type RefreshResult = Awaited<ReturnType<ReturnType<typeof createClient>["auth"]["refreshSession"]>>;
+const refreshes = new Map<string, Promise<{ result: RefreshResult; assurance: MfaAssurance }>>();
 
 export async function refreshRequestSession(request: NextRequest): Promise<{ updates: CookieUpdate[]; unavailable: boolean }> {
   const updates: CookieUpdate[] = [];
@@ -25,13 +28,17 @@ export async function refreshRequestSession(request: NextRequest): Promise<{ upd
     if (refreshes.size >= 500) return { updates, unavailable: true };
     const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
       global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(10_000) }) } });
-    operation = client.auth.refreshSession({ refresh_token: refreshToken });
+    operation = (async () => {
+      const result = await client.auth.refreshSession({ refresh_token: refreshToken });
+      const assurance = result.data.session && !result.error ? await readMfaAssurance(client, result.data.session.access_token) : "unavailable";
+      return { result, assurance };
+    })();
     refreshes.set(hash, operation);
     const timer = setTimeout(() => refreshes.delete(hash), 10_000);
     timer.unref();
   }
   try {
-    const { data, error } = await operation;
+    const { result: { data, error }, assurance } = await operation;
     if (error || !data.session) {
       // A refresh failure does not establish that the account signed out.
       // Unknown400/408 must stop strict readers before an expired access token
@@ -41,6 +48,12 @@ export async function refreshRequestSession(request: NextRequest): Promise<{ upd
     }
     // Persist only an explicit Remember choice; legacy sessions never opt in silently.
     const remember = request.cookies.get(REMEMBER_LOGIN_COOKIE)?.value === "1";
+    if (assurance === "unavailable") return { updates, unavailable: true };
+    if (assurance === "required") {
+      updates.push(...pendingMfaCookieUpdates({ accessToken: data.session.access_token, refreshToken: data.session.refresh_token, rememberLogin: remember }));
+      for (const update of updates) request.cookies.set(update.name, update.value);
+      return { updates, unavailable: false };
+    }
     const options = sessionCookieOptions(remember);
     updates.push({ name: "sb-access-token", value: data.session.access_token, options },
       { name: "sb-refresh-token", value: data.session.refresh_token, options },

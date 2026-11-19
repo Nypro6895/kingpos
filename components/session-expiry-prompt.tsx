@@ -195,7 +195,7 @@ export function SessionExpiryPrompt({ authenticated }: { authenticated: boolean 
       <p id="session-expiry-description" className="mt-2 text-sm text-text-secondary">
         <WorkspaceText text="Your session has expired. Please log in to continue." />
       </p>
-      <ExpiredSessionSignIn key={scopeId ?? "public"} nextPath={nextPath} onAuthenticated={() => {
+      <ExpiredSessionSignIn key={scopeId ?? "public"} nextPath={nextPath} resumeMfa onAuthenticated={() => {
         sessionGeneration.current += 1;
         hadSession.current = true;
         invalidated.current = false;

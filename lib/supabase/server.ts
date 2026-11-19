@@ -20,6 +20,7 @@ export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
 export const PENDING_MFA_ACCESS_TOKEN_COOKIE = "sb-pending-mfa-access-token";
 export const PENDING_MFA_REFRESH_TOKEN_COOKIE = "sb-pending-mfa-refresh-token";
 export const PENDING_MFA_REMEMBER_COOKIE = "sb-pending-mfa-remember";
+export const PENDING_MFA_CHALLENGE_COOKIE = "sb-pending-mfa-challenge";
 
 const PENDING_MFA_MAX_AGE_SECONDS = 60 * 10;
 
@@ -141,6 +142,7 @@ export function clearPendingMfaSessionCookieWriter(
   cookieStore.delete(PENDING_MFA_ACCESS_TOKEN_COOKIE);
   cookieStore.delete(PENDING_MFA_REFRESH_TOKEN_COOKIE);
   cookieStore.delete(PENDING_MFA_REMEMBER_COOKIE);
+  cookieStore.delete(PENDING_MFA_CHALLENGE_COOKIE);
 }
 
 export function setPendingMfaSessionCookieWriter(
@@ -307,11 +309,12 @@ export async function createAuthenticatedSupabaseAuthSessionServerClient() {
   return supabase;
 }
 
-export async function createPendingMfaSupabaseAuthSessionServerClient() {
+export async function createPendingMfaSupabaseAuthSessionServerClient(options: { throwOnUnavailable?: boolean } = {}) {
   const config = getSupabaseConfig();
   const sessionTokens = await getPendingMfaSessionTokensFromRequest();
 
   if (!config || !sessionTokens) {
+    if (!config && options.throwOnUnavailable) throw new AuthAvailabilityError("Authentication");
     return null;
   }
 
@@ -330,13 +333,31 @@ export async function createPendingMfaSupabaseAuthSessionServerClient() {
   });
 
   if (error || !data.session || !data.user) {
+    if (options.throwOnUnavailable) {
+      if (!error) throw new AuthAvailabilityError("Authentication");
+      assertAuthAvailable(error, error?.status, "Authentication");
+    }
     return null;
   }
 
   return {
     rememberLogin: sessionTokens.rememberLogin,
+    continuationId: pendingMfaContinuationId(sessionTokens),
+    accessToken: data.session.access_token,
+    challengeReceipt: (await cookies()).get(PENDING_MFA_CHALLENGE_COOKIE)?.value,
     supabase,
   };
+}
+
+export function pendingMfaContinuationId(tokens: SupabaseSessionTokens) {
+  return createHash("sha256").update(JSON.stringify([tokens.accessToken, tokens.refreshToken])).digest("hex");
+}
+
+/** Validate the freshly verified token, never a different request cookie. */
+export async function validateSupabaseAppSession(accessToken: string) {
+  const config = getSupabaseConfig();
+  if (!config) throw new AuthAvailabilityError("Authentication");
+  return isAccessTokenAllowedForAppSession(config, accessToken, true, true);
 }
 
 async function isAccessTokenAllowedForAppSession(
@@ -363,6 +384,7 @@ async function isAccessTokenAllowedForAppSession(
 
   if (authError || !authData.user) {
     if (throwOnRejected && authError && isConfirmedAuthRejection(authError, authError.status)) throw new AuthRejectionError(401);
+    if (!authError && throwOnUnavailable) throw new AuthAvailabilityError("Authentication");
     if (throwOnUnavailable) assertAuthAvailable(authError, authError?.status, "Authentication");
     return false;
   }
@@ -566,6 +588,9 @@ export async function getPendingMfaSessionTokensFromRequest(): Promise<PendingMf
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(PENDING_MFA_ACCESS_TOKEN_COOKIE)?.value;
   const refreshToken = cookieStore.get(PENDING_MFA_REFRESH_TOKEN_COOKIE)?.value;
+  const authorization = (await headers()).get("authorization");
+  const bearer = authorization?.match(/^Bearer\s+(\S+)$/i)?.[1] ?? null;
+  if (authorization !== null && (!bearer || bearer !== accessToken)) return null;
 
   if (!accessToken || !refreshToken) {
     return null;
@@ -614,6 +639,7 @@ export async function getSupabaseAuthUser(options: { throwOnUnavailable?: boolea
   const { data, error } = await readAuthUser(supabase, accessToken, getSupabaseConfig());
 
   if (error || !data.user) {
+    if (!error && options.throwOnUnavailable !== false) throw new AuthAvailabilityError("Authentication");
     if (options.throwOnUnavailable !== false) assertAuthAvailable(error, error?.status, "Authentication");
     return null;
   }

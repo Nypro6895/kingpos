@@ -134,7 +134,12 @@ export function sanitizeAuthReturnPath(
 }
 
 export function loginHrefForReturnPath(path: string) {
-  return `/login?next=${encodeURIComponent(sanitizeAuthReturnPath(path))}`;
+  const sanitized = sanitizeAuthReturnPath(path);
+  const gift = new URL(sanitized, INTERNAL_URL_ORIGIN);
+  if (gift.pathname === "/gift-cards" && /^#card=[a-f0-9]{64}$/.test(gift.hash)) {
+    return `/login?next=${encodeURIComponent(`${gift.pathname}${gift.search}`)}${gift.hash}`;
+  }
+  return `/login?next=${encodeURIComponent(sanitized)}`;
 }
 
 export function getAuthRouteWorkspaceKind(path: string): AuthRouteWorkspaceKind {
