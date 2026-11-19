@@ -32,9 +32,13 @@ stubs. XHR, EventSource and external image/script requests are covered by those
 resource rules. Their original recovery/diagnostic assertions are retained.
 
 The new fixture tests exercise GET/HEAD and forbidden POST against only an owned
-loopback listener, then probe direct browser APIs and an owned image canary with
-zero accepted listener requests. These establish fixture isolation, not live
-provider or physical-device acceptance.
+loopback listener, then probe direct browser APIs with zero accepted requests.
+A separate inline WebView uses an owned one-pixel PNG positive control without
+the local scheme's response CSP: the unfenced image must load, then the same
+precreation fence must deny the image with no additional listener request.
+Owned visible windows and bounded 30-second readiness waits accommodate cold
+WebKit startup; these waits are not product performance measurements. These
+checks establish fixture isolation, not live provider or physical acceptance.
 
 The hosted viewport script contract also now explicitly expects the existing
 ReceiptPrintBridge once, alongside AppViewport, NativeBridge and

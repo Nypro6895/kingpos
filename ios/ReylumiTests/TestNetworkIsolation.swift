@@ -4,7 +4,7 @@ import WebKit
 @testable import Reylumi
 
 /// Real controller startup stays enabled, but its only server is this owned
-/// ephemeral IPv4 loopback listener. It has no proxy, assets or write handlers.
+/// ephemeral IPv4 loopback listener. It has no proxy or write handlers.
 final class StartupLoopbackFixture: @unchecked Sendable {
     private let listener: NWListener
     private let queue = DispatchQueue(label: "reylumi.tests.startup." + UUID().uuidString)
@@ -58,12 +58,15 @@ final class StartupLoopbackFixture: @unchecked Sendable {
             guard let data, !data.isEmpty, buffer.count + data.count <= 8192 else { self.finish(connection); return }
             let request = buffer + data
             guard request.range(of: Data("\r\n\r\n".utf8)) != nil else { self.receive(connection, buffer: request); return }
-            let method = String(decoding: request, as: UTF8.self).components(separatedBy: " ").first ?? ""
+            let parts = String(decoding: request, as: UTF8.self).components(separatedBy: " ")
+            let method = parts.first ?? ""
             self.lock.lock(); self.methods.append(method); self.lock.unlock()
             let allowed = method == "GET" || method == "HEAD"
-            let body = Data((allowed ? "<!doctype html><html><body><h1>Owned startup fixture</h1></body></html>" : "Writes forbidden").utf8)
+            let image = allowed && parts.count > 1 && parts[1].components(separatedBy: "?")[0] == "/canary.png"
+            let body = image ? Data(base64Encoded: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=")! : Data((allowed ? "<!doctype html><html><body><h1>Owned startup fixture</h1></body></html>" : "Writes forbidden").utf8)
             let status = allowed ? "200 OK" : "405 Method Not Allowed"
-            let headers = Data("HTTP/1.1 \(status)\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: \(body.count)\r\nContent-Security-Policy: default-src 'none'; style-src 'unsafe-inline'\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n".utf8)
+            let type = image ? "image/png" : "text/html; charset=utf-8"
+            let headers = Data("HTTP/1.1 \(status)\r\nContent-Type: \(type)\r\nContent-Length: \(body.count)\r\nContent-Security-Policy: default-src 'none'; style-src 'unsafe-inline'\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n".utf8)
             connection.send(content: headers + (method == "HEAD" ? Data() : body), completion: .contentProcessed { [weak self] _ in self?.finish(connection) })
         }
     }
@@ -101,17 +104,23 @@ final class InstalledBundleNetworkFence {
         let rules = try XCTUnwrap(rules, "Prepare the resource fence before constructing WebKit")
         let previous = controller.configureWebViewForTesting
         controller.configureWebViewForTesting = { configuration in
-            configuration.userContentController.add(rules)
-            configuration.userContentController.addUserScript(WKUserScript(source: """
+            Self.configure(configuration, rules: rules)
+            // Preserve each test's own counters and compatibility probes.
+            previous?(configuration)
+        }
+    }
+    func apply(to configuration: WKWebViewConfiguration) throws {
+        Self.configure(configuration, rules: try XCTUnwrap(rules))
+    }
+    private static func configure(_ configuration: WKWebViewConfiguration, rules: WKContentRuleList) {
+        configuration.userContentController.add(rules)
+        configuration.userContentController.addUserScript(WKUserScript(source: """
             window.fetch=()=>Promise.reject(new TypeError('XCTest browser network blocked'));
             XMLHttpRequest.prototype.open=function(){throw new TypeError('XCTest XHR blocked')};
             window.WebSocket=class extends EventTarget{static CONNECTING=0;static OPEN=1;static CLOSING=2;static CLOSED=3;readyState=3;send(){}close(){}};
             window.EventSource=class extends EventTarget{static CONNECTING=0;static OPEN=1;static CLOSED=2;readyState=2;close(){}};
             navigator.sendBeacon=()=>false;
             """, injectionTime: .atDocumentStart, forMainFrameOnly: false))
-            // Preserve each test's own counters and compatibility probes.
-            previous?(configuration)
-        }
     }
     func close() { WKContentRuleListStore.default().removeContentRuleList(forIdentifier: identifier) { _ in }; rules = nil }
 }
@@ -130,7 +139,7 @@ final class TestNetworkIsolationTests: XCTestCase {
     }
 
     @MainActor
-    func testInstalledBrowserFenceDeniesDirectAPIsAndOwnedHTTPResources() async throws {
+    func testInstalledBrowserFenceDeniesDirectAPIs() async throws {
         let fixture = try StartupLoopbackFixture(); defer { fixture.stop() }; try await fixture.start()
         let (bundle, directory) = try AppLocalTestFixture.bundle()
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -138,15 +147,12 @@ final class TestNetworkIsolationTests: XCTestCase {
         let controller = ReylumiLocalAppViewController(bundle: bundle, origin: fixture.origin, startPath: "/help", transport: transport)
         let fence = InstalledBundleNetworkFence(); defer { fence.close() }; try await fence.prepare()
         try fence.install(on: controller)
+        let window = makeWindow(controller)
+        defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(controller.webView)
         defer { web.stopLoading() }
-        for _ in 0..<200 {
-            if (try? await web.evaluateJavaScript("window.fixtureLocal===true")) as? Bool == true { break }
-            try await Task.sleep(nanoseconds: 10_000_000)
-        }
-        let ready = try await web.evaluateJavaScript("window.fixtureLocal===true") as? Bool
-        XCTAssertEqual(ready, true)
+        try await wait("window.fixtureLocal===true", in: web)
         let target = String(decoding: try JSONSerialization.data(withJSONObject: fixture.origin.absoluteString, options: .fragmentsAllowed), as: UTF8.self)
         _ = try await web.evaluateJavaScript("""
         (()=>{
@@ -156,17 +162,53 @@ final class TestNetworkIsolationTests: XCTestCase {
           isolationProbe.beacon=navigator.sendBeacon(target,'fixture')===false;
           const ws=new WebSocket(target.replace('http:','ws:'));isolationProbe.ws=ws.readyState===3;ws.close();
           const es=new EventSource(target);isolationProbe.events=es.readyState===2;es.close();
-          const image=new Image();image.onload=()=>isolationProbe.image=false;image.onerror=()=>isolationProbe.image=true;image.src=target+'/canary';
           return true;
         })()
         """)
-        for _ in 0..<200 {
-            if (try? await web.evaluateJavaScript("Object.keys(isolationProbe).length===6&&Object.values(isolationProbe).every(Boolean)")) as? Bool == true { break }
-            try await Task.sleep(nanoseconds: 10_000_000)
-        }
-        let denied = try await web.evaluateJavaScript("Object.keys(isolationProbe).length===6&&Object.values(isolationProbe).every(Boolean)") as? Bool
-        XCTAssertEqual(denied, true)
+        try await wait("Object.keys(isolationProbe).length===5&&Object.values(isolationProbe).every(Boolean)", in: web)
         XCTAssertTrue(fixture.requestMethods.isEmpty, "Even the owned canary must not receive browser traffic")
+    }
+
+    @MainActor
+    func testResourceFenceBlocksImageAfterOwnedPositiveControl() async throws {
+        let fixture = try StartupLoopbackFixture(); defer { fixture.stop() }; try await fixture.start()
+        let fence = InstalledBundleNetworkFence(); defer { fence.close() }; try await fence.prepare()
+        let host = UIViewController(), window = makeWindow(nil)
+        window.rootViewController = host
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let target = fixture.origin.appendingPathComponent("canary.png").absoluteString
+        for blocked in [false, true] {
+            let configuration = WKWebViewConfiguration()
+            configuration.websiteDataStore = .nonPersistent()
+            if blocked { try fence.apply(to: configuration) }
+            let web = WKWebView(frame: window.bounds, configuration: configuration)
+            host.view.addSubview(web)
+            defer { web.stopLoading(); web.removeFromSuperview() }
+            // Inline HTML has no LocalScheme response CSP. The unfenced case
+            // proves this exact owned image can load before testing the rules.
+            web.loadHTMLString("""
+            <!doctype html><html><body><img src="\(target)?blocked=\(blocked)" onload="window.imageLoaded=true" onerror="window.imageDenied=true"></body></html>
+            """, baseURL: fixture.origin)
+            try await wait(blocked ? "window.imageDenied===true" : "window.imageLoaded===true", in: web)
+            XCTAssertEqual(fixture.requestMethods, ["GET"], "Only the unfenced positive control may reach the listener")
+        }
+    }
+
+    @MainActor
+    private func makeWindow(_ controller: UIViewController?) -> UIWindow {
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
+        window.rootViewController = controller; window.isHidden = false
+        return window
+    }
+    @MainActor
+    private func wait(_ expression: String, in web: WKWebView) async throws {
+        for _ in 0..<600 {
+            if (try? await web.evaluateJavaScript(expression)) as? Bool == true { return }
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+        XCTFail("Owned network fixture did not finish: \(expression)")
+        throw URLError(.timedOut)
     }
 }
 
