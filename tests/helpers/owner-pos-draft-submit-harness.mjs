@@ -42,10 +42,11 @@ function textOf(tree) {
 
 /**
  * Executes the unchanged production TSX callbacks in an isolated VM. React's
- * state/ref containers are synchronous here; effects, DOM and remote adapters
- * are inert. It does not claim browser/React scheduling or device acceptance.
+ * state/ref containers are synchronous here; current props are committed to the
+ * draft ref, while other effects, DOM and remote adapters are inert. It does
+ * not claim browser/React scheduling or device acceptance.
  */
-export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch = 'queue', existingOperation = false, cartOverrides = {} } = {}) {
+export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch = 'queue', existingOperation = false, cartOverrides = {}, savedTicketMode = 'shared' } = {}) {
   const source = Object.fromEntries([ownerPath, draftsPath].map(path => [path, readFileSync(resolve(sourceRoot, path), 'utf8')]));
   const slots = { owner: hookSlots(source[ownerPath], 'OwnerPosWorkspace'), drafts: hookSlots(source[draftsPath], 'PortableDraftControls') };
   const cartA = { id: 'fixture-cart-A', amount: '10', staffId: 'fixture-staff', serviceId: 'fixture-service', customer: null, lines: [], tip: '', discount: '', ...cartOverrides };
@@ -70,7 +71,7 @@ export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch 
   const rewardView = branch === 'reward' ? { request: { status: 'confirmed', valueCents: 0, quote: {} } } : null;
   const engines = {
     owner: { states: [], refs: [], stateOverrides: { cart: cartA, rewardView }, refOverrides: { current: cartA, giftCheckout: () => branch === 'gift' ? beginAttempt('gift') : Promise.resolve(null) } },
-    drafts: { states: [], refs: [], stateOverrides: { saved: [savedB] }, refOverrides: {} },
+    drafts: { states: [], refs: [], stateOverrides: { saved: [savedB] }, refOverrides: { savedRows: [savedB] } },
   };
   function beginRender(kind) { frame = engines[kind]; frame.slots = slots[kind]; frame.stateIndex = 0; frame.refIndex = 0; }
   const react = {
@@ -97,6 +98,7 @@ export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch 
     if (name === 'listPortableOperations') return async () => { await beginAttempt('queue'); return queued; };
     if (name === 'savePortableOperation') return async (ownerScope, type, payload) => { queued.push({ ownerScope, type, payload }); };
     if (name === 'portableDeviceStorage') return storage;
+    if (name === 'savedPosDraft') return (value, label) => ({ id: `fixture-parked-${++nextId}`, at: 1, label, value });
     return inert;
   } });
   function load(path, exportPrivate = false) {
@@ -116,10 +118,22 @@ export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch 
   const owner = load(ownerPath, true), drafts = load(draftsPath);
   const props = { scope, salonId: 'fixture-salon', salonName: 'Fixture salon', initial: { staff: [{id:"fixture-staff",display_name:"Staff",today_status:"working"}], services: [{id:"fixture-service",name:"Manicure"}], defaults: { staffCheckInEnabled: false }, today: '2026-11-03' }, preferences };
   function renderOwner() { beginRender('owner'); return owner.OwnerPosWorkspace(props); }
-  function draftProps() { return elements(renderOwner()).find(node => typeof node.props?.restore === 'function' && node.props.scope === scope).props; }
-  function renderDrafts() { const props = draftProps(); beginRender('drafts'); return drafts.PortableDraftControls(props); }
+  function draftProps() {
+    const props = elements(renderOwner()).find(node => typeof node.props?.restore === 'function' && node.props.scope === scope).props;
+    // PortableDraftControls still supports its local-only confirmation flow.
+    // Owner normally supplies the shared opener; only legacy-confirmation cases
+    // explicitly choose that existing local-only component variant.
+    return savedTicketMode === 'local' ? { ...props, sharedTickets: undefined } : props;
+  }
+  function renderDrafts() {
+    const props = draftProps(); beginRender('drafts'); const tree = drafts.PortableDraftControls(props);
+    // Commit only the production value/reset/active/disabled ref-sync effect.
+    // Network, timers and all other effects stay inert in this callback fixture.
+    engines.drafts.refs[slots.drafts.useRef.indexOf('current')].current = { value: props.value, reset: props.reset, active: props.active, disabled: props.disabled };
+    return tree;
+  }
   function click(button, { force = false } = {}) { if (!button) throw Error('Expected production button was not rendered'); if (button.props.disabled && !force) return false; button.props.onClick(); return true; }
-  function control(label, tree = renderDrafts()) { return elements(tree).find(node => node.type === 'button' && textOf(node) === label); }
+  function control(label, tree = renderDrafts()) { return elements(tree).find(node => node.type === 'button' && (node.props['aria-label'] === label || textOf(node) === label)); }
   function launcher() { return elements(renderDrafts()).find(node => node.props?.['data-pos-saved-launcher'] !== undefined); }
   function openSaved(options) { if(launcher().props.disabled&&!options?.force)return false; if(elements(renderDrafts()).some(n=>n.props?.['aria-label']==='Saved tickets'))return true; return click(launcher(), options); }
   function selectSaved(options) { return click(elements(renderDrafts()).find(node => node.type === 'button' && textOf(node).startsWith('Draft B')), options); }
@@ -131,7 +145,7 @@ export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch 
   const result = {
     cartA, cartB, cartKey, savedKey, attempts, queued, actions, writes, deliveries,
     provenance: { ownerPath, draftsPath, sourceSha256: Object.fromEntries(Object.entries(source).map(([path, contents]) => [path, createHash('sha256').update(contents).digest('hex')])), hookSlots: slots,
-      boundary: 'Actual production TSX callback bodies; synchronous state/ref fixture; effects/DOM/transports are inert; synthetic data in memory only.' },
+      boundary: 'Actual production TSX callback bodies; synchronous state/ref fixture with current-props ref commit; other effects/DOM/transports are inert; synthetic data in memory only.' },
     submit(options) { return click(control('Submit', renderOwner()), options); },
     openSaved, selectSaved, confirmTakeover,
     captureTakeoverHandler() {
@@ -140,9 +154,11 @@ export function createPosDraftSubmitHarness({ sourceRoot = resolve('.'), branch 
       if (!button) throw Error('Saved-ticket takeover confirmation is not open');
       return button.props.onClick;
     },
-    takeoverSaved(options) {
+    async takeoverSaved(options) {
       if (!openSaved(options) || !selectSaved(options)) return false;
-      return elements(renderDrafts()).some(node => node.props?.['aria-label'] === 'Open saved ticket') ? confirmTakeover(options) : true;
+      if (elements(renderDrafts()).some(node => node.props?.['aria-label'] === 'Open saved ticket')) return confirmTakeover(options);
+      await result.flush();
+      return state('cart').id === cartB.id;
     },
     park(options) { if (!control('Save for later')) openSaved({force:true}); return click(control('Save for later'), options); },
     restoreDirect(value = cartB) { return draftProps().restore(value); },

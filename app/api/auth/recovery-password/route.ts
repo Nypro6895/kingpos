@@ -1,8 +1,8 @@
+import { isBearerOnlyMutationOrigin } from "@/lib/request-origin";
 import {NextResponse} from "next/server";
 import {adminIdentityClient} from "@/lib/platform-admin/user-identity";
 export async function POST(request:Request) {
- const origin=request.headers.get("origin");
- if(origin&&origin!==new URL(request.url).origin)return NextResponse.json({error:"Use the password reset page on this website."},{status:403});
+ if(!isBearerOnlyMutationOrigin(request))return NextResponse.json({error:"Use the password reset page on this website."},{status:403});
  const token=request.headers.get("authorization")?.match(/^Bearer ([^\s]+)$/)?.[1];
  if(!token)return NextResponse.json({error:"Use a valid password reset link."},{status:401});
  let input:{password?:unknown};

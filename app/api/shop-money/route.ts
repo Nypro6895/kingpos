@@ -1,9 +1,10 @@
+import { effectiveRequestOrigin, isSameOriginMutation } from "@/lib/request-origin";
 import {NextRequest} from "next/server";
 import {getCurrentBusinessContext,isOwnerMembership} from "@/lib/current-context";
 import {createAuthenticatedSupabaseServerClient} from "@/lib/supabase/server";
 export async function POST(request:NextRequest){
  const headers={"Cache-Control":"no-store","Referrer-Policy":"no-referrer"};
- if(request.headers.get("origin")&&request.headers.get("origin")!==request.nextUrl.origin)return Response.json({error:"Invalid origin"},{status:403,headers});
+ if(!isSameOriginMutation(request))return Response.json({error:"Invalid origin"},{status:403,headers});
  if(!request.headers.get("content-type")?.startsWith("application/json"))return Response.json({error:"JSON required"},{status:400,headers});
  try{
   const raw=await request.text();if(raw.length>12000)throw Error("Request too large");
@@ -22,6 +23,6 @@ export async function GET(request:NextRequest){
  const params=request.nextUrl.searchParams;
  if([...params].some(([key])=>!['op','salonId','start','end'].includes(key)||params.getAll(key).length!==1)||params.has('op')&&params.get('op')!=='context')return Response.json({error:'Invalid query'},{status:400,headers:{'Cache-Control':'no-store'}});
  const body=params.get('op')==='context'?{op:'context'}:{op:'read',salonId:params.get('salonId'),start:params.get('start'),end:params.get('end')};
- const headers=new Headers(request.headers);headers.set('Content-Type','application/json');
+ const headers=new Headers(request.headers);headers.set('Content-Type','application/json');headers.set('Origin',effectiveRequestOrigin(request));
  return POST(new NextRequest(request.nextUrl,{method:'POST',headers,body:JSON.stringify(body)}));
 }

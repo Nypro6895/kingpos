@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { cookies } from 'next/headers';
 import { createHash } from 'node:crypto';
 import { ACCOUNT_LOGIN_SESSION_COOKIE } from '@/lib/account-security-shared';
@@ -6,7 +7,7 @@ import { getCurrentKingUser } from '@/lib/users/current-user';
 import { getWindowsPosRelease } from '@/lib/windows-pos-release';
 
 export async function POST(request: Request) {
-  if (request.headers.get('origin') !== new URL(request.url).origin) return Response.json({}, { status: 403 });
+  if (!isSameOriginMutation(request)) return Response.json({}, { status: 403 });
   const [user, client] = await Promise.all([getCurrentKingUser(), createAuthenticatedSupabaseServerClient()]);
   if (!user || user.status !== 'active' || !client) return Response.json({}, { status: 401 });
   const input = await request.json().catch(() => null);

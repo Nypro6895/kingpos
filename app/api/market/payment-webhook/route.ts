@@ -4,9 +4,12 @@ import { syncBookingDepositSubscription } from "@/lib/booking-deposit-subscripti
 import { syncCheckinReceiptSubscription } from "@/lib/checkin-receipt-subscription";
 import { NextResponse } from "next/server";
 import { marketServiceClient, syncVietnameseSubscription, verifyMarketWebhook } from "@/lib/market-payments";
+import { readBoundedRequestText, requestBodyFailure } from "@/lib/request-body";
 
 export async function POST(request: Request) {
-  const payload = await request.text();
+  let payload: string;
+  try { payload = await readBoundedRequestText(request, 1000000); }
+  catch (error) { return requestBodyFailure(error); }
   if (!verifyMarketWebhook(payload, request.headers.get("stripe-signature") ?? "")) return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   try {
     const event = JSON.parse(payload);

@@ -1,7 +1,8 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { NextRequest, NextResponse } from "next/server";
 import { replayPortableOperation } from "@/app/pos/portable/actions";
 export async function POST(request: NextRequest) {
-  if (request.headers.get("origin") !== request.nextUrl.origin) return new NextResponse(null,{status:403});
+  if (!isSameOriginMutation(request)) return new NextResponse(null,{status:403});
   const text = await request.text();
   if (text.length > 128000) return new NextResponse(null,{status:413});
   let input;

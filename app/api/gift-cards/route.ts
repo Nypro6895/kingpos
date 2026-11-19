@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { getGiftDisplayAppearance } from "@/lib/gift-display-appearance";
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
@@ -18,8 +19,8 @@ const PASSIVE_READS = new Set([
 
 export async function POST(request: NextRequest) {
   // All stateful requests use JSON and same-origin requests; bearer secrets stay out of URLs/logs.
-  const origin = request.headers.get("origin");
-  if (origin && origin !== request.nextUrl.origin || !request.headers.get("content-type")?.startsWith("application/json")) return Response.json({ error: "Invalid request origin." }, { status: 403 });
+
+  if (!isSameOriginMutation(request) || !request.headers.get("content-type")?.startsWith("application/json")) return Response.json({ error: "Invalid request origin." }, { status: 403 });
   const raw = await request.text(); if (raw.length > 2300000) return Response.json({ error: "Request too large." }, { status: 413 });
   try {
     const { scope, op, args = {}, token } = JSON.parse(raw);

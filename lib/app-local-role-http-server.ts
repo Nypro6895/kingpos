@@ -1,3 +1,4 @@
+import { effectiveRequestOrigin, isSameOriginMutation } from "@/lib/request-origin";
 import "server-only";
 import { GET as ownerAttentionGET, POST as ownerAttentionPOST } from "@/app/api/owner-attention/route";
 import { NextRequest } from "next/server";
@@ -60,11 +61,11 @@ export async function readAppLocalRoleHttpResource(name: string, args: Record<st
 }
 export async function runAppLocalRoleHttpCommand(name: string, args: Record<string, unknown>, request: Request, scope: string): Promise<{ handled: boolean; data?: AppLocalHttpResponse; status?: number }> {
   if (!Object.hasOwn(ROLE_COMMANDS, name)) return { handled: false };
-  const origin = new URL(request.url).origin;
-  if (request.headers.get("origin") !== origin) fail(403, "Please open the form again.");
+  const origin = effectiveRequestOrigin(request);
+  if (!isSameOriginMutation(request)) fail(403, "Please open the form again.");
   if (!args || typeof args !== "object" || Array.isArray(args) || Object.keys(args).some(key => key !== "input") || !args.input || typeof args.input !== "object" || Array.isArray(args.input)) fail(400, "Invalid application request");
   const body = JSON.stringify(args.input); if (body.length > 64 * 1024) fail(413, "This request is too large.");
-  const current = await authorized(scope), forwarded = new Headers({ "Content-Type": "application/json", Origin: origin });
+  const current = await authorized(scope), forwarded = new Headers({ "Content-Type": "application/json", Origin: origin, Host: new URL(origin).host });
   const cookie = request.headers.get("cookie") ?? current.get("cookie"); if (cookie) forwarded.set("cookie", cookie);
   const handlers = { "http.owner.attention": ownerAttentionPOST, "http.owner.shop-money": shopMoneyPOST, "http.benefits.gift-cards": giftPOST, "http.benefits.rewards": rewardPOST, "http.staff.create-appointment": creationPOST, "http.staff.report-no-show": noShowPOST, "http.staff.confirm-booking": confirmPOST, "http.staff.booking-preferences": staffPreferencesPOST, "http.notifications.preferences": preferencesPOST, "http.owner.closing": closingPOST };
   const rule = ROLE_COMMANDS[name as keyof typeof ROLE_COMMANDS], handler = handlers[name as keyof typeof handlers];

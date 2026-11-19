@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { NextRequest, after } from "next/server";
 import { broadcastPosStaffChange } from "@/lib/pos-staff-realtime-server";
 import { cookies } from "next/headers";
@@ -16,8 +17,7 @@ const PASSIVE_READS = new Set([
 
 export async function POST(request: NextRequest) {
   const headers = { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" };
-  const origin = request.headers.get("origin");
-  if ((origin && origin !== request.nextUrl.origin) || !request.headers.get("content-type")?.startsWith("application/json")) return Response.json({ error: "Invalid request origin." }, { status: 403, headers });
+  if ((!isSameOriginMutation(request)) || !request.headers.get("content-type")?.startsWith("application/json")) return Response.json({ error: "Invalid request origin." }, { status: 403, headers });
   const raw = await request.text();
   if (raw.length > 100000) return Response.json({ error: "Request too large." }, { status: 413, headers });
   try {

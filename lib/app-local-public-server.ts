@@ -1,3 +1,4 @@
+import { effectiveRequestOrigin, isSameOriginMutation } from "@/lib/request-origin";
 import "server-only";
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
@@ -72,7 +73,7 @@ export async function readAppLocalPublicResource(name: string, args: Record<stri
 /** Original booking confirm is invoked once, only after fresh scope and its own Origin/input guards. */
 export async function runAppLocalPublicHttpCommand(name: string, args: Record<string, unknown>, request: Request, scope: string): Promise<{ handled: boolean; data?: AppLocalHttpResponse; status?: number }> {
   if (name !== "http.public-booking.confirm") return { handled: false };
-  const origin = new URL(request.url).origin; if (request.headers.get("origin") !== origin) fail(403, "Please open booking again.");
+  const origin = effectiveRequestOrigin(request); if (!isSameOriginMutation(request)) fail(403, "Please open booking again.");
   if (Object.keys(args).some(key => key !== "input") || !args.input || typeof args.input !== "object" || Array.isArray(args.input) || JSON.stringify(args.input).length > 32768) fail(400, "Invalid booking request");
   const { current } = await authorized(scope);
   // A salon may enable a deposit after this device loaded its catalog. Check
@@ -80,6 +81,6 @@ export async function runAppLocalPublicHttpCommand(name: string, args: Record<st
   const salonId = id((args.input as Record<string, unknown>).salonId);
   const booking = await runReadWithDeadline(getPublicBookingPageData(salonId, {}, { deferAvailability: true }), 12_000);
   if (booking.bookingDeposit) return { handled: true, status: 200, data: { status: 200, headers: { "content-type": "application/json" }, body: JSON.stringify({ ok: false, code: "payment_online_required", message: "Continue in secure booking to review payment. Your selections have been kept here." }) } };
-  const forwarded = new Headers({ "Content-Type": "application/json", Origin: origin }); const cookie = request.headers.get("cookie") ?? current.get("cookie"); if (cookie) forwarded.set("cookie", cookie);
+  const forwarded = new Headers({ "Content-Type": "application/json", Origin: origin, Host: new URL(origin).host }); const cookie = request.headers.get("cookie") ?? current.get("cookie"); if (cookie) forwarded.set("cookie", cookie);
   const data = await wire(await confirmPOST(new Request(new URL("/api/public-booking/confirm", origin), { method: "POST", headers: forwarded, body: JSON.stringify(args.input) }))); return { handled: true, data, status: data.status };
 }

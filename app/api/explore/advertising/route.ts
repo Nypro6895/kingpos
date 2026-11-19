@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import {
   signAdAttribution,
   AD_ATTRIBUTION_COOKIE,
@@ -154,7 +155,7 @@ export async function GET(request: NextRequest) {
   }
 }
 export async function POST(request: NextRequest) {
-  if (request.headers.get("origin") !== request.nextUrl.origin)
+  if (!isSameOriginMutation(request))
     return NextResponse.json({ allowed: false }, { status: 403 });
   try {
     const body = await readAdRequestJson(request) as {id?:unknown;path?:string;device?:string;event?:string;phase?:string;reservation?:unknown;disclosureProof?:unknown};

@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { checkWriterContext } from "@/lib/check-writer-server";
 import { checkPdf } from "@/lib/check-writer-pdf";
 import type { CheckRecord } from "@/types/check-writer";
@@ -12,8 +13,8 @@ const headers = {
 };
 export async function POST(req: Request) {
   try {
-    if (req.headers.get("origin") !== new URL(req.url).origin)
-      throw Error("Invalid request origin.");
+    if (!isSameOriginMutation(req))
+      return Response.json({ error: "Invalid request origin." }, { status: 403, headers });
     const body = await readCheckBody(req, 12000);
     const ctx = await checkWriterContext(true, true);
     if (body.salonId !== ctx.salonId)

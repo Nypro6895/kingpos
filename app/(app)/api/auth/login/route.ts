@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import {systemSmsReady} from "@/lib/system-sms";
 import { REMEMBER_LOGIN_SECONDS, writeLoginPolicy } from "@/lib/supabase/session-policy";
 import { assertAbuseRequest } from "@/lib/abuse-server";
@@ -220,6 +221,7 @@ function loginMfaRequiredResponse(input: {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Invalid request origin. Reload the page and try again." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const supabase = createSupabaseServerClient();
   const formData = await request.formData();
   const email = readString(formData, "email").toLowerCase();

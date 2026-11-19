@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "security-hardening-20261119",
+  "status": "working",
+  "summary": "Harden authenticated sessions, CSRF, browser headers, dependencies, webhook input bounds and POS search while preserving existing workflows",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "package.json",
+    "package-lock.json",
+    "next.config.ts",
+    "lib/supabase/server.ts",
+    "lib/account-security.ts",
+    "app/settings/login-security/actions.ts",
+    "app/(app)/api/auth/login/route.ts",
+    "app/(app)/api/vendor/maplibre-gl/route.ts",
+    "app/explore/explore-map.tsx",
+    "app/pos/actions.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\security-hardening-20261119-r1",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d"
+  },
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Implementation and compatibility validation"
+    }
+  ],
+  "dependencies": [],
+  "id": "7bf426c0-d0f3-416f-898e-3c561a23dd69",
+  "recordedAt": "2026-11-19T19:28:35.070Z",
+  "worktree": "C:\\Reylumi-worktrees\\security-hardening-20261119-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

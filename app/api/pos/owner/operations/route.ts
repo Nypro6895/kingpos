@@ -1,9 +1,10 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { broadcastPosStaffChange } from "@/lib/pos-staff-realtime-server";
 import { after, NextRequest, NextResponse } from "next/server";
 import { getCurrentBusinessContext, isSalonManageContext } from "@/lib/current-context";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 export async function POST(request: NextRequest) {
-  if (request.headers.get("origin") !== request.nextUrl.origin) return new NextResponse(null,{status:403});
+  if (!isSameOriginMutation(request)) return new NextResponse(null,{status:403});
   const context = await getCurrentBusinessContext();
   if (!context.user || !context.currentSalon || !isSalonManageContext(context)) return new NextResponse(null,{status:401});
   const text = await request.text(); if (text.length>128000) return new NextResponse(null,{status:413});

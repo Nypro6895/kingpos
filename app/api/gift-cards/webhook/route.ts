@@ -1,8 +1,11 @@
 import { verifyGiftSignature, syncGiftOnline } from "@/lib/gift-card-stripe";
 import { marketServiceClient } from "@/lib/market-payments";
+import { readBoundedRequestText, requestBodyFailure } from "@/lib/request-body";
 export async function POST(request: Request) {
-  const raw = await request.text();
-  if (raw.length > 1000000 || !verifyGiftSignature(raw, request.headers.get("stripe-signature") ?? "")) return new Response("Invalid signature", { status: 400 });
+  let raw: string;
+  try { raw = await readBoundedRequestText(request, 1000000); }
+  catch (error) { return requestBodyFailure(error); }
+  if (!verifyGiftSignature(raw, request.headers.get("stripe-signature") ?? "")) return new Response("Invalid signature", { status: 400 });
   try {
     const event = JSON.parse(raw); const object = event.data?.object;
     let id = object?.metadata?.gift_card_order;

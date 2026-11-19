@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
 import { createSignupTicket } from "@/lib/abuse-server";
 import { recordAdvertisingSignup } from "@/lib/advertising-attribution";
@@ -43,6 +44,7 @@ function getWorkspaceCookieOptions() {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Invalid request origin. Reload the page and try again." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const supabase = createSupabaseServerClient();
   const formData = await request.formData();
   const token = readString(formData, "token");

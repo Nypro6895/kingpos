@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { ACCOUNT_LOGIN_SESSION_COOKIE } from "@/lib/account-security-shared";
 import { recordCurrentAccountSessionLogout } from "@/lib/account-security";
 import { clearSupabaseSessionCookieWriter, createSupabaseServerClient, REFRESH_TOKEN_COOKIE } from "@/lib/supabase/server";
@@ -5,7 +6,8 @@ import { clearWorkspaceContextCookies } from "@/lib/current-context";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function POST() {
+export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Invalid request origin. Reload the page and try again." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const cookieStore = await cookies();
   await recordCurrentAccountSessionLogout().catch(() => undefined);
   // Revoke this Supabase session as well as clearing browser cookies.

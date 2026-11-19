@@ -1,3 +1,4 @@
+import { effectiveRequestOrigin, isSameOriginMutation } from "@/lib/request-origin";
 import "server-only";
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
@@ -44,11 +45,11 @@ export async function readAppLocalHttpResource(name: string, args: Record<string
 
 export async function runAppLocalHttpCommand(name: string, args: Record<string, unknown>, request: Request, scope: string): Promise<{ handled: boolean; data?: AppLocalHttpResponse; status?: number }> {
   if (name !== "owner.receipt-operation") return { handled: false };
-  const origin = new URL(request.url).origin;
-  if (request.headers.get("origin") !== origin) fail(403, "Please open the form again.");
+  const origin = effectiveRequestOrigin(request);
+  if (!isSameOriginMutation(request)) fail(403, "Please open the form again.");
   if (!args || Object.keys(args).some(key => key !== "operation") || !args.operation || typeof args.operation !== "object" || Array.isArray(args.operation)) fail(400, "Invalid receipt request");
   const current = await authorized(scope);
-  const forwarded = new Headers({ "Content-Type": "application/json", Origin: origin });
+  const forwarded = new Headers({ "Content-Type": "application/json", Origin: origin, Host: new URL(origin).host });
   // Only the current request's cookie crosses this in-process adapter. No
   // client-provided headers, URL, bearer token or signing secret are accepted.
   const cookie = request.headers.get("cookie") ?? current.get("cookie"); if (cookie) forwarded.set("cookie", cookie);

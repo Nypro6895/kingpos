@@ -1,9 +1,10 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { NextRequest, NextResponse } from "next/server";
 import { portableSyncDraftOperation } from "@/app/pos/portable/actions";
 
 export async function POST(request: NextRequest) {
   // Cookie authentication requires an explicit same-origin check on this route.
-  if (request.headers.get("origin") !== request.nextUrl.origin) {
+  if (!isSameOriginMutation(request)) {
     return NextResponse.json({ kind: "blocked", message: "Invalid request origin." }, { status: 403 });
   }
   const text = await request.text();

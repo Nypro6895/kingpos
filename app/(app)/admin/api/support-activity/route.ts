@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { NextRequest } from "next/server";
 import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
 import { callPlatformAdminRpc } from "@/lib/platform-admin/rpc";
@@ -9,8 +10,8 @@ export async function GET() {
   catch { return Response.json({ error: "Team notifications are unavailable. Please retry." }, { status: 503, headers }); }
 }
 export async function POST(request: NextRequest) {
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Invalid origin." }, { status: 403, headers });
   await requirePlatformAdmin();
-  if (request.headers.get("origin") !== request.nextUrl.origin) return Response.json({ error: "Invalid origin." }, { status: 403, headers });
   try {
     const { ids } = await request.json();
     if (!Array.isArray(ids) || ids.length > 50 || ids.some(id => typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id))) return Response.json({ error: "Invalid notification IDs." }, { status: 400, headers });

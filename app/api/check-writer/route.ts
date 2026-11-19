@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
@@ -49,7 +50,7 @@ export async function GET(req: Request) {
 }
 export async function POST(req: Request) {
   try {
-    if (req.headers.get("origin") !== new URL(req.url).origin)
+    if (!isSameOriginMutation(req))
       return Response.json(
         { error: "Invalid request origin." },
         { status: 403, headers },

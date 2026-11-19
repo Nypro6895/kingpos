@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { campaignSearchIntent } from "@/lib/campaign-search-intent";
 import { resolveCampaignDeliveryArea } from "@/lib/campaign-delivery-area";
 import { resolveExploreGpsArea } from "@/lib/location/explore-gps-area";
@@ -116,8 +117,7 @@ export async function GET(request: Request) {
   return selectCampaign(request,{location:new URL(request.url).searchParams.get("location")??"",query:new URL(request.url).searchParams.get("query")??undefined,batch:new URL(request.url).searchParams.get("batch")==="1"});
 }
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  if (!origin || origin !== new URL(request.url).origin) return Response.json({ok:false},{status:403,headers:noStore});
+  if (!isSameOriginMutation(request)) return Response.json({ok:false},{status:403,headers:noStore});
   try {
     const body = await readAdRequestJson(request,8192) as Record<string, unknown>;
     if (body?.kind === "select") {

@@ -1,7 +1,6 @@
 import "server-only";
 
 import {
-  ACCOUNT_LOGIN_SESSION_COOKIE,
   getLoginRequestSnapshot,
   isAccountLoginSessionId,
   type LoginDeviceType,
@@ -11,6 +10,7 @@ import {
   createAuthenticatedSupabaseAuthSessionServerClient,
   createAuthenticatedSupabaseServerClient,
   createUserScopedSupabaseServerClient,
+  getCurrentAppLoginSessionId,
 } from "@/lib/supabase/server";
 import {
   getLoginSmsAlertStatus,
@@ -21,7 +21,7 @@ import {
   getKingUserForAuthUser,
 } from "@/lib/users/current-user";
 import type { KingUser } from "@/types/user";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 
 type AuthenticatedSupabaseClient = NonNullable<
   Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -592,10 +592,9 @@ async function loadPreferences(input: {
 }
 
 export async function loadLoginSecurityOverview(): Promise<LoginSecurityOverview | null> {
-  const [supabase, user, cookieStore, headerStore] = await Promise.all([
+  const [supabase, user, headerStore] = await Promise.all([
     createAuthenticatedSupabaseServerClient(),
     getCurrentKingUser(),
-    cookies(),
     headers(),
   ]);
 
@@ -604,10 +603,7 @@ export async function loadLoginSecurityOverview(): Promise<LoginSecurityOverview
   }
 
   const currentRequest = getLoginRequestSnapshot(headerStore);
-  const cookieSessionId = cookieStore.get(ACCOUNT_LOGIN_SESSION_COOKIE)?.value;
-  const currentSessionId = isAccountLoginSessionId(cookieSessionId)
-    ? cookieSessionId
-    : null;
+  const currentSessionId = await getCurrentAppLoginSessionId();
   let schemaMissing = false;
   const markSchemaMissing = () => {
     schemaMissing = true;
@@ -665,6 +661,7 @@ export async function loadLoginSecurityOverview(): Promise<LoginSecurityOverview
           .from("account_login_sessions")
           .select(SESSION_SELECT)
           .eq("user_id", user.id)
+          .not("auth_session_id", "is", null)
           .is("revoked_at", null)
           .order("last_seen_at", { ascending: false })
           .limit(12)
@@ -799,7 +796,7 @@ export async function recordAccountLoginForSession(input: {
   }
 
   const snapshot = getLoginRequestSnapshot(input.requestHeaders);
-  const { error } = await supabase.rpc("record_account_login_session", {
+  const { data: recordedSession, error } = await supabase.rpc("record_account_login_session", {
     p_browser_name: snapshot.browserName,
     p_city: snapshot.city,
     p_country: snapshot.country,
@@ -821,8 +818,11 @@ export async function recordAccountLoginForSession(input: {
   }
 
   if (!error) {
+    const recordedSessionId = isAccountLoginSessionId(recordedSession?.session_id)
+      ? recordedSession.session_id
+      : input.sessionId;
     await maybeSendLoginSmsAlert({
-      sessionId: input.sessionId,
+      sessionId: recordedSessionId,
       snapshot,
       supabase,
       user,
@@ -837,34 +837,25 @@ export async function recordAccountLoginForSession(input: {
 }
 
 export async function recordCurrentAccountSessionLogout() {
-  const [supabase, user, cookieStore, headerStore] = await Promise.all([
+  const [supabase, user] = await Promise.all([
     createAuthenticatedSupabaseServerClient(),
     getCurrentKingUser(),
-    cookies(),
-    headers(),
   ]);
 
   if (!supabase || !user) {
     return;
   }
 
-  const sessionId = cookieStore.get(ACCOUNT_LOGIN_SESSION_COOKIE)?.value;
+  const sessionId = await getCurrentAppLoginSessionId();
 
   if (!isAccountLoginSessionId(sessionId)) {
     return;
   }
 
-  const revokedAt = new Date().toISOString();
-  const snapshot = getLoginRequestSnapshot(headerStore);
-  const revokeResult = await supabase
-    .from("account_login_sessions")
-    .update({
-      revoked_at: revokedAt,
-      revoked_by_user_id: user.id,
-    })
-    .eq("id", sessionId)
-    .eq("user_id", user.id)
-    .is("revoked_at", null);
+  const revokeResult = await supabase.rpc("revoke_account_login_session", {
+    p_session_id: sessionId,
+    p_scope: "one",
+  });
 
   if (revokeResult.error && !isLoginSecuritySchemaMissing(revokeResult.error)) {
     logSupabaseError(
@@ -877,34 +868,4 @@ export async function recordCurrentAccountSessionLogout() {
     );
   }
 
-  const activityResult = await supabase.from("account_login_activity").insert({
-    activity_type: "session_logged_out",
-    browser_name: snapshot.browserName,
-    city: snapshot.city,
-    country: snapshot.country,
-    device_label: snapshot.deviceLabel,
-    device_type: snapshot.deviceType,
-    ip_address: snapshot.ipAddress,
-    location_label: snapshot.locationLabel,
-    login_session_id: sessionId,
-    metadata: {},
-    os_name: snapshot.osName,
-    region: snapshot.region,
-    user_agent: snapshot.userAgent,
-    user_id: user.id,
-  });
-
-  if (
-    activityResult.error &&
-    !isLoginSecuritySchemaMissing(activityResult.error)
-  ) {
-    logSupabaseError(
-      "Supabase record current account logout activity failed",
-      activityResult.error,
-      {
-        sessionId,
-        userId: user.id,
-      },
-    );
-  }
 }

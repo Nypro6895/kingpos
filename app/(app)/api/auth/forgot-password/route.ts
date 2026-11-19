@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { assertAbuseRequest } from "@/lib/abuse-server";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
@@ -21,6 +22,7 @@ function resetPasswordRedirectUrl(request: Request, nextPath: string) {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Invalid request origin. Reload the page and try again." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const supabase = createSupabaseServerClient();
   const formData = await request.formData();
   const email = readString(formData, "email").toLowerCase();

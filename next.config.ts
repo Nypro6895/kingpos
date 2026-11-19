@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { withBotId } from "botid/next/config";
+import { browserSecurityHeaders } from "./lib/browser-security-headers";
 
 const SUPABASE_PUBLIC_IMAGE_BUCKETS = [
   "account-avatars",
@@ -80,6 +81,9 @@ const nextConfig: NextConfig = {
   // Next 16 preserves up to three visited routes with Activity. Protected data
   // remains uncached on the server and is scoped/validated by the client shell.
   cacheComponents: true,
+  // Next 16.3+ changes Link prefetch semantics when this is enabled. Keep the
+  // existing per-link behavior during this security-only dependency upgrade.
+  partialPrefetching: false,
   // Allow an isolated production check while the development tunnel is running.
   distDir: process.env.KINGPOS_BUILD_OUTPUT || ".next",
   experimental: {
@@ -91,7 +95,10 @@ const nextConfig: NextConfig = {
     runtimeServerDeploymentId: false,
   },
   allowedDevOrigins: ["*.trycloudflare.com"],
+  headers: async () => [{ source: "/:path*", headers: browserSecurityHeaders(process.env) }],
   outputFileTracingIncludes: {
+    "/api/vendor/maplibre-gl": ["./node_modules/maplibre-gl/dist/maplibre-gl.js", "./node_modules/maplibre-gl/package.json"],
+    "/api/vendor/maplibre-gl/*": ["./node_modules/maplibre-gl/dist/maplibre-gl.js", "./node_modules/maplibre-gl/package.json"],
     "/api/check-writer": ["./assets/check-writer/*"],
     "/api/check-writer/pdf": ["./assets/check-writer/*"],
     "/api/security/challenge": ["./app/fonts/GeistMono.ttf", "./app/fonts/Geist-OFL.txt"],

@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { createPublicBooking, type PublicBookingCreateInput } from "@/lib/public-booking";
 import { revalidatePath } from "next/cache";
 
@@ -5,11 +6,7 @@ const headers = { "Cache-Control": "private, no-store" };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function POST(request: Request) {
   const started = performance.now();
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? new URL(request.url).host;
-  let sameOrigin = false;
-  try { sameOrigin = Boolean(origin && new URL(origin).host === host); } catch { /* Reject malformed origins. */ }
-  if (!sameOrigin) return Response.json({ ok: false, message: "Invalid request." }, { status: 403, headers });
+  if (!isSameOriginMutation(request)) return Response.json({ ok: false, message: "Invalid request." }, { status: 403, headers });
   try {
     const raw = await request.text();
     if (raw.length > 32768) return Response.json({ ok: false, message: "Request too large." }, { status: 413, headers });

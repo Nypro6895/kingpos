@@ -1,3 +1,4 @@
+import { effectiveRequestOrigin, isSameOriginMutation } from "@/lib/request-origin";
 import { loadPersonalQr } from "@/app/qr/actions";
 import "server-only";
 import {getAccountSavedPosts} from "./account-social";
@@ -54,9 +55,9 @@ export async function readAppLocalPersonalResource(name:string,args:Record<strin
 }
 export async function runAppLocalPersonalCommand(name:string,args:Record<string,unknown>,request:Request,scope:string){
   if(name!=="http.notifications.viewed")return{handled:false};
-  const origin=new URL(request.url).origin;if(request.headers.get("origin")!==origin)fail(403,"Invalid origin.");
+  const origin=effectiveRequestOrigin(request);if(!isSameOriginMutation(request))fail(403,"Invalid origin.");
   await authority(scope);
   if(Object.keys(args).some(key=>key!=="input")||!args.input||typeof args.input!=="object"||Array.isArray(args.input)||JSON.stringify(args.input).length>16384)fail(400,"Invalid notifications.");
-  const forwarded=new Headers({"Content-Type":"application/json",Origin:origin});const cookie=request.headers.get("cookie");if(cookie)forwarded.set("cookie",cookie);
+  const forwarded=new Headers({"Content-Type":"application/json",Origin:origin,Host:new URL(origin).host});const cookie=request.headers.get("cookie");if(cookie)forwarded.set("cookie",cookie);
   return{handled:true,data:await wire(await notificationPOST(new Request(new URL("/api/notifications",origin),{method:"POST",headers:forwarded,body:JSON.stringify(args.input)})))};
 }

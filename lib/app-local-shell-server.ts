@@ -1,4 +1,5 @@
 import "server-only";
+import { effectiveRequestOrigin, isSameOriginMutation } from "@/lib/request-origin";
 import {getSalonLanguageForContext} from "./salon-language-server";
 import {PERSONAL_LANGUAGE,effectiveLanguage} from "./salon-language";
 import { createHash } from "node:crypto";
@@ -69,7 +70,7 @@ async function wire(response: Response): Promise<AppLocalHttpResponse> {
 }
 function forwarded(current: Headers, origin?: string) {
   const value = new Headers(); if (current.get("cookie")) value.set("cookie", current.get("cookie")!);
-  if (origin) value.set("origin", origin);
+  if (origin) { value.set("origin", origin); value.set("host", new URL(origin).host); }
   // Keep the original advertising/safety authority's trusted proxy inputs.
   for (const key of ["x-vercel-forwarded-for", "x-forwarded-for", "cf-connecting-ip", "user-agent"]) if (current.get(key)) value.set(key, current.get(key)!);
   return value;
@@ -172,10 +173,10 @@ export async function readAppLocalShellResource(name: string, args: Record<strin
 /** Explicit original handlers only. No generic URL, method, cookie or action is supplied by the caller. */
 export async function runAppLocalShellCommand(name: string, args: Record<string, unknown>, request: Request, scope: string, prewriteBusiness?: Awaited<ReturnType<typeof getRequestBusinessContext>>): Promise<{ handled: boolean; data?: unknown }> {
   if (!["shell.switch-workspace", "shell.logout", "http.shell.advertising-event", "http.shell.campaign-event", "http.shell.advertising-report"].includes(name)) return { handled: false };
+  if (!isSameOriginMutation(request)) fail(403, "Please open this page again.");
   // Only the workspace selector can reuse the command route's fresh prewrite
   // context. Never retain it or let another command borrow it after a write.
-  const { context, business, current } = await authorized(scope, name === "shell.switch-workspace" ? prewriteBusiness : undefined), origin = new URL(request.url).origin;
-  if (request.headers.get("origin") !== origin) fail(403, "Please open this page again.");
+  const { context, business, current } = await authorized(scope, name === "shell.switch-workspace" ? prewriteBusiness : undefined), origin = effectiveRequestOrigin(request);
   if (name === "shell.switch-workspace") {
     if (!context.user) fail(401, "Please sign in again.");
     if (Object.keys(args).some(key => !["workspaceId", "destination"].includes(key)) || typeof args.workspaceId !== "string" || args.workspaceId.length > 160 || args.destination !== undefined && (typeof args.destination !== "string" || args.destination.length > 2048)) fail(400, "Choose a workspace.");
@@ -187,7 +188,8 @@ export async function runAppLocalShellCommand(name: string, args: Record<string,
   }
   if (name === "shell.logout") {
     if (Object.keys(args).length) fail(400, "Invalid sign-out request.");
-    return { handled: true, data: await wire(await logoutPOST()) };
+    const logoutRequest = new Request(new URL("/api/auth/logout", origin), { method: "POST", headers: forwarded(current, origin) });
+    return { handled: true, data: await wire(await logoutPOST(logoutRequest)) };
   }
   const input=args.input;
   const largeAdmission=name==='http.shell.advertising-event'&&isAppLocalAdProofReservation(input);

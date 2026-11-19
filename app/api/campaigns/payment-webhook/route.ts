@@ -1,7 +1,9 @@
 import { fulfillCreditPayment,verifyCampaignWebhook,expireCreditCheckout,fulfillCampaignCardSetup } from "@/lib/campaign-payments";
+import { readBoundedRequestText,requestBodyFailure } from "@/lib/request-body";
 export async function POST(request:Request){
-  const raw=await request.text();
-  if(raw.length>262144||!verifyCampaignWebhook(raw,request.headers.get("stripe-signature")??""))return new Response("Invalid signature",{status:400});
+  let raw:string;
+  try{raw=await readBoundedRequestText(request,262144);}catch(error){return requestBodyFailure(error);}
+  if(!verifyCampaignWebhook(raw,request.headers.get("stripe-signature")??""))return new Response("Invalid signature",{status:400});
   try{
     const event=JSON.parse(raw);
     if(event.type==="checkout.session.completed"&&event.data.object.metadata?.campaign_card_setup)await fulfillCampaignCardSetup(event.data.object.id);
