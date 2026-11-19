@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "windows-online-version-0.7.7-20261119",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "desktop/package.json",
+    "desktop/package-lock.json"
+  ],
+  "deletedFiles": [],
+  "summary": "Advance existing unsigned Windows Online desktop package metadata from0.7.6 to0.7.7; preserve dependencies, channel, identity and runtime source",
+  "dependencies": [],
+  "status": "working",
+  "source": {
+    "commit": "ae2050c4d8308eaa61dc53383c425cd337a1ed39"
+  },
+  "validation": [
+    {
+      "name": "Reviewed2-file metadata patch, existing public feed0.7.6",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\actual-windows-online-0.7.7-r1\\public-feed-before.json"
+    }
+  ],
+  "id": "f439b725-2b0a-4ff6-86f6-fd7f3003f57f",
+  "recordedAt": "2026-11-19T17:53:21.909Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "supersedesEvents": []
+}

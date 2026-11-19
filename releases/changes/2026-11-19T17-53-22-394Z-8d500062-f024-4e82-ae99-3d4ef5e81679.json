@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "windows-online-version-0.7.7-20261119",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "desktop/package.json",
+    "desktop/package-lock.json"
+  ],
+  "deletedFiles": [],
+  "summary": "Advance existing unsigned Windows Online desktop package metadata from0.7.6 to0.7.7; preserve dependencies, channel, identity and runtime source",
+  "dependencies": [],
+  "status": "ready",
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\actual-windows-online-0.7.7-r1\\frozen-metadata",
+    "parentCommit": "ae2050c4d8308eaa61dc53383c425cd337a1ed39"
+  },
+  "validation": [
+    {
+      "name": "Reviewed patch and semantic comparison:3 version fields only, dependency/channel/runtime unchanged",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\actual-windows-online-0.7.7-r1\\metadata-verification.json"
+    },
+    {
+      "name": "Scoped metadata whitespace check",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\actual-windows-online-0.7.7-r1\\metadata-verification.json"
+    }
+  ],
+  "notes": "Metadata readiness only; isolated unsigned ONLINE packaging and installed upgrade/publication acceptance remain separate.",
+  "id": "8d500062-f024-4e82-ae99-3d4ef5e81679",
+  "recordedAt": "2026-11-19T17:53:22.394Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "supersedesEvents": [],
+  "fileHashes": {
+    "desktop/package.json": "5e136c8b85007aafa8df99cb06fe4a9dbbe0da02ecfd9f5b686617ab5cf9ffbb",
+    "desktop/package-lock.json": "c2298fe351d15ce8f6cbd0677ba887013410ac0a04dcf0d180f6bffe9d30147a"
+  }
+}
