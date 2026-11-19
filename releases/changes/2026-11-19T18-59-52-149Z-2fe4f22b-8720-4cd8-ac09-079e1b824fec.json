@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "beauty-image-publication-gate-20261119-r1",
+  "status": "needs-integration",
+  "summary": "Require exact approved or already-published legacy image pins before Beauty profile/post transitions expose existing media; serialize parent/post publication under READ COMMITTED.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119184500_beauty_image_publication_gate.sql",
+    "tests/beauty-image-publication-gate.integration.test.mjs",
+    "docs/beauty-image-publication-gate-20261119.md"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/beauty-publication-gate-frozen-r1",
+    "commit": "2d6e967d05ff432814fea7355b1d3bfd30aa904b",
+    "manifest": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/beauty-publication-gate-frozen-r1/manifest.json",
+    "manifestSha256": "1bae9a3652bf2b6ed2b389b080897f4ab83ca793efeb06e5b72ade077d9f7b28"
+  },
+  "validation": [
+    {
+      "name": "Focused full449→450 synthetic upgrade and publication/concurrency regression, 25 checks, 0 skips",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/beauty-publication-gate-functional-r3/acceptance.json",
+      "evidenceSha256": "e94beb79ce3845373e46797be7e53832650666ef37bdce0829e447ab4b7c4c65"
+    },
+    {
+      "name": "Inherited449/new migration unchanged and four owned containers cleaned",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/beauty-publication-gate-functional-r3/acceptance.json"
+    },
+    {
+      "name": "Independent static SQL review",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/beauty-publication-gate-independent-review-r1/static-review.json"
+    },
+    {
+      "name": "Final combined22 migration wrapper and current release integration",
+      "result": "pending",
+      "evidence": "Requires coordinator integration and isolated old-baseline rehearsal; no production DDL authorized"
+    }
+  ],
+  "dependencies": [],
+  "id": "2fe4f22b-8720-4cd8-ac09-079e1b824fec",
+  "recordedAt": "2026-11-19T18:59:52.149Z",
+  "worktree": "C:\\Reylumi-worktrees\\beauty-image-publication-gate-20261119-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
