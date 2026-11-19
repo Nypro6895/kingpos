@@ -3,7 +3,56 @@ import type {
   TaxLine,
   TaxRun,
   TaxWorkspaceData,
+  TaxReportAmounts,
+  TaxReportBreakdown,
+  TaxReportComponent,
 } from "@/types/tax-workspace";
+export const TAX_REPORT_COMPONENT_KEYS = ["check_wage", "cash_wage", "tip", "bonus"] as const;
+
+const reportAmountKeys = ["gross", "tax", "net", "check_gross", "check_tax", "check_net", "cash_gross", "cash_tax", "cash_net"] as const;
+function unknownTaxAmounts(): TaxReportAmounts {
+  return Object.fromEntries(reportAmountKeys.map((key) => [key, null])) as TaxReportAmounts;
+}
+function unavailableTaxBreakdown(): TaxReportBreakdown {
+  return {
+    version: 1,
+    state: "historical_unavailable",
+    components: Object.fromEntries(TAX_REPORT_COMPONENT_KEYS.map((key) => [key, {
+      ...unknownTaxAmounts(), shown: false, tax_applied: null, tax_rate: null, payout_method: null,
+    }])) as TaxReportBreakdown["components"],
+    totals: unknownTaxAmounts(),
+  };
+}
+export function getTaxLineComponents(line: TaxLine) {
+  return (line.breakdown ?? unavailableTaxBreakdown()).components;
+}
+export function getTaxLineCashNet(line: TaxLine): number | null {
+  return line.breakdown?.state === "published" ? line.breakdown.totals.cash_net : null;
+}
+export function totalTaxFigures<T>(rows: readonly T[], key: keyof T): number | null {
+  if (rows.some((row) => row[key] === null || row[key] === undefined || !Number.isFinite(Number(row[key])))) return null;
+  return rows.reduce((sum, row) => sum + Math.round(Number(row[key]) * 100), 0) / 100;
+}
+function aggregateTaxBreakdowns(lines: TaxLine[]): TaxReportBreakdown {
+  if (lines.some((line) => line.breakdown?.state !== "published")) return unavailableTaxBreakdown();
+  const breakdowns = lines.map((line) => line.breakdown!);
+  const sumAmounts = (rows: TaxReportAmounts[]) => Object.fromEntries(reportAmountKeys.map((key) => [key, totalTaxFigures(rows, key)])) as TaxReportAmounts;
+  return {
+    version: 1, state: "published",
+    components: Object.fromEntries(TAX_REPORT_COMPONENT_KEYS.map((key) => {
+      const rows = breakdowns.map((item) => item.components[key]);
+      const first = rows[0];
+      const shown = rows.every((row) => row.shown);
+      return [key, {
+        ...sumAmounts(rows), shown,
+        tax_applied: shown && rows.every((row) => row.tax_applied === first.tax_applied) ? first.tax_applied : null,
+        tax_rate: shown && rows.every((row) => row.tax_rate === first.tax_rate) ? first.tax_rate : null,
+        payout_method: shown ? rows.every((row) => row.payout_method === first.payout_method) ? first.payout_method : "mixed" : null,
+      } satisfies TaxReportComponent];
+    })) as TaxReportBreakdown["components"],
+    totals: sumAmounts(breakdowns.map((item) => item.totals)),
+  };
+}
 
 export function latestTaxRuns(runs: TaxRun[]) {
   const latest = new Map<string, TaxRun>();
@@ -78,6 +127,12 @@ export function taxPreviousRun(runs: TaxRun[], run: TaxRun) {
       .sort((a, b) => b.version - a.version)[0] ?? null
   );
 }
+export function taxLineChangedFields(before: TaxLine, line: TaxLine): string[] {
+  const fields: (keyof TaxLine)[] = ["reported_wage", "reported_gross", "tax", "actual_check", "wage_check_net", "cash_reported", "tip", "bonus", "tax_rate", "legal_name", "tip_method", "bonus_method"];
+  const changed: string[] = fields.filter((key) => before[key] !== line[key]);
+  if (JSON.stringify(before.breakdown) !== JSON.stringify(line.breakdown)) changed.push("breakdown");
+  return changed;
+}
 export function taxChangedLine(data: TaxWorkspaceData, line: TaxLine) {
   const run = data.runs.find((r) => r.id === line.run_id);
   const previous = run ? taxPreviousRun(data.runs, run) : null;
@@ -86,55 +141,24 @@ export function taxChangedLine(data: TaxWorkspaceData, line: TaxLine) {
         (l) => l.run_id === previous.id && l.staff_id === line.staff_id,
       )
     : null;
-  return before &&
-    [
-      "reported_wage",
-      "reported_gross",
-      "tax",
-      "actual_check",
-      "wage_check_net",
-      "cash_reported",
-      "tip",
-      "bonus",
-      "tax_rate",
-      "legal_name",
-      "tip_method",
-      "bonus_method",
-    ].some((key) => before[key as keyof TaxLine] !== line[key as keyof TaxLine])
-    ? before
-    : null;
+  return before && taxLineChangedFields(before, line).length ? before : null;
 }
 export function summarizeTaxLines(lines: TaxLine[]) {
-  const grouped = new Map<string, TaxLine>();
+  const grouped = new Map<string, TaxLine[]>();
   for (const line of lines) {
     const current = grouped.get(line.staff_id);
-    if (!current) grouped.set(line.staff_id, { ...line, run_id: "summary" });
-    else {
-      for (const field of [
-        "reported_wage",
-        "reported_gross",
-        "tax",
-        "actual_check",
-        "wage_check_net",
-      ] as const)
-        current[field] =
-          (Math.round(Number(current[field]) * 100) +
-            Math.round(Number(line[field]) * 100)) /
-          100;
-      for (const field of ["cash_reported", "tip", "bonus"] as const)
-        current[field] =
-          current[field] === null && line[field] === null
-            ? null
-            : (Math.round(Number(current[field] ?? 0) * 100) +
-                Math.round(Number(line[field] ?? 0) * 100)) /
-              100;
-      if (current.tax_rate !== line.tax_rate) current.tax_rate = Number.NaN;
-      if (current.tip_method !== line.tip_method) current.tip_method = "mixed";
-      if (current.bonus_method !== line.bonus_method)
-        current.bonus_method = "mixed";
-    }
+    if (!current) grouped.set(line.staff_id, [line]);
+    else current.push(line);
   }
-  return [...grouped.values()];
+  return [...grouped.values()].map((rows) => {
+    const first = rows[0];
+    const result = { ...first, run_id: "summary", breakdown: aggregateTaxBreakdowns(rows) };
+    for (const key of ["reported_wage", "reported_gross", "tax", "actual_check", "wage_check_net", "cash_reported", "tip", "bonus"] as const) result[key] = totalTaxFigures(rows, key);
+    result.tax_rate = rows.every((row) => row.tax_rate === first.tax_rate) ? first.tax_rate : null;
+    result.tip_method = rows.every((row) => row.tip_method === first.tip_method) ? first.tip_method : "mixed";
+    result.bonus_method = rows.every((row) => row.bonus_method === first.bonus_method) ? first.bonus_method : "mixed";
+    return result;
+  });
 }
 export function taxReceiptCents(value: string) {
   if (!/^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(value))

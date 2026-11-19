@@ -28,7 +28,7 @@ import { PayrollEditBoundary } from "@/app/payroll/payroll-edit-boundary";
 import styles from "@/app/payroll/payroll-mobile.module.css";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { DataDownloadPanel } from "@/app/payroll/data-download-panel";
-import { PluginActivationPrompt, PluginActivationButton } from "@/app/settings/plugin-settings-row";
+import { PluginActivationButton } from "@/app/settings/plugin-settings-row";
 
 import { saveSalonPayrollScheduleAction } from "@/app/payroll/actions";
 import { PayrollScheduleForm } from "@/app/payroll/payroll-schedule-form";
@@ -446,8 +446,8 @@ function ShopIncomeTab({
   );
 }
 
-function TaxTab({period,taxCompany,plugin,canManageConnection}:{period:PayrollPeriod;taxCompany:Awaited<ReturnType<typeof getPayrollPageData>>["taxCompany"];plugin:Awaited<ReturnType<typeof taxCompanySettings>>|null;canManageConnection:boolean;hasChanges:boolean}) {
-  if(canManageConnection&&plugin&&!plugin.active)return <PluginActivationPrompt pluginName="Tax Company" label="Connect your tax company"/>;
+function TaxTab({period,taxCompany,canManageConnection}:{period:PayrollPeriod;taxCompany:Awaited<ReturnType<typeof getPayrollPageData>>["taxCompany"];plugin:Awaited<ReturnType<typeof taxCompanySettings>>|null;canManageConnection:boolean;hasChanges:boolean}) {
+  if(canManageConnection)return <section className={styles.panel}><p>{period.label}</p><p><WorkspaceText text="Read-only figures shown in your tax company's view. Available without an active Tax Company plugin."/></p><Link className={`${styles.action} ${styles.primary}`} href={getTaxCompanyHref(period)}><WorkspaceText text="View tax reporting figures"/></Link><Link className={styles.action} href="/payroll/tax-company/settings"><WorkspaceText text="Connection and access"/></Link></section>;
   return <section className={styles.panel}><p>{period.label}</p><p><WorkspaceText text="Current amounts update immediately after edits."/></p><p>{taxCompany.lines.length} <WorkspaceText text="Reportable lines"/></p><Link className={`${styles.action} ${styles.primary}`} href={getTaxCompanyHref(period)}><WorkspaceText text="View current report"/></Link>{canManageConnection&&<Link className={styles.action} href="/payroll/tax-company/settings"><WorkspaceText text="Connection and access"/></Link>}</section>;
 }
 function ToolsTab({ period, downloadEnabled, canActivate }: { period: PayrollPeriod; downloadEnabled: boolean | null; canActivate: boolean }) {

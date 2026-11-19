@@ -798,9 +798,14 @@ export function ServicesManager({
                       <div className="service-row__identity">
                         <strong><WorkspaceText text={config.name || "Untitled service"} /></strong>
                         <span><WorkspaceText text={config.category || "Uncategorized"} /></span>
+                        {!embedded ? <small className="service-row__compact-status"><WorkspaceText text={config.isActive ? "Active" : "Inactive"} /> · {config.bookingStaffIds.length} <WorkspaceText text="staff" /></small> : null}
                         {embedded?<small className="settings-service-summary-meta">{money(config.basePrice)} · {config.durationMinutes} <WorkspaceText text="min"/> · {config.bookingStaffIds.length} <WorkspaceText text="staff"/></small>:null}
                         {dirty ? <em><WorkspaceText text="Unsaved" /></em> : null}
                       </div>
+                      {!embedded ? <div className="service-row__compact-meta">
+                        <span>{money(config.basePrice)} · {config.durationMinutes} <WorkspaceText text="min" /></span>
+                        <small data-state={readiness.needsSetup ? "warning" : undefined}><WorkspaceText text="Online booking" /> · <WorkspaceText text={readiness.label} /></small>
+                      </div> : null}
                       <div className="service-row__value" data-label="Price">
                         {money(config.basePrice)}
                       </div>

@@ -11,6 +11,7 @@ import { PosDeskClient } from "@/app/pos/pos-desk-client";
 import { PosRapidMobileBridge } from "@/app/pos/pos-rapid-mobile-bridge";
 import { SingleWorkspaceWindow } from "@/app/pos/single-workspace-window";
 import { PrepareWorkspaceDevice } from "@/app/pos/portable/prepare-workspace-device";
+import { ReceiptContextProvider } from "@/components/receipt-print-context";
 import { PortableNativeStorageBoundary } from "@/app/pos/portable/portable-native-storage-boundary";
 import { PortableNativePreparation } from "@/app/pos/portable/portable-native-preparation";
 import { DeskRelay } from "@/app/service-relay/desk-relay";
@@ -58,6 +59,7 @@ export function AppLocalPortableWorkspace(props: AppLocalPageProps) {
   const links = PORTABLE_POS_ROUTE_LINKS.filter(link => allowed.some(area => areaPath(area) === link.href));
   return <main className="portable-kiosk-surface relative flex h-dvh w-full flex-col overflow-hidden bg-zinc-100 text-zinc-950" data-portable-pos-shell data-portable-shell data-pos-persistent-workspace>
     <PortableNativeStorageBoundary scope={descriptor.scope}><PortableWorkspaceStateProvider key={descriptor.scope} scope={descriptor.scope} offlineEnabled={descriptor.offlineEnabled} preparedAt={descriptor.preparedAt} timezone={descriptor.timeZone}>
+      <ReceiptContextProvider scope={descriptor.scope} brand={descriptor.receiptBrand ?? { salonName: descriptor.salonName, logoUrl: descriptor.salonLogoUrl }} timezone={descriptor.timeZone}>
       {descriptor.offlineEnabled && <PortableNativePreparation scope={descriptor.scope} capabilities={descriptor.capabilities} />}
       <PortableWorkspaceTabs localPanels items={links} salonId={descriptor.salonId} salonLogoUrl={descriptor.salonLogoUrl} salonName={descriptor.salonName} salonTimezone={descriptor.timeZone} canConfirmBookings={descriptor.capabilities.includes(PORTABLE_POS_CAPABILITIES.bookCreate)} />
       <div className="relative min-h-0 flex-1 overflow-hidden">{!allowed.includes(active) ? <section role="alert" className="p-6">This POS device does not have access to this view.</section> : null}{allowed.map(area => {
@@ -69,6 +71,7 @@ export function AppLocalPortableWorkspace(props: AppLocalPageProps) {
           : <Activity key={descriptor.scope + ":" + area} mode={area === active ? "visible" : "hidden"}><div className="h-full min-h-0" data-local-portable-panel={area}>{panel}</div></Activity>;
       })}</div>
       <PortableTouchKeyboard enabled={descriptor.touchKeyboardEnabled} />
+      </ReceiptContextProvider>
     </PortableWorkspaceStateProvider></PortableNativeStorageBoundary>
   </main>;
 }

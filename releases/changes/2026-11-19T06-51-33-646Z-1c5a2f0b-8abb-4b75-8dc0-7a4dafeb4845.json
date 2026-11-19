@@ -1,0 +1,94 @@
+{
+  "kind": "change",
+  "changeId": "combined-phone-invite-integration-20261119",
+  "status": "needs-integration",
+  "summary": "Integrated approved Phone portal and default-off public app invitation/Gift hosted receiver on Android/Tax/Ticket candidate;19focused records plus affected avatar regression, lint/types and independent Swift preservation review passed; final combined/native/live gates remain",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/account/account-profile-editor.tsx",
+    "tests/ios-personal-settings.test.mjs",
+    "tests/account-verification-dialog-layer.test.mjs",
+    "app/layout.tsx",
+    "app/check-in/[entry]/page.tsx",
+    "components/public-app-invite.tsx",
+    "components/public-app-invite.module.css",
+    "lib/public-app-invite.ts",
+    "lib/public-app-invite-config.ts",
+    "tests/public-app-invite.test.mjs",
+    "tests/personal-camera-landing.test.mjs",
+    "docs/public-app-invite.md",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "docs/combined-phone-invite-integration-20261119.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-store-release-20261119\\artifacts\\combined-phone-invite-integration-20261119\\frozen-source",
+    "baseCommit": "c3fe075ec1275ff9a02c031ea9931f61065e0699",
+    "sourceSha256": "8518d3eee788b0601b74976c874d8ca76253bfa75235c4137701603ee6040d72"
+  },
+  "fileHashes": {
+    "app/account/account-profile-editor.tsx": "e208b460ef57e0db26432ba6aaad5762288f5c46cbde30d1414db44520004450",
+    "tests/ios-personal-settings.test.mjs": "da805c54f91a1a02367ceeca02a58ea1ec042cd4b9636afcdd4a712eb492a2e4",
+    "tests/account-verification-dialog-layer.test.mjs": "703c2b4da17f6dff34345f538cb3500c2ac32aeeb0ed9f47b79ffa4e33f54779",
+    "app/layout.tsx": "02160d4f2bd8e10757a6561ab34a50e40ee1f6ad40b3378edf83e30b81005f55",
+    "app/check-in/[entry]/page.tsx": "7572742da455180e5c4c472f4f30e2a9fff6b374fb61c8ae70e74461712da0c8",
+    "components/public-app-invite.tsx": "4a446d3c9123cc3784dbfaa3adc4eda70cea3e327219556eb2b78a1a4d65e6bc",
+    "components/public-app-invite.module.css": "3c65b4300f0c055b562c9b21cacf563ef51a28bb1636fc1198180d73a16436f6",
+    "lib/public-app-invite.ts": "f46ec6aa560c10df0d320f8862b66284ffae89351af82d7c590c6884e742e219",
+    "lib/public-app-invite-config.ts": "1eddf4f85b61c399fad96a9e6b105fc57742fcc91a15a5d1acab282ec5d3c276",
+    "tests/public-app-invite.test.mjs": "ccc1b1012d02c925b06ee9373ee6c7c74d1c8b9624a2dd0f76e507b85a9e959f",
+    "tests/personal-camera-landing.test.mjs": "d0564f15d9bd5391e6f675510c882af25cd1a95d8065671ee15559cfd2bfd22e",
+    "docs/public-app-invite.md": "f63bd83a90f9031ea6f77b552a97152070ca8d8650375535890a5415aa543ea2",
+    "ios/Reylumi/NavigationPolicy.swift": "ff143ab907e2f417b692bd8dcad24f73eeae9583cdae03a7c9818c00c58b22e5",
+    "ios/Reylumi/ReylumiApp.swift": "543b7690ae9ee69be1cbe0beef0e51ecf527d90464627b50619c3a8b46beaf33",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "02f04be8896aec7308c985672e9b1e13c6ef5f9c7c85ff6f2d5816cbb54eafc3",
+    "ios/Reylumi/ReylumiViewController.swift": "53063ad8896279d7942b557609385168d9efec5a864bb83b6bb0d3ecd330a611",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "a14295b5c1d1022cddef20a15b2bc0eb01b74229df8e032f18e79f020e2f65bc",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "eaa4d8497f0f77c8f005a916e0d6d76bb8568a4c7abbdece9f28659e2e67c873",
+    "docs/combined-phone-invite-integration-20261119.md": "8136a5d7a565ed80187770aba6719579a275c1a21e523d7f93bc9c96469e6a14"
+  },
+  "dependencies": [
+    "combined-store-candidate-20261119",
+    "phone-verification-dialog-layer-20261114",
+    "public-app-invite-20261114"
+  ],
+  "validation": [
+    {
+      "name": "All3pinned scoped patches actual3way clean on c3fe075",
+      "result": "passed",
+      "evidence": "artifacts/combined-phone-invite-integration-20261119/preflight-r1.json; artifacts/combined-phone-invite-integration-20261119/application-r1.json"
+    },
+    {
+      "name": "19focused Node records zero failures/skips plus affected avatarOnly computed-layout regression rerun",
+      "result": "passed",
+      "evidence": "artifacts/combined-phone-invite-integration-20261119/focused-r1.tap; artifacts/combined-phone-invite-integration-20261119/personal-overlap-r2.tap"
+    },
+    {
+      "name": "10file ESLint zero errors/warnings and six owned TS semantic/syntactic zero diagnostics",
+      "result": "passed",
+      "evidence": "artifacts/combined-phone-invite-integration-20261119/eslint-r1.json; artifacts/combined-phone-invite-integration-20261119/typescript-r1.json"
+    },
+    {
+      "name": "Seven critical native print/check/cancel source bodies unchanged; independent bounded Swift critic no blocker",
+      "result": "passed",
+      "evidence": "artifacts/combined-phone-invite-integration-20261119/native-print-preservation.json; artifacts/combined-phone-invite-integration-20261119/acceptance.json"
+    },
+    {
+      "name": "Final combined build, regenerated native archive/XCTest/device and current provider/Store acceptance",
+      "result": "pending",
+      "evidence": "Coordinator release gates; no activation/build/provider/hardware performed by this source integration"
+    }
+  ],
+  "id": "1c5a2f0b-8abb-4b75-8dc0-7a4dafeb4845",
+  "recordedAt": "2026-11-19T06:51:33.646Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "supersedesEvents": []
+}

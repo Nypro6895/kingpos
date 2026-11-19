@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "rights-evidence-runtime-20261118",
+  "status": "working",
+  "summary": "Revision2: remove redundant explicit Node runtime export rejected by combined Next16 Cache Components build; preserve request authorization and bounded binary contract.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/rights-evidence-worker.ts",
+    "lib/rights-evidence-storage.ts",
+    "lib/rights-evidence-access.ts",
+    "lib/account-maintenance-route.ts",
+    "app/api/admin/rights-evidence/[evidenceId]/route.ts",
+    "app/api/account/erase-due/route.ts",
+    "tests/rights-evidence-worker.test.mjs",
+    "tests/rights-evidence-access.test.mjs",
+    "tests/rights-evidence-maintenance-route.test.mjs",
+    "tests/account-maintenance-route.test.mjs",
+    "tests/public-image-staging-expiry.test.mjs",
+    "docs/rights-evidence-runtime-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "rights-image-evidence-backend-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Focusedroute/SDK/oldmaintenancechecks,lint,ownedtypes andfrozenrevision integrity",
+      "result": "pending"
+    }
+  ],
+  "scopeBoundary": "Scopedruntimecandidate; backendfinalisolatedactualSQL/Storage andcombinedNextbuild remainseparateintegrationgates. Policydefaultoff, nooperators/holdoverride/cronactivation. No productoperatorUI, legacy/unpinned/specialriskorforcedsharedrefremoval. Noenvinspection/livecustomer/providercalls/commit/push/deploy.",
+  "id": "99c51c9d-df44-4102-a967-b3f502e80c96",
+  "recordedAt": "2026-11-19T05:17:16.603Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

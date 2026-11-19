@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "ios-commerce-return-acceptance-20261118",
+  "status": "working",
+  "summary": "Repair three approved UI fixture transport boundaries while preserving actual scoped Market hook and UI assertions",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/market-payment-return.ts",
+    "app/market/payment-return-actions.ts",
+    "tests/ios-commerce-return-acceptance.test.mjs",
+    "docs/ios-commerce-implementation-20261118.md",
+    "lib/campaign-payments.ts",
+    "tests/market-tax-reconciliation.test.mjs",
+    "tests/market-card-foreground-ui.test.mjs",
+    "tests/market-safari-booking-deposit-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26"
+  },
+  "validation": [
+    {
+      "name": "Focused synthetic commerce acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "priorWorkingEvent": "46c240a3-db03-4ef5-aef7-8075149f3bcf",
+  "id": "a791b490-5f4f-480b-987f-ca077e66d640",
+  "recordedAt": "2026-11-18T21:07:53.811Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

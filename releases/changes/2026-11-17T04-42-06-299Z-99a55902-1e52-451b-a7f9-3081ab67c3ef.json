@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "ios-camera-purpose-copy-20261116",
+  "status": "working",
+  "summary": "Clarify existing camera and photo permission purposes for QR scanning and user-selected support/document uploads; no new permission or product flow",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/Info.plist"
+  ],
+  "source": {
+    "commit": "5b9609c"
+  },
+  "validation": [
+    {
+      "name": "XML validity, unchanged key set/bundle/version/permissions and source-backed wording",
+      "result": "pending"
+    },
+    {
+      "name": "New native archive and installed-device prompt acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "99a55902-1e52-451b-a7f9-3081ab67c3ef",
+  "recordedAt": "2026-11-17T04:42:06.299Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -96,7 +96,9 @@ function ServicesDefaultPage(props: AppLocalPageProps) {
   const state = useAppLocalResource<AppLocalServicesData>(props.context?.context.scope, "page.services", {}, { enabled: Boolean(props.context?.context.scope) });
   // The admitted scope owns this original reader. Keep the manager's toolbar
   // mounted while it resolves; only an accepted DTO may enable its controls.
-  return <ServicesManager data={state.data?.data ?? null} pending={!state.data} error={state.error} onRetry={state.refresh} expectedSalonId={props.context?.context.salonId ?? undefined} catalogScope={props.context?.context.scope} initialServiceId={urlFor(props.path).searchParams.get("service")} />;
+  // Accepted native commands already invalidate this read. Join that update
+  // without restarting admission or rereading an update that just completed.
+  return <ServicesManager data={state.data?.data ?? null} pending={!state.data} error={state.error} onRetry={state.refresh} onSaved={state.ensureFresh} expectedSalonId={props.context?.context.salonId ?? undefined} catalogScope={props.context?.context.scope} initialServiceId={urlFor(props.path).searchParams.get("service")} />;
 }
 function PersonalQrPage(props: AppLocalPageProps) {
   const url = urlFor(props.path);

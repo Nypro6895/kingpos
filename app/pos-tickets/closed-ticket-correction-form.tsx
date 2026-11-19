@@ -7,6 +7,7 @@ import {TicketGiftDelivery} from "@/components/gift-card/ticket-gift-delivery";
 import {TicketHistoryDisclosure,type TicketLegacyHistoryEntry} from "./ticket-history-disclosure";
 import {FinancialHistoryProvider} from "@/app/payroll/inline-financial-history";
 import type {PosTicketTimelineItem} from "@/types/pos-ticket-timeline";
+import Link from "next/link";
 
 import { useMemo, useRef, useState,type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
@@ -151,6 +152,9 @@ type DailyPosTicketCardProps = {
   canApplyFinancialCorrection: boolean;
   canEdit: boolean;
   dailyNumber: number;
+  editHref?: string;
+  detailEditor?: boolean;
+  cancelHref?: string;
   isBusinessDateLocked: boolean;
   requireServiceForActiveLines?: boolean;
   returnTo: string;
@@ -1067,6 +1071,10 @@ export function DailyPosTicketCard({
   canApplyFinancialCorrection,
   canEdit,
   dailyNumber,
+  editHref,
+  detailEditor = false,
+  cancelHref,
+  isBusinessDateLocked,
   requireServiceForActiveLines = true,
   returnTo,
   services,
@@ -1074,7 +1082,7 @@ export function DailyPosTicketCard({
   ticket: serverTicket,
   timeZone,
 }: DailyPosTicketCardProps) {
-  const [editSnapshot,setEditSnapshot]=useState<EditablePosTicket|null>(null);
+  const [editSnapshot,setEditSnapshot]=useState<EditablePosTicket|null>(()=>detailEditor && canEdit ? serverTicket : null);
   const ticket=editSnapshot??serverTicket;
   const correctionActions = actions ?? OWNER_TICKET_CORRECTION_ACTIONS;
   const lockedCorrectionAction =
@@ -1115,9 +1123,9 @@ export function DailyPosTicketCard({
     () => getInitialManualStaffTips(ticket),
     [ticket],
   );
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(detailEditor && canEdit && !isBusinessDateLocked);
   const [isCorrectionMode, setIsCorrectionMode] = useState(false);
-  const [showLockedConfirmation, setShowLockedConfirmation] = useState(false);
+  const [showLockedConfirmation, setShowLockedConfirmation] = useState(detailEditor && canEdit && isBusinessDateLocked);
   useTransientOverlay(() => setShowLockedConfirmation(false), showLockedConfirmation);
   const [selectorTarget, setSelectorTarget] = useState<SelectorTarget>(null);
   const [moneyTarget, setMoneyTarget] = useState<MoneyTarget>(null);
@@ -1125,7 +1133,7 @@ export function DailyPosTicketCard({
   const [tipTotal, setTipTotal] = useState(formatNumber(initialTotals.tip_amount));
   const [discountType,setDiscountType]=useState(ticket.discount_type);
   const [discountValue,setDiscountValue]=useState(formatNumber(ticket.discount_value));
-  const [requestId,setRequestId]=useState("");
+  const [requestId,setRequestId]=useState(()=>detailEditor && canEdit ? crypto.randomUUID() : "");
   const [staffTipDrafts, setStaffTipDrafts] = useState<Record<string, string>>({});
   const [reason, setReason] = useState("");
   const nextKeyRef = useRef(0);
@@ -1683,7 +1691,7 @@ export function DailyPosTicketCard({
   const isTotalTipEditing = moneyTarget?.kind === "totalTip";
 
   return (
-    <article className="border-b border-zinc-200" data-business-date-label={businessDateCompactLabel}>
+    <article className={detailEditor ? undefined : "border-b border-zinc-200"} id={detailEditor ? undefined : `pos-ticket-${ticket.id}`} data-pos-ticket-id={detailEditor ? undefined : ticket.id} data-business-date-label={businessDateCompactLabel}>
       <form action={correctionActions.correctClosedTicket}>
         {isEditing ? (
           <>
@@ -1714,7 +1722,7 @@ export function DailyPosTicketCard({
             ) : null}
           </>
         ) : null}
-        {!isEditing ? (
+        {!isEditing ? (detailEditor ? null : (
           <TicketHistoryDisclosure ticketId={ticket.id} legacyEntries={historyEntries} timeZone={timeZone}>
           <div className="px-4 py-3 text-sm text-zinc-950 sm:px-3" data-compact-ticket>
             <div className="flex min-w-0 items-center gap-2">
@@ -1723,7 +1731,12 @@ export function DailyPosTicketCard({
               <span className="min-w-0 flex-1 truncate"><CustomerName name={ticket.customer?.name} /></span>
               {ticket.source_booking_id ? <span className="shrink-0 text-xs text-sky-800"><WorkspaceText text="From appointment" /></span> : null}
               {canCorrectClosedTicket ? (
-                <button type="button" aria-label="Edit" title="Edit" onClick={event=>{event.preventDefault();event.stopPropagation();startEdit();}}
+                editHref ? (
+                  <Link aria-label="Edit" title="Edit" href={editHref}
+                    className="-my-2 -mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-zinc-600">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 5 5L9 20l-6 1 1-6Z" /></svg>
+                  </Link>
+                ) : <button type="button" aria-label="Edit" title="Edit" onClick={event=>{event.preventDefault();event.stopPropagation();startEdit();}}
                   className="-my-2 -mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-zinc-600">
                   <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 5 5L9 20l-6 1 1-6Z" /></svg>
                 </button>
@@ -1753,13 +1766,13 @@ export function DailyPosTicketCard({
             {(financial.giftSales.length>0 || financial.giftRedeemed>0 || financial.reward>0) && <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs text-zinc-500" data-ticket-payment-sources><span>{financial.payments.map(payment=>`${payment.method} ${formatMoney(payment.amount)}`).join(" · ")}</span>{financial.giftOnly && <span><WorkspaceText text={ticket.customer ? "Gift only" : "Gift only · Walk-in sale"} /></span>}</div>}
           </div>
           </TicketHistoryDisclosure>
-        ) : (<>
-        <div data-receipt-header className="flex min-w-0 items-center gap-3 border-b border-zinc-200 px-4 py-4 text-sm sm:px-3">
+        )) : (<>
+        {!detailEditor ? <div data-receipt-header className="flex min-w-0 items-center gap-3 border-b border-zinc-200 px-4 py-4 text-sm sm:px-3">
           <span className="shrink-0 font-semibold text-zinc-950">#{dailyNumber}</span>
           <span className="shrink-0 text-zinc-600"><WorkspaceText text={formatTime(ticket.opened_at, timeZone)} /></span>
           <span className="min-w-0 flex-1 truncate text-right text-zinc-700"><CustomerName name={ticket.customer?.name} /></span>
           {ticket.source_booking_id ? <span className="text-xs text-sky-800"><WorkspaceText text="From appointment" /></span> : null}
-        </div>
+        </div> : null}
         <div className="divide-y divide-zinc-100">
           {displayedLines.length === 0 ? (
             <div className="px-3 py-2 text-sm text-zinc-500">
@@ -1844,13 +1857,16 @@ export function DailyPosTicketCard({
                               : "Make a change to enable save."} />
               </p>
               <div className="flex w-full flex-wrap gap-3">
-                <button
+                {cancelHref ? <Link
+                  className="min-h-11 rounded-lg px-5 py-2 text-sm font-medium text-zinc-700"
+                  href={cancelHref}
+                ><WorkspaceText text="Cancel" /></Link> : <button
                   className="min-h-11 rounded-lg px-5 py-2 text-sm font-medium text-zinc-700"
                   onClick={resetEdit}
                   type="button"
                 >
                   <WorkspaceText text="Cancel" />
-                </button>
+                </button>}
                 <SaveButton
                   canApplyFinancialCorrection={canApplyFinancialCorrection}
                   canSave={canSave}
@@ -1879,13 +1895,16 @@ export function DailyPosTicketCard({
               <WorkspaceText text="This business date is locked. Your changes will be recorded as a financial correction request instead of directly changing the original ticket." />
             </p>
             <div className="mt-5 flex justify-end gap-2">
-              <button
+              {cancelHref ? <Link
+                className="rounded border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950"
+                href={cancelHref}
+              ><WorkspaceText text="Cancel" /></Link> : <button
                 className="rounded border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950"
                 onClick={() => setShowLockedConfirmation(false)}
                 type="button"
               >
                 <WorkspaceText text="Cancel" />
-              </button>
+              </button>}
               <button
                 className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
                 onClick={continueLockedCorrection}
@@ -1899,4 +1918,22 @@ export function DailyPosTicketCard({
       ) : null}
     </article>
   );
+}
+
+type ClosedTicketDetailEditorProps = Pick<DailyPosTicketCardProps,
+  "ticket" | "services" | "staff" | "returnTo" | "canEdit" |
+  "isBusinessDateLocked" | "canApplyFinancialCorrection" | "timeZone"
+> & { cancelHref: string; businessDateCompactLabel?: string };
+
+export function ClosedTicketDetailEditor({
+  businessDateCompactLabel,
+  ...props
+}: ClosedTicketDetailEditorProps) {
+  if (!props.canEdit || props.ticket.status !== "closed") return null;
+  return <DailyPosTicketCard
+    {...props}
+    businessDateCompactLabel={businessDateCompactLabel ?? formatDate(props.ticket.opened_at, props.timeZone)}
+    dailyNumber={0}
+    detailEditor
+  />;
 }

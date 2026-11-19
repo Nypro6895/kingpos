@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "ios-moderation-operations-20261118",
+  "status": "needs-integration",
+  "summary": "Fixed held-parent public comment leakage and private-post author probing through block RPC; source moderation operations audited and isolated SQL/Auth/RLS validated, held for combined release integration.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261118210000_moderation_operations.sql",
+    "tests/moderation-operations.integration.test.mjs",
+    "docs/ios-moderation-operations-20261118.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-moderation-operations-20261118\\frozen",
+    "sourceSha256": "e5d2cc58f6f28ccd07cfa17412e1660ddbfd363e58a183ebd2f758902b2ac536",
+    "manifest": "artifacts/ios-moderation-operations-20261118/frozen-manifest.json"
+  },
+  "fileHashes": {
+    "supabase/migrations/20261118210000_moderation_operations.sql": "cfade24178bbc50836b7ffd1ff97557e55e033965ccea76b9ebcf568812b30b2",
+    "tests/moderation-operations.integration.test.mjs": "0f698a221bfff2e3ba25a02615ffce1cecc65a0fe2d8ea4f1c80872fafb96b48",
+    "docs/ios-moderation-operations-20261118.md": "f29402074221b2a2d0a5fd16e0d338e3f73a3468bdce6b8f9697b430f7afd886"
+  },
+  "validation": [
+    {
+      "name": "New bounded actual SQL regression tests",
+      "result": "passed",
+      "evidence": "artifacts/ios-moderation-operations-20261118/validation.json (4/4 non-skipped PGlite)"
+    },
+    {
+      "name": "Full current isolated Supabase schema and real Auth/RPC/RLS acceptance",
+      "result": "passed",
+      "evidence": "artifacts/ios-moderation-operations-20261118/full-schema/moderation-operations-acceptance.json (434 migrations, 5/5 total suite; network none, synthetic only)"
+    },
+    {
+      "name": "Existing relevant moderation/Forum/Support/report regressions",
+      "result": "passed",
+      "evidence": "artifacts/ios-moderation-operations-20261118/validation.json (36/36)"
+    },
+    {
+      "name": "Assembled production-baseline integration, full app build and hosted/device acceptance",
+      "result": "pending",
+      "evidence": "Coordinator owns the final combined source/build and normal publication gates; no local claim of hosted acceptance."
+    }
+  ],
+  "dependencies": [],
+  "scopeBoundary": "Exactly three existing SQL helpers, integration tests and operations audit. No AI/provider code, text Remove/Restore backend or product UI, content decisions, financial/role changes, real-data reads, commit/push/deploy. Artifact-only synthetic controls preview awaits user approval.",
+  "remaining": "Exact-text content operation/UI, author appeal acceptance, operational staffing/contact and identity-image coverage remain separate. Public post takedown is not demonstrated as Storage/CDN byte revocation.",
+  "nativeAssessment": "Database-only behavior retains existing RPC signatures; no Swift/bundled asset/bridge change in this scoped patch. Coordinator assesses the exact combined native candidate.",
+  "id": "20485729-ced3-47fb-88c3-6dbbb0773c0f",
+  "recordedAt": "2026-11-18T21:15:22.940Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

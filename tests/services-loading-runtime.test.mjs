@@ -96,6 +96,20 @@ test("Services actual toolbar survives held reads; dirty Save/Cancel/navigation 
     await page.getByRole("searchbox", { name: "Search services" }).waitFor();
     await page.waitForFunction(() => !document.querySelector('input[type="search"]').disabled);
     assert.equal(await page.evaluate(() => window.pendingSearch === document.querySelector('input[type="search"]') && window.pendingHeader === document.querySelector('header')), true);
+    // Exercise the approved compact summary using the actual manager and stylesheet.
+    await page.getByRole("button", { name: "Close Pedicure", exact: true }).click();
+    for (const width of [320, 390, 768, 1024]) {
+      await page.setViewportSize({ width, height: 1024 });
+      const summary = page.locator('.service-row__summary');
+      assert.ok((await summary.boundingBox()).height <= 115, 'Compact summary height at ' + width);
+      assert.equal(await page.locator('.service-row__compact-meta').isVisible(), true);
+      assert.equal(await page.getByRole('button', { name: 'Set Pedicure active state', exact: true }).count(), 0);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      if (width === 768) await page.screenshot({ path: 'artifacts/ipad-approved-optimizations-20261115/services-768.png' });
+    }
+    await page.getByRole("button", { name: "Edit Pedicure", exact: true }).click();
+    await page.getByLabel('Name:', { exact: true }).waitFor();
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole("button", { name: "Service filters", exact: true }).click();
     await page.getByRole("group", { name: "Service filters", exact: true }).getByLabel(/^Status/).selectOption("inactive");await page.getByRole("button", { name: "Close Service filters", exact: true }).click();
     await page.getByText("No matching services", { exact: true }).waitFor();
@@ -123,6 +137,7 @@ test("Services actual toolbar survives held reads; dirty Save/Cancel/navigation 
     assert.equal(await name.inputValue(), "Edited Pedicure");assert.equal(await page.locator(".services-save-bar").count(), 0);
     await page.getByRole("searchbox", { name: "Search services" }).fill("Edited");
     await page.evaluate(() => window.deliver({ ...window.h.workspace, canManage: false }));
+    await page.getByRole("button", { name: "New service", exact: true }).waitFor({ state: "detached" });
     assert.equal(await page.getByRole("button", { name: "New service", exact: true }).count(), 0);
     assert.equal(await name.isDisabled(), true);assert.equal(await page.getByRole("searchbox", { name: "Search services" }).inputValue(), "Edited");
     assert.equal(await page.locator(".services-save-bar").count(), 0);

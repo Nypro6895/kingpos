@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "public-post-media-deletion-worker-20261118",
+  "status": "needs-integration",
+  "summary": "Bounded pinned public post media deletion worker with ten mock/SDK-transport tests; existing-cron and DB integration remain coordinator checks",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/public-post-media-deletion.ts",
+    "tests/public-post-media-deletion-worker.test.mjs",
+    "docs/public-post-media-deletion-worker-20261118.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\public-post-media-deletion-worker-20261118\\frozen",
+    "sourceSha256": "ac09185ee7ff54aeebc85bddf5d9a95da4da1227dcd6eee0006dc14cbfe9a324",
+    "fileSha256": {
+      "docs/public-post-media-deletion-worker-20261118.md": "fa51e58ec35a704c6db1e2c609b10af0346458cbeaf01e192a05b5ebbb944a18",
+      "lib/public-post-media-deletion.ts": "c6dbc94779054a4b929afd500a60c265833f2425fb43e66efe404316cab8c5df",
+      "tests/public-post-media-deletion-worker.test.mjs": "d41e08ca0572a7fd482efee5cb5b6f4761b4a54611660986ca79ec58b4864fe3"
+    }
+  },
+  "validation": [
+    {
+      "name": "Focused synthetic worker and injected Supabase SDK acceptance (10/10)",
+      "result": "passed",
+      "evidence": "artifacts/public-post-media-deletion-worker-20261118/mock-acceptance.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/public-post-media-deletion-worker-20261118/eslint.log"
+    },
+    {
+      "name": "Independent bounded TS worker critic",
+      "result": "passed",
+      "evidence": "artifacts/public-post-media-deletion-worker-20261118/frozen-manifest.json"
+    },
+    {
+      "name": "Coordinator route, companion DB/actual local Storage API acceptance and final combined build",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "public-post-media-deletion-20261118"
+  ],
+  "id": "d88a363e-a816-4472-9492-c7d109aec224",
+  "recordedAt": "2026-11-18T21:32:41.418Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

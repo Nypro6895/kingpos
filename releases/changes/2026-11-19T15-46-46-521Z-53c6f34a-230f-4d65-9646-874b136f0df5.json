@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "combined-policy-regression-20261119",
+  "status": "ready",
+  "summary": "Repair stale integrated policy assertions while retaining approved per-request advertising refund distinctions, legal routes, platform duties and user ownership. No runtime policy edits.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/legal-privacy-implementation-20261118.test.mjs",
+    "docs/combined-policy-regression-20261119.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\policy-regression-r1\\frozen",
+    "commit": "cffd219ee5cd12d7c0945035b7356e96dd88e723"
+  },
+  "validation": [
+    {
+      "name": "10 policy source and real-renderer regression checks",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/policy-regression-r1/result.json"
+    },
+    {
+      "name": "Scoped ESLint and whitespace checks; runtime policies unchanged",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/policy-regression-r1/result.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "53c6f34a-230f-4d65-9646-874b136f0df5",
+  "recordedAt": "2026-11-19T15:46:46.521Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "tests/legal-privacy-implementation-20261118.test.mjs": "c31686aa7ad29a569b923eff5123b58834b57afa202b2282ba07e55787333de5",
+    "docs/combined-policy-regression-20261119.md": "e021d170261e42f7e9380e34802347d901c8968c044970b3a753176f7e7066cc"
+  }
+}

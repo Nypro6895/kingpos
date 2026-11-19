@@ -15,6 +15,7 @@ import { desktopDevice, type DesktopUpdateState } from "@/lib/portable-device-st
 import { DesktopUpdate } from "./desktop-update";
 import { dialogOutsideClick, dialogOutsidePointerDown } from "@/lib/dialog-outside-dismiss";
 import { PortableNativeModeSettings } from "./portable-native-mode-settings";
+import { ReceiptSetupSection } from "@/components/receipt-setup";
 import "./device-input-settings.css";
 
 const subscribeDesktop = () => () => {};
@@ -97,6 +98,7 @@ export function DeviceInputSettingsButton({ desktopOnly=false }: {desktopOnly?:b
       <DeviceInputSettings />
       <PortableNativeModeSettings />
       <ServiceDisplaySettings />
+      <ReceiptSetupSection />
       <section className="device-setting-section" aria-label={t("Customer display")}><h3><WorkspaceText text="Customer display" /></h3>
         {desktop&&<div className="device-list-row"><span><WorkspaceText text="Customer screen" /></span><button type="button" onClick={()=>{setError("");void desktopDevice()?.display?.open().catch(()=>setError("Open the POS tab first, then try again."));}}><WorkspaceText text="Open" /></button></div>}
         <CustomerDisplayPreferencesEditor />

@@ -1,5 +1,7 @@
 "use server";
 import { withSettingsTarget } from "@/lib/settings-target-context";
+import { PostSubmissionUnknownError } from "@/lib/public-post-submission";
+import { PUBLIC_IMAGE_QUARANTINE_BUCKET, publicImageQuarantinePath } from "@/lib/public-image-staging";
 
 import {
   canCreateSalonProfileContent,
@@ -58,15 +60,25 @@ type ToggleResult = {
 
 type MutationResult<T extends object = object> =
   | ({ error: null } & T)
-  | { error: string };
+  | { error: string; outcome?: "rejected" | "unknown"; requestId?: string };
 
 type MediaUploadIntent = "content" | "identity";
+
+async function withSalonContentTarget<T>(salonId: string | undefined, action: () => Promise<T>) {
+  if (!salonId) return action();
+  const current = await getCurrentBusinessContext();
+  // An owner can also be working as Staff. Keep the selected role for the same
+  // salon rather than auto-selecting management merely because it is available.
+  const mode = current.currentSalon?.id === salonId ? current.salonMode ?? "auto" : "auto";
+  return withSettingsTarget(salonId, action, mode);
+}
 
 export type SalonProfileUploadSession = {
   accessToken: string;
   anonKey: string;
   bucket: string;
   path: string;
+  objectPath?: string;
   salonId: string;
   supabaseUrl: string;
 };
@@ -179,7 +191,10 @@ export async function getSalonProfileMediaUploadSessionAction(
   workspaceId?: string,
   expectedSalonId?: string,
 ): Promise<SalonProfileUploadSession> {
- return withSettingsTarget(expectedSalonId, async () => {
+ const target = intent === "identity"
+   ? <T,>(action: () => Promise<T>) => withSettingsTarget(expectedSalonId, action, "manage")
+   : <T,>(action: () => Promise<T>) => withSalonContentTarget(expectedSalonId, action);
+ return target(async () => {
 
   const [context, accessToken] = await Promise.all([
     workspaceId ? getMyPlaceWorkspaceContext(workspaceId) : getCurrentBusinessContext(),
@@ -249,24 +264,32 @@ export async function getSalonProfileMediaUploadSessionAction(
     throw new Error(error.message);
   }
 
+  if (intent === "content") {
+    const { error: reserveError } = await supabase.rpc("reserve_public_post_image", {
+      p_bucket: SALON_PROFILE_MEDIA_BUCKET, p_path: path, p_purpose: kind, p_salon_id: salon.id,
+    });
+    if (reserveError) throw new Error("Photo uploads are temporarily unavailable. Please try again.");
+  }
+
   return {
     accessToken,
     anonKey: config.supabaseAnonKey,
-    bucket: SALON_PROFILE_MEDIA_BUCKET,
-    path,
+    bucket: intent === "content" ? PUBLIC_IMAGE_QUARANTINE_BUCKET : SALON_PROFILE_MEDIA_BUCKET,
+    path: intent === "content" ? publicImageQuarantinePath(SALON_PROFILE_MEDIA_BUCKET, path) : path,
+    objectPath: path,
     salonId: salon.id,
     supabaseUrl: config.supabaseUrl,
   };
 
- }, "manage");
+ });
 }
 
 export async function deleteSalonProfileMediaAction(path: string, expectedSalonId?: string) {
- return withSettingsTarget(expectedSalonId, async () => {
+ return withSalonContentTarget(expectedSalonId, async () => {
 
   await deleteCurrentSalonProfileMedia(path);
 
- }, "manage");
+ });
 }
 
 export async function updateSalonProfileIdentityMediaAction(input: {
@@ -381,6 +404,7 @@ export async function createSalonProfileUpdateAction(formData: FormData) {
 }
 
 export async function createSalonProfileSocialPostAction(input: {
+  requestId?: string;
   additionalServiceIds?: string[];
   bookingCtaEnabled?: boolean;
   caption: string | null;
@@ -395,22 +419,18 @@ export async function createSalonProfileSocialPostAction(input: {
   startingPrice?: number | null;
   title?: string | null;
 }): Promise<MutationResult<{ post: ProfileFeedItem; look: PublicSalonProfileLook | null }>> {
+  let saved = false;
   try {
-    const result = await createCurrentSalonProfileSocialPost(input);
+    const result = await withSalonContentTarget(input.salonId, () => createCurrentSalonProfileSocialPost(input));
+    saved = true;
     revalidatePath("/salon-profile");
     return { error: null, ...result };
   } catch (error) {
-    if (input.imagePath) {
-      try {
-        await deleteCurrentSalonProfileMedia(input.imagePath);
-      } catch {
-        // Cleanup is best-effort; the server validates ownership again.
-      }
-    }
-
     return {
       error:
         error instanceof Error ? error.message : "Post could not be created.",
+      outcome: saved || error instanceof PostSubmissionUnknownError ? "unknown" : "rejected",
+      requestId: input.requestId,
     };
   }
 }

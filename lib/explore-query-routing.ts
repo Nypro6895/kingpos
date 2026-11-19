@@ -1,5 +1,5 @@
 import "server-only";
-import { cleanExploreQueryText, exploreQueryAreaLabel, exploreQueryNailStylePhrase, exploreQueryStateCode, exploreQueryStreetAddress, parseExploreQueryArea, parseExploreQueryIntent, type ExploreQueryTarget } from "@/lib/explore-query-intent";
+import { cleanExploreQueryText, exploreQueryAreaLabel, exploreQueryLeadingServiceArea, exploreQueryNailStylePhrase, exploreQueryStateCode, exploreQueryStreetAddress, parseExploreQueryArea, parseExploreQueryIntent, type ExploreQueryTarget } from "@/lib/explore-query-intent";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ExploreSearchQueryKind } from "@/types/explore";
 
@@ -47,6 +47,13 @@ export async function resolveExploreQueryRouting(input: ExploreQueryRoutingInput
   const contextArea = parseExploreQueryArea(manual || contextLocation);
   const preferredState = contextArea?.stateCode || (anywhere ? "" : exploreQueryStateCode(input.contextState));
   let parsed = parseExploreQueryIntent(input.query ?? "", { target: input.target });
+  const leadingArea = !parsed.explicitName && !parsed.explicitLocation && !parsed.nearMe && !parsed.addressHint
+    ? exploreQueryLeadingServiceArea(parsed.displayQuery) : null;
+  if (leadingArea) {
+    // Reuse the service-first parser and the SAME bounded entity probe. Keep the
+    // original text so a complete business-name match can restore it unchanged.
+    parsed = { ...parseExploreQueryIntent(`${leadingArea.query} ${leadingArea.locationHint}`, { target: input.target }), displayQuery: parsed.displayQuery };
+  }
   async function publicLookup(name: string, args: Record<string, unknown>): Promise<{ data: Record<string, unknown>; failed: boolean }> {
     try {
       const client = options.rpc ? null : createSupabaseServerClient();
@@ -76,18 +83,18 @@ export async function resolveExploreQueryRouting(input: ExploreQueryRoutingInput
   let candidates = areaCandidates(lookup.areaCandidates);
   let areaAmbiguous = candidates.length > 1 || lookup.moreAreaCandidates === true;
   const preferred = preferredState ? candidates.find(candidate => candidate.stateCode === preferredState) : null;
-  const verifiedArea = candidates.length === 1 ? candidates[0] : preferred ?? null;
-  const confirmedCity = candidates.length > 0;
+  let verifiedArea = candidates.length === 1 ? candidates[0] : preferred ?? null;
+  let confirmedCity = candidates.length > 0;
   const clearCityLiteral = confirmedCity && !parsed.locationHint && !parsed.salonCue && !parsed.explicitName;
   // A verified complete brand takes priority over a tentative service/area split.
   // A verified explicit area, or a generic service followed by a verified city,
   // keeps its geographic meaning even when the whole phrase is a salon name.
   const possibleNameArea = !parsed.directArea || parsed.locationArea?.kind === "city" && !confirmedCity;
-  const preserveArea = (parsed.explicitLocation || parsed.categoryOnly) && Boolean(parsed.locationArea || confirmedCity);
+  const preserveArea = !leadingArea && (parsed.explicitLocation || parsed.categoryOnly) && Boolean(parsed.locationArea || confirmedCity);
   if (lookup.exactOriginalSalonName === true && !clearCityLiteral && !preserveArea && possibleNameArea && parsed.locationHint) {
     parsed = parseExploreQueryIntent(parsed.displayQuery, { target: "salons", ignoreArea: true });
-    candidates = []; areaAmbiguous = false;
-  } else if (parsed.tentativeArea && !confirmedCity && !lookupFailed) parsed = parseExploreQueryIntent(parsed.displayQuery, { target: input.target, ignoreArea: true });
+    candidates = []; areaAmbiguous = false; verifiedArea = null; confirmedCity = false;
+  } else if ((parsed.tentativeArea || leadingArea && parsed.locationArea?.kind === "city") && !confirmedCity && !lookupFailed) parsed = parseExploreQueryIntent(parsed.displayQuery, { target: input.target, ignoreArea: true });
   const exactBrand = lookup.exactOriginalSalonName === true && (!parsed.locationHint || parsed.tentativeArea && !confirmedCity) || lookup.exactSalonName === true;
   // Broad service words stay category requests even when a public salon shares
   // that generic name. Quoted/named requests can still target that exact brand.

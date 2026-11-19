@@ -3,6 +3,7 @@ import { isExperienceOfflineGrant } from "./experience-offline-policy";
 import { isTrustedStaffOfflineBinding } from "./staff-offline-binding";
 import { ownerLocalReadArgs, ownerLocalReadName } from "./owner-local-workspace";
 import { payrollReadArgs } from "./payroll-read-args";
+import { ownerStaffReadArgs } from "./owner-staff-read-args";
 import { APP_LOCAL_EXPLORE_QUERY_KEYS } from "./app-local-explore-metadata";
 import { getTodayDashboardSections } from "./today-dashboard-sections";
 import type { TodayDashboard } from "./today-dashboard";
@@ -120,7 +121,7 @@ function currentJobs(role: Audience, value: AppLocalContext, url: URL): Job[] {
     if (pathname === "/customers") return [read(path, "page.owner-customers", query(url, ["page", "q"]))];
     const detail = pathname.match(/^\/customers\/([^/]+)$/);
     if (detail && uuid.test(detail[1])) return [read(path, "page.owner-customer-detail", { customerId: detail[1], ...query(url, ["group"]) })];
-    if (pathname === "/staff") return [read(path, "page.owner-staff", query(url, ["connection_error", "connection_notice", "error", "filter", "q"]))];
+    if (pathname === "/staff") return [read(path, "page.owner-staff", ownerStaffReadArgs(path))];
     if (pathname === "/payroll") return [read(path, "page.owner-payroll", payrollReadArgs(path))];
   }
   if (role === "staff") {

@@ -7,6 +7,7 @@
 .icon:focus-visible { outline:2px solid #0f766e; outline-offset:2px; }
 .panel { position:fixed; inset:auto; margin:0; z-index:100; box-sizing:border-box; padding:16px; border:1px solid #e4e4e7; border-radius:10px; background:white; box-shadow:0 12px 36px #18181b26; overflow:auto; color:#18181b; font-size:14px; }
 .panel[hidden] { display:none; }
+.panel[data-compact-dialog]::backdrop { background:transparent; }
 .panel input,.panel select { min-width:0; max-width:100%; }
 .panelTitle { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; font-weight:600; }
 .panelTitle button { width:36px; height:36px; border-radius:6px; }

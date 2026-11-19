@@ -12,8 +12,9 @@ public class NavigationPolicyTest {
     }
     @Test public void resumeKeepsOnlyTrustedRoutesWithoutCredentials() {
         assertEquals("https://reylumi.com/staff/today", NavigationPolicy.productionResumeUrl("https://reylumi.com/staff/today?token=secret#private"));
-        assertEquals("https://reylumi.com/explore", NavigationPolicy.productionResumeUrl("https://reylumi.com/auth/callback?code=secret"));
-        assertEquals("https://reylumi.com/explore", NavigationPolicy.productionResumeUrl("https://reylumi.com/login"));
+        String home = "https://reylumi.com" + (BuildConfig.PORTABLE_POS ? "/pos/portable" : "/explore");
+        assertEquals(home, NavigationPolicy.productionResumeUrl("https://reylumi.com/auth/callback?code=secret"));
+        assertEquals(home, NavigationPolicy.productionResumeUrl("https://reylumi.com/login"));
         assertNull(NavigationPolicy.productionResumeUrl("https://evil.test/staff/today"));
         assertNull(NavigationPolicy.productionResumeUrl("https://reylumi.com/market"));
     }

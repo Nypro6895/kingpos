@@ -1,0 +1,4287 @@
+{
+  "schemaVersion": 1,
+  "localAuditDate": "2026-11-16",
+  "timezone": "America/Chicago",
+  "preparedAt": "2026-11-17T04:54:35.969Z",
+  "status": "SCOPE_CONFIRMED_RUNTIME_EVIDENCE_PENDING",
+  "notAnASCAPIPayload": true,
+  "mayBeSubmitted": false,
+  "source": {
+    "baselineCommit": "5b9609cc5faec74ae0893ed86d76a3d1970c3f66",
+    "knownProductDelta": {
+      "file": "ios/Reylumi/Info.plist",
+      "sha256": "4f43ad28350f2a24ae4a18a3ff6e5cee222d4556c13d703346dd718458e9db2c",
+      "scope": "Camera and Photos purpose descriptions only; no new permissions/bundle/version",
+      "validation": "artifacts/ios-submission-scope-20261116/camera-purpose-validation.json"
+    }
+  },
+  "ownerDecisions": {
+    "platform": "iOS",
+    "freeDownload": true,
+    "firstStorefront": "USA",
+    "operator": "Reylumi LLC",
+    "platformCopyright": "Reylumi",
+    "ugcRights": "Users and existing rightsholders retain their rights",
+    "designatedSupportEmail": "support@reylumi.com",
+    "mailboxOperationVerified": false,
+    "arbitraryUniversalMinimumAgeAdded": false,
+    "routineAdminPhotoPreapprovalRequired": false,
+    "includeMarketAndAdTransactionsInAudit": true,
+    "marketScopeAuthority": "Owner explicitly keeps these in first-iOS audit/declaration scope; no authority to enable flags, change pricing or charge anyone"
+  },
+  "auditBoundary": {
+    "storeWrites": false,
+    "deployments": false,
+    "ciRunsTriggered": false,
+    "livePrivateDataRead": false,
+    "paymentOrMessageSent": false,
+    "secretValuesStored": false,
+    "publicReadbackOnly": true,
+    "providerSettingsRead": false
+  },
+  "featureGroups": [
+    {
+      "id": "app-download-core",
+      "title": "Free US iOS download and core workspaces",
+      "routes": [
+        "/explore",
+        "/my-place",
+        "/book/[salonId]",
+        "/pos"
+      ],
+      "kind": "free-app-download",
+      "sourceState": "source-reachable-role-scoped",
+      "runtimeState": "not-observed",
+      "charge": "Download is owner-confirmed free; no claim that all optional modules or salon services are free.",
+      "evidence": [
+        "native_navigation",
+        "native_routes",
+        "pos_submit"
+      ],
+      "launchTreatment": "Keep core journeys, permissions and existing data. Include their actual behavior in reviewer access."
+    },
+    {
+      "id": "market-catalog",
+      "title": "First-party Market catalog",
+      "routes": [
+        "/market"
+      ],
+      "kind": "digital-feature-catalog",
+      "sourceState": "source-reachable-owner-salon-scoped",
+      "runtimeState": "catalog-and-readiness-unknown",
+      "charge": "Sample prices may be replaced by database catalog prices, tax and fees; display is not proof of enabled purchase.",
+      "evidence": [
+        "market_page",
+        "market_owner",
+        "market_readiness",
+        "catalog_projection"
+      ],
+      "launchTreatment": "Inventory rendered catalog and actual readiness before final review notes; do not hide the route."
+    },
+    {
+      "id": "first-party-paid-access",
+      "title": "Optional first-party paid digital subscriptions",
+      "routes": [
+        "/market",
+        "/market/booking-deposit"
+      ],
+      "pluginIds": [
+        "print-check",
+        "vietnamese-language",
+        "booking-policy",
+        "booking-deposit",
+        "checkin-receipt",
+        "tax-company",
+        "booksms"
+      ],
+      "kind": "paid-digital-module",
+      "sourceState": "source-reachable-behind-readiness",
+      "runtimeState": "payment-enabled-mode-catalog-entitlements-unknown",
+      "charge": "Monthly subscription paths exist. Current iOS requests hosted external checkout; web can use embedded Stripe.js.",
+      "data": [
+        "user/salon/plugin IDs",
+        "saved price/tax/fee quote",
+        "Stripe customer/session/subscription/invoice references",
+        "paid-until and access status"
+      ],
+      "recipients": [
+        "Reylumi backend/Supabase",
+        "Stripe when enabled"
+      ],
+      "evidence": [
+        "first_party_plans",
+        "first_party_checkout",
+        "hosted_checkout",
+        "ios_checkout",
+        "payment_bridge"
+      ],
+      "launchTreatment": "Owner confirmed including Market transactions in the first-iOS audit/declarations. Runtime configuration and candidate evidence remain pending; no price/billing/provider/flag changes authorized."
+    },
+    {
+      "id": "trials-and-check-writer",
+      "title": "Trials and independently gated Check Writer",
+      "routes": [
+        "/market",
+        "/check-writer"
+      ],
+      "kind": "digital-trial-and-module",
+      "sourceState": "trials-source-reachable;check-writer-new-sales-and-trial-default-off",
+      "runtimeState": "explicit-flags-crypto-existing-access-unknown",
+      "charge": "Allowlisted trials are separate from paid checkout. Check Writer needs independent sales/trial true flags and encryption readiness.",
+      "evidence": [
+        "trials",
+        "check_writer"
+      ],
+      "launchTreatment": "Preserve current readiness and existing history/entitlements; no enabling keys or flags proposed."
+    },
+    {
+      "id": "free-activations",
+      "title": "Payroll download and Phone Checkin activation",
+      "routes": [
+        "/market",
+        "/payroll",
+        "/staff/scan"
+      ],
+      "pluginIds": [
+        "payroll-data-download",
+        "service-relay"
+      ],
+      "kind": "digital-no-charge-in-traced-activation",
+      "sourceState": "source-reachable-owner-scoped",
+      "runtimeState": "installation-and-domain-entitlements-unknown",
+      "charge": "Payroll download is labeled free. Phone Checkin listing has a monthly price, but traced activation only installs/removes; do not infer a charge or invent a new price.",
+      "evidence": [
+        "payroll_free",
+        "phone_checkin",
+        "sample_catalog",
+        "phone_listing",
+        "payroll_listing"
+      ],
+      "launchTreatment": "Keep current activation/data behavior. Reconcile visible price/trial wording with the existing source/config before describing it to Apple."
+    },
+    {
+      "id": "preview-listings",
+      "title": "Concept and external catalog proposals",
+      "routes": [
+        "/market"
+      ],
+      "kind": "preview-not-purchasable-in-traced-ui",
+      "sourceState": "source-preview-no-install-checkout-for-unintegrated-proposals",
+      "runtimeState": "visible-proposal-catalog-unknown",
+      "charge": "Published proposal or visible monthly sample price does not imply installation or sales are enabled.",
+      "evidence": [
+        "concept_previews",
+        "coming_soon"
+      ],
+      "launchTreatment": "Describe previews truthfully; no broad claim that all publisher integrations are operational."
+    },
+    {
+      "id": "bank-invoices",
+      "title": "Bank billing state and standalone bank checkout",
+      "routes": [
+        "/market",
+        "/market/orders/[orderId]"
+      ],
+      "kind": "source-capability-ui-use-not-established",
+      "sourceState": "bank-read-model-and-component-exist;main-market-uses-card-alias",
+      "runtimeState": "bank-settings-orders-and-reachable-create-ui-unknown",
+      "charge": "A bank billing data model is not evidence the current native Market opens bank transfer checkout.",
+      "evidence": [
+        "checkout_alias",
+        "bank_state",
+        "bank_component"
+      ],
+      "launchTreatment": "Verify exact rendered path before including bank transfer as a launch purchase option; preserve existing invoices/management."
+    },
+    {
+      "id": "ads-and-ad-credits",
+      "title": "Sponsored placements, ad credits and optional automatic top-up",
+      "routes": [
+        "/explore",
+        "/campaigns",
+        "/forum"
+      ],
+      "kind": "paid-digital-promotion-separate-from-physical-salon-purchase",
+      "sourceState": "source-reachable-owner-advertiser-and-viewer-paths",
+      "runtimeState": "campaign-config-delivery-budgets-payment-and-topup-unknown",
+      "charge": "Campaign activation and welcome credits are separate from purchased credits. Credit Checkout and consented automatic top-up paths exist; no charges/deliveries performed.",
+      "data": [
+        "campaign and session IDs",
+        "area/query/device/audience/path",
+        "view/click/signup events",
+        "signup user ID",
+        "credit order/payment references and top-up preferences"
+      ],
+      "recipients": [
+        "Reylumi backend/Supabase",
+        "Stripe for enabled credit purchases",
+        "image/link destination hosts subject to actual configuration"
+      ],
+      "privacyPurposeCandidates": [
+        {
+          "advertiser": "independent salon or other third party",
+          "purpose": "Third-Party Advertising"
+        },
+        {
+          "advertiser": "Reylumi promoting its own products",
+          "purpose": "Developer's Advertising or Marketing"
+        },
+        {
+          "use": "campaign performance reporting",
+          "purpose": "Analytics"
+        }
+      ],
+      "tracking": "Undetermined: own ad-serving code or absence of external ad SDK does not decide cross-company tracking.",
+      "evidence": [
+        "campaign_actions",
+        "campaign_payment",
+        "campaigns_route",
+        "ads_delivery",
+        "ads_renderer",
+        "ads_signup"
+      ],
+      "launchTreatment": "Owner confirmed including ad-credit transactions in the first-iOS audit/declarations. Verify actual advertiser/payment/delivery configuration; inclusion is not evidence that sales, ads or top-ups are active."
+    },
+    {
+      "id": "booking-physical-payment",
+      "title": "Salon booking deposits and service prepayment",
+      "routes": [
+        "/book/[salonId]",
+        "/booking-payment/[token]"
+      ],
+      "kind": "physical-service-payment",
+      "sourceState": "source-reachable-per-salon-gates",
+      "runtimeState": "salon-enabled-active-Stripe-ready-and-test-toggle-unknown",
+      "charge": "Customer deposit/full prepayment for salon appointment, separate from the digital Booking Deposit module fee. Stored is_test orders have an explicit no-money path.",
+      "data": [
+        "customer/actor and booking/service/staff details",
+        "immutable amount and request identity",
+        "salon Stripe account and payment/receipt status"
+      ],
+      "recipients": [
+        "salon and authorized roles",
+        "Reylumi backend/Supabase",
+        "Stripe when enabled"
+      ],
+      "evidence": [
+        "booking_payment",
+        "booking_test",
+        "booking_plugin"
+      ],
+      "launchTreatment": "Keep booking available under actual salon settings; distinguish test/demo from live money and verify merchant/refund/support responsibilities."
+    },
+    {
+      "id": "gift-cards",
+      "title": "Salon Gift purchase, wallet, transfer and redemption",
+      "routes": [
+        "/more/gift-cards",
+        "/gift-cards",
+        "/gift-cards/manage",
+        "/pos"
+      ],
+      "kind": "salon-service-stored-value;not-shown-as-digital-plugin-currency",
+      "sourceState": "source-reachable-hosted-and-native-command-paths",
+      "runtimeState": "per-salon-installation-Stripe-account-and-online-readiness-unknown",
+      "charge": "Counter sale and online purchase are distinct; wallet transfer is not another sale. Source describes salon-only use; do not reclassify it as Market or ad-credit currency.",
+      "data": [
+        "salon/card/owner references",
+        "value/balance/sale/redemption history",
+        "secure transfer credentials managed privately",
+        "online order/Stripe receipt references"
+      ],
+      "recipients": [
+        "authorized holder/recipient and salon POS",
+        "Reylumi backend/Supabase",
+        "Stripe for enabled online purchase",
+        "user-selected email app when share draft is used"
+      ],
+      "evidence": [
+        "gift_online",
+        "gift_api",
+        "gift_ui",
+        "gift_native",
+        "gift_commands",
+        "pos_gift_reconciliation"
+      ],
+      "launchTreatment": "Retain existing balances/redemption/recovery. Verify installed binary's hosted/alias/payment return journey and legal stored-value terms without making a real purchase."
+    },
+    {
+      "id": "pos-records",
+      "title": "POS, tips, Gift/Reward tender and receipts",
+      "routes": [
+        "/pos",
+        "/pos/ticket",
+        "/pos-tickets"
+      ],
+      "kind": "physical-service-operational-records",
+      "sourceState": "source-reachable-per-role-and-canonical-submit",
+      "runtimeState": "actual-salon-payment-methods-and-provider-contracts-unknown",
+      "charge": "Recording cash/card/other tender or a closed receipt is not by itself proof of external card charge, bank settlement, wage payment or tax filing.",
+      "data": [
+        "customer/staff/service IDs",
+        "prices/discount/tax/tip and tender",
+        "receipt and correction/audit records",
+        "Gift/Reward source allocations"
+      ],
+      "recipients": [
+        "authorized salon roles",
+        "Reylumi backend/Supabase",
+        "authorized receipt/export recipients"
+      ],
+      "evidence": [
+        "pos_submit",
+        "pos_receipt",
+        "pos_gift_reconciliation"
+      ],
+      "launchTreatment": "Preserve canonical POS submission and financial records. Never run real settlement or create a transaction to populate store screenshots."
+    },
+    {
+      "id": "external-developer-runtime",
+      "title": "External hosted apps, consented data scopes and private developer tools",
+      "routes": [
+        "/developers/market",
+        "/market-review",
+        "/developer-platform",
+        "/api/market-platform/*"
+      ],
+      "kind": "conditional-remote-plugin-platform",
+      "sourceState": "implemented-behind-independent-default-off-gates;main-market-integration-not-observed",
+      "runtimeState": "both-enable-flags-published-catalog-installations-unknown",
+      "charge": "Separate developer commerce code is explicitly isolated/test-only; this does not establish live external-app purchases.",
+      "data": [
+        "approved app version/manifest/launch/privacy/support URLs",
+        "salon-scoped permission consent",
+        "explicitly published data scopes",
+        "connection/revocation records"
+      ],
+      "recipients": [
+        "Reylumi backend/Supabase",
+        "external app developer if enabled and consented",
+        "Stripe test only under isolated commerce configuration"
+      ],
+      "evidence": [
+        "private_registry",
+        "hosted_platform",
+        "hosted_owner",
+        "hosted_consent",
+        "hosted_test",
+        "hosted_local_db"
+      ],
+      "launchTreatment": "Do not describe as a live general app store. Verify actual flags and externally offered software; assess Apple remote-software requirements only for what is really offered."
+    }
+  ],
+  "businessGroups": [
+    {
+      "id": "account_auth",
+      "name": "Account and Auth",
+      "data": "Auth identity/session/recovery state; user/Auth IDs, name/email/phone/avatar, language/timezone, status and activity timestamps.",
+      "access": "Self profile RLS; server/Auth operations; feature-specific public identity presentation. Infrastructure authority is separate from end-user access.",
+      "export": "Deletion archive contains identity/status, impact and lifecycle events; not a complete Auth/session/social/Tax subject-access package.",
+      "erasure": "30-day pending schedule; due finalization neutralizes covered profile fields, clears covered security state and disconnects links. Completion requires Storage tasks and hard Auth deletion. Stable users.id and limited lifecycle/recovery references remain.",
+      "retention": "30 days is a pending period, not an exact all-copy removal deadline. Notification email cleanup after completion is worker-dependent. Backup/provider log retention is unknown.",
+      "appleCandidates": [
+        "Name",
+        "Email Address",
+        "Phone Number",
+        "User ID",
+        "Photos or Videos (avatar)"
+      ],
+      "linked": "Yes for identity-linked records.",
+      "purpose": "App Functionality",
+      "role": "Reylumi determines direct-account purposes; infrastructure provider treatment requires actual agreements and configuration.",
+      "refs": [
+        "E01",
+        "E02",
+        "E03",
+        "E27",
+        "E32",
+        "E37",
+        "E45",
+        "E46"
+      ],
+      "questions": [
+        "Q2",
+        "Q3"
+      ]
+    },
+    {
+      "id": "customers_booking_visits",
+      "name": "Customers, booking and visits",
+      "data": "Customer name/phone/email and customer/account IDs; private/internal/staff notes; service/staff/time/status/cancellation/visit history and payment-policy snapshots.",
+      "access": "Authorized salon roles and linked customer/self paths through RLS/RPCs. Public salon availability does not make customer notes public.",
+      "export": "Permission-selected customer/booking domains in salon archive, including notes. Personal archive only includes owned salon archives, not every salon relationship.",
+      "erasure": "Account deletion releases customer_user_id but retains salon customer contact/notes/history and released_user_id metadata. Structural booking/transaction history survives.",
+      "retention": "No universal end date or automatic general notes-minimization job established. A business label does not establish that every note is legally necessary.",
+      "appleCandidates": [
+        "Name",
+        "Email Address",
+        "Phone Number",
+        "User ID",
+        "Purchase History",
+        "Other User Content (notes)"
+      ],
+      "linked": "Yes: customer contact and booking relations identify people without an active app login.",
+      "purpose": "App Functionality",
+      "role": "Salon chooses service/customer purposes; instructed Reylumi processing is plausible with actual contractual and factual limits. Direct personal-account purposes remain separate.",
+      "refs": [
+        "E04",
+        "E05",
+        "E06",
+        "E08",
+        "E09",
+        "E48"
+      ],
+      "questions": [
+        "Q1",
+        "Q4",
+        "Q5"
+      ]
+    },
+    {
+      "id": "staff_directory",
+      "name": "Staff directory and scheduling",
+      "data": "Legal/display name, phone/email/address/city/state/postal code, job title, account/Auth links; availability/time-block reasons/service assignments; public photo/bio/specialties/consent flags.",
+      "access": "Salon management/permission scopes and own linked staff paths; selected public profile fields depend on profile settings/consent. Payroll has additional restrictions.",
+      "export": "Selected roster/availability/assignments/time blocks in salon staff domain; not every staff or HR field.",
+      "erasure": "Account links and public bio/photo/visibility/posting are cleared. Directory names/contact/address and business scheduling/payroll records remain.",
+      "retention": "No automatic general staff-contact/address end date established. Public-profile withdrawal is distinct from business-record deletion.",
+      "appleCandidates": [
+        "Name",
+        "Email Address",
+        "Phone Number",
+        "Physical Address",
+        "User ID",
+        "Photos or Videos",
+        "Other User Content"
+      ],
+      "linked": "Yes for employee/account identity.",
+      "purpose": "App Functionality",
+      "role": "Salon operational purposes plus separately enabled public profile/community presentation; allocate roles by actual purpose.",
+      "refs": [
+        "E03",
+        "E05",
+        "E09",
+        "E48",
+        "E50"
+      ],
+      "questions": [
+        "Q1",
+        "Q4",
+        "Q5"
+      ]
+    },
+    {
+      "id": "pos_transactions",
+      "name": "POS, receipts and financial corrections",
+      "data": "Customer/booking/staff/ticket IDs, service prices/assignments, discount/tax/tip, method/amount/note, actors and correction snapshots; Gift sale/redeem summaries where rendered.",
+      "access": "Existing non-Staff salon permission policies plus restrictive financial scope. Staff receive own-work/earnings projections rather than shared full receipts or coworkers money.",
+      "export": "Permission-scoped POS ticket/items/payments/audit/turn domain; actual Gift/checkout commerce scope is separately inventoried.",
+      "erasure": "Canonical closed business transaction/audit structures survive personal deletion. Removing a profile or social review does not remove the underlying sale.",
+      "retention": "No universal POS end date established. A recorded Card method is not proof of PAN/CVV collection or processor settlement.",
+      "appleCandidates": [
+        "Purchase History",
+        "User ID",
+        "Other User Content (notes)",
+        "Payment Info (form-of-payment candidate; inspect actual fields)"
+      ],
+      "linked": "Yes where customer, employee or operator identities attach.",
+      "purpose": "App Functionality",
+      "role": "Salon sale/reconciliation purposes; processor/settlement role cannot be inferred from bookkeeping.",
+      "refs": [
+        "E07",
+        "E10",
+        "E11",
+        "E08"
+      ],
+      "questions": [
+        "Q1",
+        "Q4"
+      ]
+    },
+    {
+      "id": "payroll",
+      "name": "Payroll and paystubs",
+      "data": "Staff legal/display-name snapshots, periods/settings/work data, wages/commission/fixed pay, cash/check, tips/bonus, tax/withholding and final_staff_income; adjustments/reasons, payments/check numbers and paystub document bytes.",
+      "access": "Owner/payroll-authorized roles; restrictive RLS limits Staff to own staff rows. Current connected Tax handoff returns selected published-period report fields, not a general raw-settings grant.",
+      "export": "Payroll lifecycle domain and scoped Owner/Staff CSV paths; canonical income, recorded payment and adjustments are separate records.",
+      "erasure": "Business pay/legal-name/settings snapshots, ledgers and business files remain; disconnection does not anonymize them. Leased retained-file COPY detaches obsolete Auth ownership while keeping bytes and access rules.",
+      "retention": "No blanket period, employment classification or legal necessity established. Ownership correction has isolated API acceptance, not hosted rollout proof.",
+      "appleCandidates": [
+        "Name",
+        "User ID",
+        "Other Financial Info",
+        "Other User Content (paystub/upload/notes)"
+      ],
+      "linked": "Yes: staff and legal-name/payment snapshots remain identifying.",
+      "purpose": "App Functionality",
+      "role": "Salon compensation/recordkeeping purposes; Tax professional is a separate recipient. Employer/provider/professional duties depend on facts.",
+      "refs": [
+        "E07",
+        "E12",
+        "E13",
+        "E36",
+        "E37",
+        "E49"
+      ],
+      "questions": [
+        "Q1",
+        "Q4",
+        "Q5"
+      ]
+    },
+    {
+      "id": "tax_workspace",
+      "name": "Tax profile, documents and communication",
+      "data": "Personal tax profile name/contact_email/phone/company_name; PDF/image documents up to10MB and names/titles/versions/period/recipient IDs; messages/author_name, receipt amounts/status and actor-name audit events. UI invites employee tax forms/SSN and business EIN; no structured SSN/EIN column is inferred.",
+      "access": "Profile self-readable. Salon Owner or active separate Tax connection can work in salon workspace. Active frozen document recipient keeps access after employment/link/plugin expiry or owner-side archive/delete.",
+      "export": "Authorized document download and selected payroll handoff exist. Lifecycle archive does not establish a complete Tax profile/messages/events/documents rights export.",
+      "erasure": "Candidate removes tax_profiles for future/pending leased erasures. Shared docs/messages/events/receipts retain existing custody. Owner document delete archives/tombstones, not physical file removal. Historical completed profiles are not automatically swept.",
+      "retention": "Historical personal-profile residual remains an inventory gate. No general Tax content end date established; delivered recipient copies need purpose/access/retention justification.",
+      "appleCandidates": [
+        "Name",
+        "Email Address",
+        "Phone Number",
+        "User ID",
+        "Other Financial Info",
+        "Emails or Text Messages (private Tax messages)",
+        "Other User Content / Photos or Videos (payload-dependent)",
+        "Government identifier: User ID or Other Data Types candidate; unresolved"
+      ],
+      "linked": "Yes by actor/staff/recipient/salon account links and document identity.",
+      "purpose": "App Functionality",
+      "role": "Direct professional profile purpose differs from salon workflow processing and professional independent engagement/filing purposes.",
+      "refs": [
+        "E14",
+        "E15",
+        "E16",
+        "E17",
+        "E18",
+        "E49"
+      ],
+      "questions": [
+        "Q1",
+        "Q4",
+        "Q5",
+        "Q6"
+      ]
+    },
+    {
+      "id": "check_writer",
+      "name": "Check Writer bank and check data",
+      "data": "Bank name/city/routing/account/fractional routing, issuer/address/masked last4; payee/amount/memo/date, encrypted bank snapshot, payroll linkage, issued/void/audit/output records.",
+      "access": "Server and DB require active salon Owner; session-bound unlock where required. Authorized server PDF generation accesses bank plaintext; keys stay server-side.",
+      "export": "Check PDF download/print contains bank/check information. Lifecycle archive is not a complete Check Writer/bank export.",
+      "erasure": "Business settings/ciphertext/issuance/audit records remain. Downloaded/printed copies cannot be remotely recalled. Encryption is confidentiality, not non-collection or deletion.",
+      "retention": "No general bank settings/check history/key-destruction deadline established. Actual commercial activation is a separate gate.",
+      "appleCandidates": [
+        "Payment Info (bank account)",
+        "Name",
+        "Physical Address",
+        "User ID",
+        "Other Financial Info"
+      ],
+      "linked": "Yes where bank/issuer/payee and salon/Owner/payroll identities attach.",
+      "purpose": "App Functionality",
+      "role": "Salon instructed check preparation. Source does not establish bank clearing/ACH or independent financial-services status.",
+      "refs": [
+        "E19",
+        "E20",
+        "E21",
+        "E22",
+        "E23"
+      ],
+      "questions": [
+        "Q1",
+        "Q4"
+      ]
+    },
+    {
+      "id": "support",
+      "name": "Support and case evidence",
+      "data": "User/case IDs, category/summary/body/replies/context, PDF/image evidence; guest name/email/message/request ID and keyed network hash; outgoing delivery content/recipient.",
+      "access": "Own-case or admin RPCs; guest history requires HMAC cookie. Evidence bucket private and signed after authorization for600seconds. SMTP/Resend are configured delivery candidates, not confirmed live configuration.",
+      "export": "Own/guest conversation and evidence download exist; no complete support-case rights export established in lifecycle archive.",
+      "erasure": "Reviewed personal erasure chain does not scrub support_case_messages/report free text. Generic planner classifies support-evidence retain_business; bucket label does not establish case-specific necessity.",
+      "retention": "30-day guest cookie and600-second links are access lifetimes, not case/blob retention. No universal support retention timer established.",
+      "appleCandidates": [
+        "Customer Support",
+        "Name",
+        "Email Address",
+        "User ID",
+        "Photos or Videos / Other User Content (attachments)"
+      ],
+      "linked": "Yes by account or guest name/email/case; keyed network hash is not automatically anonymous.",
+      "purpose": "App Functionality",
+      "role": "Reylumi direct support/enforcement purpose; hosting/delivery provider treatment requires actual agreements.",
+      "refs": [
+        "E24",
+        "E25",
+        "E26",
+        "E27",
+        "E47"
+      ],
+      "questions": [
+        "Q2",
+        "Q3",
+        "Q4"
+      ]
+    },
+    {
+      "id": "ugc",
+      "name": "Beauty, Salon, reviews, experiences and Forum",
+      "data": "Author/profile IDs, captions/comments/reviews/replies, Forum topics/chat/follows/saves/reports and media. Candidate manifest stores hash/Storage identity plus classifier provider/model/policy metadata.",
+      "access": "Published content audience-visible; self/draft/moderation scopes separate. Forum chat is community content, not automatically private SMS. Candidate quarantine own-readable; verifier path separately privileged.",
+      "export": "Some salon review/looks/update domains and own views; not a complete all-community rights export.",
+      "erasure": "Authored social text/media scrubbed/purged; structural/moderation references remain. Forum/experience extension applies. New image manifests/sources join erasure; old creator-only business classification remains unchanged.",
+      "retention": "New private source eligible after7days, possibly removed earlier after approval; retries mean no exact physical deadline. Provider unconfigured/default unavailable. Avatar/cover are outside this new post-image pipeline.",
+      "appleCandidates": [
+        "User ID",
+        "Photos or Videos",
+        "Other User Content",
+        "Customer Support (report/appeal context as applicable)"
+      ],
+      "linked": "Yes for author/profile/relationship/report records.",
+      "purpose": "App Functionality; verify separately whether actual personalization/advertising adds purposes.",
+      "role": "Reylumi community/moderation purposes; salon business publishing purposes separate. Future classifier needs selected provider/payload/retention verification.",
+      "refs": [
+        "E27",
+        "E28",
+        "E29",
+        "E30",
+        "E31"
+      ],
+      "questions": [
+        "Q2",
+        "Q3",
+        "Q7"
+      ]
+    },
+    {
+      "id": "exports",
+      "name": "Lifecycle archives and downloaded copies",
+      "data": "Requester/subject/salon IDs, generated/expiry/state metadata, permission-selected operational JSON; account impact/events/owned-salon archives and recipient copies containing underlying data.",
+      "access": "Requester-bound metadata/path plus domain RLS; service signing checks requester/state and remaining life, at most15minutes for new links.",
+      "export": "Business/account-deletion preparation mechanism; not a full all-domain rights export of Tax/community/support/Auth/Check Writer.",
+      "erasure": "Account erasure purges hosted personal exports. Candidate expiry blocks later authenticated access; newly created archives enter cleanup with retries. Recipient copies remain outside server deletion.",
+      "retention": "New access7days and new link<=15minutes. Historical cleanup opt-in remains false until reviewed; prior bearer download/upload tokens are not automatically revoked by new RLS and require original-expiry/object-removal/revocation review.",
+      "appleCandidates": [
+        "Underlying archive data categories",
+        "User ID (metadata)"
+      ],
+      "linked": "Yes by requester/subject and identifying contents.",
+      "purpose": "App Functionality",
+      "role": "Underlying salon/domain purpose plus direct account/rights administration; export does not shift all retention duties to recipient.",
+      "refs": [
+        "E08",
+        "E32",
+        "E33",
+        "E34",
+        "E35",
+        "E37"
+      ],
+      "questions": [
+        "Q2",
+        "Q4",
+        "Q6"
+      ]
+    },
+    {
+      "id": "security_audit",
+      "name": "Security, audit and pseudonymous identifiers",
+      "data": "Signed random device cookie/hashed device ID, keyed IP hash/country, account/action/source IDs; counters/restrictions/fingerprints/moderation/security audits and login/recovery state.",
+      "access": "Direct anonymous/authenticated table access revoked for security tables; service functions and permission-checked admin views remain. Hosting/Auth logs have separate unverified scope.",
+      "export": "Account lifecycle events exported; full abuse/provider/log records are not in account archive.",
+      "erasure": "Core login/trust/recovery tables cleared. Distinct abuse/audit rows not universally erased; scheduled cleanup clears old network/device hashes while keeping event/action/account references.",
+      "retention": "Cookie max90days; function has fingerprints7days, old event IP/device hashes30days and expiry-based thresholds; declared daily cron is not run-success proof. No universal audit/log/backup end date established.",
+      "appleCandidates": [
+        "User ID",
+        "Device ID candidate",
+        "Coarse Location candidate (country)",
+        "Other Usage Data candidate; diagnostics only with actual diagnostic payload evidence"
+      ],
+      "linked": "Treat linked/possibly linked until de-identification demonstrated; stable hashes/pseudonyms do not establish unlinked data.",
+      "purpose": "App Functionality for security; this map establishes no advertising/tracking answer.",
+      "role": "Independently determined platform enforcement vs instructed tenant security/provider logging must be factually allocated.",
+      "refs": [
+        "E27",
+        "E38",
+        "E39",
+        "E40",
+        "E41",
+        "E42"
+      ],
+      "questions": [
+        "Q2",
+        "Q3"
+      ]
+    }
+  ],
+  "nativeFlows": [
+    {
+      "id": "camera-qr",
+      "name": "Camera / QR",
+      "data": "Video frames decoded locally; QR identifier goes to feature callback. User-chosen captured photos follow upload flow.",
+      "categories": [
+        "Photos or Videos when uploaded",
+        "Identifiers/Other Data for submitted QR workflow"
+      ],
+      "purposes": [
+        "App Functionality"
+      ],
+      "path": "Browser getUserMedia(video,audio:false) → canvas/jsQR → callback. Native permission string exists; no separate native camera module found.",
+      "linking": "Scanner frames are local in inspected code; subsequent check-in/relay command can be account/workflow-linked.",
+      "proof": "source_confirmed; physical permission and no-frame-upload network check pending",
+      "evidence": [
+        {
+          "file": "ios/Reylumi/Info.plist",
+          "line": 20
+        },
+        {
+          "file": "app/staff/scan/qr-scanner.tsx",
+          "line": 18
+        },
+        {
+          "file": "app/staff/scan/qr-scanner.tsx",
+          "line": 37
+        },
+        {
+          "file": "app/service-relay/staff-relay.tsx",
+          "line": 254
+        }
+      ]
+    },
+    {
+      "id": "photos-documents",
+      "name": "Photos / social content / private documents",
+      "data": "Selected image/PDF; caption/body; author/salon IDs and logical paths; normalized dimensions/hash.",
+      "categories": [
+        "Photos or Videos",
+        "Other User Content",
+        "Customer Support",
+        "User ID",
+        "Financial Info where paystub/tax document is uploaded"
+      ],
+      "purposes": [
+        "App Functionality",
+        "Product Personalization only where feature actually uses it"
+      ],
+      "path": "File input → local Blob preview/conversion → authenticated Storage. New social candidate: private staging → server normalization → verifier seam → immutable approved public bytes. Private support/Tax remain separate.",
+      "linking": "Uploads and manifest are linked to author/salon/recipient. Local preview is not server collection. Private business files must not enter social verifier.",
+      "proof": "source_confirmed; classifier not connected; hosted activation unverified",
+      "evidence": [
+        {
+          "file": "ios/Reylumi/Info.plist",
+          "line": 21
+        },
+        {
+          "file": "app/beauty/beauty-profile-client.tsx",
+          "line": 460
+        },
+        {
+          "file": "app/beauty/actions.ts",
+          "line": 3
+        },
+        {
+          "file": "lib/public-image-safety.ts",
+          "line": 67
+        },
+        {
+          "file": "lib/normalize-image.ts",
+          "line": 5
+        },
+        {
+          "file": "app/support/support-ui.tsx",
+          "line": 8
+        },
+        {
+          "file": "app/tax-company/actions.ts",
+          "line": 56
+        },
+        {
+          "file": "app/claim/claim-panel.tsx",
+          "line": 65
+        }
+      ]
+    },
+    {
+      "id": "gps",
+      "name": "Location / GPS",
+      "data": "Exact latitude/longitude, resolved city/state/ZIP; request IP at network boundary.",
+      "categories": [
+        "Precise Location candidate",
+        "Coarse Location",
+        "Identifiers/network metadata"
+      ],
+      "purposes": [
+        "App Functionality"
+      ],
+      "path": "getCurrentPosition → first-party POST /api/explore/area → server MapTiler if key, else/fallback Census. Exact coordinates also occur in scoped sessionStorage cache key; server bounded memory cache hashes exact inputs.",
+      "linking": "First-party request carries session context. Resolver does not write GPS to account/disk. This does not establish provider/hosting non-retention or unlinked status. highAccuracy:false does not make returned coordinates coarse.",
+      "proof": "source_confirmed; provider/runtime/retention unverified",
+      "evidence": [
+        {
+          "file": "ios/Reylumi/Info.plist",
+          "line": 22
+        },
+        {
+          "file": "app/explore/explore-client.tsx",
+          "line": 3404
+        },
+        {
+          "file": "lib/location/explore-gps-area-client.ts",
+          "line": 19
+        },
+        {
+          "file": "lib/location/explore-gps-area-client.ts",
+          "line": 29
+        },
+        {
+          "file": "lib/location/explore-gps-area.ts",
+          "line": 47
+        },
+        {
+          "file": "lib/location/explore-gps-area.ts",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "id": "maps-address",
+      "name": "Maps / address search / directions",
+      "data": "Map viewport/tiles/IP; typed address/area query; salon street/city/state/ZIP; destination address/coordinate in external link.",
+      "categories": [
+        "Location",
+        "Search History candidate",
+        "Physical Address where personal address is provided",
+        "Other Data"
+      ],
+      "purposes": [
+        "App Functionality"
+      ],
+      "path": "Client MapLibre → MapTiler maps/styles; first-party server → MapTiler geocoding/Census; explicit directions → Apple/Google Maps.",
+      "linking": "Direct tiles expose client network metadata; server geocoding exposes server IP plus query/coordinates. External destination handling belongs in provider review.",
+      "proof": "source_confirmed; production key/provider logs unknown",
+      "evidence": [
+        {
+          "file": "app/explore/explore-map.tsx",
+          "line": 154
+        },
+        {
+          "file": "lib/location/address-suggestions.ts",
+          "line": 16
+        },
+        {
+          "file": "lib/location/providers/census-address-geocoder.ts",
+          "line": 10
+        },
+        {
+          "file": "ios/Reylumi/NavigationPolicy.swift",
+          "line": 68
+        }
+      ]
+    },
+    {
+      "id": "auth-security",
+      "name": "Account / session / security",
+      "data": "Auth access/refresh cookies and user ID; login IP, user agent, OS/device label, coarse city/region/country; signed random app/browser identifier and HMAC abuse signals.",
+      "categories": [
+        "Contact Info",
+        "User ID",
+        "Device ID candidate for app/browser pseudonymous identifier",
+        "Coarse Location",
+        "Other Data/security"
+      ],
+      "purposes": [
+        "App Functionality",
+        "Security/fraud prevention (confirm Apple purpose mapping)"
+      ],
+      "path": "WK default cookies ↔ first-party server → Supabase Auth/DB. Native bridge forwards applicable origin cookies; browser Supabase client may connect directly.",
+      "linking": "Login activity explicitly stores user_id with IP/UA. Pseudonymous device cookie is not IDFA or hardware identifier; hashing does not establish anonymity.",
+      "proof": "source_confirmed; live cookies/log retention unverified",
+      "evidence": [
+        {
+          "file": "lib/supabase/server.ts",
+          "line": 18
+        },
+        {
+          "file": "lib/supabase/browser.ts",
+          "line": 19
+        },
+        {
+          "file": "ios/Reylumi/ReylumiCookieAuthority.swift",
+          "line": 9
+        },
+        {
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "line": 436
+        },
+        {
+          "file": "lib/account-security.ts",
+          "line": 433
+        },
+        {
+          "file": "lib/abuse-signals.ts",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "id": "native-cache",
+      "name": "Native read cache / POS outbox",
+      "data": "Authorized read envelopes, account/workspace/salon scopes, customer/business/POS display data, queued operation bodies; device-only encryption keys.",
+      "categories": [
+        "Inherit actual customer/business payload categories; local storage alone is not server collection"
+      ],
+      "purposes": [
+        "App Functionality"
+      ],
+      "path": "App Support encrypted read files; AES-GCM body blobs in SQLite; Keychain AfterFirstUnlockThisDeviceOnly; file protection/backup exclusion. Native display cache separate from command queue; outbox sends authorized operations when permitted.",
+      "linking": "Locally scoped to account/workspace/salon authority. Encryption does not remove personal/business data. Queued operation becomes collection when transmitted.",
+      "proof": "source_confirmed; device backup/reset/logout/recovery proof pending",
+      "evidence": [
+        {
+          "file": "ios/Reylumi/ReylumiPortableStore.swift",
+          "line": 14
+        },
+        {
+          "file": "ios/Reylumi/ReylumiPortableStore.swift",
+          "line": 136
+        },
+        {
+          "file": "ios/Reylumi/ReylumiPortableStore.swift",
+          "line": 105
+        },
+        {
+          "file": "ios/Reylumi/ReylumiPortableStore.swift",
+          "line": 117
+        },
+        {
+          "file": "ios/Reylumi/ReylumiLocalReadStore.swift",
+          "line": 118
+        },
+        {
+          "file": "ios/Reylumi/ReylumiLocalReadStore.swift",
+          "line": 270
+        },
+        {
+          "file": "ios/Reylumi/ReylumiBackgroundSync.swift",
+          "line": 92
+        }
+      ]
+    },
+    {
+      "id": "web-storage",
+      "name": "WKWebView / browser storage / draft recovery",
+      "data": "Persistent first-party cookies/website data; session browsing state; unresolved post request UUID, frozen caption/input/media paths; GPS preference and exact-coordinate cache key.",
+      "categories": [
+        "User Content/Identifiers when submitted; local-only retention reviewed separately"
+      ],
+      "purposes": [
+        "App Functionality"
+      ],
+      "path": "WKWebsiteDataStore.default; bounded sessionStorage experience state and unresolved post receipts; manual-location localStorage read/removal remains reachable.",
+      "linking": "Receipt is author/profile/salon-scoped and not anonymous. No File/Blob/access token stored by helper. SessionStorage lifetime on actual WK app restart must be checked; do not imply indefinite durability.",
+      "proof": "source_confirmed; iOS lifecycle/device erasure unverified",
+      "evidence": [
+        {
+          "file": "ios/Reylumi/ReylumiLocalAppViewController.swift",
+          "line": 88
+        },
+        {
+          "file": "ios/Reylumi/ReylumiViewController.swift",
+          "line": 137
+        },
+        {
+          "file": "lib/public-post-receipt.ts",
+          "line": 14
+        },
+        {
+          "file": "lib/public-post-receipt.ts",
+          "line": 48
+        },
+        {
+          "file": "lib/experience-state.ts",
+          "line": 4
+        },
+        {
+          "file": "lib/location/explore-gps-area-client.ts",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "id": "advertising",
+      "name": "Sponsored ads / attribution / discovery",
+      "data": "HMAC IP/visitor identifier; campaign/session/path/audience/mobile-desktop; impression/click time; signup conversion user ID; guest UUID or signed-in Explore user key.",
+      "categories": [
+        "Advertising Data",
+        "Product Interaction",
+        "User ID",
+        "Device ID/Other Data candidates"
+      ],
+      "purposes": [
+        "Third-Party Advertising candidate for sponsored salon advertiser",
+        "Analytics",
+        "App Functionality for discovery"
+      ],
+      "path": "First-party cookies → ad API → Supabase campaign/impression/events; advertised external destination may leave origin.",
+      "linking": "Signup conversion explicitly passes p_user:user.id. No-IDFA/native-ad-SDK search does not settle tracking=false; cross-company combination/provider use must be evidenced separately.",
+      "proof": "source_confirmed; tracking/sale-share classification and operational retention unknown",
+      "evidence": [
+        {
+          "file": "app/api/explore/advertising/route.ts",
+          "line": 35
+        },
+        {
+          "file": "app/api/explore/advertising/route.ts",
+          "line": 116
+        },
+        {
+          "file": "lib/advertising-attribution.ts",
+          "line": 79
+        },
+        {
+          "file": "lib/explore-visitor.ts",
+          "line": 16
+        },
+        {
+          "file": "lib/explore-visitor.ts",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "id": "diagnostics",
+      "name": "Local diagnostics / hosting logs / anti-abuse",
+      "data": "Bounded timing/status/category, allowed command name and random request UUID; app/build/bundle/time in manual report. Server separately records user-linked login/security IP/UA and errors.",
+      "categories": [
+        "Performance Data",
+        "Other Diagnostic Data",
+        "Identifiers/security data"
+      ],
+      "purposes": [
+        "App Functionality",
+        "Analytics only as actual diagnostic/processor practice supports"
+      ],
+      "path": "Native transport defaults local diagnostics enabled. User chooses Save/Share; no automatic report upload. First-party requests carry request UUID; server/hosting have independent logging.",
+      "linking": "Native report allowlist rejects account/device IDs, URLs, cookies and business payloads. Server security logs explicitly link user ID. Do not conflate local diagnostic privacy with server retention.",
+      "proof": "source_confirmed; live hosting logs/drains/provider retention unverified",
+      "evidence": [
+        {
+          "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+          "line": 88
+        },
+        {
+          "file": "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+          "line": 103
+        },
+        {
+          "file": "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+          "line": 125
+        },
+        {
+          "file": "ios/Reylumi/ReylumiLocalAppViewController.swift",
+          "line": 392
+        },
+        {
+          "file": "lib/account-security.ts",
+          "line": 439
+        },
+        {
+          "file": "lib/abuse-server.ts",
+          "line": 65
+        }
+      ]
+    },
+    {
+      "id": "payments-messages",
+      "name": "Payments / email / SMS",
+      "data": "Amounts/orders/subscriptions/account-salon metadata; billing/card entry in Stripe UI when applicable; phone/email recipient, OTP/booking/support/invite body, delivery IDs.",
+      "categories": [
+        "Purchase History",
+        "Payment Info/Other Financial Info candidates by actual collector",
+        "Email Address",
+        "Phone Number",
+        "Customer Support",
+        "Other User Content"
+      ],
+      "purposes": [
+        "App Functionality"
+      ],
+      "path": "Server → Stripe/Twilio/Resend/SMTP; iOS Market requests hosted checkout and opens Safari. Embedded Stripe.js is web/booking path, not proof all iOS Market payments embed.",
+      "linking": "Orders and delivery records can link to account/salon/recipient. Raw card data in provider UI does not mean app collects no financial information.",
+      "proof": "source_confirmed; enabled products/live-test mode/delivery/provider retention unknown",
+      "evidence": [
+        {
+          "file": "app/market/card-checkout-panel.tsx",
+          "line": 237
+        },
+        {
+          "file": "components/booking-card-payment.tsx",
+          "line": 13
+        },
+        {
+          "file": "lib/platform-payment.ts",
+          "line": 10
+        },
+        {
+          "file": "lib/gift-card-stripe.ts",
+          "line": 56
+        },
+        {
+          "file": "lib/system-sms.ts",
+          "line": 16
+        },
+        {
+          "file": "lib/booking-notifications.ts",
+          "line": 27
+        },
+        {
+          "file": "lib/email.ts",
+          "line": 80
+        },
+        {
+          "file": "lib/smtp-mail.ts",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "id": "notifications-push",
+      "name": "In-app notifications / background refresh / push boundary",
+      "data": "Notification title/body/booking/salon/recipient-kind/read state; no APNs device token path found in scoped source.",
+      "categories": [
+        "Other User Content",
+        "Product Interaction",
+        "User ID when account-scoped"
+      ],
+      "purposes": [
+        "App Functionality"
+      ],
+      "path": "Authenticated app_notifications DB reads and /api/notifications polling; BGTaskScheduler read-refresh for native cached models. These are separate from APNs remote notifications.",
+      "linking": "Notification data is contextual to account/business workflow. Background fetch is not evidence of push permission or a push SDK.",
+      "proof": "source_confirmed; no native or web PushManager/Notification.requestPermission registration found in searched app/components/lib/public/native source; physical delivery/lifecycle unverified",
+      "evidence": [
+        {
+          "file": "lib/app-notifications.ts",
+          "line": 5
+        },
+        {
+          "file": "lib/notification-client.ts",
+          "line": 216
+        },
+        {
+          "file": "ios/Reylumi/Info.plist",
+          "line": 18
+        },
+        {
+          "file": "ios/Reylumi/ReylumiAppDelegate.swift",
+          "line": 6
+        }
+      ]
+    }
+  ],
+  "providerBoundaries": [
+    {
+      "id": "supabase",
+      "role": "Auth/DB/Storage/Realtime; JS SDK",
+      "domains": [
+        "deployment-specific *.supabase.co"
+      ],
+      "boundary": "Browser/WK client Storage/media/realtime plus first-party server. Native HTTP bridge only calls first-party /api/app-local.",
+      "data": "Account/contact/session; scoped user/business/financial content; photos/files; security/ad events as enabled.",
+      "configuration": "Canonical local env names present; production project/region/RLS/backups/logs not queried.",
+      "evidence": [
+        {
+          "file": "lib/supabase/browser.ts",
+          "line": 15
+        },
+        {
+          "file": "lib/supabase/server.ts",
+          "line": 164
+        },
+        {
+          "file": "ios/Reylumi/ReylumiLocalBundle.swift",
+          "line": 53
+        },
+        {
+          "file": "app/beauty/actions.ts",
+          "line": 64
+        }
+      ]
+    },
+    {
+      "id": "vercel-botid",
+      "role": "First-party hosting/edge/functions plus BotID",
+      "domains": [
+        "reylumi.com first-party hosting",
+        "BotID runtime route/domain requires network capture"
+      ],
+      "boundary": "Client initBotId protects POST; conditional server check when VERCEL=1. Hosting sees feature requests and network metadata.",
+      "data": "Endpoint payloads, IP/UA/headers/security context. Exact BotID SDK signals/retention not inferable from app source.",
+      "configuration": "Source configured; hosted activation, region, logs/drains/account settings unknown.",
+      "evidence": [
+        {
+          "file": "instrumentation-client.ts",
+          "line": 5
+        },
+        {
+          "file": "lib/abuse-server.ts",
+          "line": 62
+        },
+        {
+          "file": "lib/abuse-signals.ts",
+          "line": 35
+        },
+        {
+          "file": "next.config.ts",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "maptiler",
+      "role": "Client map tiles/styles plus server geocoding",
+      "domains": [
+        "api.maptiler.com"
+      ],
+      "boundary": "Browser/WK map requests direct; address/GPS lookup via first-party server.",
+      "data": "Viewport/tiles/client IP; typed address or exact coordinate with server IP for geocoding.",
+      "configuration": "Requires MAPTILER_API_KEY/public map config; no matching local name populated in audited locations. Hosted and packaged config unknown.",
+      "evidence": [
+        {
+          "file": "app/explore/explore-map.tsx",
+          "line": 154
+        },
+        {
+          "file": "lib/location/address-suggestions.ts",
+          "line": 9
+        },
+        {
+          "file": "lib/location/providers/maptiler-area-reverse.ts",
+          "line": 7
+        }
+      ]
+    },
+    {
+      "id": "us-census",
+      "role": "Public address geocoder / administrative reverse-area fallback",
+      "domains": [
+        "geocoding.geo.census.gov"
+      ],
+      "boundary": "Server in traced providers; code requires no API key.",
+      "data": "Exact GPS or street/city/state/ZIP, server IP.",
+      "configuration": "Reachable without commercial map key; no live request made.",
+      "evidence": [
+        {
+          "file": "lib/location/providers/census-area-reverse.ts",
+          "line": 8
+        },
+        {
+          "file": "lib/location/providers/census-address-geocoder.ts",
+          "line": 11
+        },
+        {
+          "file": "lib/location/explore-gps-area.ts",
+          "line": 63
+        }
+      ]
+    },
+    {
+      "id": "twilio",
+      "role": "Verify/transactional SMS plus salon BookSMS",
+      "domains": [
+        "verify.twilio.com",
+        "api.twilio.com"
+      ],
+      "boundary": "Server only; global encrypted settings/env fallback and separate salon encrypted entitlement-bound config.",
+      "data": "Phone, verification channel/OTP or SMS body, routing and provider delivery ID; no phone contacts permission shown.",
+      "configuration": "Canonical local account/auth/Verify names present; DB may override. Runtime activation, consent and provider logs/retention unknown.",
+      "evidence": [
+        {
+          "file": "lib/twilio-settings.ts",
+          "line": 31
+        },
+        {
+          "file": "lib/twilio-settings.ts",
+          "line": 42
+        },
+        {
+          "file": "lib/system-sms.ts",
+          "line": 18
+        },
+        {
+          "file": "lib/booksms.ts",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "id": "email",
+      "role": "Resend or configured SMTP; Hostinger is a UI suggestion, not proved selected",
+      "domains": [
+        "api.resend.com",
+        "operator-configured SMTP TLS port 465/587"
+      ],
+      "boundary": "Server only, encrypted shared DB settings or env fallback.",
+      "data": "Recipient/sender/reply-to, subject, HTML/text support/booking/invite content, delivery IDs.",
+      "configuration": "No local Resend/SMTP names populated in audited env/files; DB settings and sender readiness not queried.",
+      "evidence": [
+        {
+          "file": "lib/support-email.ts",
+          "line": 31
+        },
+        {
+          "file": "lib/email.ts",
+          "line": 77
+        },
+        {
+          "file": "lib/smtp-mail.ts",
+          "line": 15
+        },
+        {
+          "file": "lib/smtp-mail.ts",
+          "line": 35
+        }
+      ]
+    },
+    {
+      "id": "stripe",
+      "role": "Payments/Connect/subscriptions plus web JS checkout",
+      "domains": [
+        "api.stripe.com",
+        "checkout.stripe.com",
+        "billing.stripe.com",
+        "connect.stripe.com",
+        "Stripe.js runtime domains require capture"
+      ],
+      "boundary": "Server APIs; iOS Market hosted checkout opens Safari; conditional embedded web/booking checkout.",
+      "data": "Amounts/orders/products/subscriptions/customer-salon metadata; card/billing data entered in provider UI, app keeps results/webhooks.",
+      "configuration": "Encrypted platform payment DB settings plus booking/gift/campaign configuration. No local Stripe names populated; hosted live/test mode unknown.",
+      "evidence": [
+        {
+          "file": "lib/platform-payment.ts",
+          "line": 10
+        },
+        {
+          "file": "lib/booking-deposit.ts",
+          "line": 12
+        },
+        {
+          "file": "app/market/card-checkout-panel.tsx",
+          "line": 13
+        },
+        {
+          "file": "ios/Reylumi/NavigationPolicy.swift",
+          "line": 63
+        },
+        {
+          "file": "components/booking-card-payment.tsx",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "id": "image-verifier",
+      "role": "Automated safety verifier seam, no provider selected",
+      "domains": [],
+      "boundary": "Future approved verifier receives final normalized shared social image bytes from server; current helper has no provider client.",
+      "data": "Normalized image bytes; no blanket permission to send private Tax/payroll/support files. Provider training/region/retention/terms cannot yet be claimed.",
+      "configuration": "Not connected: missing verify throws unavailable. Synthetic fixture verifier is not production classifier.",
+      "evidence": [
+        {
+          "file": "lib/public-image-safety.ts",
+          "line": 67
+        },
+        {
+          "file": "lib/public-image-safety.ts",
+          "line": 76
+        },
+        {
+          "file": "docs/public-image-safety-20261116.md",
+          "line": 7
+        }
+      ]
+    }
+  ],
+  "proposedAppleCategories": [
+    {
+      "type": "Name",
+      "recommendation": "include_for_full_scope",
+      "flows": [
+        "account_auth",
+        "customers_booking_visits",
+        "staff_directory",
+        "tax_workspace",
+        "check_writer"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Email Address",
+      "recommendation": "include_for_full_scope",
+      "flows": [
+        "account_auth",
+        "customers_booking_visits",
+        "staff_directory",
+        "tax_workspace",
+        "support"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Phone Number",
+      "recommendation": "include_for_full_scope",
+      "flows": [
+        "account_auth",
+        "customers_booking_visits",
+        "staff_directory"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Physical Address",
+      "recommendation": "include_personal_address_fields_when_used",
+      "flows": [
+        "staff_directory",
+        "check_writer",
+        "maps-address"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "User ID",
+      "recommendation": "include_for_full_scope",
+      "flows": [
+        "account_auth",
+        "ugc",
+        "advertising",
+        "security_audit"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Device ID",
+      "recommendation": "confirm_identifier_lifetime_and_provider_use",
+      "flows": [
+        "auth-security",
+        "advertising",
+        "security_audit"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Photos or Videos",
+      "recommendation": "include_uploaded_media_not_local_QR_frames",
+      "flows": [
+        "ugc",
+        "photos-documents"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Other User Content",
+      "recommendation": "include_for_full_scope",
+      "flows": [
+        "ugc",
+        "tax_workspace",
+        "customers_booking_visits"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Emails or Text Messages",
+      "recommendation": "confirm_private_message_payload_scope",
+      "flows": [
+        "tax_workspace",
+        "ugc"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Customer Support",
+      "recommendation": "include_for_full_scope",
+      "flows": [
+        "support"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Purchase History",
+      "recommendation": "include_for_full_scope",
+      "flows": [
+        "pos_transactions",
+        "booking-physical-payment",
+        "gift-cards",
+        "first-party-paid-access",
+        "ads-and-ad-credits"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Other Financial Info",
+      "recommendation": "include_for_full_scope",
+      "flows": [
+        "payroll",
+        "tax_workspace",
+        "check_writer"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Payment Info",
+      "recommendation": "include_bank_access_if_CheckWriter_scope_accessible_no_global_Stripe_exemption",
+      "flows": [
+        "check_writer",
+        "first-party-paid-access",
+        "pos_transactions"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Precise Location",
+      "recommendation": "provider_retained_collection_and_linking_evidence_pending",
+      "flows": [
+        "gps"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Coarse Location",
+      "recommendation": "confirm_granularity_retention_purpose",
+      "flows": [
+        "gps",
+        "maps-address",
+        "security_audit"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Product Interaction",
+      "recommendation": "confirm_actual_retained_events_and_all_purposes",
+      "flows": [
+        "advertising",
+        "web-storage"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Advertising Data",
+      "recommendation": "confirm_actual_events_recipients_and_advertiser_ownership",
+      "flows": [
+        "advertising",
+        "ads-and-ad-credits"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Performance Data / Crash Data / Other Diagnostic Data",
+      "recommendation": "each_subtype_requires_off_device_evidence",
+      "flows": [
+        "diagnostics"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Search History",
+      "recommendation": "retained_query_evidence_pending",
+      "flows": [
+        "maps-address",
+        "gps"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Browsing History",
+      "recommendation": "external_browsing_collection_not_established",
+      "flows": [
+        "web-storage"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Other Data Types / government identifiers",
+      "recommendation": "SSN_EIN_payload_taxonomy_review_pending",
+      "flows": [
+        "tax_workspace"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    },
+    {
+      "type": "Contacts / Health / Fitness / Audio / Sensitive Info / Credit Info",
+      "recommendation": "no_blanket_yes_or_no_inspect_actual_forms_payloads_SDKs",
+      "flows": [
+        "ugc",
+        "tax_workspace",
+        "camera-qr"
+      ],
+      "finalASCAnswer": null,
+      "tracking": null
+    }
+  ],
+  "rules": {
+    "dataNotCollectedNotSupported": true,
+    "privateStorageNotDisclosureExemption": true,
+    "hashedIDsNotAutomaticallyUnlinked": true,
+    "noIDFANotNoIdentifiersOrTrackingProof": true,
+    "StripeHostedExceptionNotGlobal": true,
+    "thirdPartyAdsNotSameQuestionAsTracking": true,
+    "nativePrivacyManifestNotStoreLabels": true,
+    "providerDefaultsNotDeployedEvidence": true
+  },
+  "publicPolicyReadback": {
+    "checkedAt": "2026-11-17T04:42:21.058Z",
+    "scope": "Public policy reachability/content observations only; not production source identity or full service acceptance",
+    "entries": [
+      {
+        "url": "https://reylumi.com/privacy",
+        "finalUrl": "https://reylumi.com/privacy",
+        "status": 200,
+        "htmlSha256": "4526e74d307818c949a0e1fc390adddc16c5f694b897f44185f99a0e40af28ac",
+        "title": "Privacy Policy | ReyLUMI",
+        "namesOperatorLLC": false,
+        "hasSupportAddress": false,
+        "deletion24HourContexts": [
+          "pending period. After that period, deletion normally completes within 24 hours; service failures are retried. Save the private status link shown in Settings to check completion after sign-out. We also send an email con",
+          "pending period. After that period, deletion normally completes within 24 hours; service failures are retried. Save the private status link shown in Settings to check completion after sign-out. We also send an email con"
+        ],
+        "policyDateContexts": [
+          "Effective date: August 21, 2026",
+          "Last updated: October 14, 2026",
+          "Effective date: August 21, 2026",
+          "Last updated: October 14, 2026"
+        ],
+        "source": "Fresh unauthenticated public HTTP GET; no scripts executed, forms submitted, user data or provider settings read"
+      },
+      {
+        "url": "https://reylumi.com/terms",
+        "finalUrl": "https://reylumi.com/terms",
+        "status": 200,
+        "htmlSha256": "9849b8bea455797d7558a272febd95114ec453aa67f9f54c07ee56d88b1a70a1",
+        "title": "Terms of Service | ReyLUMI",
+        "namesOperatorLLC": false,
+        "hasSupportAddress": false,
+        "deletion24HourContexts": [],
+        "policyDateContexts": [
+          "Effective date: August 21, 2026",
+          "Last updated: October 13, 2026",
+          "Effective date: August 21, 2026",
+          "Last updated: October 13, 2026"
+        ],
+        "source": "Fresh unauthenticated public HTTP GET; no scripts executed, forms submitted, user data or provider settings read"
+      },
+      {
+        "url": "https://reylumi.com/community",
+        "finalUrl": "https://reylumi.com/community",
+        "status": 200,
+        "htmlSha256": "0fd4813979b11efb4b8c1a7f8c2388fdcc5dc119a325dfa1d3969d2050ac8b8d",
+        "title": "Community Standards | ReyLUMI",
+        "namesOperatorLLC": false,
+        "hasSupportAddress": false,
+        "deletion24HourContexts": [],
+        "policyDateContexts": [
+          "Effective date: August 21, 2026",
+          "Last updated: October 14, 2026",
+          "Effective date: August 21, 2026",
+          "Last updated: October 14, 2026"
+        ],
+        "source": "Fresh unauthenticated public HTTP GET; no scripts executed, forms submitted, user data or provider settings read"
+      },
+      {
+        "url": "https://reylumi.com/business-terms",
+        "finalUrl": "https://reylumi.com/business-terms",
+        "status": 200,
+        "htmlSha256": "8e6d03074f1ff665027534186469df14dcf9d73ace811047c40a0e68bba636a2",
+        "title": "Business &amp; Salon Terms | ReyLUMI",
+        "namesOperatorLLC": false,
+        "hasSupportAddress": false,
+        "deletion24HourContexts": [],
+        "policyDateContexts": [
+          "Effective date: August 21, 2026",
+          "Last updated: October 14, 2026",
+          "Effective date: August 21, 2026",
+          "Last updated: October 14, 2026"
+        ],
+        "source": "Fresh unauthenticated public HTTP GET; no scripts executed, forms submitted, user data or provider settings read"
+      }
+    ]
+  },
+  "publicAuthReadback": {
+    "checkedAt": "2026-11-17T04:43:43.022Z",
+    "scope": "Anonymous GET of public Auth capabilities, only after binding local project origin to public app JavaScript",
+    "privateDataRead": false,
+    "keysPrintedOrStored": false,
+    "mutations": false,
+    "status": "unverified",
+    "publicScriptCount": 16,
+    "publicProjectCount": 0,
+    "projectOriginSha256": "380439b4fcc3f0d1ca303d18100074b7f9dbc311db63b43644ea6f287cadbb4b",
+    "reason": "Local project could not be uniquely bound to the public application"
+  },
+  "remainingGates": [
+    {
+      "id": "E1-E4",
+      "owner": "engineering/provider admin",
+      "state": "pending",
+      "needs": "Correct hosted project/source binding, actual enabled providers/SDKs, payloads, logs, backups, regions, retention, secondary uses and contract evidence"
+    },
+    {
+      "id": "D1",
+      "owner": "operator",
+      "state": "partially_resolved",
+      "needs": "Mailbox delivery/reply/monitor/escalation and notice details; operator/email choice already confirmed"
+    },
+    {
+      "id": "D10-E8",
+      "owner": "engineering and commerce operator",
+      "state": "scope_confirmed_runtime_pending",
+      "needs": "Actual catalog/readiness, live/test/merchant, existing prices/subscriptions, refund and hosted-return evidence; no new sales or charge"
+    },
+    {
+      "id": "D11-verifier",
+      "owner": "operator and engineering",
+      "state": "pending",
+      "needs": "Select real verifier/processor, review data handling, configure securely and test; no provider or key selected"
+    },
+    {
+      "id": "D4-E5-E6",
+      "owner": "engineering and business/legal",
+      "state": "local_fixes_verified_hosted_pending",
+      "needs": "Integrate validated erasure/export/retained-ownership fixes, demonstrate hosted maintenance, agree per-category retention and bounded historical residual review"
+    },
+    {
+      "id": "D6-E7",
+      "owner": "operator and QA",
+      "state": "pending",
+      "needs": "Age questionnaire, applicable child-data handling, UGC/report/block/appeal operation and final corpus/device walkthrough"
+    },
+    {
+      "id": "native-final",
+      "owner": "release engineering",
+      "state": "pending",
+      "needs": "Integrated source, new binary/bundle, packaged SDK/privacy report, exact version/build and real device QA"
+    },
+    {
+      "id": "store-final",
+      "owner": "authorized App Store role",
+      "state": "pending",
+      "needs": "Final labels, metadata/screenshots/reviewer access/legal declarations and readback; no submission in this task"
+    }
+  ],
+  "sources": [
+    {
+      "path": ".github/workflows/reylumi-ios-testflight.yml",
+      "sha256": "e7362b1394438874b9ef8faec996e6febb06fde69b35a1d9be6443f2084df5c9",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/(app)/campaigns/page.tsx",
+      "sha256": "b7e014596a46210fad3765c20a01dc703a7e916e9c1da04d5386f8efef16d7b1",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/(app)/market/page.tsx",
+      "sha256": "2756defd7bf36919c3fb37325457b1f91b6b6bf7c2bf7b55c13b7247d9b6bcbb",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/(legal)/api/contact-support/route.ts",
+      "sha256": "261dd13d8c01a623c5e4b1e42ab903b4203b7c18596b8b7c8f9503896775f624",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "app/api/check-writer/pdf/route.ts",
+      "sha256": "71b42e53a6591373c4ec56e7b6e4eefaaebea19c93a7f7405f3d56a3b9eb784c",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "app/api/explore/advertising/route.ts",
+      "sha256": "55314bda8c4f8f0a4ae164c51c4225c42fd3aa462ce1b27ac0f16e47d68e4899",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/api/gift-cards/route.ts",
+      "sha256": "dd4a8d38f62bf514af52b37365e5a5125475a07ad0c19da02ae736f5d6b1c638",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/beauty/actions.ts",
+      "sha256": "1bf7f650829095aaabe3957598de7c0498d4c00609c541cf520babc6d50ef3fd",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/beauty/beauty-profile-client.tsx",
+      "sha256": "51e25403998f150b73485fae35e9d63727304559a124c23a396f86c8381fc3f0",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/campaigns/credit-actions.ts",
+      "sha256": "314334633f4cb40b32cc0c8c40315c40f40bdcb5df2c63878d218ea7abd39bc2",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/claim/claim-panel.tsx",
+      "sha256": "f351ba29de5e2a07b60385f9a7a08fd676368f74511b65f6ac4f337d6f3c6fc8",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/explore/explore-client.tsx",
+      "sha256": "50d6e0afa32ea05622e7ad88a86ba01ac82c30680d1ecfec6a903e37ed7a4845",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/explore/explore-map.tsx",
+      "sha256": "0ff2352bd89f5c783422e2a141a5128cf1d78c8dafee1535ff047ada55361a07",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/market/bank-checkout-panel.tsx",
+      "sha256": "429f5e87d903d652ecec398d30e4de887b7719139afb917223093ca669600f7e",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/market/card-checkout-panel.tsx",
+      "sha256": "e983d24a904a6c8578bd3a5e145d8ea6f492b16919680c8d8b12a3bbca9f5bfc",
+      "domains": [
+        "commerce",
+        "native"
+      ]
+    },
+    {
+      "path": "app/market/card-payment-actions.ts",
+      "sha256": "d8bed7f80e54c5e3d4b8879762367fd690ae2803f68e22cfd081a0aa6027844a",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/market/developer-app-actions.ts",
+      "sha256": "d4dfb76f7106ce75aaf1b9e311edb45197c1ea4ccf63000aa28f71581573a563",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/market/market-client.tsx",
+      "sha256": "c95b7c3f2af99832ec8c13beb0a55d1605360464055df33c790d87f00dd24344",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/market/plugin-actions.ts",
+      "sha256": "db782583ade7176247edde9fb08e815379d1c6601dadadeee9bf9a47e0aa1f07",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/market/sample-apps.ts",
+      "sha256": "ef5aa67de99a81c4c8e2ebb968f3d26b8ead36d6ed4141734669b368d09aa7ca",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/market/trial-actions.ts",
+      "sha256": "07e9458c1b607b1b603c169cdceabaf4414139cb3d33b156296fa6b2a42c7647",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/pos/actions.ts",
+      "sha256": "4622c495f25fe5b68770cdc6bfe2e25661287162d7d6f7071b914ce5d15e0424",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/service-relay/actions.ts",
+      "sha256": "77b565d50d0b9e51120f01eecf77826b4c47a02505098066c4f9a9bdb4c596a3",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "app/service-relay/staff-relay.tsx",
+      "sha256": "4cc7eedda023d212d8a2cddbee425408856c05bdd017637dc9951235bf799a99",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/staff/scan/qr-scanner.tsx",
+      "sha256": "bac9d96a684cc001f13d59f0cb18e566f05f57329f0e3aece56f26ede88714ca",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/support/support-ui.tsx",
+      "sha256": "f1ce4b51040ea83d5a12ac171451964408d90c362aa49116b320f9ca52af6020",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/tax-company/actions.ts",
+      "sha256": "383d2a74b0adc98266ea0fc951cf0f8c485dd61635f2f90e832f8e3e60f04457",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "app/tax/tax-workspace.tsx",
+      "sha256": "b3c56ccae57b6fa717a28de967837449a0dc6a356be5257fc18a4d8eed42e0bd",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "components/booking-card-payment.tsx",
+      "sha256": "2303122dd238ae3428a46cc164ba259168312751b1e9844ec8be697204e5d287",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "components/explore-advertising.tsx",
+      "sha256": "ab30a8132b2aac7d005f3e8dde96777b64bb033893e71d5bfc881653d161379b",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "components/gift-card/customer-gift-cards.tsx",
+      "sha256": "c66bf66f9ace200854101d5389ab71fb365f65c3bc5c5c0829597541bf4cf891",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "components/owner-sponsored-post.tsx",
+      "sha256": "8634d1cafcff88f6d30f201bce7e4cc14e4f93bba4cd54f42544778e910221ca",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "docs/public-image-safety-20261116.md",
+      "sha256": "37366c095c64b2c488f2252010f5babcc791524a33639b284e982b1a805483b5",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "instrumentation-client.ts",
+      "sha256": "085d13def8927c4c955e93e98c5f59730ff87c4f875f2b15e0c539cf837c4cdc",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/project.yml",
+      "sha256": "3f67be8dfdcd7b93a699a0915029201f344665ee54df6c9f78255fa8a9a5badd",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/Info.plist",
+      "sha256": "4f43ad28350f2a24ae4a18a3ff6e5cee222d4556c13d703346dd718458e9db2c",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/NavigationPolicy.swift",
+      "sha256": "81d5469ddb16a87e34f6af6e013d5ea058cf62c9e6944a05ee2c9afa17e7196e",
+      "domains": [
+        "commerce",
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/PrivacyInfo.xcprivacy",
+      "sha256": "200bfa311faafe43b751fadcd33bd76a670d83a87c9b9337403a3073be12645e",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/Reylumi.entitlements",
+      "sha256": "89065321e45a32835d2707b62aa01f9a07d0c1efda7a45a9992144a9f951457d",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiAppDelegate.swift",
+      "sha256": "860b8e2aaf2978e587b5768d52f959f1c55266c9b807b71957eb3675e0b46470",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiBackgroundSync.swift",
+      "sha256": "6df08a434652f080b4c7252c8baf7a9d2614c6425f377d322a60053ab3aff1dc",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiCookieAuthority.swift",
+      "sha256": "af508e0ca36beb96614eecc582f8f7cb04b8f871cb92e4ed1a8b0c9cdff077a6",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+      "sha256": "6642923252364fbb7c85706498c2b647e9e958659401e36272ae2a363808fd84",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiLocalAppViewController.swift",
+      "sha256": "ec25a64fbf185591ada7eb7c5c739617686934dff6019eaac40f2856219702cb",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiLocalBundle.swift",
+      "sha256": "324976619c3745eed1f68fc04e03fb949e866143c92ac338d257bd3e577da65b",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+      "sha256": "3e7a0af9dcdcedaa674fe8bd6e255d18570b7634485e09c7a93444399171dfbc",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiLocalReadStore.swift",
+      "sha256": "d3c5ed13f6a2122818680b53eee21d27a3ded036e932afe2e83f527f979b1e94",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiPortableStore.swift",
+      "sha256": "6db006fc85c9996914917f644d3a9e1ae2813a0e1ab2174e4237f7420ab8fc4f",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "ios/Reylumi/ReylumiViewController.swift",
+      "sha256": "e8285bdf0c5dbe621152c04a8e4432ca2929defa9fa5bfe7dee2950980fc51e1",
+      "domains": [
+        "commerce",
+        "native"
+      ]
+    },
+    {
+      "path": "lib/abuse-server.ts",
+      "sha256": "16a32b5052c3ba3e713124a47c98b7c051c0314c559aefa523565449a4047671",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/abuse-signals.ts",
+      "sha256": "2c9aef26a6a04c49a7c5f724edd5e5b1af79bf24c9f1bd38c3f45f9df43f8363",
+      "domains": [
+        "native",
+        "business"
+      ]
+    },
+    {
+      "path": "lib/account-erasure-worker.ts",
+      "sha256": "ed23eb9d86fc28e1ccf101963aaf525fb7827a0a0899b65b2175e1f9347f9e38",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "lib/account-retention-policy.ts",
+      "sha256": "048f5c3cdc5f4b38880d65ffdaf5bf68204e7834292caa44f2e38c3f08a13f49",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "lib/account-security.ts",
+      "sha256": "d02a305dede82bd3dd14ee0a1519e35b01c2c9efadedaf1297dcb2f5cf168c61",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/advertising-attribution.ts",
+      "sha256": "964dc68ecb0077a1fdfdd1738f1726f1dec773138f783ae471e4440459e5cfdf",
+      "domains": [
+        "commerce",
+        "native"
+      ]
+    },
+    {
+      "path": "lib/app-local-platform-types.ts",
+      "sha256": "bc984e3b2235999bbf9e82ecbdf8464640527c0ff5b2f83f8775e696bb9d437b",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/app-local-route-inventory.generated.json",
+      "sha256": "e9bc861d1db4f7b44b27bc4c08879857e7fd20b9fcc69003f2605b5bc378c6d8",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/app-local-secondary-registry.tsx",
+      "sha256": "532b6a6d3beb29f0b7db77253a841c9d88c366da903f489741849064bd9ee696",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/app-notifications.ts",
+      "sha256": "3f7ab957a363aedee6e31469c2391cf98ce0705ee82cbb646ff0f5c67f6265f0",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/booking-deposit-checkout.ts",
+      "sha256": "6d5b5fe1eb080517d57191a79622540c8ea120a82955fd83677f7fec94a3d05d",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/booking-deposit.ts",
+      "sha256": "ec6646f38425594cb5cb6d4f105d3d802daa9393121a6980a494001dae22be8c",
+      "domains": [
+        "commerce",
+        "native"
+      ]
+    },
+    {
+      "path": "lib/booking-notifications.ts",
+      "sha256": "2b7c5065df2c86e5253e9c730c164456c0804633d0bffd38e00ab941bdf8f301",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/booksms.ts",
+      "sha256": "6bc828a9a75897b7c368233b1d963ce5a1bfc9ab46e9b5f99a5d70282cb1b455",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/campaign-payments.ts",
+      "sha256": "de3ee81917146dacf5d59bd9aeb29344ddf50d3b6b8ab9cbc6d153ec3471521a",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/check-writer-crypto.ts",
+      "sha256": "b9981a4487ceca0675ddffb8b27ad5c2934eb3f644ec47e651ca92a2c38a91fe",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "lib/check-writer-readiness.ts",
+      "sha256": "0a323a174c4dbfae4549c3818bf206c68034aa973387dc68fd1425d57fa7f8ca",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/check-writer-server.ts",
+      "sha256": "329c4a72c4bcd73071accafcec03d94bc2c9e8119e01cf441d792070898ec411",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "lib/email.ts",
+      "sha256": "97c0364fef9191dd75c3bb6c82d80f1b232c383f57df2a42f5fbacc740bdde8b",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/experience-state.ts",
+      "sha256": "a2302ae37822a784335c24eef528ef2cf98524fdb062bb61be906da7855ad345",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/explore-visitor.ts",
+      "sha256": "861172a5e123845875adb94b127be521e6c325f1b3a62147c0b71a435ee9d04d",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/gift-card-stripe.ts",
+      "sha256": "1d9c4f53fd70f50e605f32dd4f235e29e40f6da7cee5f671baa005512321b78a",
+      "domains": [
+        "commerce",
+        "native"
+      ]
+    },
+    {
+      "path": "lib/guest-support.ts",
+      "sha256": "5bbf13cdd1031b88b3d9f097f98e0f1248c7a627fd249d1d230e11f55ac7dcf0",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "lib/legal-policies.ts",
+      "sha256": "413e13b53019cb3be3ab867efee9e922226e467bf074e0eb15e20fa1faa6344e",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "lib/lifecycle-export-storage.ts",
+      "sha256": "f9611f8eb5ccd1b1a29c47217a1fcd9ecbe21fa2a326092b51ddbce5e20a97b1",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "lib/lifecycle-export.ts",
+      "sha256": "84fcbdb136c95fbf64260db95c1edb78023f09144997a7c6bf2ff22093e81c77",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "lib/location/address-suggestions.ts",
+      "sha256": "43f77c647b065b74a58e74496a6d6b07461f384b1f1f9d365d113370308252d9",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/location/explore-gps-area-client.ts",
+      "sha256": "021841d9f7c0406e1c02ed2fcd4230d7c0a5de2d855598063a015e6a5541eb2c",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/location/explore-gps-area.ts",
+      "sha256": "159c6493e5a43434fdf774828037a81d5bbca3f1d8d11dd957d8f0b2f6a549d5",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/location/providers/census-address-geocoder.ts",
+      "sha256": "063017f9c5ce96c5e70607f03674eb615936f80cf2565fb2bcd580628fb41edc",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/location/providers/census-area-reverse.ts",
+      "sha256": "3f3c39fc6f82553e94f157d100e0a2605c97ce1ce087845e2c9f5fa847b38dfc",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/location/providers/maptiler-area-reverse.ts",
+      "sha256": "1239280177277184eda55a74ba5e1c88a33c9a64a5b2fba8d5499d07752d233f",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/market-bank-billing.ts",
+      "sha256": "585bc8e42d4bf754fd4dfa1c41884c25d7ad1b0c556ad9861b89af567f167bbd",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/market-card-rules.ts",
+      "sha256": "5329892862de80ed631dbb7895f53398aeead1a1d584c85933b201f5bd2872de",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/market-catalog-view.ts",
+      "sha256": "6353176eaf5e459d1cc9cc1ebdce5e0ce93b46d46619e2d8fac95697e8b6e138",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/market-experience-data.ts",
+      "sha256": "f4e580ef084e5fbc153c2dc2fded338c52da9d03bde8ed22ee827cae3597cff1",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/market-platform/commerce.ts",
+      "sha256": "e512068c1968f33e9c7d1cc6a04fd9ff46ccf1f7380b0476a47880cc7c981f82",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/market-platform/owner.ts",
+      "sha256": "0296215cef6fccf20719c652ea0216f74dfe8ec17a5b464a73d9a02a22a2dad3",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/market-platform/server.ts",
+      "sha256": "3618faa6ead3414e835b0ea08c7f2dcd3379999f364f898b11c5cd6318daee5b",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/market-platform/stripe-test.ts",
+      "sha256": "d89c59862b5d8c9ed5976897c982018f2a1839f08dc226469c0df5dd530446ef",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/market-registry/server.ts",
+      "sha256": "8575cb6ad246d5d753c14e2f89958648461219ec3db7ef0a553791370c577caa",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/market-target-context.ts",
+      "sha256": "5d6685c3d2f54758cee33a4c6f1876631bee135a3bbf027fec375eb83e908793",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/normalize-image.ts",
+      "sha256": "f904a1c935a2a358539843b7f497d97065e38d55444312f755266dbc1afa60ff",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/notification-client.ts",
+      "sha256": "48b9c3db80ae94966d3f903183c555c89793b8da5045cac2e3de839d5d076b42",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/open-market-payment.ts",
+      "sha256": "bea03df6a164f0f4b90e76a7555560bd4b8038ef527e6f3b4bbe54e9dca9fe6f",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/payroll-export.ts",
+      "sha256": "b50008680cb8a596b5299e734084dc9315edb1099e9dcaf5699e3769d3af20d0",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "lib/platform-payment.ts",
+      "sha256": "37ea01ee470506ddfaeeee9699f65319a868b80bd8c9994e04c1d269b3e72de8",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/pos-ticket-financial-view.ts",
+      "sha256": "183acae116c5f72eae7e5a80bbe148a61f685e09cda65350d41fb8d8aa772533",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "lib/public-image-safety.ts",
+      "sha256": "3ca72316b68b8bdaa4ec9e8a74cd8907374b3ee0bb0054cfb8f46a30162af72b",
+      "domains": [
+        "native",
+        "business"
+      ]
+    },
+    {
+      "path": "lib/public-post-receipt.ts",
+      "sha256": "cebcfc66c61385e82e10d6e45c5ce2709043b3dee774e850e353256ce638c213",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/smtp-mail.ts",
+      "sha256": "afd7c32ffbcc4f3daedd4c8f7bfa2ea4e5ac6392b5ae8d7a3db2463672c7ca9b",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/supabase/browser.ts",
+      "sha256": "b876c9b17077bebc74712e7e35b079ebff4d6e5a8ddc58b33535ad6c2de2b647",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/supabase/server.ts",
+      "sha256": "a537d562f46492f05c0e334ff230d0b49cdf0547f119232d156484039a3992dd",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/support-email.ts",
+      "sha256": "6942d635f81e56914122eebad8ebf0e0bfb58bf41219b53eb424414794424294",
+      "domains": [
+        "native",
+        "business"
+      ]
+    },
+    {
+      "path": "lib/system-sms.ts",
+      "sha256": "c961f5472b5991cdbfff228bf615b116f7549531c61c218ee32b64faf8a29bcb",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "lib/twilio-settings.ts",
+      "sha256": "3f4514ce6e2b9d27b86c34981ac878f5c200069cea270a3ea83b49d048f8a530",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "51fe3bbc33616bbf43e465e7980e7c93d5f4b279b77fcb53c09d803f6cf25009",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "7cbb1938785c123818865106f1f6a86ed695cf47b2f7ff713d218718c06bd5cd",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "package.json",
+      "sha256": "e6b32449ae956572847302361281968c85528ec5516f75de81d8357310de1266",
+      "domains": [
+        "native"
+      ]
+    },
+    {
+      "path": "proxy.ts",
+      "sha256": "6cd0012448b5a0b1e69efeed42ca3b891f6650f41e756de3a0d275415d078a14",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/202607240001_account_salon_baseline.sql",
+      "sha256": "4c5896a4255bccebfec14d628c82570f0084aece44832e1fe1c49f33fa72a98c",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/202608100003_customer_identity_claims.sql",
+      "sha256": "6d030f4f7c3dfa834fa77298ff79bfbcea94696b7245cf13e9ccb60832b6f488",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/202608210003_account_deletion_flow.sql",
+      "sha256": "2b562345f747a7fcb6ceec43d7b36103f8c8d5b57ffcc57be350c52135d2b08e",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/202610070008_abuse_prevention.sql",
+      "sha256": "5685032728f43210da64cf15b6a5fdeec904049f174afce13604db0aae852224",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/202610070017_user_support_cases.sql",
+      "sha256": "41c9db9d8fbba6de13b0b8e007f3769068b7f8c99c359830c77fffa54229390f",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/202610140003_account_erasure.sql",
+      "sha256": "6df1d63c2d869740b5bcd155165ee34a6a821858d7d781ee001c71305eaf58b9",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20261028040000_check_writer.sql",
+      "sha256": "8451080bce2dbf2d1ed17e4a1727c4b0bdb85679fcf16fff553d427f1193b3c8",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20261029101200_financial_history_privacy.sql",
+      "sha256": "3f9e786d36280573130bf8c4f0a8d15e608b8873864a3063def870d15ad13b1c",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20261109220000_forum_privacy_completion.sql",
+      "sha256": "7dd674e13826079f38bfbfbe2a58b2a3ec7d877b8d152d0027be37e18eb74ca7",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20261109230000_tax_personal_workspace.sql",
+      "sha256": "0d4d086f34b7e6c2fafc55637b7d221113a35ab0c66c215fadfe0d4ebc5b0c57",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20261110230000_tax_period_alignment.sql",
+      "sha256": "e463b81774324739b2f38b649a3836c1d603807943d3eacadcd640fbf7ad3741",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20261116210000_tax_profile_account_erasure.sql",
+      "sha256": "468c13b9e735ae3c3ec07a79060b96db57881ed015a22814e7dbdec56000f2c7",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20261116211000_lifecycle_export_expiry.sql",
+      "sha256": "39811d080e7b7c6968b54c3d94e8d3100512a70354e5d57e346ba30b1966e8f6",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20261116215000_retained_storage_ownership.sql",
+      "sha256": "c5d3708079ae32d3da93160322fe1be78bd3a5166e98a242c304374e37e34389",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20261116220000_public_image_safety.sql",
+      "sha256": "05d16dd4243f83fd0bb8148d1291c3cb3c7ee27bb90a3076d3424b34b45870d2",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "types/check-writer.ts",
+      "sha256": "c03692ecedbb060a721899aca76fa4fe78035052ac54f9b275b6c136e97b594e",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "types/pos-payment.ts",
+      "sha256": "dc23d18a07bc78c3215300f0d7168604bf2f68ca1c4dbe3f657b7a6daf7f0da0",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "types/pos-ticket-receipt.ts",
+      "sha256": "4bbe47eef2749d22939bcb33c11e49f10f53ca561d5240b08c9829a6eb6f1a81",
+      "domains": [
+        "commerce"
+      ]
+    },
+    {
+      "path": "types/pos-ticket.ts",
+      "sha256": "4ba3377ddca2ad85ff5b16536ddee04c15657243168aa6ee70829c70eefa9d93",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "types/staff.ts",
+      "sha256": "6fad5d5bb75300cae17cb436f591af3f79d79454a6074c2f66acee7864c2f1cf",
+      "domains": [
+        "business"
+      ]
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "d5c19d8bf945d6196db3506b03e54484983cc6caf08e58f14ec975c89ae40fec",
+      "domains": [
+        "business"
+      ]
+    }
+  ],
+  "sourceReferences": [
+    {
+      "domain": "commerce",
+      "id": "native_navigation",
+      "path": "ios/Reylumi/NavigationPolicy.swift",
+      "startLine": 6,
+      "endLine": 6
+    },
+    {
+      "domain": "commerce",
+      "id": "native_payment",
+      "path": "ios/Reylumi/NavigationPolicy.swift",
+      "startLine": 63,
+      "endLine": 63
+    },
+    {
+      "domain": "commerce",
+      "id": "native_external",
+      "path": "ios/Reylumi/ReylumiViewController.swift",
+      "startLine": 350,
+      "endLine": 350
+    },
+    {
+      "domain": "commerce",
+      "id": "native_bridge",
+      "path": "ios/Reylumi/ReylumiViewController.swift",
+      "startLine": 518,
+      "endLine": 518
+    },
+    {
+      "domain": "commerce",
+      "id": "native_routes",
+      "path": "lib/app-local-route-inventory.generated.json",
+      "startLine": 3394,
+      "endLine": 3394
+    },
+    {
+      "domain": "commerce",
+      "id": "market_page",
+      "path": "app/(app)/market/page.tsx",
+      "startLine": 28,
+      "endLine": 28
+    },
+    {
+      "domain": "commerce",
+      "id": "market_owner",
+      "path": "lib/market-target-context.ts",
+      "startLine": 5,
+      "endLine": 5
+    },
+    {
+      "domain": "commerce",
+      "id": "market_readiness",
+      "path": "lib/market-experience-data.ts",
+      "startLine": 123,
+      "endLine": 123
+    },
+    {
+      "domain": "commerce",
+      "id": "catalog_projection",
+      "path": "lib/market-catalog-view.ts",
+      "startLine": 24,
+      "endLine": 24
+    },
+    {
+      "domain": "commerce",
+      "id": "first_party_plans",
+      "path": "lib/market-card-rules.ts",
+      "startLine": 1,
+      "endLine": 1
+    },
+    {
+      "domain": "commerce",
+      "id": "first_party_checkout",
+      "path": "app/market/card-payment-actions.ts",
+      "startLine": 89,
+      "endLine": 89
+    },
+    {
+      "domain": "commerce",
+      "id": "hosted_checkout",
+      "path": "app/market/card-payment-actions.ts",
+      "startLine": 246,
+      "endLine": 246
+    },
+    {
+      "domain": "commerce",
+      "id": "ios_checkout",
+      "path": "app/market/card-checkout-panel.tsx",
+      "startLine": 237,
+      "endLine": 237
+    },
+    {
+      "domain": "commerce",
+      "id": "payment_bridge",
+      "path": "lib/open-market-payment.ts",
+      "startLine": 5,
+      "endLine": 5
+    },
+    {
+      "domain": "commerce",
+      "id": "trials",
+      "path": "app/market/trial-actions.ts",
+      "startLine": 9,
+      "endLine": 9
+    },
+    {
+      "domain": "commerce",
+      "id": "check_writer",
+      "path": "lib/check-writer-readiness.ts",
+      "startLine": 6,
+      "endLine": 6
+    },
+    {
+      "domain": "commerce",
+      "id": "payroll_free",
+      "path": "app/market/plugin-actions.ts",
+      "startLine": 5,
+      "endLine": 5
+    },
+    {
+      "domain": "commerce",
+      "id": "phone_checkin",
+      "path": "app/service-relay/actions.ts",
+      "startLine": 63,
+      "endLine": 63
+    },
+    {
+      "domain": "commerce",
+      "id": "sample_catalog",
+      "path": "app/market/sample-apps.ts",
+      "startLine": 23,
+      "endLine": 23
+    },
+    {
+      "domain": "commerce",
+      "id": "concept_previews",
+      "path": "lib/market-catalog-view.ts",
+      "startLine": 34,
+      "endLine": 34
+    },
+    {
+      "domain": "commerce",
+      "id": "coming_soon",
+      "path": "app/market/market-client.tsx",
+      "startLine": 486,
+      "endLine": 486
+    },
+    {
+      "domain": "commerce",
+      "id": "checkout_alias",
+      "path": "app/market/market-client.tsx",
+      "startLine": 39,
+      "endLine": 39
+    },
+    {
+      "domain": "commerce",
+      "id": "bank_state",
+      "path": "lib/market-bank-billing.ts",
+      "startLine": 133,
+      "endLine": 133
+    },
+    {
+      "domain": "commerce",
+      "id": "bank_component",
+      "path": "app/market/bank-checkout-panel.tsx",
+      "startLine": 59,
+      "endLine": 59
+    },
+    {
+      "domain": "commerce",
+      "id": "campaign_actions",
+      "path": "app/campaigns/credit-actions.ts",
+      "startLine": 14,
+      "endLine": 14
+    },
+    {
+      "domain": "commerce",
+      "id": "campaign_payment",
+      "path": "lib/campaign-payments.ts",
+      "startLine": 10,
+      "endLine": 10
+    },
+    {
+      "domain": "commerce",
+      "id": "campaigns_route",
+      "path": "app/(app)/campaigns/page.tsx",
+      "startLine": 14,
+      "endLine": 14
+    },
+    {
+      "domain": "commerce",
+      "id": "ads_delivery",
+      "path": "components/owner-sponsored-post.tsx",
+      "startLine": 9,
+      "endLine": 9
+    },
+    {
+      "domain": "commerce",
+      "id": "ads_renderer",
+      "path": "components/explore-advertising.tsx",
+      "startLine": 132,
+      "endLine": 132
+    },
+    {
+      "domain": "commerce",
+      "id": "ads_signup",
+      "path": "lib/advertising-attribution.ts",
+      "startLine": 72,
+      "endLine": 72
+    },
+    {
+      "domain": "commerce",
+      "id": "booking_payment",
+      "path": "lib/booking-deposit.ts",
+      "startLine": 46,
+      "endLine": 46
+    },
+    {
+      "domain": "commerce",
+      "id": "booking_test",
+      "path": "lib/booking-deposit.ts",
+      "startLine": 137,
+      "endLine": 137
+    },
+    {
+      "domain": "commerce",
+      "id": "booking_plugin",
+      "path": "lib/booking-deposit-checkout.ts",
+      "startLine": 9,
+      "endLine": 9
+    },
+    {
+      "domain": "commerce",
+      "id": "gift_online",
+      "path": "lib/gift-card-stripe.ts",
+      "startLine": 13,
+      "endLine": 13
+    },
+    {
+      "domain": "commerce",
+      "id": "gift_api",
+      "path": "app/api/gift-cards/route.ts",
+      "startLine": 43,
+      "endLine": 43
+    },
+    {
+      "domain": "commerce",
+      "id": "gift_ui",
+      "path": "components/gift-card/customer-gift-cards.tsx",
+      "startLine": 105,
+      "endLine": 105
+    },
+    {
+      "domain": "commerce",
+      "id": "gift_native",
+      "path": "lib/app-local-secondary-registry.tsx",
+      "startLine": 18,
+      "endLine": 18
+    },
+    {
+      "domain": "commerce",
+      "id": "gift_commands",
+      "path": "lib/app-local-platform-types.ts",
+      "startLine": 68,
+      "endLine": 68
+    },
+    {
+      "domain": "commerce",
+      "id": "pos_submit",
+      "path": "app/pos/actions.ts",
+      "startLine": 992,
+      "endLine": 992
+    },
+    {
+      "domain": "commerce",
+      "id": "pos_gift_reconciliation",
+      "path": "lib/pos-ticket-financial-view.ts",
+      "startLine": 26,
+      "endLine": 26
+    },
+    {
+      "domain": "commerce",
+      "id": "pos_receipt",
+      "path": "types/pos-ticket-receipt.ts",
+      "startLine": 1,
+      "endLine": 1
+    },
+    {
+      "domain": "commerce",
+      "id": "private_registry",
+      "path": "lib/market-registry/server.ts",
+      "startLine": 8,
+      "endLine": 8
+    },
+    {
+      "domain": "commerce",
+      "id": "hosted_platform",
+      "path": "lib/market-platform/server.ts",
+      "startLine": 7,
+      "endLine": 7
+    },
+    {
+      "domain": "commerce",
+      "id": "hosted_owner",
+      "path": "lib/market-platform/owner.ts",
+      "startLine": 8,
+      "endLine": 8
+    },
+    {
+      "domain": "commerce",
+      "id": "hosted_consent",
+      "path": "app/market/developer-app-actions.ts",
+      "startLine": 25,
+      "endLine": 25
+    },
+    {
+      "domain": "commerce",
+      "id": "hosted_test",
+      "path": "lib/market-platform/stripe-test.ts",
+      "startLine": 4,
+      "endLine": 4
+    },
+    {
+      "domain": "commerce",
+      "id": "hosted_local_db",
+      "path": "lib/market-platform/commerce.ts",
+      "startLine": 15,
+      "endLine": 15
+    },
+    {
+      "domain": "commerce",
+      "id": "phone_listing",
+      "path": "app/market/sample-apps.ts",
+      "startLine": 110,
+      "endLine": 110
+    },
+    {
+      "domain": "commerce",
+      "id": "payroll_listing",
+      "path": "app/market/sample-apps.ts",
+      "startLine": 87,
+      "endLine": 87
+    },
+    {
+      "domain": "native",
+      "id": "N1",
+      "path": "ios/Reylumi/Info.plist",
+      "startLine": 20,
+      "endLine": 20
+    },
+    {
+      "domain": "native",
+      "id": "N2",
+      "path": "ios/Reylumi/Info.plist",
+      "startLine": 21,
+      "endLine": 21
+    },
+    {
+      "domain": "native",
+      "id": "N3",
+      "path": "ios/Reylumi/Info.plist",
+      "startLine": 22,
+      "endLine": 22
+    },
+    {
+      "domain": "native",
+      "id": "N4",
+      "path": "ios/Reylumi/Reylumi.entitlements",
+      "startLine": 4,
+      "endLine": 4
+    },
+    {
+      "domain": "native",
+      "id": "N5",
+      "path": "ios/Reylumi/PrivacyInfo.xcprivacy",
+      "startLine": 5,
+      "endLine": 5
+    },
+    {
+      "domain": "native",
+      "id": "N6",
+      "path": "ios/Reylumi/PrivacyInfo.xcprivacy",
+      "startLine": 13,
+      "endLine": 13
+    },
+    {
+      "domain": "native",
+      "id": "N7",
+      "path": "ios/Reylumi/PrivacyInfo.xcprivacy",
+      "startLine": 19,
+      "endLine": 19
+    },
+    {
+      "domain": "native",
+      "id": "N8",
+      "path": "ios/project.yml",
+      "startLine": 20,
+      "endLine": 20
+    },
+    {
+      "domain": "native",
+      "id": "N9",
+      "path": "package.json",
+      "startLine": 25,
+      "endLine": 25
+    },
+    {
+      "domain": "native",
+      "id": "N10",
+      "path": "package-lock.json",
+      "startLine": 1995,
+      "endLine": 1995
+    },
+    {
+      "domain": "native",
+      "id": "N11",
+      "path": "package.json",
+      "startLine": 24,
+      "endLine": 24
+    },
+    {
+      "domain": "native",
+      "id": "N12",
+      "path": "package-lock.json",
+      "startLine": 1918,
+      "endLine": 1918
+    },
+    {
+      "domain": "native",
+      "id": "N13",
+      "path": "package.json",
+      "startLine": 26,
+      "endLine": 26
+    },
+    {
+      "domain": "native",
+      "id": "N14",
+      "path": "package-lock.json",
+      "startLine": 3345,
+      "endLine": 3345
+    },
+    {
+      "domain": "native",
+      "id": "N15",
+      "path": "package.json",
+      "startLine": 28,
+      "endLine": 28
+    },
+    {
+      "domain": "native",
+      "id": "N16",
+      "path": "package-lock.json",
+      "startLine": 5915,
+      "endLine": 5915
+    },
+    {
+      "domain": "native",
+      "id": "N17",
+      "path": "package.json",
+      "startLine": 27,
+      "endLine": 27
+    },
+    {
+      "domain": "native",
+      "id": "N18",
+      "path": "package-lock.json",
+      "startLine": 5514,
+      "endLine": 5514
+    },
+    {
+      "domain": "native",
+      "id": "N19",
+      "path": "package.json",
+      "startLine": 30,
+      "endLine": 30
+    },
+    {
+      "domain": "native",
+      "id": "N20",
+      "path": "package-lock.json",
+      "startLine": 6169,
+      "endLine": 6169
+    },
+    {
+      "domain": "native",
+      "id": "N21",
+      "path": "package.json",
+      "startLine": 34,
+      "endLine": 34
+    },
+    {
+      "domain": "native",
+      "id": "N22",
+      "path": "package-lock.json",
+      "startLine": 6867,
+      "endLine": 6867
+    },
+    {
+      "domain": "native",
+      "id": "N23",
+      "path": "package.json",
+      "startLine": 29,
+      "endLine": 29
+    },
+    {
+      "domain": "native",
+      "id": "N24",
+      "path": "package-lock.json",
+      "startLine": 6059,
+      "endLine": 6059
+    },
+    {
+      "domain": "native",
+      "id": "N25",
+      "path": "ios/Reylumi/Info.plist",
+      "startLine": 20,
+      "endLine": 20
+    },
+    {
+      "domain": "native",
+      "id": "N26",
+      "path": "app/staff/scan/qr-scanner.tsx",
+      "startLine": 18,
+      "endLine": 18
+    },
+    {
+      "domain": "native",
+      "id": "N27",
+      "path": "app/staff/scan/qr-scanner.tsx",
+      "startLine": 37,
+      "endLine": 37
+    },
+    {
+      "domain": "native",
+      "id": "N28",
+      "path": "app/service-relay/staff-relay.tsx",
+      "startLine": 254,
+      "endLine": 254
+    },
+    {
+      "domain": "native",
+      "id": "N29",
+      "path": "ios/Reylumi/Info.plist",
+      "startLine": 21,
+      "endLine": 21
+    },
+    {
+      "domain": "native",
+      "id": "N30",
+      "path": "app/beauty/beauty-profile-client.tsx",
+      "startLine": 460,
+      "endLine": 460
+    },
+    {
+      "domain": "native",
+      "id": "N31",
+      "path": "app/beauty/actions.ts",
+      "startLine": 3,
+      "endLine": 3
+    },
+    {
+      "domain": "native",
+      "id": "N32",
+      "path": "lib/public-image-safety.ts",
+      "startLine": 67,
+      "endLine": 67
+    },
+    {
+      "domain": "native",
+      "id": "N33",
+      "path": "lib/normalize-image.ts",
+      "startLine": 5,
+      "endLine": 5
+    },
+    {
+      "domain": "native",
+      "id": "N34",
+      "path": "app/support/support-ui.tsx",
+      "startLine": 8,
+      "endLine": 8
+    },
+    {
+      "domain": "native",
+      "id": "N35",
+      "path": "app/tax-company/actions.ts",
+      "startLine": 56,
+      "endLine": 56
+    },
+    {
+      "domain": "native",
+      "id": "N36",
+      "path": "app/claim/claim-panel.tsx",
+      "startLine": 65,
+      "endLine": 65
+    },
+    {
+      "domain": "native",
+      "id": "N37",
+      "path": "ios/Reylumi/Info.plist",
+      "startLine": 22,
+      "endLine": 22
+    },
+    {
+      "domain": "native",
+      "id": "N38",
+      "path": "app/explore/explore-client.tsx",
+      "startLine": 3404,
+      "endLine": 3404
+    },
+    {
+      "domain": "native",
+      "id": "N39",
+      "path": "lib/location/explore-gps-area-client.ts",
+      "startLine": 19,
+      "endLine": 19
+    },
+    {
+      "domain": "native",
+      "id": "N40",
+      "path": "lib/location/explore-gps-area-client.ts",
+      "startLine": 29,
+      "endLine": 29
+    },
+    {
+      "domain": "native",
+      "id": "N41",
+      "path": "lib/location/explore-gps-area.ts",
+      "startLine": 47,
+      "endLine": 47
+    },
+    {
+      "domain": "native",
+      "id": "N42",
+      "path": "lib/location/explore-gps-area.ts",
+      "startLine": 4,
+      "endLine": 4
+    },
+    {
+      "domain": "native",
+      "id": "N43",
+      "path": "app/explore/explore-map.tsx",
+      "startLine": 154,
+      "endLine": 154
+    },
+    {
+      "domain": "native",
+      "id": "N44",
+      "path": "lib/location/address-suggestions.ts",
+      "startLine": 16,
+      "endLine": 16
+    },
+    {
+      "domain": "native",
+      "id": "N45",
+      "path": "lib/location/providers/census-address-geocoder.ts",
+      "startLine": 10,
+      "endLine": 10
+    },
+    {
+      "domain": "native",
+      "id": "N46",
+      "path": "ios/Reylumi/NavigationPolicy.swift",
+      "startLine": 68,
+      "endLine": 68
+    },
+    {
+      "domain": "native",
+      "id": "N47",
+      "path": "lib/supabase/server.ts",
+      "startLine": 18,
+      "endLine": 18
+    },
+    {
+      "domain": "native",
+      "id": "N48",
+      "path": "lib/supabase/browser.ts",
+      "startLine": 19,
+      "endLine": 19
+    },
+    {
+      "domain": "native",
+      "id": "N49",
+      "path": "ios/Reylumi/ReylumiCookieAuthority.swift",
+      "startLine": 9,
+      "endLine": 9
+    },
+    {
+      "domain": "native",
+      "id": "N50",
+      "path": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+      "startLine": 436,
+      "endLine": 436
+    },
+    {
+      "domain": "native",
+      "id": "N51",
+      "path": "lib/account-security.ts",
+      "startLine": 433,
+      "endLine": 433
+    },
+    {
+      "domain": "native",
+      "id": "N52",
+      "path": "lib/abuse-signals.ts",
+      "startLine": 29,
+      "endLine": 29
+    },
+    {
+      "domain": "native",
+      "id": "N53",
+      "path": "ios/Reylumi/ReylumiPortableStore.swift",
+      "startLine": 14,
+      "endLine": 14
+    },
+    {
+      "domain": "native",
+      "id": "N54",
+      "path": "ios/Reylumi/ReylumiPortableStore.swift",
+      "startLine": 136,
+      "endLine": 136
+    },
+    {
+      "domain": "native",
+      "id": "N55",
+      "path": "ios/Reylumi/ReylumiPortableStore.swift",
+      "startLine": 105,
+      "endLine": 105
+    },
+    {
+      "domain": "native",
+      "id": "N56",
+      "path": "ios/Reylumi/ReylumiPortableStore.swift",
+      "startLine": 117,
+      "endLine": 117
+    },
+    {
+      "domain": "native",
+      "id": "N57",
+      "path": "ios/Reylumi/ReylumiLocalReadStore.swift",
+      "startLine": 118,
+      "endLine": 118
+    },
+    {
+      "domain": "native",
+      "id": "N58",
+      "path": "ios/Reylumi/ReylumiLocalReadStore.swift",
+      "startLine": 270,
+      "endLine": 270
+    },
+    {
+      "domain": "native",
+      "id": "N59",
+      "path": "ios/Reylumi/ReylumiBackgroundSync.swift",
+      "startLine": 92,
+      "endLine": 92
+    },
+    {
+      "domain": "native",
+      "id": "N60",
+      "path": "ios/Reylumi/ReylumiLocalAppViewController.swift",
+      "startLine": 88,
+      "endLine": 88
+    },
+    {
+      "domain": "native",
+      "id": "N61",
+      "path": "ios/Reylumi/ReylumiViewController.swift",
+      "startLine": 137,
+      "endLine": 137
+    },
+    {
+      "domain": "native",
+      "id": "N62",
+      "path": "lib/public-post-receipt.ts",
+      "startLine": 14,
+      "endLine": 14
+    },
+    {
+      "domain": "native",
+      "id": "N63",
+      "path": "lib/public-post-receipt.ts",
+      "startLine": 48,
+      "endLine": 48
+    },
+    {
+      "domain": "native",
+      "id": "N64",
+      "path": "lib/experience-state.ts",
+      "startLine": 4,
+      "endLine": 4
+    },
+    {
+      "domain": "native",
+      "id": "N65",
+      "path": "lib/location/explore-gps-area-client.ts",
+      "startLine": 19,
+      "endLine": 19
+    },
+    {
+      "domain": "native",
+      "id": "N66",
+      "path": "app/api/explore/advertising/route.ts",
+      "startLine": 35,
+      "endLine": 35
+    },
+    {
+      "domain": "native",
+      "id": "N67",
+      "path": "app/api/explore/advertising/route.ts",
+      "startLine": 116,
+      "endLine": 116
+    },
+    {
+      "domain": "native",
+      "id": "N68",
+      "path": "lib/advertising-attribution.ts",
+      "startLine": 79,
+      "endLine": 79
+    },
+    {
+      "domain": "native",
+      "id": "N69",
+      "path": "lib/explore-visitor.ts",
+      "startLine": 16,
+      "endLine": 16
+    },
+    {
+      "domain": "native",
+      "id": "N70",
+      "path": "lib/explore-visitor.ts",
+      "startLine": 24,
+      "endLine": 24
+    },
+    {
+      "domain": "native",
+      "id": "N71",
+      "path": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+      "startLine": 88,
+      "endLine": 88
+    },
+    {
+      "domain": "native",
+      "id": "N72",
+      "path": "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+      "startLine": 103,
+      "endLine": 103
+    },
+    {
+      "domain": "native",
+      "id": "N73",
+      "path": "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+      "startLine": 125,
+      "endLine": 125
+    },
+    {
+      "domain": "native",
+      "id": "N74",
+      "path": "ios/Reylumi/ReylumiLocalAppViewController.swift",
+      "startLine": 392,
+      "endLine": 392
+    },
+    {
+      "domain": "native",
+      "id": "N75",
+      "path": "lib/account-security.ts",
+      "startLine": 439,
+      "endLine": 439
+    },
+    {
+      "domain": "native",
+      "id": "N76",
+      "path": "lib/abuse-server.ts",
+      "startLine": 65,
+      "endLine": 65
+    },
+    {
+      "domain": "native",
+      "id": "N77",
+      "path": "app/market/card-checkout-panel.tsx",
+      "startLine": 237,
+      "endLine": 237
+    },
+    {
+      "domain": "native",
+      "id": "N78",
+      "path": "components/booking-card-payment.tsx",
+      "startLine": 13,
+      "endLine": 13
+    },
+    {
+      "domain": "native",
+      "id": "N79",
+      "path": "lib/platform-payment.ts",
+      "startLine": 10,
+      "endLine": 10
+    },
+    {
+      "domain": "native",
+      "id": "N80",
+      "path": "lib/gift-card-stripe.ts",
+      "startLine": 56,
+      "endLine": 56
+    },
+    {
+      "domain": "native",
+      "id": "N81",
+      "path": "lib/system-sms.ts",
+      "startLine": 16,
+      "endLine": 16
+    },
+    {
+      "domain": "native",
+      "id": "N82",
+      "path": "lib/booking-notifications.ts",
+      "startLine": 27,
+      "endLine": 27
+    },
+    {
+      "domain": "native",
+      "id": "N83",
+      "path": "lib/email.ts",
+      "startLine": 80,
+      "endLine": 80
+    },
+    {
+      "domain": "native",
+      "id": "N84",
+      "path": "lib/smtp-mail.ts",
+      "startLine": 17,
+      "endLine": 17
+    },
+    {
+      "domain": "native",
+      "id": "N85",
+      "path": "lib/app-notifications.ts",
+      "startLine": 5,
+      "endLine": 5
+    },
+    {
+      "domain": "native",
+      "id": "N86",
+      "path": "lib/notification-client.ts",
+      "startLine": 216,
+      "endLine": 216
+    },
+    {
+      "domain": "native",
+      "id": "N87",
+      "path": "ios/Reylumi/Info.plist",
+      "startLine": 18,
+      "endLine": 18
+    },
+    {
+      "domain": "native",
+      "id": "N88",
+      "path": "ios/Reylumi/ReylumiAppDelegate.swift",
+      "startLine": 6,
+      "endLine": 6
+    },
+    {
+      "domain": "native",
+      "id": "N89",
+      "path": "lib/supabase/browser.ts",
+      "startLine": 15,
+      "endLine": 15
+    },
+    {
+      "domain": "native",
+      "id": "N90",
+      "path": "lib/supabase/server.ts",
+      "startLine": 164,
+      "endLine": 164
+    },
+    {
+      "domain": "native",
+      "id": "N91",
+      "path": "ios/Reylumi/ReylumiLocalBundle.swift",
+      "startLine": 53,
+      "endLine": 53
+    },
+    {
+      "domain": "native",
+      "id": "N92",
+      "path": "app/beauty/actions.ts",
+      "startLine": 64,
+      "endLine": 64
+    },
+    {
+      "domain": "native",
+      "id": "N93",
+      "path": "instrumentation-client.ts",
+      "startLine": 5,
+      "endLine": 5
+    },
+    {
+      "domain": "native",
+      "id": "N94",
+      "path": "lib/abuse-server.ts",
+      "startLine": 62,
+      "endLine": 62
+    },
+    {
+      "domain": "native",
+      "id": "N95",
+      "path": "lib/abuse-signals.ts",
+      "startLine": 35,
+      "endLine": 35
+    },
+    {
+      "domain": "native",
+      "id": "N96",
+      "path": "next.config.ts",
+      "startLine": 2,
+      "endLine": 2
+    },
+    {
+      "domain": "native",
+      "id": "N97",
+      "path": "app/explore/explore-map.tsx",
+      "startLine": 154,
+      "endLine": 154
+    },
+    {
+      "domain": "native",
+      "id": "N98",
+      "path": "lib/location/address-suggestions.ts",
+      "startLine": 9,
+      "endLine": 9
+    },
+    {
+      "domain": "native",
+      "id": "N99",
+      "path": "lib/location/providers/maptiler-area-reverse.ts",
+      "startLine": 7,
+      "endLine": 7
+    },
+    {
+      "domain": "native",
+      "id": "N100",
+      "path": "lib/location/providers/census-area-reverse.ts",
+      "startLine": 8,
+      "endLine": 8
+    },
+    {
+      "domain": "native",
+      "id": "N101",
+      "path": "lib/location/providers/census-address-geocoder.ts",
+      "startLine": 11,
+      "endLine": 11
+    },
+    {
+      "domain": "native",
+      "id": "N102",
+      "path": "lib/location/explore-gps-area.ts",
+      "startLine": 63,
+      "endLine": 63
+    },
+    {
+      "domain": "native",
+      "id": "N103",
+      "path": "lib/twilio-settings.ts",
+      "startLine": 31,
+      "endLine": 31
+    },
+    {
+      "domain": "native",
+      "id": "N104",
+      "path": "lib/twilio-settings.ts",
+      "startLine": 42,
+      "endLine": 42
+    },
+    {
+      "domain": "native",
+      "id": "N105",
+      "path": "lib/system-sms.ts",
+      "startLine": 18,
+      "endLine": 18
+    },
+    {
+      "domain": "native",
+      "id": "N106",
+      "path": "lib/booksms.ts",
+      "startLine": 15,
+      "endLine": 15
+    },
+    {
+      "domain": "native",
+      "id": "N107",
+      "path": "lib/support-email.ts",
+      "startLine": 31,
+      "endLine": 31
+    },
+    {
+      "domain": "native",
+      "id": "N108",
+      "path": "lib/email.ts",
+      "startLine": 77,
+      "endLine": 77
+    },
+    {
+      "domain": "native",
+      "id": "N109",
+      "path": "lib/smtp-mail.ts",
+      "startLine": 15,
+      "endLine": 15
+    },
+    {
+      "domain": "native",
+      "id": "N110",
+      "path": "lib/smtp-mail.ts",
+      "startLine": 35,
+      "endLine": 35
+    },
+    {
+      "domain": "native",
+      "id": "N111",
+      "path": "lib/platform-payment.ts",
+      "startLine": 10,
+      "endLine": 10
+    },
+    {
+      "domain": "native",
+      "id": "N112",
+      "path": "lib/booking-deposit.ts",
+      "startLine": 12,
+      "endLine": 12
+    },
+    {
+      "domain": "native",
+      "id": "N113",
+      "path": "app/market/card-checkout-panel.tsx",
+      "startLine": 13,
+      "endLine": 13
+    },
+    {
+      "domain": "native",
+      "id": "N114",
+      "path": "ios/Reylumi/NavigationPolicy.swift",
+      "startLine": 63,
+      "endLine": 63
+    },
+    {
+      "domain": "native",
+      "id": "N115",
+      "path": "components/booking-card-payment.tsx",
+      "startLine": 15,
+      "endLine": 15
+    },
+    {
+      "domain": "native",
+      "id": "N116",
+      "path": "lib/public-image-safety.ts",
+      "startLine": 67,
+      "endLine": 67
+    },
+    {
+      "domain": "native",
+      "id": "N117",
+      "path": "lib/public-image-safety.ts",
+      "startLine": 76,
+      "endLine": 76
+    },
+    {
+      "domain": "native",
+      "id": "N118",
+      "path": "docs/public-image-safety-20261116.md",
+      "startLine": 7,
+      "endLine": 7
+    },
+    {
+      "domain": "native",
+      "id": "N119",
+      "path": "ios/project.yml",
+      "startLine": 4,
+      "endLine": 4
+    },
+    {
+      "domain": "native",
+      "id": "N120",
+      "path": ".github/workflows/reylumi-ios-testflight.yml",
+      "startLine": 19,
+      "endLine": 19
+    },
+    {
+      "domain": "native",
+      "id": "N121",
+      "path": "ios/project.yml",
+      "startLine": 11,
+      "endLine": 11
+    },
+    {
+      "domain": "business",
+      "id": "E01",
+      "path": "supabase/migrations/202607240001_account_salon_baseline.sql",
+      "startLine": 14,
+      "endLine": 29
+    },
+    {
+      "domain": "business",
+      "id": "E02",
+      "path": "supabase/migrations/202607240001_account_salon_baseline.sql",
+      "startLine": 7153,
+      "endLine": 7165
+    },
+    {
+      "domain": "business",
+      "id": "E03",
+      "path": "supabase/migrations/202610140003_account_erasure.sql",
+      "startLine": 378,
+      "endLine": 450
+    },
+    {
+      "domain": "business",
+      "id": "E04",
+      "path": "supabase/migrations/202608100003_customer_identity_claims.sql",
+      "startLine": 976,
+      "endLine": 1006
+    },
+    {
+      "domain": "business",
+      "id": "E05",
+      "path": "supabase/migrations/202607240001_account_salon_baseline.sql",
+      "startLine": 156,
+      "endLine": 205
+    },
+    {
+      "domain": "business",
+      "id": "E06",
+      "path": "supabase/migrations/202607240001_account_salon_baseline.sql",
+      "startLine": 376,
+      "endLine": 416
+    },
+    {
+      "domain": "business",
+      "id": "E07",
+      "path": "supabase/migrations/20261029101200_financial_history_privacy.sql",
+      "startLine": 20,
+      "endLine": 79
+    },
+    {
+      "domain": "business",
+      "id": "E08",
+      "path": "lib/lifecycle-export.ts",
+      "startLine": 241,
+      "endLine": 305
+    },
+    {
+      "domain": "business",
+      "id": "E09",
+      "path": "lib/lifecycle-export.ts",
+      "startLine": 383,
+      "endLine": 479
+    },
+    {
+      "domain": "business",
+      "id": "E10",
+      "path": "types/pos-ticket.ts",
+      "startLine": 18,
+      "endLine": 78
+    },
+    {
+      "domain": "business",
+      "id": "E11",
+      "path": "types/pos-payment.ts",
+      "startLine": 1,
+      "endLine": 20
+    },
+    {
+      "domain": "business",
+      "id": "E12",
+      "path": "lib/lifecycle-export.ts",
+      "startLine": 575,
+      "endLine": 616
+    },
+    {
+      "domain": "business",
+      "id": "E13",
+      "path": "lib/payroll-export.ts",
+      "startLine": 6,
+      "endLine": 37
+    },
+    {
+      "domain": "business",
+      "id": "E14",
+      "path": "supabase/migrations/20261109230000_tax_personal_workspace.sql",
+      "startLine": 4,
+      "endLine": 36
+    },
+    {
+      "domain": "business",
+      "id": "E15",
+      "path": "supabase/migrations/20261109230000_tax_personal_workspace.sql",
+      "startLine": 39,
+      "endLine": 141
+    },
+    {
+      "domain": "business",
+      "id": "E16",
+      "path": "app/tax/tax-workspace.tsx",
+      "startLine": 914,
+      "endLine": 920
+    },
+    {
+      "domain": "business",
+      "id": "E17",
+      "path": "supabase/migrations/20261109230000_tax_personal_workspace.sql",
+      "startLine": 276,
+      "endLine": 290
+    },
+    {
+      "domain": "business",
+      "id": "E18",
+      "path": "supabase/migrations/20261116210000_tax_profile_account_erasure.sql",
+      "startLine": 3,
+      "endLine": 44
+    },
+    {
+      "domain": "business",
+      "id": "E19",
+      "path": "types/check-writer.ts",
+      "startLine": 8,
+      "endLine": 45
+    },
+    {
+      "domain": "business",
+      "id": "E20",
+      "path": "lib/check-writer-crypto.ts",
+      "startLine": 33,
+      "endLine": 73
+    },
+    {
+      "domain": "business",
+      "id": "E21",
+      "path": "supabase/migrations/20261028040000_check_writer.sql",
+      "startLine": 8,
+      "endLine": 54
+    },
+    {
+      "domain": "business",
+      "id": "E22",
+      "path": "lib/check-writer-server.ts",
+      "startLine": 21,
+      "endLine": 47
+    },
+    {
+      "domain": "business",
+      "id": "E23",
+      "path": "app/api/check-writer/pdf/route.ts",
+      "startLine": 52,
+      "endLine": 82
+    },
+    {
+      "domain": "business",
+      "id": "E24",
+      "path": "supabase/migrations/202610070017_user_support_cases.sql",
+      "startLine": 1,
+      "endLine": 82
+    },
+    {
+      "domain": "business",
+      "id": "E25",
+      "path": "app/(legal)/api/contact-support/route.ts",
+      "startLine": 29,
+      "endLine": 44
+    },
+    {
+      "domain": "business",
+      "id": "E26",
+      "path": "lib/guest-support.ts",
+      "startLine": 5,
+      "endLine": 20
+    },
+    {
+      "domain": "business",
+      "id": "E27",
+      "path": "supabase/migrations/202610140003_account_erasure.sql",
+      "startLine": 79,
+      "endLine": 138
+    },
+    {
+      "domain": "business",
+      "id": "E28",
+      "path": "supabase/migrations/20261109220000_forum_privacy_completion.sql",
+      "startLine": 88,
+      "endLine": 119
+    },
+    {
+      "domain": "business",
+      "id": "E29",
+      "path": "supabase/migrations/20261116220000_public_image_safety.sql",
+      "startLine": 9,
+      "endLine": 38
+    },
+    {
+      "domain": "business",
+      "id": "E30",
+      "path": "supabase/migrations/20261116220000_public_image_safety.sql",
+      "startLine": 245,
+      "endLine": 285
+    },
+    {
+      "domain": "business",
+      "id": "E31",
+      "path": "lib/public-image-safety.ts",
+      "startLine": 65,
+      "endLine": 106
+    },
+    {
+      "domain": "business",
+      "id": "E32",
+      "path": "lib/lifecycle-export.ts",
+      "startLine": 731,
+      "endLine": 831
+    },
+    {
+      "domain": "business",
+      "id": "E33",
+      "path": "lib/lifecycle-export-storage.ts",
+      "startLine": 74,
+      "endLine": 100
+    },
+    {
+      "domain": "business",
+      "id": "E34",
+      "path": "lib/lifecycle-export-storage.ts",
+      "startLine": 151,
+      "endLine": 185
+    },
+    {
+      "domain": "business",
+      "id": "E35",
+      "path": "supabase/migrations/20261116211000_lifecycle_export_expiry.sql",
+      "startLine": 11,
+      "endLine": 48
+    },
+    {
+      "domain": "business",
+      "id": "E36",
+      "path": "supabase/migrations/20261116215000_retained_storage_ownership.sql",
+      "startLine": 9,
+      "endLine": 45
+    },
+    {
+      "domain": "business",
+      "id": "E37",
+      "path": "lib/account-erasure-worker.ts",
+      "startLine": 19,
+      "endLine": 61
+    },
+    {
+      "domain": "business",
+      "id": "E38",
+      "path": "lib/abuse-signals.ts",
+      "startLine": 24,
+      "endLine": 45
+    },
+    {
+      "domain": "business",
+      "id": "E39",
+      "path": "proxy.ts",
+      "startLine": 64,
+      "endLine": 77
+    },
+    {
+      "domain": "business",
+      "id": "E40",
+      "path": "supabase/migrations/202610070008_abuse_prevention.sql",
+      "startLine": 10,
+      "endLine": 62
+    },
+    {
+      "domain": "business",
+      "id": "E41",
+      "path": "supabase/migrations/202610070008_abuse_prevention.sql",
+      "startLine": 404,
+      "endLine": 415
+    },
+    {
+      "domain": "business",
+      "id": "E42",
+      "path": "vercel.json",
+      "startLine": 12,
+      "endLine": 26
+    },
+    {
+      "domain": "business",
+      "id": "E43",
+      "path": "lib/account-retention-policy.ts",
+      "startLine": 30,
+      "endLine": 102
+    },
+    {
+      "domain": "business",
+      "id": "E44",
+      "path": "lib/legal-policies.ts",
+      "startLine": 704,
+      "endLine": 758
+    },
+    {
+      "domain": "business",
+      "id": "E45",
+      "path": "supabase/migrations/202608210003_account_deletion_flow.sql",
+      "startLine": 184,
+      "endLine": 193
+    },
+    {
+      "domain": "business",
+      "id": "E46",
+      "path": "lib/account-erasure-worker.ts",
+      "startLine": 73,
+      "endLine": 86
+    },
+    {
+      "domain": "business",
+      "id": "E47",
+      "path": "lib/support-email.ts",
+      "startLine": 30,
+      "endLine": 80
+    },
+    {
+      "domain": "business",
+      "id": "E48",
+      "path": "supabase/migrations/202607240001_account_salon_baseline.sql",
+      "startLine": 7221,
+      "endLine": 7284
+    },
+    {
+      "domain": "business",
+      "id": "E49",
+      "path": "supabase/migrations/20261110230000_tax_period_alignment.sql",
+      "startLine": 41,
+      "endLine": 60
+    },
+    {
+      "domain": "business",
+      "id": "E50",
+      "path": "types/staff.ts",
+      "startLine": 1,
+      "endLine": 30
+    }
+  ],
+  "componentReports": [
+    {
+      "path": "docs/ios-submission-commerce-scope-20261116.md",
+      "sha256": "77eb052d034f607ba25cdb4c4aa8d0fee5f5a001604b7f446708f2c0d12fe5b7"
+    },
+    {
+      "path": "docs/ios-submission-business-data-map-20261116.md",
+      "sha256": "58dc55d31fb96a9513365249e3e8f4a5cff31d1ca1ad02d821b8942b044b4578"
+    },
+    {
+      "path": "docs/ios-submission-native-data-map-20261116.md",
+      "sha256": "50d0149acf0e5b454cf85a6283c5637789197fa016dc80a7c3c8a3bf5a0b4c8e"
+    }
+  ],
+  "machineInputs": [
+    {
+      "path": "artifacts/ios-submission-scope-20261116/commerce-scope.json",
+      "sha256": "4de2b9290cc0b2f50e7f410f23bed0742da18f13ac1f8c12d141c5ba8d937563"
+    },
+    {
+      "path": "artifacts/ios-submission-scope-20261116/native-data-map.json",
+      "sha256": "139af912b08110fae0e910e8b9f7175fb283618c7c501e70134d9eb4df8cbeb8"
+    },
+    {
+      "path": "artifacts/ios-submission-scope-20261116/business-data-map.json",
+      "sha256": "87a1af85e4dbec05e5acdccb95c9aa7367214792f7462cbbe77cdb3653de2940"
+    }
+  ],
+  "references": {
+    "applePrivacy": "https://developer.apple.com/app-store/app-privacy-details/",
+    "appleGuidelines": "https://developer.apple.com/app-store/review/guidelines/"
+  }
+}

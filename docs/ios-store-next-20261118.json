@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-11-18T22:18:49.845Z",
+  "sourceBaseline": "8a9d933",
+  "status": "SOURCE_DECLARATION_AND_ACCEPTANCE_PREPARATION",
+  "maySubmit": false,
+  "mayPushFinal": false,
+  "productCodeChangedInThisPhase": false,
+  "scope": {
+    "platform": "ios",
+    "storefrontIntended": "USA",
+    "freeDownload": true,
+    "marketAndAdCreditsRemainInScope": true,
+    "releaseMustCombineAllReviewedPendingChanges": true
+  },
+  "freshSourceFindings": [
+    "Retained query text and raw GPS in search sessions need explicit current Privacy label review.",
+    "Persisted Beauty follows/social graph require Contacts taxonomy review.",
+    "Explore renders owner-paid sponsored ads, so sole-purpose advertising-management exemption is not established.",
+    "Sponsored-ad report/targeting transparency controls need disposition.",
+    "Keeping public originals as review evidence does not remove their public origin; private internal evidence requires a separate access boundary.",
+    "Current Apple social-media questionnaire states a minimum 13+ Store rating for social-media capabilities; final rating and under-13 restriction claims remain to be verified, without adding a universal service age gate."
+  ],
+  "apple": {
+    "freshReadback": "AUTHENTICATION_REQUIRED",
+    "currentVersionOrBuildVerified": false,
+    "finalPrivacyLabelsVerified": false,
+    "metadataWrites": 0
+  },
+  "nativeSource": {
+    "files": 19,
+    "missingHeuristicReasonCategories": [],
+    "manifestExplicitlyConfiguredAsResource": true,
+    "archiveVerified": false,
+    "physicalAcceptance": false,
+    "requiredReasonPolicy": "https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api"
+  },
+  "ownerPending": {
+    "adminR2": "awaiting-specific-preview-decision",
+    "openaiConsentUi": "awaiting-specific-preview-decision",
+    "secureKeyDestination": "prior-not-approved-twice; no new key creation or retry in this phase"
+  },
+  "reports": [
+    "docs/ios-store-declarations-next-20261118.md",
+    "docs/ios-commerce-store-next-20261118.md",
+    "docs/ios-rights-operations-next-20261118.md",
+    "docs/ios-store-next-20261118.md"
+  ],
+  "evidence": [
+    {
+      "path": "artifacts/ios-store-next-20261118/native-source-privacy-inventory.json",
+      "sha256": "14b4ca55910491350c27ef6852dea8245f22a50f571102ea2013c56ceb67eb09"
+    },
+    {
+      "path": "artifacts/ios-store-next-20261118/native-apple-readback.json",
+      "sha256": "40f0af980783d406f8ab121dc485877a80a65b85e29eda1c6fa07ada50b07e71"
+    },
+    {
+      "path": "artifacts/ios-store-next-20261118/reviewer-acceptance-draft.json",
+      "sha256": "2a87a4165c4f64ba7b465e4a1bc773cb38c17f296ec88aab52c0e3efb77d1dfe"
+    }
+  ],
+  "operations": {
+    "deploy": false,
+    "push": false,
+    "ciDispatch": false,
+    "nativeUpload": false,
+    "appleWrite": false,
+    "openaiRequest": false,
+    "customerDataRead": false,
+    "financialTransaction": false,
+    "messageSent": false
+  },
+  "validation": {
+    "kind": "Documentation source cross-check and artifact schema/hash verification only; no new app build",
+    "result": "passed",
+    "checkedAt": "2026-11-18T22:22:40.588Z",
+    "internalLinks": 6,
+    "frozenHandoffs": [
+      {
+        "name": "ios-store-declarations-next-20261118",
+        "files": 2,
+        "matched": true
+      },
+      {
+        "name": "ios-commerce-store-next-20261118",
+        "files": 1,
+        "matched": true
+      },
+      {
+        "name": "ios-rights-operations-next-20261118",
+        "files": 1,
+        "matched": true
+      }
+    ]
+  },
+  "ageRatingPolicy": "https://developer.apple.com/wwdc26/guides/app-store/"
+}

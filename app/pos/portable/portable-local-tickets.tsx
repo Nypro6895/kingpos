@@ -4,6 +4,7 @@ import { CustomerName } from "@/components/customer-name";
 import { useEffect, useState } from "react";
 import { listPortableOperations, PORTABLE_OPERATIONS_CHANGED, type PortableOperation } from "@/lib/portable-operations";
 import { usePortableWorkspaceState } from "./portable-workspace-state";
+import { ProvisionalReceiptPrintActions } from "@/components/provisional-receipt-print-actions";
 
 export function PortableLocalTickets({ serverIds, date, timezone, query }: { serverIds: string[]; date: string; timezone: string; query: string }) {
   const __vt = useWorkspaceTranslation();
@@ -37,6 +38,7 @@ export function PortableLocalTickets({ serverIds, date, timezone, query }: { ser
         <span title={__vt(status)} aria-label={__vt(status)} className={row.state === "cancelled" ? "text-zinc-500" : row.state === "synced" ? "text-emerald-700" : "text-amber-700"}>{row.state === "cancelled" ? <WorkspaceText text="Cancelled" /> : row.state === "synced" ? "✓" : row.state === "attention" ? "!" : "↑"}</span>
       </header>
       {lines.map((line, index) => <div key={index} className="grid grid-cols-[1fr_2fr_auto] gap-3 border-t border-zinc-100 px-3 py-3"><strong>{workspace?.staffRoster.find(staff => staff.id === line.staffId)?.display_name ?? "Staff"}</strong><span>{line.serviceLabel}</span><span>${line.total.toFixed(2)}</span></div>)}
+      {row.state === "pending" && Boolean(row.payload.printSnapshot) && <ProvisionalReceiptPrintActions operationId={row.id} />}
     </article>;
   })}</div>;
 }

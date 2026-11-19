@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "ads-reporting-transparency-implementation-20261118",
+  "status": "working",
+  "summary": "Approved final display-admission trace plus ad reporting and transparency, preserving actor-scoped uncertain recovery and open draft lifetimes",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "types/ad-disclosure.ts",
+    "lib/ad-disclosure-ticket.ts",
+    "lib/ad-reporting.ts",
+    "app/api/advertising/reports/route.ts",
+    "app/api/campaigns/delivery/route.ts",
+    "app/api/explore/advertising/route.ts",
+    "lib/campaign-delivery-area.ts",
+    "components/ad-disclosure-controls.tsx",
+    "components/owner-sponsored-post.tsx",
+    "components/explore-advertising.tsx",
+    "app/(app)/layout.tsx",
+    "supabase/migrations/20261119021000_owner_ad_disclosure_trace.sql",
+    "tests/ad-disclosure-ticket.test.mjs",
+    "tests/ad-reporting.test.mjs",
+    "tests/ad-disclosure-controls.test.mjs",
+    "tests/owner-ad-disclosure-trace.test.mjs",
+    "docs/ad-reporting-transparency-implementation-20261118.md",
+    "lib/platform-admin/report-context.ts",
+    "app/(app)/admin/reports/report-evidence.tsx",
+    "app/(app)/admin/reports/report-case-view.tsx",
+    "tests/owner-campaign-post-layout.browser.test.mjs",
+    "supabase/migrations/20261119022000_platform_ad_disclosure_trace.sql",
+    "tests/platform-ad-disclosure-trace.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "validation": [
+    {
+      "name": "Focused cryptographic, actual route/UI and SQL trace parity checks",
+      "result": "pending"
+    },
+    {
+      "name": "Coordinator intake migration, combined build and device/release QA",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-store-completion-20261118"
+  ],
+  "id": "e0b76096-a170-4f6c-9d9e-00780a54e2d4",
+  "recordedAt": "2026-11-19T05:08:40.683Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

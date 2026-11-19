@@ -4,11 +4,13 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { getRequestBusinessContext } from "./request-business-context";
 import { getExperienceContext } from "./experience-context";
+import { isOwnerMembership } from "./current-context";
 import { requireSalonManagePageContext } from "./route-context-guards";
 import { getPayrollTaxCompanyData } from "./payroll";
+import { loadOwnerTaxReport } from "./owner-tax-report";
 import { taxCompanySettings } from "./tax-company";
 import { runReadWithDeadline } from "./bounded-get";
-import { APP_LOCAL_PAYROLL_TAX_READS, type AppLocalPayrollTaxData } from "./app-local-payroll-tax-metadata";
+import { APP_LOCAL_PAYROLL_TAX_READS, type AppLocalPayrollTaxData, type AppLocalOwnerTaxReportData } from "./app-local-payroll-tax-metadata";
 import type { AppLocalRead } from "./app-local-host";
 
 function fail(status: number, message: string): never { throw Object.assign(new Error(message), { status }); }
@@ -29,11 +31,17 @@ export async function readAppLocalPayrollTaxResource(name: string, args: Record<
   } else {
     const context = await runReadWithDeadline(requireSalonManagePageContext("/payroll/tax-company"), 12000);
     if (context.user.id !== root.user.id || getExperienceContext(context).scope !== options.scope) fail(409, "Your workspace changed. Open this page again.");
-    const result = await runReadWithDeadline(getPayrollTaxCompanyData({ endDate: args.end as string | undefined, month: args.month as string | undefined, payPeriodStart: args.payPeriodStart as string | undefined, preset: args.preset as string | undefined, segment: args.segment as string | undefined, startDate: args.start as string | undefined }), 25000);
-    if (result.context.user?.id !== root.user.id || getExperienceContext(result.context).scope !== options.scope) fail(409, "Your workspace changed. Open this page again.");
-    // The client needs the saved version header and reportable lines, never a full account context or a duplicate payroll snapshot.
-    data = { access: result.access, latestStatement: result.latestStatement ? { run: { id: result.latestStatement.run.id, version: result.latestStatement.run.version, status: result.latestStatement.run.status } } : null,
-      lines: result.lines, period: result.period, periodOptions: result.periodOptions, scheduleSetup: result.scheduleSetup, salonPayrollSetting: result.salonPayrollSetting, source: result.source, summary: result.summary } satisfies AppLocalPayrollTaxData;
+    if (name === "owner.tax-report" && isOwnerMembership(context.currentMembership)) {
+      // Owners see the same published numbers as the tax professional, independently of plugin activation.
+      data = { source: "published-tax", report: await runReadWithDeadline(loadOwnerTaxReport(context), 25000) } satisfies AppLocalOwnerTaxReportData;
+    } else {
+      // Keep the old resource contract for installed clients, and the original authorization for non-owner viewers.
+      const result = await runReadWithDeadline(getPayrollTaxCompanyData({ endDate: args.end as string | undefined, month: args.month as string | undefined, payPeriodStart: args.payPeriodStart as string | undefined, preset: args.preset as string | undefined, segment: args.segment as string | undefined, startDate: args.start as string | undefined }), 25000);
+      if (result.context.user?.id !== root.user.id || getExperienceContext(result.context).scope !== options.scope) fail(409, "Your workspace changed. Open this page again.");
+      // The client needs the saved version header and reportable lines, never a full account context or a duplicate payroll snapshot.
+      data = { access: result.access, latestStatement: result.latestStatement ? { run: { id: result.latestStatement.run.id, version: result.latestStatement.run.version, status: result.latestStatement.run.status } } : null,
+        lines: result.lines, period: result.period, periodOptions: result.periodOptions, scheduleSetup: result.scheduleSetup, salonPayrollSetting: result.salonPayrollSetting, source: result.source, summary: result.summary } satisfies AppLocalPayrollTaxData;
+    }
   }
   check(options.signal);
   const etag = '"' + createHash("sha256").update(JSON.stringify({ schemaVersion: 1, name, args, scope: options.scope, data })).digest("hex") + '"';

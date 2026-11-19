@@ -1,3 +1,10 @@
+
+// Keep the actual scoped hook/context; only server transport is replaced.
+function completeScopedTransport(source,root=process.cwd()){
+ const names=[...fs.readFileSync(root+'/app/market/scoped-market-actions.ts','utf8').matchAll(/export async function (\w+)/g)].map(match=>match[1]);
+ return source+names.filter(name=>!new RegExp('export (?:async )?function '+name+'\\b').test(source)).map(name=>'export async function '+name+'(){throw Error("Unused scoped transport: '+name+'")}').join('');
+}
+import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {build} from 'esbuild';
@@ -11,7 +18,9 @@ const bundled=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents
   '@/components/workspace-language':`export function WorkspaceText({text}){return text}`,
   'next/navigation':`const router={refresh(){window.refreshes.push('router')}};export function useRouter(){return router}`,
   './card-payment-actions':`import{invokeAppLocalCommand}from'./lib/app-local-command-client';export async function startCardCheckout(){window.buys++;return{checkoutUrl:'https://checkout.stripe.com/c/pay/cs_test_fixture'}}export async function refreshCardPurchase(plugin){window.attempts++;return invokeAppLocalCommand('action.772cdac11ef85b024329a565',[plugin],false)}export async function manageCardSubscription(){throw Error('not used')}`,
+  './scoped-market-actions':`import * as payment from './card-payment-actions';function scoped(salon){if(!salon)throw Error('Fixture requires the actual scoped salon');}export async function startCardCheckout(salon,...args){scoped(salon);return payment.startCardCheckout(...args)}export async function refreshCardPurchase(salon,...args){scoped(salon);return payment.refreshCardPurchase(...args)}export async function manageCardSubscription(salon,...args){scoped(salon);return payment.manageCardSubscription(...args)}`,
  };
+ stubs['./scoped-market-actions']=completeScopedTransport(stubs['./scoped-market-actions']);
  api.onResolve({filter:/.*/},a=>stubs[a.path]?{path:a.path,namespace:'stub'}:undefined);
  api.onLoad({filter:/.*/,namespace:'stub'},a=>({resolveDir:process.cwd(),loader:'tsx',contents:stubs[a.path]}));
 }}]});

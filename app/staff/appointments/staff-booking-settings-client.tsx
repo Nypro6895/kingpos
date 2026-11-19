@@ -1,5 +1,5 @@
 "use client";
-import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { useNativeOverlayDismissal, useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionFeedback } from "@/components/action-feedback";
@@ -302,7 +302,9 @@ export function StaffBookingSettings({
 
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const settingsDialog = useRef<HTMLElement | null>(null);
   useTransientOverlay(() => setOpen(false), open);
+  useNativeOverlayDismissal(settingsDialog, () => setOpen(false), open);
   const [preferences, setPreferences] = useState<{ online: boolean; notifications: boolean } | null>(null);
   const [preferenceError, setPreferenceError] = useState("");
   const [preferencePending, startPreferenceTransition] = useTransition();
@@ -534,6 +536,7 @@ export function StaffBookingSettings({
             type="button"
           />
           <aside
+            ref={settingsDialog}
             aria-label={__vt("Booking settings")}
             aria-modal="true"
             className="staff-booking-settings-sheet"

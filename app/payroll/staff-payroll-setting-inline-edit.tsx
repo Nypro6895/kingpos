@@ -3,6 +3,7 @@
 import { getStaffLegalName, staffHasPersonalAccount } from "@/lib/staff-legal-name";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
+import { PayrollTaxItemFields } from "./payroll-tax-item-fields";
 
 import { saveStaffPayrollSettingWithEffectiveDateAction } from "@/app/payroll/actions";
 import type {
@@ -25,11 +26,8 @@ type ActiveField =
   | "effectiveFrom"
   | "fixedPay"
   | "payType"
-  | "taxBonus"
-  | "taxCash"
   | "taxFixed"
   | "taxRate"
-  | "taxTip"
   | "tipPayout"
   | null;
 
@@ -66,10 +64,6 @@ function formatDateLabel(value: string) {
 
 function formatPayoutMethod(value: PayrollPayoutMethod) {
   return value === "check" ? "Check" : "Cash";
-}
-
-function formatOnOff(value: boolean) {
-  return value ? "On" : "Off";
 }
 
 function formatYesNo(value: boolean) {
@@ -139,9 +133,7 @@ function HiddenSettingInputs({
   staffId,
   taxCash,
   taxFixed,
-  taxBonus,
   taxRate,
-  taxTip,
   tipPayout,
 }: {
   bonusPayout: PayrollPayoutMethod;
@@ -154,9 +146,7 @@ function HiddenSettingInputs({
   staffId: string;
   taxCash: boolean;
   taxFixed: boolean;
-  taxBonus: boolean;
   taxRate: string;
-  taxTip: boolean;
   tipPayout: PayrollPayoutMethod;
 }) {
   return (
@@ -173,8 +163,6 @@ function HiddenSettingInputs({
         type="hidden"
         value={taxFixed ? "true" : "false"}
       />
-      <input name="tax_tips" type="hidden" value={taxTip ? "true" : "false"} />
-      <input name="tax_bonus" type="hidden" value={taxBonus ? "true" : "false"} />
       <input
         name="cash_to_tax_company"
         type="hidden"
@@ -352,12 +340,9 @@ export function StaffPayrollSettingInlineEdit({
   );
   const [checkRate, setCheckRate] = useState(String(setting?.check_rate ?? 60));
   const [taxRate, setTaxRate] = useState(String(setting?.tax_rate ?? 0));
-  const [taxTip, setTaxTip] = useState(setting?.tax_tips ?? false);
-  const [taxBonus, setTaxBonus] = useState(setting?.tax_bonus ?? false);
   const [taxFixed, setTaxFixed] = useState(
     setting?.apply_tax_to_fixed_pay ?? true,
   );
-  const [taxCash, setTaxCash] = useState(setting?.cash_to_tax_company ?? false);
   const [tipPayout, setTipPayout] = useState<PayrollPayoutMethod>(
     setting?.tip_payout_method ?? "cash",
   );
@@ -400,11 +385,9 @@ export function StaffPayrollSettingInlineEdit({
         payType={payType}
         returnPath={returnPath}
         staffId={staff.id}
-        taxCash={taxCash}
+        taxCash={Boolean(setting?.cash_to_tax_company)}
         taxFixed={taxFixed}
-        taxBonus={taxBonus}
         taxRate={taxRate}
-        taxTip={taxTip}
         tipPayout={tipPayout}
       />
 
@@ -532,7 +515,7 @@ export function StaffPayrollSettingInlineEdit({
         <SettingGroup title={__vt("Tax reporting")}>
           <EditableSetting
             active={activeField === "taxRate"}
-            label={__vt("Tax rate")}
+            label={__vt("Default tax rate")}
             onClick={() => setActiveField("taxRate")}
             value={formatPercent(taxRate)}
           >
@@ -544,60 +527,6 @@ export function StaffPayrollSettingInlineEdit({
               suffix="%"
               value={taxRate}
             />
-          </EditableSetting>
-          <EditableSetting
-            active={activeField === "taxCash"}
-            label={__vt("Tax cash")}
-            onClick={() => setActiveField("taxCash")}
-            value={formatOnOff(taxCash)}
-          >
-            <InlineSelect
-              autoFocus
-              onChange={(value) => {
-                setTaxCash(value === "true");
-                closeField();
-              }}
-              value={taxCash ? "true" : "false"}
-            >
-              <option value="false"><WorkspaceText text="Off" /></option>
-              <option value="true"><WorkspaceText text="On" /></option>
-            </InlineSelect>
-          </EditableSetting>
-          <EditableSetting
-            active={activeField === "taxTip"}
-            label={__vt("Tax tip")}
-            onClick={() => setActiveField("taxTip")}
-            value={formatYesNo(taxTip)}
-          >
-            <InlineSelect
-              autoFocus
-              onChange={(value) => {
-                setTaxTip(value === "true");
-                closeField();
-              }}
-              value={taxTip ? "true" : "false"}
-            >
-              <option value="false"><WorkspaceText text="No" /></option>
-              <option value="true"><WorkspaceText text="Yes" /></option>
-            </InlineSelect>
-          </EditableSetting>
-          <EditableSetting
-            active={activeField === "taxBonus"}
-            label={__vt("Tax bonus")}
-            onClick={() => setActiveField("taxBonus")}
-            value={formatYesNo(taxBonus)}
-          >
-            <InlineSelect
-              autoFocus
-              onChange={(value) => {
-                setTaxBonus(value === "true");
-                closeField();
-              }}
-              value={taxBonus ? "true" : "false"}
-            >
-              <option value="false"><WorkspaceText text="No" /></option>
-              <option value="true"><WorkspaceText text="Yes" /></option>
-            </InlineSelect>
           </EditableSetting>
         </SettingGroup>
 
@@ -641,6 +570,7 @@ export function StaffPayrollSettingInlineEdit({
         </SettingGroup>
       </div>
 
+      <PayrollTaxItemFields setting={{ ...setting, pay_type: payType, apply_tax_to_fixed_pay: taxFixed, tax_rate: numberValue(taxRate) }} />
       <details className="pt-1">
         <summary className="w-fit cursor-pointer text-xs font-medium text-zinc-600 hover:text-zinc-900">
           <WorkspaceText text="More details" />
@@ -668,7 +598,7 @@ export function StaffPayrollSettingInlineEdit({
           ) : null}
           <EditableSetting
             active={activeField === "taxFixed"}
-            label={__vt("Tax fixed")}
+            label={__vt("Default tax on fixed pay")}
             onClick={() => setActiveField("taxFixed")}
             value={formatYesNo(taxFixed)}
           >

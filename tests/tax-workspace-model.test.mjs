@@ -215,7 +215,7 @@ test("setting dates align to full calendar periods, including year rollover and 
   assert.throws(() => payrollSettingPeriod(semi, "2026-02-30"), /valid/);
 });
 
-test("year summaries add reported components across periods where reporting is switched on and off", () => {
+test("year summaries preserve unknown component amounts across periods where reporting is switched on and off", () => {
   const line = {
     staff_id: "a",
     reported_wage: 1000,
@@ -233,7 +233,7 @@ test("year summaries add reported components across periods where reporting is s
     { ...line, reported_gross: 1000, tip: null },
   ])[0];
   assert.equal(result.reported_wage, 2000);
-  assert.equal(result.tip, 100);
+  assert.equal(result.tip, null);
   assert.equal(result.bonus, null);
   assert.equal(result.reported_gross, 2100);
 });

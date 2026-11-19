@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "ios-rights-operations-next-20261118",
+  "status": "ready",
+  "summary": "Documentation-only verified rights/private-evidence operational and implementation design, including UGC coverage and current raw-public-origin/Support/appeal limits. No backend/UI or live action authorized or implemented.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ios-rights-operations-next-20261118.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "8a9d9335207db37969bff824e6ef3e55f37b6484",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-rights-operations-next-20261118\\frozen",
+    "sourceSha256": "be7dffb4d7bee85786669c7f3870e56c70e435bc1d35c22cc611eeed62ae9dee",
+    "manifest": "artifacts/ios-rights-operations-next-20261118/frozen-manifest.json"
+  },
+  "validation": [
+    {
+      "name": "Current source tracing and exact citation/baseline checks",
+      "result": "passed",
+      "evidence": "artifacts/ios-rights-operations-next-20261118/validation.json (25 source anchors, 23 cited files, no source drift)"
+    },
+    {
+      "name": "Official primary legal/platform source and link review",
+      "result": "passed",
+      "evidence": "artifacts/ios-rights-operations-next-20261118/validation.json (9 official-source links; no eligibility/ops/live compliance assertion)"
+    },
+    {
+      "name": "Independent bounded source-consistency and coordinator draft review",
+      "result": "passed",
+      "evidence": "artifacts/ios-rights-operations-next-20261118/validation.json"
+    },
+    {
+      "name": "Documentation whitespace and frozen-source digest verification",
+      "result": "passed",
+      "evidence": "artifacts/ios-rights-operations-next-20261118/frozen-manifest.json"
+    }
+  ],
+  "dependencies": [],
+  "scopeBoundary": "One design document only. No UI/schema/product code, retention duration, operational legal decision, secrets/real data, customer messages, provider/Storage calls, deployment, commit or push. Admin r2/consent UI remain untouched.",
+  "remaining": "Implementation requires separately approved workflow plus operator/rights scope, evidence retention/hold and restoration decisions. This ready event is the reviewed document only, never a ready rights-removal feature.",
+  "id": "f222e804-6898-4b8a-91ac-9952544b4a1f",
+  "recordedAt": "2026-11-18T22:21:40.372Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": [],
+  "fileHashes": {
+    "docs/ios-rights-operations-next-20261118.md": "3856bef8938ecbdf75fb56a5a71afd69e59810a7f1d73058180ff996ce736f4e"
+  }
+}

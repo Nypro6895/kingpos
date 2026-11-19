@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "admin-exact-text-r2-ui-20261118",
+  "status": "ready",
+  "summary": "Revision3 fixture-only isolation: explicit unavailable exact-text loader stub prevents real Supabase/cookies graph in consumer tests; runtime files unchanged.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/reports/report-case-view.tsx",
+    "app/(app)/admin/reports/report-case-view.module.css",
+    "app/(app)/admin/reports/social-content-decision.tsx",
+    "tests/admin-exact-text-r2-ui.browser.test.mjs",
+    "tests/fixtures/admin-exact-text-r2-entry.tsx",
+    "tests/social-report-consumer.integration.test.mjs",
+    "docs/admin-exact-text-r2-ui-20261118.md"
+  ],
+  "source": {
+    "commit": "40b1b6e7909f6e50e3372dbf873b814ab4eb1f66",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\admin-exact-text-r2-ui-20261118\\revision-3\\frozen-source"
+  },
+  "validation": [
+    {
+      "name": "Affected actual-component browser10 scenarios plus SQL/loader/SSR consumer:12Node records,0skip; original assertions preserved",
+      "result": "passed",
+      "evidence": "artifacts/admin-exact-text-r2-ui-20261118/revision-3/browser-acceptance.json"
+    },
+    {
+      "name": "ESLint owned product TSX, new fixture/browser test and affected consumer test",
+      "result": "passed"
+    },
+    {
+      "name": "All runtime files byte-identical to revision2; seven-file snapshot/hash equality; both previous snapshots preserved",
+      "result": "passed",
+      "evidence": "artifacts/admin-exact-text-r2-ui-20261118/revision-3/snapshot-hashes.json"
+    }
+  ],
+  "dependencies": [
+    "admin-exact-text-moderation-20261118"
+  ],
+  "scopeBoundary": "Scoped UI candidate only. Backend migration/types/helper/actions/resolver are separately owned dependency. Coordinator combined Next build/product preview/hosted RLS and device acceptance remain separate; no production/deploy claim. Mounted-session unknown intent only, no hard-reload draft persistence. No provider calls, secrets, realdata, commit/push/deploy.",
+  "supersedesEvents": [
+    "6aa85e78-5c5c-4563-a730-7063a4de9c8a"
+  ],
+  "id": "aaa49d9d-48a9-402d-b7bf-ecf446e01544",
+  "recordedAt": "2026-11-19T04:11:24.736Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/admin/reports/report-case-view.tsx": "6667ca6a1e9a328039cdb46aaf44fafddd220f0ab64cc03e47c424273b0bbb08",
+    "app/(app)/admin/reports/report-case-view.module.css": "669a4450e91c0544c24161783af8e415886c73f82568e967f1c514613711592f",
+    "app/(app)/admin/reports/social-content-decision.tsx": "f95672cda97bcec8584574584c9bed3aaec17efabafb22cb82ffd28e0ff329f6",
+    "tests/admin-exact-text-r2-ui.browser.test.mjs": "55a080cbc22046f61db6ed3d7f82bcc9a60b2f7bf0908b4c35c956edac79c05f",
+    "tests/fixtures/admin-exact-text-r2-entry.tsx": "5dd2dad5375c1d8cf1ff1f300e55c301e5e68a9d52f445e4e58b08ada00b3050",
+    "tests/social-report-consumer.integration.test.mjs": "1ccb3a1a78e8f6e34b088964f6b0161b22b74f08266d210a62141ab70de5e810",
+    "docs/admin-exact-text-r2-ui-20261118.md": "82955e20afe0255c20c0e48a67682add3f9cd20c583200aa07be94dfc7107f05"
+  }
+}

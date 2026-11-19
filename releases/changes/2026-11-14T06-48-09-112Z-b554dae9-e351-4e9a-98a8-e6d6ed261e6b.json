@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "changeId": "payroll-staff-details-accordion-20261112",
+  "status": "ready",
+  "summary": "Coordinator integrated payroll-staff-details-accordion-20261112 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/staff-payroll-details.tsx",
+    "app/payroll/staff-income-card.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/vietnamese-payroll-mobile.json",
+    "tests/payroll-compact-settings-browser.mjs",
+    "docs/payroll-compact-settings-20261112.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "015e0b98-e252-4467-8b34-0bcb572fa3d6",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\payroll-compact-settings-20261112\\artifacts\\payroll-compact-settings-20261112\\details-source",
+      "commit": "086c7bfbd27504f3a9c9c135d6cd952beed17682"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-13T02:53:37.264Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [
+    "payroll-compact-settings-20261112"
+  ],
+  "supersedesEvents": [
+    "015e0b98-e252-4467-8b34-0bcb572fa3d6"
+  ],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "b554dae9-e351-4e9a-98a8-e6d6ed261e6b",
+  "recordedAt": "2026-11-14T06:48:09.112Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "d11c8c8f3a83740cbfb1ccc31709e03ee6160a49aadcf8f1fff1b90413f33f4c",
+    "app/payroll/staff-payroll-details.tsx": "fed7243a8d311c90916bd8eee21d370a19b965d1846d8d74ebb6be992ccb35c6",
+    "app/payroll/staff-income-card.tsx": "f321fbc33231ed620243c35ea7bfc9a35a863e75796ceb787c7cd9f12880a730",
+    "app/payroll/payroll-mobile.module.css": "236318ceef34e0064175c6f115a603c5fd45961c31539ff0332dcfc9cd23163d",
+    "lib/app-local-owner-payroll-view.tsx": "227211a75b0ae30fd401cf608a8aef3ac4391933641865ba66eaca50fe91e37e",
+    "lib/vietnamese-payroll-mobile.json": "14e5b4e4d0efc0072d545f00b108e52bc38d9ac1e1d53798099a26383feb45d1",
+    "tests/payroll-compact-settings-browser.mjs": "b1818f7c5592caa298a26165b2ada8b64ff84b2aba1f92531ff392b086162313",
+    "docs/payroll-compact-settings-20261112.md": "74ddc59a62c36a4a29c39e613396b28d25efe25aaa6e1a91ec2b26ab40ce68ad"
+  }
+}

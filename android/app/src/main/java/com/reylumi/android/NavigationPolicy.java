@@ -6,10 +6,10 @@ import java.util.ArrayDeque;
 
 final class NavigationPolicy {
     enum Decision { INTERNAL, EXTERNAL, BLOCKED }
-    static final String QA_ORIGIN = "http://localhost:3117";
+    static final String QA_ORIGIN = "http://localhost:" + BuildConfig.QA_APP_PORT;
 
     static String appOrigin() { return BuildConfig.QA_LOCAL ? QA_ORIGIN : "https://reylumi.com"; }
-    static String initialUrl() { return appOrigin() + (BuildConfig.QA_LOCAL ? "/login" : "/explore"); }
+    static String initialUrl() { return appOrigin() + (BuildConfig.PORTABLE_POS ? "/pos/portable" : BuildConfig.QA_LOCAL ? "/login" : "/explore"); }
 
     /** Map only synthetic fixture checkout IDs. No real Stripe URL is loaded. */
     static String qaCheckoutUrl(String value) {
@@ -29,8 +29,8 @@ final class NavigationPolicy {
         try {
             URI url = new URI(value);
             if (url.getUserInfo() != null || !"http".equalsIgnoreCase(url.getScheme())) return false;
-            return ("localhost".equalsIgnoreCase(url.getHost()) && url.getPort() == 3117)
-                || ("127.0.0.1".equals(url.getHost()) && url.getPort() == 55421);
+            return ("localhost".equalsIgnoreCase(url.getHost()) && url.getPort() == BuildConfig.QA_APP_PORT)
+                || ("127.0.0.1".equals(url.getHost()) && url.getPort() == BuildConfig.QA_BACKEND_PORT);
         } catch (Exception ignored) { return false; }
     }
 
@@ -38,7 +38,7 @@ final class NavigationPolicy {
         try {
             URI url = new URI(value);
             String path = url.getPath();
-            return qaResourceAllowed(value) && "localhost".equalsIgnoreCase(url.getHost()) && url.getPort() == 3117
+            return qaResourceAllowed(value) && "localhost".equalsIgnoreCase(url.getHost()) && url.getPort() == BuildConfig.QA_APP_PORT
                 && (path == null || path.isEmpty() || path.equals("/"))
                 && url.getQuery() == null && url.getFragment() == null;
         } catch (Exception ignored) { return false; }
@@ -47,7 +47,7 @@ final class NavigationPolicy {
     static Decision decideQa(String value) {
         try {
             URI url = new URI(value);
-            if (!qaResourceAllowed(value) || !"localhost".equalsIgnoreCase(url.getHost()) || url.getPort() != 3117)
+            if (!qaResourceAllowed(value) || !"localhost".equalsIgnoreCase(url.getHost()) || url.getPort() != BuildConfig.QA_APP_PORT)
                 return Decision.BLOCKED;
             return blockedPath(url.getPath(), true) ? Decision.BLOCKED : Decision.INTERNAL;
         } catch (Exception ignored) { return Decision.BLOCKED; }
@@ -97,7 +97,7 @@ final class NavigationPolicy {
             String path = url.getPath() == null ? "/" : url.getPath();
             String lower = path.toLowerCase(Locale.ROOT);
             for (String prefix : new String[]{"/login", "/logout", "/auth", "/signup", "/reset-password", "/forgot-password"}) {
-                if (lower.equals(prefix) || lower.startsWith(prefix + "/")) return origin + "/explore";
+                if (lower.equals(prefix) || lower.startsWith(prefix + "/")) return origin + (BuildConfig.PORTABLE_POS ? "/pos/portable" : "/explore");
             }
             // Store only the route, never authentication/query/fragment credentials.
             URI base = new URI(origin);

@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "public-post-media-deletion-worker-20261118",
+  "status": "working",
+  "summary": "Delete only terminal new public post media through a pinned leased Storage queue; mock-only preparation",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/public-post-media-deletion.ts",
+    "tests/public-post-media-deletion-worker.test.mjs",
+    "docs/public-post-media-deletion-worker-20261118.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26"
+  },
+  "validation": [
+    {
+      "name": "Synthetic worker acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Coordinator cron integration and final combined build",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "public-post-media-deletion-queue-20261118"
+  ],
+  "id": "743df619-1f92-46cf-abe2-d362c2852305",
+  "recordedAt": "2026-11-18T21:26:57.352Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

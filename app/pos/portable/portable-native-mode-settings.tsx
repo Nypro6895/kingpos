@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { WorkspaceText } from "@/components/workspace-language";
-import { iosPortableDevice } from "@/lib/portable-device-storage";
+import { nativePortableDevice } from "@/lib/portable-device-storage";
 import { getAppLocalHost } from "@/lib/app-local-host";
 import { portableNativeReadiness, PORTABLE_NATIVE_READY_CHANGED, type PortableNativeReadiness } from "@/lib/portable-native-client";
 
@@ -13,7 +13,7 @@ export function PortableNativeModeSettings() {
   const [error, setError] = useState("");
   const [readiness, setReadiness] = useState<PortableNativeReadiness | null>(null);
   useEffect(() => {
-    const native = iosPortableDevice();
+    const native = nativePortableDevice();
     if (!native) return;
     let active = true;
     const read = () => {
@@ -26,7 +26,7 @@ export function PortableNativeModeSettings() {
     return () => { active = false; clearInterval(timer); window.removeEventListener(PORTABLE_NATIVE_READY_CHANGED, read); };
   }, []);
   async function changeMode() {
-    const native = iosPortableDevice();
+    const native = nativePortableDevice();
     if (!native || !mode) return;
     setBusy(true); setError("");
     const next = mode === "portable" ? "personal" : "portable";
@@ -38,7 +38,7 @@ export function PortableNativeModeSettings() {
     finally { setBusy(false); }
   }
   async function returnToReylumi() {
-    const native = iosPortableDevice();
+    const native = nativePortableDevice();
     if (!native) return;
     const result = { saved: true, busy: false };
     window.dispatchEvent(new CustomEvent("kingpos:desktop-flush", { detail: result }));
@@ -54,14 +54,15 @@ export function PortableNativeModeSettings() {
     finally { setBusy(false); }
   }
   if (!mode && !error) return null;
-  return <section className="device-setting-section" aria-label="iPad POS" data-portable-native-settings>
+  const dedicatedAndroidPos = nativePortableDevice()?.platform === "android";
+  return <section className="device-setting-section" aria-label={nativePortableDevice()?.platform === "ios" ? "iPad POS" : "Device POS"} data-portable-native-settings>
     <h3><WorkspaceText text="POS on this device" /></h3>
-    <div className="device-list-row"><span><WorkspaceText text="Open POS when the app starts" /></span><button type="button" aria-pressed={mode === "portable"} disabled={busy || !mode} onClick={() => void changeMode()}><WorkspaceText text={busy ? "Saving…" : mode === "portable" ? "Turn off" : "Turn on"} /></button></div>
-    <p><WorkspaceText text="This changes the start screen on this device. Your open ticket stays available." /></p>
+    {dedicatedAndroidPos ? <p><WorkspaceText text="This app opens Portable POS when it starts." /></p> : <><div className="device-list-row"><span><WorkspaceText text="Open POS when the app starts" /></span><button type="button" aria-pressed={mode === "portable"} disabled={busy || !mode} onClick={() => void changeMode()}><WorkspaceText text={busy ? "Saving…" : mode === "portable" ? "Turn off" : "Turn on"} /></button></div>
+    <p><WorkspaceText text="This changes the start screen on this device. Your open ticket stays available." /></p></>}
     {readiness && <p role="status" data-portable-native-offline={readiness.offlineReady ? "ready" : "preparing"}><WorkspaceText text={readiness.offlineReady ? "Ready for offline work on this device." : "Connect and keep POS open to finish preparing offline work."} />{(readiness.pending ?? 0) > 0 && <> <WorkspaceText text="Waiting to sync" />: {readiness.pending}</>}</p>}
     {readiness?.offlineReady && <p><WorkspaceText text="Reconnect before" /> {new Date(readiness.expiresAt).toLocaleString()}. <WorkspaceText text="Saved tickets stay on this device." /></p>}
     {mode === "portable" && typeof location !== "undefined" && !location.pathname.startsWith("/pos/portable") && <a className="inline-flex min-h-11 items-center underline" href="/pos/portable"><WorkspaceText text="Open Portable POS" /></a>}
-    {typeof location !== "undefined" && location.pathname.startsWith("/pos/portable") && <button type="button" className="inline-flex min-h-11 items-center underline" disabled={busy} onClick={() => void returnToReylumi()}><WorkspaceText text="Return to Reylumi" /></button>}
+    {!dedicatedAndroidPos && typeof location !== "undefined" && location.pathname.startsWith("/pos/portable") && <button type="button" className="inline-flex min-h-11 items-center underline" disabled={busy} onClick={() => void returnToReylumi()}><WorkspaceText text="Return to Reylumi" /></button>}
     {error && <p role="alert"><WorkspaceText text={error} /></p>}
   </section>;
 }

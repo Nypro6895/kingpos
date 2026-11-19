@@ -1,0 +1,131 @@
+{
+  "createdAt": "2026-11-19T07:32:49.012Z",
+  "kind": "producer-final-evidence-selection",
+  "sourceEvent": "af864636-570b-47b5-a805-352a6ced7a9b",
+  "sourceIdentity": "a843ed893cca2279f1d292991483456627947c62bff1dfe884cc2eb1cb8991b3",
+  "allSelectedFrozenHashesVerified": true,
+  "finalEvidence": {
+    "writePressure": {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-write-pressure-a843ed893cca-20261119071200.json",
+      "passed": true,
+      "actualPosts": 5120,
+      "readRequests": 96,
+      "readErrors": 0
+    },
+    "comparison": {
+      "path": "artifacts/local-search-quality-20261118/native-a843/final-comparison-a843.json",
+      "allAcceptancePassed": true,
+      "storage": [
+        {
+          "scale": 100000,
+          "storage": {
+            "total": "1974 MB",
+            "salonhistory": 100000,
+            "contenthistory": 110546
+          }
+        },
+        {
+          "scale": 100000,
+          "qualityStorage": [
+            {
+              "relname": "explore_local_quality_documents",
+              "heapbytes": "54616064",
+              "indexbytes": "201654272",
+              "totalbytes": "256319488"
+            },
+            {
+              "relname": "explore_local_quality_postings",
+              "heapbytes": "190898176",
+              "indexbytes": "1155072000",
+              "totalbytes": "1346052096"
+            }
+          ],
+          "postingFanout": {
+            "postings": "1416864",
+            "salons": "100000"
+          }
+        },
+        {
+          "scale": 500000,
+          "storage": {
+            "total": "10051 MB",
+            "salonhistory": 500000,
+            "contenthistory": 552650
+          }
+        },
+        {
+          "scale": 500000,
+          "qualityStorage": [
+            {
+              "relname": "explore_local_quality_documents",
+              "heapbytes": "273072128",
+              "indexbytes": "995565568",
+              "totalbytes": "1268744192"
+            },
+            {
+              "relname": "explore_local_quality_postings",
+              "heapbytes": "954482688",
+              "indexbytes": "6084304896",
+              "totalbytes": "7039074304"
+            }
+          ],
+          "postingFanout": {
+            "postings": "7084216",
+            "salons": "500000"
+          }
+        },
+        {
+          "scale": 1000000,
+          "storage": {
+            "total": "20 GB",
+            "salonhistory": 1000000,
+            "contenthistory": 1105282
+          }
+        },
+        {
+          "scale": 1000000,
+          "qualityStorage": [
+            {
+              "relname": "explore_local_quality_documents",
+              "heapbytes": "546168832",
+              "indexbytes": "2020737024",
+              "totalbytes": "2567086080"
+            },
+            {
+              "relname": "explore_local_quality_postings",
+              "heapbytes": "1909071872",
+              "indexbytes": "12348948480",
+              "totalbytes": "14258577408"
+            }
+          ],
+          "postingFanout": {
+            "postings": "14168432",
+            "salons": "1000000"
+          }
+        }
+      ],
+      "totals": {
+        "sessionsPerPhase": 378,
+        "beforeTimeouts": 237,
+        "afterTimeouts": 0,
+        "afterErrors": 0,
+        "afterCorrectnessFailures": 0
+      }
+    }
+  },
+  "diagnosticsRetained": "Earlier ce2d/prototype four-timeout evidence remains historical and is not selected as final acceptance",
+  "limitations": [
+    "42sessions=2repetitions per21cases; bounded regression, not production SLO or online-user capacity.",
+    "Before1m has38timeouts/42 perlevel; its4successful calls do not represent overall latency.",
+    "Large final schemas use explicitly proved compatible overlays on unchanged original3a projection rows; resumed1m timing is not fresh-final migration wall time.",
+    "No OS cache eviction; chronological warmed buffers/shared Windows workstation.",
+    "Main phone/street/description presence0; storage is a minimal-profile lower bound, finalrich10k remains separate.",
+    "SQL excludes HTTP, rendering, selected-card lifetime enrichment and actual image/provider delivery.",
+    "Generic fuzzy queries retain regional work; no blanketconstant-time claim.",
+    "Clock/history lock controls are sampled NOWAIT locks, not end-to-end source write throughput. Matched baseline/idle100k source UPDATE hit2s inside old canonical refresh on this minimal fixture.",
+    "Explicit ready-cache Trust/Bookable paths are unchanged and not capacity-tested here; keywordTrust fallback is in the mainmatrix.",
+    "Initial overlap sort/generic runs preserved as diagnostic and replaced by clean sequential runs. No production data queries/deployment.",
+    "Recorded1m backfill/resume timings are from compatible3a/ce2d preparation, not fresha843 migration wall time. a843 changes only read-proof functions; projection data/freshcatalog proof passed.",
+    "ce2d mainread pass was superseded after small1000postwrite-burst style read exposed quadraticcurrent-post joins. Originalfailures and diagnostic4.6scalls are preserved; a843prototype uses keyedcurrentunique lookup."
+  ]
+}

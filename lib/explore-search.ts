@@ -344,6 +344,7 @@ export async function searchExploreSalons(
       return { ...emptyResponse({ category, location, query, page, pageSize, error: exploreSearchErrorMessage("cursor"), errorKind: "cursor" }), ...metadata() };
     }
     const rpc: RpcRunner = async (name, args) => {
+      options.signal?.throwIfAborted();
       const request = supabase.rpc(name, args);
       return await (options.signal ? request.abortSignal(options.signal) : request) as unknown as Awaited<ReturnType<RpcRunner>>;
     };
@@ -418,7 +419,7 @@ export async function searchExploreSalons(
       recommendationCategory?: string | null;
       appliedSort?: string;
       supportedSorts?: string[]; sortFallbackReason?: string | null;
-      rankVersion?: number | null; rankAsOf?: string | null; rankingBasis?: "indexed_scope" | "candidate_pool" | "unified_indexed_scope";
+      rankVersion?: number | null; rankAsOf?: string | null; rankingBasis?: "indexed_scope" | "candidate_pool" | "unified_indexed_scope" | "local_quality_indexed_lanes";
     } : null;
     if (envelope?.searchVersion !== 3 || !Array.isArray(envelope.rows)) {
       return { ...emptyResponse({ category, location, query, page, pageSize, error: "Unified search is not available yet. Please try again after the search update is installed.", errorKind: "query" }), ...metadata() };
@@ -442,6 +443,7 @@ export async function searchExploreSalons(
     });
 
     const salonIds = rows.map((row) => row.salon_id);
+    options.signal?.throwIfAborted();
     const [signalMap, logoPathMap, operatingStatusMap] = await Promise.all([
       getExploreDecisionSignalsBySalonId(rpc, salonIds),
       loadPublicSalonLogoPaths({

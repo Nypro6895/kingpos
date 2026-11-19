@@ -1,5 +1,6 @@
 "use client";
 import { SalonName } from "@/components/salon-member-badge";
+import { optionalReceiptPrintSnapshot } from "@/lib/provisional-receipt-print";
 
 import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { useHeldTicketQueue } from "@/lib/use-held-ticket-queue";
@@ -3407,6 +3408,11 @@ export function PosDeskClient({
           }
           await savePortableOperation(portableWorkspaceState.scope, "receipt", {
             ...input,
+            printSnapshot: optionalReceiptPrintSnapshot({
+              capturedAt: new Date().toISOString(), customerName: submittedCustomerName,
+              lines: submitLines.map(line => ({ service_name: line.serviceLabel, assigned_staff: staff.find(member => member.id === line.staffId)?.display_name ?? "Unassigned", line_total: line.total })),
+              totals: { subtotal: totals.subtotal, discount: totals.discount_amount, tax: totals.tax_amount, tip: totals.tip_amount, grand_total: totals.total },
+            }),
             staffAttendance,
             staffTurnDeltas: Object.fromEntries(
               Object.entries(staffAttendance).map(([id, value]) => [
@@ -5952,9 +5958,11 @@ export function PosDeskClient({
                         ? `Tip ${draft.tipInput ? `$${draft.tipInput}` : "$0"}`
                         : keypadMode === "discount"
                           ? `Discount ${
-                              draft.discountInput
-                                ? `$${draft.discountInput}`
-                                : "$0"
+                              draft.discountType === "percentage"
+                                ? `${draft.discountInput || "0"}%`
+                                : draft.discountInput
+                                  ? `$${draft.discountInput}`
+                                  : "$0"
                             }`
                           : draft.customerLookup || "$0"
                   }

@@ -1,4 +1,5 @@
 import type { BeautyPostMediaRole } from "@/lib/beauty-media";
+import type { PublicPhotoProcessingConsent } from "@/lib/public-photo-processing-consent";
 
 export type BeautyProfileVisibility = "public" | "self";
 export type BeautyPostType = "before_after" | "regular";
@@ -145,6 +146,8 @@ export type BeautyPostMediaInput = {
 };
 
 export type BeautyPostCreateInput = {
+  requestId?: string;
+  photoProcessingConsent?: PublicPhotoProcessingConsent;
   attributionSource?: "customer_claimed" | "recent_visit_suggestion";
   caption?: string | null;
   media: BeautyPostMediaInput[];

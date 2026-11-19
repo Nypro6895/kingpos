@@ -41,7 +41,7 @@ export function RoleMoreContent({ roleKind, activeItemIds, onNavigate, onClose =
       <Link className="role-more-settings" href="/settings" onClick={onNavigate}>
         <Icon name="gear" /><span><WorkspaceText text="All Settings" /></span><span className="role-more-chevron" aria-hidden="true" />
       </Link>
-      {workspace === "pos" ? <Link className="role-more-exit" href="/" onClick={onNavigate}><span><WorkspaceText text="Exit POS" /></span></Link> : null}
+      {workspace === "pos" ? <Link className="role-more-exit" href="/" onClick={onNavigate}><Icon name="log-out" /><span><WorkspaceText text="Exit POS" /></span><span className="role-more-chevron" aria-hidden="true" /></Link> : null}
     </div>
   </>;
 }

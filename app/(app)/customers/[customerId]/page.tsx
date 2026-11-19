@@ -1,4 +1,5 @@
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
+import { buildTicketListHref } from "@/lib/pos-ticket-navigation";
 import { bookingDate } from "@/lib/portable-booking-layout";
 import { ManualMergePicker } from "@/app/customers/manual-merge-picker";
 import { DuplicateMergeForms } from "@/app/customers/duplicate-merge-forms";
@@ -248,7 +249,7 @@ function TicketList({ items, timezone }: { items: CustomerTicketSummary[]; timez
       {ticket.totals.tip_amount > 0 ? <div className="flex justify-between"><WorkspaceText text="Tip" /><span>{formatMoney(ticket.totals.tip_amount)}</span></div> : null}
       {ticket.totals.tax_amount > 0 ? <div className="flex justify-between"><WorkspaceText text="Tax" /><span>{formatMoney(ticket.totals.tax_amount)}</span></div> : null}
       <div className="flex justify-between border-t border-zinc-200 pt-2"><WorkspaceText text="Total" /><span>{formatMoney(ticket.totals.total)}</span></div>
-      <Link className="inline-flex min-h-11 items-center text-orange-700" href={`/pos-tickets/${ticket.id}`}><WorkspaceText text="View ticket" /> ›</Link>
+      <Link className="inline-flex min-h-11 items-center text-orange-700" href={buildTicketListHref({ ticketId: ticket.id })}><WorkspaceText text="View ticket" /> ›</Link>
     </div>
   </details>)}</div> : <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No linked POS tickets yet." /></p>;
 }

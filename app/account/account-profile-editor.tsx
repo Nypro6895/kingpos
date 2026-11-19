@@ -1,5 +1,5 @@
 "use client";
-import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { useOverlayPortalHost, useTransientOverlay } from "@/components/overlay-dismissal";
 
 import {
   WorkspaceText,
@@ -25,14 +25,19 @@ import {
 import type { KingUser } from "@/types/user";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import {
   useEffect,
+  useEffectEvent,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   useTransition,
   type ChangeEvent,
   type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+  type RefObject,
 } from "react";
 
 type EditableFieldName =
@@ -82,6 +87,7 @@ type PhoneVerificationDialogProps = {
   onCodeChange: (value: string) => void;
   onSend: () => void;
   onVerify: () => void;
+  returnFocusRef: RefObject<HTMLElement | null>;
   resendWaitSeconds: number;
   sending: boolean;
   sent: boolean;
@@ -347,6 +353,69 @@ function ReadonlyField({ label, value }: ProfileFieldProps) {
   );
 }
 
+function VerificationDialogLayer({ children, onClose, returnFocusRef, canDismiss = true }: {
+  children: ReactNode;
+  onClose: () => void;
+  returnFocusRef: RefObject<HTMLElement | null>;
+  canDismiss?: boolean;
+}) {
+  const host = useOverlayPortalHost();
+  const layerRef = useRef<HTMLDivElement>(null);
+  const dismiss = useEffectEvent(() => {
+    if (canDismiss) onClose();
+  });
+
+  useLayoutEffect(() => {
+    const layer = layerRef.current;
+    if (!host || !layer) return;
+    const dialog = layer.querySelector<HTMLElement>('[role="dialog"]');
+    const opener = returnFocusRef.current ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    const openedAt = window.location.href;
+    layer.hidden = false;
+    dialog?.focus({ preventScroll: true });
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        dismiss();
+        return;
+      }
+      if (event.key !== "Tab" || !dialog) return;
+      const targets = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]',
+      )).filter(element => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden");
+      const first = targets[0], last = targets.at(-1);
+      const active = document.activeElement;
+      if (!first || !last) {
+        event.preventDefault();
+        dialog.focus({ preventScroll: true });
+      } else if (event.shiftKey && (active === first || active === dialog || !dialog.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || active === dialog || !dialog.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      // Activity can retain the page's state while disconnecting its effects.
+      // Hide the body portal immediately; route cleanup only closes visibility.
+      const restoreFocus = layer.contains(document.activeElement) || document.activeElement === document.body;
+      layer.hidden = true;
+      document.removeEventListener("keydown", onKeyDown);
+      if (restoreFocus && window.location.href === openedAt && opener?.isConnected && opener.getClientRects().length) {
+        opener.focus({ preventScroll: true });
+      }
+    };
+  }, [host, returnFocusRef]);
+
+  return host ? createPortal(
+    <div className="fixed inset-0 z-[120]" data-account-verification-layer hidden ref={layerRef}>
+      {children}
+    </div>, host,
+  ) : null;
+}
+
 function PhoneVerificationDialog({
   busy,
   claim,
@@ -357,6 +426,7 @@ function PhoneVerificationDialog({
   onCodeChange,
   onSend,
   onVerify,
+  returnFocusRef,
   resendWaitSeconds,
   sending,
   sent,
@@ -365,23 +435,8 @@ function PhoneVerificationDialog({
 }: PhoneVerificationDialogProps) {
   const __vt = useWorkspaceTranslation();
 
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    dialogRef.current?.focus({ preventScroll: true });
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !successMessage) {
-        event.preventDefault();
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose, successMessage]);
-
   return (
+    <VerificationDialogLayer onClose={onClose} returnFocusRef={returnFocusRef} canDismiss={!successMessage}>
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-3 py-4 backdrop-blur-sm sm:items-center sm:px-6">
       <button
         aria-label={__vt("Close phone verification")}
@@ -394,7 +449,6 @@ function PhoneVerificationDialog({
         aria-labelledby="phone-verification-title"
         aria-modal="true"
         className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-[0_24px_80px_rgba(23,19,22,0.22)] outline-none sm:p-6"
-        ref={dialogRef}
         role="dialog"
         tabIndex={-1}
       >
@@ -456,7 +510,7 @@ function PhoneVerificationDialog({
                   </label>
                   <input
                     autoComplete="one-time-code"
-                    className="min-h-14 rounded-2xl border border-border-subtle bg-surface-muted px-4 text-center text-2xl font-extrabold tracking-[0.28em] text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+                    className="min-h-14 min-w-0 w-full rounded-2xl border border-border-subtle bg-surface-muted px-4 text-center text-2xl font-extrabold tracking-[0.28em] text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
                     id="phone-verification-code"
                     inputMode="numeric"
                     maxLength={6}
@@ -515,6 +569,7 @@ function PhoneVerificationDialog({
         )}
       </div>
     </div>
+    </VerificationDialogLayer>
   );
 }
 
@@ -533,6 +588,7 @@ export function AccountProfileEditor({
   const __vt = useWorkspaceTranslation();
 
   const router = useRouter();
+  const verificationTriggerRef = useRef<HTMLElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState(user.avatar_url);
@@ -541,6 +597,7 @@ export function AccountProfileEditor({
   );
   const [editing, setEditing] = useState(avatarOnly || phoneOnly);
   const [emailVerificationOpen, setEmailVerificationOpen] = useState(false);
+  useTransientOverlay(() => setEmailVerificationOpen(false), emailVerificationOpen, true);
   const [emailCode, setEmailCode] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [emailAuthorizedPhone, setEmailAuthorizedPhone] = useState<
@@ -561,6 +618,7 @@ export function AccountProfileEditor({
   useTransientOverlay(
     () => setPhoneVerificationOpen(false),
     phoneVerificationOpen,
+    true,
   );
   const [resendWaitSeconds, setResendWaitSeconds] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -754,6 +812,7 @@ export function AccountProfileEditor({
     }
   }
   function saveProfile() {
+    verificationTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     if (
       values.phone !== snapshotValues.phone &&
       snapshotValues.phone &&
@@ -1259,7 +1318,7 @@ export function AccountProfileEditor({
                 </div>
               ) : null}
               <div
-                className={`${styles.actions} sticky bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur`}
+                className={`${avatarOnly ? "static" : `${styles.actions} sticky bottom-0 z-20`} border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur`}
               >
                 <div className="flex items-center justify-end gap-2">
                   <button
@@ -1335,13 +1394,15 @@ export function AccountProfileEditor({
         ) : null}
 
         {emailVerificationOpen ? (
+          <VerificationDialogLayer onClose={() => setEmailVerificationOpen(false)} returnFocusRef={verificationTriggerRef} canDismiss={!emailBusy}>
           <div
             className="settings-security-dialog"
             role="dialog"
             aria-modal="true"
             aria-label={__vt("Verify phone change")}
+            tabIndex={-1}
           >
-            <section className="grid gap-4">
+            <section className="grid min-w-0 gap-4">
               <h3>
                 <WorkspaceText text="Verify phone change" />
               </h3>
@@ -1355,7 +1416,7 @@ export function AccountProfileEditor({
                   <input
                     autoComplete="one-time-code"
                     inputMode="numeric"
-                    className="min-h-11 rounded-md border px-3"
+                    className="min-h-11 min-w-0 w-full rounded-md border px-3"
                     value={emailCode}
                     onChange={(e) => setEmailCode(e.target.value)}
                   />
@@ -1394,6 +1455,7 @@ export function AccountProfileEditor({
               </div>
             </section>
           </div>
+          </VerificationDialogLayer>
         ) : null}
         {phoneVerificationClaim ? (
           <PhoneVerificationDialog
@@ -1406,6 +1468,7 @@ export function AccountProfileEditor({
             onCodeChange={updatePhoneOtpCode}
             onSend={sendPhoneOtp}
             onVerify={verifyPhoneOtp}
+            returnFocusRef={verificationTriggerRef}
             resendWaitSeconds={resendWaitSeconds}
             sending={phoneOtpSending}
             sent={phoneOtpSent}

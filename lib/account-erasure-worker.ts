@@ -79,7 +79,7 @@ export async function runAccountErasures(){
   if(Date.now()>deadline)break;
   try{
    const expired=Date.now()-Date.parse(job.completed_at)>7*86400000;
-   const result=expired?null:await sendSupportEmail(await getSupportEmailConfig(),{id:`account-erasure-${job.user_id}`,to:job.notification_email,name:'there',subject:'Your Reylumi account has been deleted',body:'Your account deletion is complete. Your sign-in identity, personal profile content and personal uploads have been removed. Required financial, payroll and security records remain under our retention policy. Your saved deletion receipt also shows completion.'});
+   const result=expired?null:await sendSupportEmail(await getSupportEmailConfig(),{id:`account-erasure-${job.user_id}`,to:job.notification_email,name:'there',subject:'Your Reylumi account has been deleted',body:'Your account deletion is complete. Your sign-in identity, personal profile content and personal uploads have been removed. Some business, payroll, tax, audit and security records may remain under applicable retention rules and access restrictions described in our Privacy Policy. Your saved deletion receipt also shows completion.'});
    if(expired||result?.status==='sent'){
     const saved=await client.from('account_erasure_jobs').update({notification_email:null,...(!expired?{notified_at:new Date().toISOString()}:{})}).eq('user_id',job.user_id).eq('status','complete');
     if(saved.error)failed++;

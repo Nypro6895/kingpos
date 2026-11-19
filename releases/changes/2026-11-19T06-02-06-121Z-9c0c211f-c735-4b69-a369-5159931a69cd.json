@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "combined-release-coordination-20261119",
+  "status": "working",
+  "summary": "Owner requires all recent and active in-scope chats reviewed and completed before one combined Reylumi deployment; hold publication while Search and source/runtime/native gates remain unresolved",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/combined-release-coordination-20261119.md"
+  ],
+  "source": {
+    "commit": "d50c817b315f843d5115dfcdcaac7ed27e0c91ab"
+  },
+  "dependencies": [
+    "local-search-quality-20261118",
+    "ios-store-completion-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Current local chat history and read-only journal/worktree/source audit",
+      "result": "passed",
+      "evidence": "artifacts/combined-release-coordination-20261119/chat-inventory-r1.json"
+    },
+    {
+      "name": "Active Search completion, final combined source/production/runtime/native acceptance and owner listing decisions",
+      "result": "pending",
+      "evidence": "docs/combined-release-coordination-20261119.md"
+    }
+  ],
+  "id": "9c0c211f-c735-4b69-a369-5159931a69cd",
+  "recordedAt": "2026-11-19T06:02:06.121Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

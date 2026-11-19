@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-steps234-coordination-20261118",
+  "status": "working",
+  "summary": "Implement authorized Privacy/commerce/moderation work locally and verify combined source; keep one final push and no provider/key assumptions.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ios-steps-2-3-4-implementation-20261118.md"
+  ],
+  "validation": [
+    {
+      "name": "Read-only runtime and integrated scoped validation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "f34df90e-7437-4c31-92f7-f8e3e51f3eb7",
+  "recordedAt": "2026-11-18T21:01:57.261Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,15 @@
+# Delivered Tax file integrity
+
+A synthetic full-schema ordinary application diagnostic on the combined candidate confirmed that the original sender could replace an already delivered PDF through the existing Storage update capability while the Tax document history row stayed unchanged. The original evidence remains local and immutable. This was isolated test data; no production file or account was changed.
+
+The forward migration protects exact `payroll-paystubs` keys referenced by Tax documents or current paystub records. Storage changes and document registration share short transaction fences. Payload and identity changes fail closed after delivery; reads and timestamp-only access updates remain available. New document versions continue to use fresh UUID paths and the existing Tax publication/version checks. Canonical payroll calculations, disclosure settings, read permissions and role grants are unchanged.
+
+The shared fence requires READ COMMITTED. Other isolation modes fail closed before a key lock; busy keys return a retryable conflict instead of waiting through a tuple/key lock cycle. The delivered-key lookup is VOLATILE after the fence. Canonical Tax document identities cannot be removed or moved through an API to release their file fence; normal archive and Owner tombstone actions remain available. Explicit direct database maintenance retains its separate authority.
+
+The business-record retention exception is narrow: an existing same-path target, trusted ordinary service COPY, matching byte metadata, an unfinished `retain_business` task, a current processing lease and the deleting account must all match. The existing ownership-detach trigger and strict checkpoint remain authoritative. Missing objects cannot be recreated through that exception. Actual ordinary COPY compatibility is required before calling this implementation accepted.
+
+The working-source normal functional regression passed all eight groups on the complete 449-migration schema with real isolated Auth/PostgREST/Storage. It covers official upload and new-version publication, original-file preservation, archive/read behavior, account lifecycle, retained COPY, unchanged financial/Show data and unsupported-isolation rejection. Actual COPY, ownership detachment and strict checkpoint/Auth completion passed without a generic metadata-probe exemption. Source hashes remained unchanged and owned fixture cleanup was verified. Evidence: `C:\Reylumi\qa-evidence\combined-store-final-18a981-20261119-r1\tax-integrity-functional-449-r1\controller-acceptance.json`.
+
+Final committed-source checks and combined release acceptance remain separate. This source is not a production application or release receipt. The separate recipient-read fix is documented in [recipient Storage custody](tax-recipient-storage-custody-20261119.md).
+
+An advanced pre-issued upload-token experiment was stopped after automatic review. Its runtime outcome is unverified and is not used as release acceptance. It is not retried through another tool or agent. The permitted regression scope uses ordinary application operations and synthetic isolated data.

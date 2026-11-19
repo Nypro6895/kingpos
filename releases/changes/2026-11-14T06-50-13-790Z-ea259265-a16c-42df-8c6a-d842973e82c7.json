@@ -1,0 +1,77 @@
+{
+  "kind": "change",
+  "changeId": "phone-otp-sms-target-20261113",
+  "status": "ready",
+  "summary": "Coordinator integrated phone-otp-sms-target-20261113 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/auth/sms-hook/route.ts",
+    "app/account/account-profile-editor.tsx",
+    "lib/vietnamese-workspace-copy.json",
+    "tests/auth-sms-hook-runtime.test.mjs",
+    "tests/ios-personal-settings.test.mjs",
+    "releases/phone-otp-sms-target-20261113.txt"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "154ce943-7c0f-46a5-966f-fb9006032093",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\phone-otp-sms-target-20261113\\artifacts\\phone-otp-sms-target\\frozen",
+      "commit": "0f8c6b6b585e7896d346f1603f74f87bd9f3a20c",
+      "baseCommit": "274a3ab4300956a458c564ad6beab44ff85e7264"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-14T03:23:48.34Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "154ce943-7c0f-46a5-966f-fb9006032093"
+  ],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "ea259265-a16c-42df-8c6a-d842973e82c7",
+  "recordedAt": "2026-11-14T06:50:13.790Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/api/auth/sms-hook/route.ts": "f193c88b2192f7481d2ebe12db7474118555d80f3473a32a7f47c1cd8312459b",
+    "app/account/account-profile-editor.tsx": "cc50c74cc3dabd4533d5c743bfd7cfea925c419f7c663d5f0129f0743ef88afb",
+    "lib/vietnamese-workspace-copy.json": "ec55d02ad77b2f23b813dbf1797ccf76ddb6f7415a2b1a3afb3397c532d3cf87",
+    "tests/auth-sms-hook-runtime.test.mjs": "6ea6566ee18313d6781e122bd6375a0a37022f5ac621583365b03555d0952fb3",
+    "tests/ios-personal-settings.test.mjs": "a40ce144090e020bf7dc845c5830c9299f0ba354a67c6afed4b8930b11ae1c72",
+    "releases/phone-otp-sms-target-20261113.txt": "2623c51916fd5e3762cec7db5183fab90b61fb98003d51b01e359b7b922c98e3"
+  }
+}

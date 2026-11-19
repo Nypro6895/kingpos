@@ -24,7 +24,7 @@
  .overlay { padding:24px !important; }
  .panel { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(340px,.8fr); max-width:1040px; }
  .media { height:auto; min-height:560px; position:sticky; top:0; align-self:start; }
- .body { padding:22px; }
+ .body { padding:22px; min-height:0; max-height:calc(var(--content-viewer-height, 100dvh) - 48px); overflow-y:auto; overscroll-behavior:contain; }
 }
 @media(max-width:359px) {
  .body { padding-inline:14px; }

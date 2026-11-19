@@ -6,10 +6,15 @@ export const STAFF_PAY_CHANGE_LABELS: Record<string, string> = {
   apply_tax_to_fixed_pay: "Tax fixed pay", tax_tips: "Tax tips", tax_bonus: "Tax bonus", tip_payout_method: "Tip payout",
   bonus_payout_method: "Bonus payout", cash_to_tax_company: "Cash reported", tax_company_enabled: "Tax company",
   effective_from: "Effective from", effective_to: "Effective to", cycle_type: "Pay cycle", biweekly_anchor_date: "Anchor date",
+  show_check_to_tax_company: "Show check wages to Tax", show_cash_to_tax_company: "Show cash wages to Tax",
+  show_tip_to_tax_company: "Show tips to Tax", show_bonus_to_tax_company: "Show bonus to Tax",
+  tax_check: "Withhold from check wages", tax_cash: "Withhold from cash wages",
+  check_tax_rate: "Check wage withholding rate", cash_tax_rate: "Cash wage withholding rate",
+  tip_tax_rate: "Tip withholding rate", bonus_tax_rate: "Bonus withholding rate",
 };
 const fieldsBySource: Record<string, string[]> = {
   payroll_period_staff_inputs: ["bonus_amount", "note"],
-  staff_payroll_settings: ["pay_type", "commission_rate", "fixed_pay_amount", "check_rate", "tax_rate", "apply_tax_to_fixed_pay", "tax_tips", "tax_bonus", "tip_payout_method", "bonus_payout_method", "cash_to_tax_company", "tax_company_enabled", "effective_from", "effective_to"],
+  staff_payroll_settings: ["pay_type", "commission_rate", "fixed_pay_amount", "check_rate", "tax_rate", "apply_tax_to_fixed_pay", "tax_tips", "tax_bonus", "tip_payout_method", "bonus_payout_method", "cash_to_tax_company", "tax_company_enabled", "effective_from", "effective_to", "show_check_to_tax_company", "show_cash_to_tax_company", "show_tip_to_tax_company", "show_bonus_to_tax_company", "tax_check", "tax_cash", "check_tax_rate", "cash_tax_rate", "tip_tax_rate", "bonus_tax_rate"],
   salon_payroll_settings: ["cycle_type", "biweekly_anchor_date"],
   pos_ticket_staff_earnings: ["service_total", "tip_amount", "work_date"],
 };

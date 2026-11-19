@@ -1,8 +1,9 @@
-import { iosPortableDevice, portableDevice } from "./portable-device-storage";
+import { nativePortableDevice, portableDevice } from "./portable-device-storage";
 
 const PREFIX = "kingpos:portable-draft:v1:";
 
 export function isNativePortableDevice(): boolean {
+  if (nativePortableDevice()) return true;
   const device = window as unknown as { __reylumiNativePayments?: number; webkit?: { messageHandlers?: { reylumi?: unknown } } };
   return device.__reylumiNativePayments === 1 && Boolean(device.webkit?.messageHandlers?.reylumi);
 }
@@ -28,7 +29,7 @@ export function portableRecoveryStorageKey({ scope, operationScope, tabId, deskt
 
 /** Native windows sharing a recovery slot must not overwrite each other's work. */
 export async function acquirePortableRecoveryWriter(key: string): Promise<(() => void) | null> {
-  const native = iosPortableDevice();
+  const native = nativePortableDevice();
   if (native && portableDevice()) {
     const scope = key.slice(PREFIX.length).split(":").slice(0, 2).join(":");
     const reply = await native.request<{ acquired: boolean; token?: string }>({ action: "writer.acquire", scope, key });

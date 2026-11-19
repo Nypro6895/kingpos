@@ -12,6 +12,7 @@ import {FinancialHistoryProvider} from '@/app/payroll/inline-financial-history';
 import {calculateTicketTotals} from '@/lib/pos-ticket-calculations';
 import {searchTextMatches} from '@/lib/search-normalization';
 import {ticketGiftSearchValues} from '@/lib/pos-ticket-financial-view';
+import {buildTicketDetailHref} from '@/lib/pos-ticket-navigation';
 import type {PosTicketWithRelations} from '@/types/pos-ticket';import type {Staff} from '@/types/staff';import type {Service} from '@/types/service';
 type DateGroup = {
   dateKey: string;
@@ -175,6 +176,7 @@ function DailyWorkLog({
   canEdit,
   dailyNumbers,
   groups,
+  focusTicketId,
   isBusinessDateLocked,
   returnTo,
   selectedDateCompactLabel,
@@ -185,6 +187,7 @@ function DailyWorkLog({
   canEdit: boolean;
   dailyNumbers: Map<string, number>;
   groups: DateGroup[];
+  focusTicketId?: string;
   isBusinessDateLocked: boolean;
   returnTo: string;
   selectedDateCompactLabel: string;
@@ -192,6 +195,12 @@ function DailyWorkLog({
   services: Service[];
   staff: Staff[];
 }) {
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!focusTicketId) return;
+    const card = listRef.current?.querySelector<HTMLElement>(`[data-pos-ticket-id="${focusTicketId}"]`);
+    card?.scrollIntoView({ block: "center", behavior: "instant" });
+  }, [focusTicketId]);
   if (groups.length === 0) {
     return (
       <section className="mt-1">
@@ -205,7 +214,7 @@ function DailyWorkLog({
   }
 
   return (
-    <div className="mt-1">
+    <div className="mt-1" ref={listRef}>
       {groups.map((dateGroup) => (
         <section key={dateGroup.dateKey}>
             <div className="bg-white">
@@ -215,6 +224,10 @@ function DailyWorkLog({
                 canApplyFinancialCorrection={canApplyFinancialCorrection}
                 canEdit={canEdit}
                 dailyNumber={dailyNumbers.get(ticket.id) ?? 0}
+                editHref={buildTicketDetailHref(ticket.id, {
+                  edit: true,
+                  returnTo: `${returnTo}&ticketId=${encodeURIComponent(ticket.id)}`,
+                })}
                 isBusinessDateLocked={isBusinessDateLocked}
                 key={ticket.id}
                 returnTo={returnTo}

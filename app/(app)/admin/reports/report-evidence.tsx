@@ -2,6 +2,20 @@ import Image from 'next/image';
 import type {AdminPostSafetyCase} from '@/types/admin-post-safety';
 import {originalPostHref,formatReviewDate} from '@/lib/post-review-navigation';
 import styles from './report-case-view.module.css';
+import type {AdminAdReportEvidence} from '@/types/ad-disclosure';
+
+export function AdReportEvidence({evidence}:{evidence:AdminAdReportEvidence}){
+ const {target,snapshot,summary}=evidence;
+ const href=target.kind==='owner_campaign'?'/admin/plugins/campaigns':'/admin/advertising';
+ return <section aria-label="Verified advertising evidence"><h3>Reported advertisement</h3><p className={styles.meta}>Saved selection snapshot · {target.kind==='owner_campaign'?'Salon-sponsored promotion':'Platform placement'}</p>
+  <div className={styles.evidence}><div className={styles.evidenceText}><p className={styles.meta}>{snapshot.advertiserName}</p><h3>{snapshot.title||'Promotion without a title'}</h3><p className={styles.body}>{snapshot.caption||'No caption captured.'}</p>
+   <dl className={styles.facts}><div><dt>Concern</dt><dd>{evidence.reason.replaceAll('_',' ')}</dd></div><div><dt>Selected at</dt><dd>{formatReviewDate(snapshot.selectedAt)} CT</dd></div><div><dt>Campaign</dt><dd>{target.campaignId}</dd></div><div><dt>Creative</dt><dd>{target.sourceType} · {target.sourceId}</dd></div>{target.salonId&&<div><dt>Salon</dt><dd>{target.salonId}</dd></div>}</dl>
+   {evidence.details&&<p className={styles.body}>{evidence.details}</p>}
+  </div><div className={styles.visibility}>A report does not automatically hide, pause or refund an advertisement.</div></div>
+  <details className={styles.editor}><summary>Selection summary for Support</summary><dl className={styles.facts}><div><dt>Area</dt><dd>{summary.areaLabel||'No area targeting'}</dd></div><div><dt>Location source</dt><dd>{summary.locationSource}</dd></div><div><dt>Search category</dt><dd>{[summary.searchKind,summary.searchCategory].filter(Boolean).join(' · ')||'None'}</dd></div><div><dt>Context</dt><dd>{[summary.page,summary.audience,summary.device].filter(Boolean).join(' · ')}</dd></div></dl><p className={styles.muted}>Precise coordinates, the viewer’s search text and delivery tokens are excluded from this evidence.</p></details>
+  <p className={styles.source}><a className={styles.link} href={href}>Open existing campaign review ↗</a></p>
+ </section>;
+}
 
 export function ReportEvidence({post}:{post:AdminPostSafetyCase}){
  const content=post.current_post??post.content_snapshot,href=originalPostHref(post);

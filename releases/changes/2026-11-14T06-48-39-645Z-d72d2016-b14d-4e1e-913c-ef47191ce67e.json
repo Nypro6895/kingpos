@@ -1,0 +1,98 @@
+{
+  "kind": "change",
+  "changeId": "customer-checkout-benefits-20261112",
+  "status": "ready",
+  "summary": "Coordinator integrated customer-checkout-benefits-20261112 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/actions.ts",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/customer-checkout.tsx",
+    "app/pos/customer-display/customer-checkout.css",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/rewardlumi/visit-rewards.tsx",
+    "components/rewardlumi/rewardlumi.module.css",
+    "lib/customer-checkout-view.ts",
+    "public/pos/reward-card-background.svg",
+    "types/rewardlumi.ts",
+    "supabase/migrations/20261113033000_customer_checkout_preview.sql",
+    "tests/checkin-design-ui.test.mjs",
+    "tests/customer-checkout-view.test.mjs",
+    "tests/customer-checkout-ui.test.mjs",
+    "tests/customer-checkout-rewards.integration.test.mjs",
+    "tests/fixtures/customer-checkout-entry.tsx",
+    "releases/evidence/customer-checkout-benefits-20261112.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "e5c3e586-71b1-4984-8a1a-3dae15a6d71d",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\customer-checkout-benefits-20261112\\artifacts\\customer-checkout-benefits\\frozen",
+      "commit": "fd7515e830cd7df2bb42bdfd4afcb626bf70ee65"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-13T03:55:13.149Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [
+    "checkin-windows-gift-lifecycle-20261111"
+  ],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "d72d2016-b14d-4e1e-913c-ef47191ce67e",
+  "recordedAt": "2026-11-14T06:48:39.645Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/pos/actions.ts": "4622c495f25fe5b68770cdc6bfe2e25661287162d7d6f7071b914ce5d15e0424",
+    "app/pos/customer-display/customer-display-client.tsx": "b30b91e17c552cb23581f6ef1f1923c9db16dbdb94b058c46229527e79b1aa88",
+    "app/pos/customer-display/customer-checkout.tsx": "1b053ca7f3fe8bc673ceebc1bcc3e00d69229ef16bcbc91c9fc6873d6aa9c2bc",
+    "app/pos/customer-display/customer-checkout.css": "8ff411ecee4f0f53dc9504d43e79fa6f4c79ffe19c0c7faaf8f8eebfc20b27e0",
+    "components/gift-card/pos-gift-card.tsx": "9b0a801239ef90ec7e91167eb984d76d0c67c2746a77dc8d6cd95cbd4c92ac32",
+    "components/rewardlumi/visit-rewards.tsx": "69ab1174e247f95d19a4bc9d077c19b06242f4575eaa1d01ef12f42082ea8d9f",
+    "components/rewardlumi/rewardlumi.module.css": "5985e31113d14b002d5f593722004598ef72e9415cb4884cf77bbf1e3e6725a4",
+    "lib/customer-checkout-view.ts": "26687eeceb02273d7f7d2acc22f1605b95b8573fbe045493b2fb31ca9469d440",
+    "public/pos/reward-card-background.svg": "2f0789d5a1194965f86a070429a6030b55e3835c091a97464274375b83720a0d",
+    "types/rewardlumi.ts": "84b282a0aad6a61f8783db5070548b38773b2777c82215f9e9db49d922885685",
+    "supabase/migrations/20261113033000_customer_checkout_preview.sql": "0d3ef09370d806153b32e936735cd23df9e9698ce4a3f4b965c1feb57028ec22",
+    "tests/checkin-design-ui.test.mjs": "29921f312ad2e0c2d2e033959d2ef504f9705d0625293b4c54810bff0f995838",
+    "tests/customer-checkout-view.test.mjs": "8c5785a6eeacb3cc1848d247b53328bc62e1a9c3dc202ebaa7553e2c5c61e4ce",
+    "tests/customer-checkout-ui.test.mjs": "27caaa91bed93217030d1f4197fa385e239a26502d7e6d891e21873d5b1405d3",
+    "tests/customer-checkout-rewards.integration.test.mjs": "b3f56cacde42373c778c7ca381993ae50a1623672fcb715a4aaa016d6735f0f6",
+    "tests/fixtures/customer-checkout-entry.tsx": "372e6ad1d34702c0a5e6cdb93796e9ce6c7f05a98614c61513b11be70cc5051f",
+    "releases/evidence/customer-checkout-benefits-20261112.md": "28a93d36cda3fde10da12d32c00951350922dd8e1cdcc0bc16081561628b43cc"
+  }
+}

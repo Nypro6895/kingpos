@@ -104,12 +104,14 @@ export type AccountDeletionBackupActionResult =
   | {
       error: null;
       expiresAt: string;
+      downloadExpiresAt: string;
       filename: string;
       signedUrl: string;
     }
   | {
       error: string;
       expiresAt?: never;
+      downloadExpiresAt?: never;
       filename?: never;
       signedUrl?: never;
     };
@@ -825,6 +827,7 @@ export async function generateAccountDeletionBackupAction(): Promise<AccountDele
     return {
       error: null,
       expiresAt: accountExport.expiresAt,
+      downloadExpiresAt: accountExport.downloadExpiresAt,
       filename: accountExport.filename,
       signedUrl: accountExport.signedUrl,
     };

@@ -19,6 +19,8 @@ struct ReylumiApp: App {
     @State private var marketReturnSequence = 0
     @State private var checkinPath: String?
     @State private var checkinSequence = 0
+    @State private var giftCardPath: String?
+    @State private var giftCardSequence = 0
     var body: some Scene {
         WindowGroup {
             if ReylumiExecutionEnvironment.isXCTestHost {
@@ -26,17 +28,21 @@ struct ReylumiApp: App {
                 // host scene must not also boot the production app/analytics.
                 Color.white.ignoresSafeArea().accessibilityIdentifier("reylumi.xctest-idle")
             } else {
-                ReylumiView(marketReturnSequence: marketReturnSequence, checkinPath: checkinPath, checkinSequence: checkinSequence)
+                ReylumiView(marketReturnSequence: marketReturnSequence, checkinPath: checkinPath, checkinSequence: checkinSequence, giftCardPath: giftCardPath, giftCardSequence: giftCardSequence)
                     .ignoresSafeArea(.container, edges: .bottom)
                     .ignoresSafeArea(.keyboard)
                     .background(Color.white.ignoresSafeArea())
                     .preferredColorScheme(.light)
                     .onOpenURL { url in
-                        if NavigationPolicy.isMarketReturn(url) { marketReturnSequence += 1 }
+                        if NavigationPolicy.isMarketReturn(url) {
+                            checkinPath = nil; giftCardPath = nil
+                            marketReturnSequence += 1
+                        }
                         receiveCheckin(url)
+                        receiveGiftCard(url)
                     }
                     .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
-                        if let url = activity.webpageURL { receiveCheckin(url) }
+                        if let url = activity.webpageURL { receiveCheckin(url); receiveGiftCard(url) }
                     }
             }
         }
@@ -46,7 +52,13 @@ struct ReylumiApp: App {
     }
     private func receiveCheckin(_ url: URL) {
         guard let path = NavigationPolicy.personalCheckinPath(url) else { return }
+        giftCardPath = nil
         checkinPath = path; checkinSequence += 1
+    }
+    private func receiveGiftCard(_ url: URL) {
+        guard let path = NavigationPolicy.giftCardPath(url) else { return }
+        checkinPath = nil
+        giftCardPath = path; giftCardSequence += 1
     }
 }
 
@@ -54,13 +66,17 @@ struct ReylumiView: UIViewControllerRepresentable {
     var marketReturnSequence: Int
     var checkinPath: String? = nil
     var checkinSequence: Int = 0
+    var giftCardPath: String? = nil
+    var giftCardSequence: Int = 0
     func makeUIViewController(context: Context) -> ReylumiAppContainer {
         let controller = ReylumiAppContainer()
         controller.openPersonalCheckin(path: checkinPath, sequence: checkinSequence)
+        controller.openGiftCard(path: giftCardPath, sequence: giftCardSequence)
         return controller
     }
     func updateUIViewController(_ controller: ReylumiAppContainer, context: Context) {
         controller.returnToMarket(sequence: marketReturnSequence)
         controller.openPersonalCheckin(path: checkinPath, sequence: checkinSequence)
+        controller.openGiftCard(path: giftCardPath, sequence: giftCardSequence)
     }
 }

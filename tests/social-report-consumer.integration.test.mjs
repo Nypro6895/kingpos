@@ -9,6 +9,7 @@ const {loadAdminReportContext}=await bundle('lib/platform-admin/report-context.t
  './rpc':`export const callPlatformAdminRpc=(n,a)=>globalThis.__caseTransport(n,a);`,
  './reports':`export const getPlatformAdminReportDetail=id=>globalThis.__caseTransport('get_platform_admin_report_detail',{p_report_id:id});`,
  './post-safety':`export const loadAdminPostReviewWorkspace=async()=>({cases:[]});`,
+ './exact-text-moderation':`export const loadExactTextModeration=async()=>{throw Error('fixture exact RPC unavailable');};export const unavailableExactTextModeration=()=>({status:'unavailable',kind:null,contentId:null,parentId:null,salonId:null,body:null,evidenceVersion:null,revision:0,moderationStatus:'unavailable',canHide:false,canRestore:false,blockedReason:'Fixture exact RPC unavailable.',availabilityVerified:false,history:[]});`,
  '@/lib/support-cases':`export const supportRpc=(n,a)=>globalThis.__caseTransport(n,a);`
 });
 // The actual case renderer is used, not a mock of the consumer/presentation path.
@@ -20,6 +21,7 @@ const viewBuild=await build({outdir:'fixture',banner:{js:'import {createRequire 
  '@/app/support/actions':`export const reopenContentReportReview=async()=>{};`,
  '../dashboard/dashboard-action-form':`import React from'react';export const DashboardActionForm=({children})=>React.createElement('div',null,children);`,
  '../dashboard/actions':`export const dashboardCaseAction=async()=>({ok:true});`,
+ './exact-text-actions':`export const loadExactTextModerationAction=async()=>{throw Error('SSR transport is not called');};export const setExactTextVisibilityAction=async()=>{throw Error('SSR transport is not called');};`,
  './report-evidence':`export const ReportEvidence=()=>null;`
  };b.onResolve({filter:/.*/},a=>Object.hasOwn(mocks,a.path)?{path:a.path,namespace:'fixture'}:null);b.onLoad({filter:/.*/,namespace:'fixture'},a=>({contents:mocks[a.path],loader:'tsx',resolveDir:process.cwd()}));}}]});
 const {render}=await import('data:text/javascript;base64,'+Buffer.from(viewBuild.outputFiles[0].text).toString('base64'));

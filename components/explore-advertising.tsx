@@ -20,7 +20,7 @@ import {
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import type {
-  Campaign,
+  Campaign as BaseCampaign,
   CampaignAudience,
   CampaignPlacement,
 } from "@/types/explore-advertising";
@@ -31,11 +31,15 @@ import {
   campaignMatches,
 } from "@/lib/explore-advertising-rules";
 import styles from "./explore-advertising.module.css";
+import { AdDisclosureControls } from "@/components/ad-disclosure-controls";
+import type { AdSelectionDisclosure, AdSelectionDetail } from "@/types/ad-disclosure";
+type Campaign = BaseCampaign & { adDisclosure?: AdSelectionDisclosure; displayDetails?: AdSelectionDetail[] };
 const Context = createContext<{
   campaigns: Campaign[];
   claimFeed: (id: string, slot: string) => boolean;
+  disclosureFor: (campaign:Campaign)=>AdSelectionDisclosure|undefined;
   record: (campaign: Campaign, event: "view" | "shown" | "click") => Promise<boolean>;
-}>({ campaigns: [], claimFeed: () => true, record: async () => true });
+}>({ campaigns: [], claimFeed: () => true, disclosureFor:campaign=>campaign.adDisclosure, record: async () => true });
 
 function useAdNavigation(record: (campaign: Campaign, event: "view" | "click") => Promise<boolean>) {
   const [pending, setPending] = useState(false);
@@ -89,7 +93,12 @@ function select(campaigns: Campaign[], kind: Campaign["kind"]) {
     try {
       sessionStorage.setItem(`reylumi-ad-${kind}`, selected.id);
     } catch {}
-  return selected;
+  return selected ? {...selected, displayDetails:[...(selected.displayDetails ?? []), {
+    label:"Rotation choice", value:"Random choice among "+campaigns.filter(c => c.kind === kind).length+" eligible "+kind+" promotions. "+
+      (campaigns.filter(c => c.kind === kind).length > 1 && campaigns.some(c => c.kind === kind && c.id === previous)
+        ? "The promotion previously selected in this browser session was excluded from this choice."
+        : "There was no prior matching promotion to exclude, or only one eligible choice."),
+  }]} : null;
 }
 export function ImageAd({
   campaign,
@@ -160,9 +169,10 @@ function AdDisplayConfirmation({ campaign, onDenied }: { campaign: Campaign; onD
         const rect = element.getBoundingClientRect();
         if (rect.bottom <= 0 || rect.top >= window.innerHeight) return;
         const image = element.querySelector("img");
-        if ((image && (!image.complete || !image.naturalWidth)) || document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) {
+        if (image && (!image.complete || !image.naturalWidth)) {
           denied.current(); return;
         }
+        if(document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]'))return;
         requested = true;
         void record(campaign, "shown").then(allowed => { if (!disposed && !allowed) denied.current(); });
       }); });
@@ -170,7 +180,8 @@ function AdDisplayConfirmation({ campaign, onDenied }: { campaign: Campaign; onD
     observer.observe(element);
     const visible = () => { if (document.visibilityState === "visible" && !requested) { observer.unobserve(element); observer.observe(element); } };
     document.addEventListener("visibilitychange", visible);
-    return () => { disposed = true; observer.disconnect(); cancelAnimationFrame(frame); cancelAnimationFrame(secondFrame); document.removeEventListener("visibilitychange", visible); };
+    document.addEventListener("close",visible,true);
+    return () => { disposed = true; observer.disconnect(); cancelAnimationFrame(frame); cancelAnimationFrame(secondFrame); document.removeEventListener("visibilitychange", visible);document.removeEventListener("close",visible,true); };
   }, [campaign, record]);
   return <span ref={marker} hidden />;
 }
@@ -180,15 +191,21 @@ export function ExploreAdSlot({
   slotIndex = 0,
   position,
   campaignId,
+  forumPostIndex,
+  forumAfterPost,
 }: {
   desktop?: boolean;
   slotIndex?: number;
   position?: CampaignPlacement;
   campaignId?: string;
+  forumPostIndex?: number;
+  forumAfterPost?: boolean;
 }) {
   const __vt = useWorkspaceTranslation();
 
-  const { campaigns, claimFeed, record } = useContext(Context);
+  const { campaigns, claimFeed, record, disclosureFor } = useContext(Context);
+  const informationOpen=useRef(false);
+  const informationChanged=useCallback((open:boolean)=>{informationOpen.current=open;},[]);
   const slotId = useId();
   const location = position ?? (desktop ? "sidebar" : "feed");
   const campaign =
@@ -228,11 +245,10 @@ export function ExploreAdSlot({
             return;
           }
           setAdmitted(true);
-          if (campaign.durationSeconds)
-            timer = setTimeout(
-              () => setVisible(false),
-              campaign.durationSeconds * 1000,
-            );
+          if (campaign.durationSeconds) {
+            const expire=()=>{if(disposed)return;if(informationOpen.current){timer=setTimeout(expire,250);return;}setVisible(false);};
+            timer=setTimeout(expire,campaign.durationSeconds*1000);
+          }
         });
       }
     });
@@ -256,16 +272,25 @@ export function ExploreAdSlot({
     >
       {admitted ? <AdDisplayConfirmation campaign={campaign} onDenied={() => setVisible(false)} /> : null}
         <ImageAd campaign={campaign} forum={position === "forum"} />
+        <AdDisclosureControls disclosure={disclosureFor(campaign)} onOpenChange={informationChanged} displayDetails={[...(campaign.displayDetails ?? []),
+          {label:"This display",value:"Placement: "+location+"; slot "+(slotIndex+1)+"; delay "+campaign.delaySeconds+" seconds; duration "+(campaign.durationSeconds ? campaign.durationSeconds+" seconds" : "until the page or placement closes")+"."},
+          ...(forumPostIndex === undefined ? [] : [{label:"Forum placement",value:"After post "+forumPostIndex+"; configured interval "+(campaign.forumEvery ?? 6)+" posts. "+(forumAfterPost ? "This is an explicit after-post slot." : "The forum interval rule selected this slot.")}]),
+        ]} />
     </aside>
   );
 }
 export function ForumCampaignSlot({ postIndex, afterPost = false }: { postIndex: number; afterPost?: boolean }) {
   const { campaigns }=useContext(Context);
   const campaign=forumCampaignAt(campaigns,postIndex,afterPost);
-  return campaign ? <ExploreAdSlot position="forum" campaignId={campaign.id}/> : null;
+  return campaign ? <ExploreAdSlot position="forum" campaignId={campaign.id} forumPostIndex={postIndex} forumAfterPost={afterPost}/> : null;
 }
 
-export function ExploreAdvertising({
+type AdvertisingProps = {children:ReactNode;audience?:CampaignAudience;enabled?:boolean;viewerId?:string|null};
+export function ExploreAdvertising(props:AdvertisingProps) {
+  const actor = props.viewerId ?? null;
+  return <ExploreAdvertisingContent key={JSON.stringify([actor,props.audience ?? "guest"])} {...props}/>;
+}
+function ExploreAdvertisingContent({
   children,
   audience = "guest",
   enabled = true,
@@ -286,6 +311,9 @@ export function ExploreAdvertising({
     query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
   }, []);
+  const [deliveryScope,setDeliveryScope] = useState("");
+  const selectionScope = JSON.stringify([pathname,audience,device]);
+  const selectionCurrent = deliveryScope === selectionScope;
   const [placement, setPlacement] = useState<Campaign[]>([]);
   const feedClaims = useRef(new Map<string, string>());
   const claimFeed = useCallback((id: string, slot: string) => {
@@ -296,12 +324,18 @@ export function ExploreAdvertising({
   }, []);
   const recorded = useRef(new Map<string, Promise<boolean>>());
   const reservations = useRef(new Map<string, string>());
+  const admissions = useRef(new Map<string,AdSelectionDisclosure>());
+  const informationOpen = useRef(new Set<string>());
+  const popupInformation=useCallback((open:boolean)=>{if(open)informationOpen.current.add("popup");else informationOpen.current.delete("popup");},[]);
+  const tickerInformation=useCallback((open:boolean)=>{if(open)informationOpen.current.add("ticker");else informationOpen.current.delete("ticker");},[]);
+  const disclosureFor=useCallback((campaign:Campaign)=>admissions.current.get(`${pathname}:${campaign.id}`),[pathname]);
   const visit = useRef<AbortController | null>(null);
   const record = useCallback(
     (campaign: Campaign, event: "view" | "shown" | "click") => {
       const key = `${pathname}:${campaign.id}:${event}`;
       const previous = recorded.current.get(key);
       if (previous) return previous;
+      if(event==="view"&&!campaign.adDisclosure)return Promise.resolve(false);
       const promise = adRequest("/api/explore/advertising", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -312,13 +346,18 @@ export function ExploreAdvertising({
           reservation: reservations.current.get(`${pathname}:${campaign.id}`),
           path: pathname,
           device,
+          disclosureProof:event === "view" ? campaign.adDisclosure?.proof : undefined,
         }),
         keepalive: true,
         signal: event === "click" ? undefined : visit.current?.signal,
       })
         .then((result) => {
-          if (event === "view" && result.allowed && result.reservation) reservations.current.set(`${pathname}:${campaign.id}`, result.reservation);
-          return result.allowed === true && (event !== "view" || Boolean(result.reservation));
+          const disclosure=result.admissionDisclosure as AdSelectionDisclosure|undefined;
+          if (event === "view" && result.allowed && result.reservation && disclosure?.kind==="platform_campaign" && disclosure.selectionId===campaign.adDisclosure?.selectionId && disclosure.reportScope===campaign.adDisclosure?.reportScope && typeof disclosure.proof==="string") {
+            reservations.current.set(`${pathname}:${campaign.id}`, result.reservation);
+            admissions.current.set(`${pathname}:${campaign.id}`,disclosure);
+          }
+          return result.allowed === true && (event !== "view" || Boolean(result.reservation && admissions.current.has(`${pathname}:${campaign.id}`)));
         })
         .catch(() => false);
       recorded.current.set(key, promise);
@@ -335,8 +374,15 @@ export function ExploreAdvertising({
     feedClaims.current.clear();
     recorded.current.clear();
     reservations.current.clear();
+    admissions.current.clear();
+    informationOpen.current.clear();
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
+    const expirations=new Set<ReturnType<typeof setTimeout>>();
+    const expireAfter=(campaign:Campaign,set:(value:Campaign|null)=>void)=>{
+      const scheduleExpiry=(delay:number)=>{const timer=setTimeout(()=>{expirations.delete(timer);if(cancelled)return;if(informationOpen.current.has(campaign.kind))scheduleExpiry(250);else set(null);},delay);expirations.add(timer);};
+      scheduleExpiry(campaign.durationSeconds*1000);
+    };
     const controller = new AbortController();
     visit.current = controller;
     const listeners: (() => void)[] = [];
@@ -349,8 +395,8 @@ export function ExploreAdvertising({
         if (cancelled || document.visibilityState !== "visible") return;
         void record(campaign, "view").then(allowed => {
           if (cancelled || !allowed || document.visibilityState !== "visible") return;
-          set(campaign);
-          if (campaign.durationSeconds) timers.push(setTimeout(() => set(null), campaign.durationSeconds * 1000));
+          set({...campaign,adDisclosure:disclosureFor(campaign)});
+          if (campaign.durationSeconds) expireAfter(campaign,set);
         });
       }, campaign.delaySeconds * 1000));
     };
@@ -363,6 +409,7 @@ export function ExploreAdvertising({
     )
       .then((data: { campaigns: Campaign[] }) => {
         if (cancelled) return;
+        setDeliveryScope(selectionScope);
         const eligible = data.campaigns.filter((campaign) =>
           campaignMatches(campaign, pathname, audience, device),
         );
@@ -371,7 +418,7 @@ export function ExploreAdvertising({
         );
         const first = select(shuffled, "placement");
         setPlacement(
-          first ? [first, ...shuffled.filter((c) => c.id !== first.id)] : [],
+          first ? [first, ...shuffled.filter((c) => c.id !== first.id).map(c => ({...c,displayDetails:[{label:"Placement rotation",value:"Eligible placement promotions were randomly shuffled; the first slot also avoids the previously selected promotion when alternatives exist."}]}))] : [],
         );
         const announcement = select(eligible, "ticker");
         const announcementDelay =
@@ -382,6 +429,7 @@ export function ExploreAdvertising({
                 ...announcement,
                 delaySeconds: announcementDelay,
                 position: device === "mobile" ? "top" : announcement.position,
+                displayDetails:[...(announcement.displayDetails ?? []),{label:"This display",value:"Ticker; "+(device === "mobile" ? "top (mobile layout)" : announcement.position)+"; delay "+announcementDelay+" seconds; duration "+(announcement.durationSeconds || "until closed")+"; animation cycle "+announcement.speedSeconds+" seconds."}],
               }
             : null,
           setTicker,
@@ -397,14 +445,9 @@ export function ExploreAdvertising({
             if (!await prepared || cancelled || !unobstructed()) return;
             const allowed = await record(selected, "view");
             if (!cancelled && allowed && unobstructed()) {
-              setPopup(selected);
+              setPopup({...selected,adDisclosure:disclosureFor(selected),displayDetails:[...(selected.displayDetails ?? []),{label:"This display",value:"Popup; effective delay "+Math.max(selected.delaySeconds,announcement ? announcementDelay+8 : 0)+" seconds; trigger "+(selected.popupTrigger === "scroll" ? "scroll at least "+(selected.scrollPercent ?? 35)+"%" : "delay")+"; duration "+(selected.durationSeconds || "until closed")+". The page had to be visible, unobstructed by another dialog, and outside a text-entry interaction."}]});
               if (selected.durationSeconds)
-                timers.push(
-                  setTimeout(
-                    () => setPopup(null),
-                    selected.durationSeconds * 1000,
-                  ),
-                );
+                expireAfter(selected,setPopup);
             }
           };
           const delay = Math.max(
@@ -446,19 +489,20 @@ export function ExploreAdvertising({
       cancelled = true;
       controller.abort();
       timers.forEach(clearTimeout);
+      expirations.forEach(clearTimeout);
       listeners.forEach((remove) => remove());
       setPopup(null);
       setTicker(null);
       setPlacement([]);
     };
-  }, [active, pathname, audience, device, record]);
+  }, [active, pathname, audience, device, record, selectionScope,disclosureFor]);
   useEffect(() => {
     if (!popup) return;
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setPopup(null); };
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape" && !event.defaultPrevented && !document.querySelector("dialog[open]")) setPopup(null); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [popup]);
-  const contextValue = useMemo(() => ({ campaigns: active ? placement : [], claimFeed, record }), [active, placement, claimFeed, record]);
+  const contextValue = useMemo(() => ({ campaigns: active && selectionCurrent ? placement : [], claimFeed, record,disclosureFor }), [active, selectionCurrent, placement, claimFeed, record,disclosureFor]);
   return (
     <Context.Provider
       value={contextValue}
@@ -466,7 +510,7 @@ export function ExploreAdvertising({
       <NavigationProgress pending={navigation.pending} />
       <div
         className={
-          active && ticker
+          active && selectionCurrent && ticker
             ? ticker.position === "top"
               ? styles.topReserve
               : styles.bottomReserve
@@ -475,14 +519,14 @@ export function ExploreAdvertising({
       >
         {children}
       </div>
-      {active && ticker
+      {active && selectionCurrent && ticker
         ? createPortal(
             <div
               className={`${styles.ticker} ${ticker.position === "top" ? styles.top : styles.bottom}`}
-              style={{ background: ticker.background, color: ticker.color }}
+              style={{ background: ticker.background, color: ticker.color, height:44, paddingRight:ticker.closeButton ? 44 : 8 }}
             >
               <AdDisplayConfirmation campaign={ticker} onDenied={() => setTicker(null)} />
-              {ticker.href ? (
+              <div style={{overflow:"hidden",flex:"1 1 0",minWidth:0}}>{ticker.href ? (
                 <a
                   href={ticker.href}
                   onClick={async (event) => {
@@ -504,11 +548,13 @@ export function ExploreAdvertising({
                 >
                   <WorkspaceText text={ticker.text || ticker.name} />
                 </span>
-              )}
+              )}</div>
+              <AdDisclosureControls disclosure={ticker.adDisclosure} displayDetails={ticker.displayDetails} onOpenChange={tickerInformation}/>
               {ticker.closeButton ? (
                 <button
                   aria-label={__vt("Close announcement")}
                   onClick={() => setTicker(null)}
+                  style={{height:44,width:44}}
                 >
                   ×
                 </button>
@@ -517,7 +563,7 @@ export function ExploreAdvertising({
             document.body,
           )
         : null}
-      {active && popup
+      {active && selectionCurrent && popup
         ? createPortal(
             <div className={styles.backdrop}>
               <section
@@ -530,6 +576,7 @@ export function ExploreAdvertising({
               >
                 <AdDisplayConfirmation campaign={popup} onDenied={() => setPopup(null)} />
                 <ImageAd campaign={popup} />
+                <AdDisclosureControls disclosure={popup.adDisclosure} displayDetails={popup.displayDetails} onOpenChange={popupInformation}/>
                 {(
                   <button
                     className={styles.close}

@@ -2,6 +2,16 @@
 import { getAppLocalHost, type AppLocalHost } from "./app-local-host";
 import { getAppLocalCommandScope } from "./app-local-command-client";
 import type { AppLocalHttpResponse } from "./app-local-http-client";
+import {APP_LOCAL_AD_REPORT_BYTES,APP_LOCAL_AD_SELECTION_BYTES,appLocalInputBytes,isAppLocalAdSelection,isAppLocalAdReport,isAppLocalAdProofReservation} from './app-local-advertising-input';
+
+async function postBody(request:Request|undefined,init:RequestInit|undefined,max:number){
+ if(init?.body!==undefined){if(typeof init.body!=='string'||appLocalInputBytes(init.body)>max)throw new Error('The request could not be sent.');return init.body;}
+ if(!request)return '';
+ const body=request.clone().body;if(!body)return '';const reader=body.getReader(),parts:Uint8Array[]=[];let bytes=0;
+ try{for(;;){const part=await reader.read();if(part.done)break;bytes+=part.value.byteLength;if(bytes>max){void reader.cancel().catch(()=>{});throw new Error('The request could not be sent.');}parts.push(part.value);}}
+ finally{reader.releaseLock();}
+ const all=new Uint8Array(bytes);let offset=0;for(const part of parts){all.set(part,offset);offset+=part.byteLength;}return new TextDecoder('utf-8',{fatal:true}).decode(all);
+}
 
 export function createAppLocalShellHttpFetch(options: { scope(): string | undefined; host(): AppLocalHost; fetch: typeof fetch; location?: string }): typeof fetch {
   return async (input, init) => {
@@ -10,7 +20,7 @@ export function createAppLocalShellHttpFetch(options: { scope(): string | undefi
     const local = url.protocol === base.protocol && url.hostname === base.hostname && url.port === base.port;
     if (!options.host().isNative || url.username || url.password || url.hash || !(local || url.origin === "https://reylumi.com") || raw.startsWith("//") && !local) return options.fetch(input, init);
     const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
-    const name = method === "GET" ? ({ "/api/auth/session": "http.shell.session", "/api/forum/latest": "http.shell.forum-latest", "/api/public-booking/context": "http.shell.quick-booking", "/api/explore/advertising": "http.shell.advertising", "/api/campaigns/delivery": "http.shell.campaigns" } as Record<string, string>)[url.pathname] : method === "POST" && !url.search ? ({ "/api/membership/salon-badges": "http.shell.membership-badges", "/api/auth/logout": "shell.logout", "/api/explore/advertising": "http.shell.advertising-event", "/api/campaigns/delivery": "http.shell.campaign-event" } as Record<string, string>)[url.pathname] : undefined;
+    const name = method === "GET" ? ({ "/api/auth/session": "http.shell.session", "/api/forum/latest": "http.shell.forum-latest", "/api/public-booking/context": "http.shell.quick-booking", "/api/explore/advertising": "http.shell.advertising", "/api/campaigns/delivery": "http.shell.campaigns" } as Record<string, string>)[url.pathname] : method === "POST" && !url.search ? ({ "/api/membership/salon-badges": "http.shell.membership-badges", "/api/auth/logout": "shell.logout", "/api/explore/advertising": "http.shell.advertising-event", "/api/campaigns/delivery": "http.shell.campaign-event", "/api/advertising/reports":"http.shell.advertising-report" } as Record<string, string>)[url.pathname] : undefined;
     if (!name) return options.fetch(input, init);
     const scope = options.scope(), signal = init?.signal ?? request?.signal; if (!scope) throw new Error("Connect to verify your account."); if (signal?.aborted) throw signal.reason;
     let data: AppLocalHttpResponse;
@@ -21,19 +31,25 @@ export function createAppLocalShellHttpFetch(options: { scope(): string | undefi
         const result = await options.host().read<AppLocalHttpResponse>(name, Object.fromEntries(url.searchParams), { scope, signal: signal ?? undefined });
         if (!result.data) throw new Error("Could not open this page."); data = result.data;
       } else {
-        const body = typeof init?.body === "string" ? init.body : request ? await request.clone().text() : "";
-        if (body.length > (name === "http.shell.membership-badges" ? 10000 : 2048)) throw new Error("The request could not be sent.");
+        const body = await postBody(request,init,['http.shell.advertising-report','http.shell.advertising-event'].includes(name)?APP_LOCAL_AD_REPORT_BYTES:name==='http.shell.membership-badges'?10000:APP_LOCAL_AD_SELECTION_BYTES);
         const parsed = body ? JSON.parse(body) : {};
+        if(name==='http.shell.advertising-event'&&(appLocalInputBytes(body)>APP_LOCAL_AD_SELECTION_BYTES||parsed?.disclosureProof!==undefined)&&!isAppLocalAdProofReservation(parsed))throw new Error('Invalid advertising request.');
+        if (scope !== options.scope()) throw new Error("Your account has changed.");
+        if (signal?.aborted) throw signal.reason;
         if (name === "http.shell.membership-badges") {
           const result = await options.host().read<AppLocalHttpResponse>(name, {input: body}, {scope,signal:signal ?? undefined});
           if (!result.data) throw new Error("Could not load membership.");
           data = result.data;
         } else if (name === "http.shell.campaign-event" && parsed?.kind === "select") {
-          if (Object.keys(parsed).some(key => !["kind","location","latitude","longitude","batch","query"].includes(key)) || typeof parsed.location !== "string" || (parsed.query !== undefined && (typeof parsed.query !== "string" || parsed.query.length > 160)) || typeof parsed.latitude !== "number" || typeof parsed.longitude !== "number" || !Number.isFinite(parsed.latitude) || !Number.isFinite(parsed.longitude) || Math.abs(parsed.latitude)>90 || Math.abs(parsed.longitude)>180) throw new Error("Choose a valid location.");
-          const result = await options.host().read<AppLocalHttpResponse>("http.shell.campaigns", {location:parsed.location,latitude:String(parsed.latitude),longitude:String(parsed.longitude),...(parsed.batch === true ? {batch:"1"} : {}),...(parsed.query ? {query:parsed.query} : {})}, {scope,signal:signal ?? undefined});
+          if(!isAppLocalAdSelection(parsed))throw new Error('Choose a valid location.');
+          const result = await options.host().read<AppLocalHttpResponse>("http.shell.campaigns", {selection:'1',location:parsed.location,...(parsed.latitude!==undefined?{latitude:String(parsed.latitude),longitude:String(parsed.longitude)}:{}),...(parsed.batch!==undefined?{batch:parsed.batch?'1':'0'}:{}),...(parsed.query!==undefined?{query:parsed.query}:{})}, {scope,signal:signal ?? undefined});
           if (!result.data) throw new Error("Could not load advertising.");
           data = result.data;
         } else {
+          if(name==='http.shell.advertising-report'){
+            const headers=new Headers(init?.headers??request?.headers);
+            if(headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json'||!isAppLocalAdReport(parsed))throw new Error('Invalid ad report.');
+          }
           data = await options.host().command<AppLocalHttpResponse>(name, name === "shell.logout" ? {} : { input: parsed }, { scope });
         }
       }

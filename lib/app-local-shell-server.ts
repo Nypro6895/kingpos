@@ -24,6 +24,8 @@ import { selectWorkspaceContext } from "@/lib/workspace-selection";
 import { GET as bookingGET } from "@/app/api/public-booking/context/route";
 import { GET as advertisingGET, POST as advertisingPOST } from "@/app/api/explore/advertising/route";
 import { GET as campaignGET, POST as campaignPOST } from "@/app/api/campaigns/delivery/route";
+import {POST as adReportPOST} from '@/app/api/advertising/reports/route';
+import {APP_LOCAL_AD_REPORT_BYTES,APP_LOCAL_AD_SELECTION_BYTES,appLocalInputBytes,isAppLocalAdSelection,isAppLocalAdReport,isAppLocalAdProofReservation} from './app-local-advertising-input';
 import { APP_LOCAL_SHELL_READS } from "./app-local-shell-metadata";
 import type { AppLocalShellConfiguration, AppLocalShellNavigation, AppLocalShellSummary, AppLocalShellNotice, AppLocalShellAuxiliary, AppLocalShellPart } from "./app-local-shell-metadata";
 import type { AppLocalRead } from "./app-local-host";
@@ -62,7 +64,7 @@ async function applyCookies(response: Response) {
 async function wire(response: Response): Promise<AppLocalHttpResponse> {
   await applyCookies(response);
   const selected: Record<string, string> = {};
-  for (const key of ["content-type", "cache-control", "etag"]) { const value = response.headers.get(key); if (value) selected[key] = value; }
+  for (const key of ["content-type", "cache-control", "etag", "referrer-policy"]) { const value = response.headers.get(key); if (value) selected[key] = value; }
   return { status: response.status, headers: selected, body: await response.text() };
 }
 function forwarded(current: Headers, origin?: string) {
@@ -132,9 +134,17 @@ export async function readAppLocalShellResource(name: string, args: Record<strin
   else if (name === "http.shell.campaigns") {
     const origin = "https://reylumi.com", url = new URL("/api/campaigns/delivery",origin);
     if (args.batch !== undefined && !["0","1"].includes(String(args.batch))) fail(400,"Invalid advertising request.");
-    if (args.latitude !== undefined || args.longitude !== undefined) {
+    if(args.selection!==undefined&&args.selection!=='1')fail(400,'Invalid advertising request.');
+    if(args.selection==='1'){
+      if((args.latitude!==undefined||args.longitude!==undefined)&&(typeof args.latitude!=='string'||!args.latitude.trim()||typeof args.longitude!=='string'||!args.longitude.trim()))fail(400,'Choose a valid location.');
+      const input={kind:'select',location:args.location??'',...(args.latitude!==undefined||args.longitude!==undefined?{latitude:Number(args.latitude),longitude:Number(args.longitude)}:{}),...(args.batch!==undefined?{batch:args.batch==='1'}:{}),...(args.query!==undefined?{query:args.query}:{})};
+      if(!isAppLocalAdSelection(input)||appLocalInputBytes(JSON.stringify(input))>APP_LOCAL_AD_SELECTION_BYTES)fail(400,'Invalid advertising request.');
+      const headers=forwarded(current,origin);headers.set('content-type','application/json');
+      data=await wire(await campaignPOST(new NextRequest(url,{method:'POST',headers,signal:options.signal,body:JSON.stringify(input)})));
+    }else if (args.latitude !== undefined || args.longitude !== undefined) {
       if (typeof args.latitude !== "string" || !args.latitude.trim() || typeof args.longitude !== "string" || !args.longitude.trim()) fail(400,"Choose a valid location.");
-      const next = new NextRequest(url,{method:"POST",headers:forwarded(current,origin),signal:options.signal,body:JSON.stringify({kind:"select",location:args.location ?? "",latitude:Number(args.latitude),longitude:Number(args.longitude),batch:args.batch === "1",...(args.query ? {query:args.query} : {})})});
+      const headers=forwarded(current,origin);headers.set('content-type','application/json');
+      const next = new NextRequest(url,{method:"POST",headers,signal:options.signal,body:JSON.stringify({kind:"select",location:args.location ?? "",latitude:Number(args.latitude),longitude:Number(args.longitude),batch:args.batch === "1",...(args.query ? {query:args.query} : {})})});
       data = await wire(await campaignPOST(next));
     } else {
       url.search = new URLSearchParams(args as Record<string,string>).toString();
@@ -161,7 +171,7 @@ export async function readAppLocalShellResource(name: string, args: Record<strin
 
 /** Explicit original handlers only. No generic URL, method, cookie or action is supplied by the caller. */
 export async function runAppLocalShellCommand(name: string, args: Record<string, unknown>, request: Request, scope: string, prewriteBusiness?: Awaited<ReturnType<typeof getRequestBusinessContext>>): Promise<{ handled: boolean; data?: unknown }> {
-  if (!["shell.switch-workspace", "shell.logout", "http.shell.advertising-event", "http.shell.campaign-event"].includes(name)) return { handled: false };
+  if (!["shell.switch-workspace", "shell.logout", "http.shell.advertising-event", "http.shell.campaign-event", "http.shell.advertising-report"].includes(name)) return { handled: false };
   // Only the workspace selector can reuse the command route's fresh prewrite
   // context. Never retain it or let another command borrow it after a write.
   const { context, business, current } = await authorized(scope, name === "shell.switch-workspace" ? prewriteBusiness : undefined), origin = new URL(request.url).origin;
@@ -179,13 +189,23 @@ export async function runAppLocalShellCommand(name: string, args: Record<string,
     if (Object.keys(args).length) fail(400, "Invalid sign-out request.");
     return { handled: true, data: await wire(await logoutPOST()) };
   }
-  if (Object.keys(args).some(key => key !== "input") || !args.input || typeof args.input !== "object" || Array.isArray(args.input) || JSON.stringify(args.input).length > 2048) fail(400, "Invalid advertising event.");
+  const input=args.input;
+  const largeAdmission=name==='http.shell.advertising-event'&&isAppLocalAdProofReservation(input);
+  if (Object.keys(args).some(key => key !== "input") || !input || typeof input !== "object" || Array.isArray(input) || appLocalInputBytes(JSON.stringify(input)) > (name==='http.shell.advertising-report'||largeAdmission?APP_LOCAL_AD_REPORT_BYTES:APP_LOCAL_AD_SELECTION_BYTES)) return fail(400, "Invalid advertising event.");
+  if(name==='http.shell.advertising-event'&&'disclosureProof' in input&&!largeAdmission)fail(400,'Invalid advertising request.');
+  if(name==='http.shell.advertising-report'){
+    if(!isAppLocalAdReport(input))fail(400,'Invalid ad report.');
+    const headers=forwarded(current,origin);headers.set('content-type','application/json');
+    return{handled:true,data:await wire(await adReportPOST(new NextRequest(new URL('/api/advertising/reports',origin),{method:'POST',headers,body:JSON.stringify(input)})))};
+  }
   if (name === "http.shell.campaign-event") {
-    const input = args.input as Record<string,unknown>;
-    if (!["view","click"].includes(String(input.kind)) || typeof input.ticket !== "string" || Object.keys(input).some(key => !["kind","ticket"].includes(key))) fail(400,"Invalid advertising event.");
-    const next = new NextRequest(new URL("/api/campaigns/delivery",origin),{method:"POST",headers:forwarded(current,origin),body:JSON.stringify(input)});
+    const event = input as Record<string,unknown>;
+    if (!["view","click"].includes(String(event.kind)) || typeof event.ticket !== "string" || Object.keys(event).some(key => !["kind","ticket"].includes(key))) fail(400,"Invalid advertising event.");
+    const headers=forwarded(current,origin);headers.set('content-type','application/json');
+    const next = new NextRequest(new URL("/api/campaigns/delivery",origin),{method:"POST",headers,body:JSON.stringify(event)});
     return {handled:true,data:await wire(await campaignPOST(next))};
   }
-  const next = new NextRequest(new URL("/api/explore/advertising", origin), { method: "POST", headers: forwarded(current, origin), body: JSON.stringify(args.input) });
+  const headers=forwarded(current,origin);headers.set('content-type','application/json');
+  const next = new NextRequest(new URL("/api/explore/advertising", origin), { method: "POST", headers, body: JSON.stringify(input) });
   return { handled: true, data: await wire(await advertisingPOST(next)) };
 }

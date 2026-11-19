@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "public-post-media-deletion-20261118",
+  "status": "working",
+  "summary": "Prepare conservative cleanup of fully pinned new approved post photos after explicit terminal deletion; preserve references and review evidence.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261118220000_public_post_media_deletion.sql",
+    "tests/public-post-media-deletion.integration.test.mjs",
+    "docs/public-post-media-deletion-20261118.md"
+  ],
+  "dependencies": [
+    "public-image-safety-20261116"
+  ],
+  "validation": [
+    {
+      "name": "Database and isolated Storage concurrency acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "10685dda-0fa1-4bf0-b91b-eb37c16d2808",
+  "recordedAt": "2026-11-18T21:23:48.747Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

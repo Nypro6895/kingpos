@@ -4,6 +4,8 @@ import { WorkspaceText } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
 import type { Customer } from "@/types/customer";
 import Link from "next/link";
+import "./customer-form.css";
+import { CustomerFormActions } from "./customer-form-actions";
 
 type CustomerFormProps = {
   action: (formData: FormData) => Promise<void>;
@@ -46,7 +48,7 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
   return (
     <form
       action={action}
-      className="mt-6 grid gap-5 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-2"
+      className="customer-form mt-5 grid gap-5 rounded-2xl border border-border-subtle bg-white p-5 sm:grid-cols-2"
     >
       {customer ? <input name="customer_id" type="hidden" value={customer.id} /> : null}
 
@@ -82,6 +84,9 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
 
       </>}
 
+      <details className="customer-form-notes sm:col-span-2" open={Boolean(customer?.notes || customer?.staff_notes || customer?.internal_notes)}>
+        <summary><WorkspaceText text="Notes" /><span><WorkspaceText text="Optional" /></span></summary>
+        <div className="grid gap-4 pt-4">
       <label className="block sm:col-span-2">
         <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Legacy notes" /></span>
         <textarea
@@ -108,6 +113,8 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
           name="internal_notes"
         />
       </label>
+        </div>
+      </details>
 
       {mode === "edit" ? (
         <label className="block">
@@ -123,20 +130,20 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
         </label>
       ) : null}
 
-      <div className="flex flex-wrap gap-3 sm:col-span-2">
-        <SubmitButton pendingLabel="Saving…"
-          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-          type="submit"
-        >
-          <WorkspaceText text="Save Customer" />
-        </SubmitButton>
+      <CustomerFormActions>
         <Link
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
           href={customer ? `/customers/${customer.id}` : "/customers"}
         >
           <WorkspaceText text="Cancel" />
         </Link>
-      </div>
+        <SubmitButton pendingLabel="Saving…"
+          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+          type="submit"
+        >
+          <WorkspaceText text="Save Customer" />
+        </SubmitButton>
+      </CustomerFormActions>
     </form>
   );
 }

@@ -25,7 +25,7 @@ before(async () => {
   for (const node of ast.statements) {
     if (!ts.isImportDeclaration(node) || !node.importClause || node.importClause.isTypeOnly) continue;
     const path = node.moduleSpecifier.text;
-    if (path === 'react' || path === 'react-dom') continue;
+    if (['react','react-dom','@/components/public-photo-processing-permission','@/lib/public-photo-processing-consent'].includes(path)) continue;
     const bindings = node.importClause.namedBindings;
     const names = bindings && ts.isNamedImports(bindings) ? bindings.elements.filter(item => !item.isTypeOnly).map(item => item.propertyName?.text ?? item.name.text) : [];
     let code = "import React from 'react';\n";
@@ -44,6 +44,7 @@ before(async () => {
 import React from 'react';import{createRoot}from'react-dom/client';import{BeautyProfileClient}from'./app/beauty/beauty-profile-client';
 window.h={reads:[],publishes:[]};
 createRoot(document.getElementById('root')).render(<BeautyProfileClient home={false} profile={{id:'self-profile',isSelf:true,displayName:'Me',initials:'M',visibility:'public',bio:null,avatarUrl:null,coverImageUrl:null}} initialTimeline={{items:[{id:'post-2'},{id:'post-1'}],nextCursor:{id:'post-1',createdAt:'2026-11-01'},hasMore:true,error:null}} commentViewer={{userId:'same-viewer',isAuthenticated:true}} visitCandidates={[]}/>);`}, plugins: [{name: 'actual-beauty-hooks', setup(b) {
+    b.onResolve({filter:/^@\/(components\/public-photo-processing-permission|lib\/public-photo-processing-consent)$/},args=>({path:process.cwd()+'/'+args.path.slice(2)+(args.path.includes('/components/')?'.tsx':'.ts')}));
     b.onResolve({filter: /.*/}, args => args.importer.replaceAll('\\', '/') === clientPath && modules.has(args.path) ? {path: args.path, namespace: 'projection-stub'} : undefined);
     b.onLoad({filter: /.*/, namespace: 'projection-stub'}, args => ({contents: modules.get(args.path), loader: 'tsx', resolveDir: process.cwd()}));
     b.onLoad({filter: /beauty-profile-client\.tsx$/}, args => args.path.replaceAll('\\', '/') === clientPath ? {contents: instrumented, loader: 'tsx', resolveDir: process.cwd() + '/app/beauty'} : undefined);

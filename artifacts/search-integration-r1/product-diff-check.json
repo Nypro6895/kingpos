@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "scope": [
+    "app",
+    "lib",
+    "types",
+    "supabase",
+    "docs",
+    "tests"
+  ],
+  "crAtEolAllowed": true,
+  "originalFrozenQaFormattingPreserved": [
+    "old build log output whitespace",
+    "diagnostic repro and write-pressure script trailing blank EOF"
+  ],
+  "allStagedDefaultDiffCheckPassed": false
+}

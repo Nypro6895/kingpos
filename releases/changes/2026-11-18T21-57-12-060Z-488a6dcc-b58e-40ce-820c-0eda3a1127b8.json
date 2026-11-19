@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "public-post-media-deletion-cron-20261118",
+  "status": "needs-integration",
+  "summary": "Existing authenticated maintenance route includes exact terminal-photo cleanup, preserving authorization/disable and independent worker retries; validated locally, not hosted.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/account/erase-due/route.ts",
+    "tests/account-maintenance-route.test.mjs",
+    "tests/public-image-staging-expiry.test.mjs",
+    "docs/public-post-media-deletion-cron-20261118.md",
+    "releases/changes/2026-11-18T21-33-10-294Z-801e98db-7ce8-4817-8834-27ea28d86632.json"
+  ],
+  "fileHashes": {
+    "app/api/account/erase-due/route.ts": "695a0f5c6de25769f56d281a1178c15f00d4b60328f35874b92ca15d7094d11e",
+    "tests/account-maintenance-route.test.mjs": "9e0890eb63ccb46b45bd62c5db700d0d13f4d8a4127fe12302e83abfe138d2b0",
+    "tests/public-image-staging-expiry.test.mjs": "70ab56f2f5b4fb5bfa14c4ff28ef4fd56c7c041cecff4d202a797a5bd18956dc",
+    "docs/public-post-media-deletion-cron-20261118.md": "1e6b892743765d7fa3091c50310d08e1f3cef4be5189e2ba5aee8e1e20728ce2",
+    "releases/changes/2026-11-18T21-33-10-294Z-801e98db-7ce8-4817-8834-27ea28d86632.json": "f1beb333a2173035ec73e7f06c06c2ea1ffb41d70470ca146ed2eabda72f7d60"
+  },
+  "source": {
+    "snapshot": "artifacts/ios-steps-234-20261118/frozen/cron-r1",
+    "commit": "8d953b12e7539e5e382f07524f6faba31e2d4633",
+    "sha256": "51e820bc5c546d3e5c2a7c74ffdf0e97b28b76217f852e3afc915286991d20db"
+  },
+  "validation": [
+    {
+      "name": "Actual scoped source tests and CRLF-aware whitespace/lint",
+      "result": "passed",
+      "evidence": "docs/ios-steps-2-3-4-implementation-20261118.md"
+    },
+    {
+      "name": "Combined production Next/TypeScript/offline-assets build",
+      "result": "passed",
+      "evidence": "artifacts/ios-steps-234-20261118/combined-build-result-r2.json"
+    },
+    {
+      "name": "Source parity5443inputs and actual12policy viewport routes",
+      "result": "passed",
+      "evidence": "artifacts/ios-steps-234-20261118/legal-r2-acceptance.json"
+    },
+    {
+      "name": "Secure key destination, approved consent/moderation UI, actual provider/runtime and final integration",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "public-post-media-deletion-worker-20261118",
+    "public-post-media-deletion-20261118"
+  ],
+  "supersedesEvents": [],
+  "id": "488a6dcc-b58e-40ce-820c-0eda3a1127b8",
+  "recordedAt": "2026-11-18T21:57:12.060Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": []
+}

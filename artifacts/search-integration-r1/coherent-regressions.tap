@@ -1,0 +1,929 @@
+TAP version 13
+# Subtest: Anywhere sequence near me → red nail → ZIP → nails near wa submits each query and hides the stale GPS prompt while waiting
+ok 1 - Anywhere sequence near me → red nail → ZIP → nails near wa submits each query and hides the stale GPS prompt while waiting
+  ---
+  duration_ms: 111.0794
+  type: 'test'
+  ...
+# Subtest: a timeout or connection failure belongs to the new query, stops loading, and never revives the previous GPS prompt
+ok 2 - a timeout or connection failure belongs to the new query, stops loading, and never revives the previous GPS prompt
+  ---
+  duration_ms: 148.1477
+  type: 'test'
+  ...
+# Subtest: Anywhere cancels a request and clears its GPS context so the same text remains searchable without coordinates
+ok 3 - Anywhere cancels a request and clears its GPS context so the same text remains searchable without coordinates
+  ---
+  duration_ms: 77.4595
+  type: 'test'
+  ...
+# Subtest: a returned search error remains distinct from no results and is replaced by the next completed query
+ok 4 - a returned search error remains distinct from no results and is replaced by the next completed query
+  ---
+  duration_ms: 65.6093
+  type: 'test'
+  ...
+# Subtest: successfully resolved typed ZIP and state stay visible without a GPS requirement
+ok 5 - successfully resolved typed ZIP and state stay visible without a GPS requirement
+  ---
+  duration_ms: 130.0839
+  type: 'test'
+  ...
+# Subtest: global salon sections do not claim a local area, while selected-city and measured-GPS headings retain their meaning
+ok 6 - global salon sections do not claim a local area, while selected-city and measured-GPS headings retain their meaning
+  ---
+  duration_ms: 206.0162
+  type: 'test'
+  ...
+# Subtest: deep lists refresh at most36 known visible salons, independent of scroll depth
+ok 7 - deep lists refresh at most36 known visible salons, independent of scroll depth
+  ---
+  duration_ms: 1.6975
+  type: 'test'
+  ...
+# Subtest: observer follows deep viewport without per-scroll geometry scans and keeps updates across windows
+ok 8 - observer follows deep viewport without per-scroll geometry scans and keeps updates across windows
+  ---
+  duration_ms: 27.1468
+  type: 'test'
+  ...
+# Subtest: withdrawn members cannot resurrect when continuation appends or advances cursor offset
+ok 9 - withdrawn members cannot resurrect when continuation appends or advances cursor offset
+  ---
+  duration_ms: 14.5062
+  type: 'test'
+  ...
+# Subtest: account reset stays suspended through append; new viewer/session gets separate authority
+ok 10 - account reset stays suspended through append; new viewer/session gets separate authority
+  ---
+  duration_ms: 11.157
+  type: 'test'
+  ...
+# Subtest: late observer response is discarded after cleanup or account reset
+ok 11 - late observer response is discarded after cleanup or account reset
+  ---
+  duration_ms: 18.9995
+  type: 'test'
+  ...
+# Subtest: timeout retry has a cancellable backoff and never repeats after query cancellation
+ok 12 - timeout retry has a cancellable backoff and never repeats after query cancellation
+  ---
+  duration_ms: 372.7835
+  type: 'test'
+  ...
+# Subtest: current-pin pure contract preserves legacy/owner pins but excludes stale/error/partial/mismatched pairs
+ok 13 - current-pin pure contract preserves legacy/owner pins but excludes stale/error/partial/mismatched pairs
+  ---
+  duration_ms: 1.0082
+  type: 'test'
+  ...
+# Subtest: actual owner map state suppresses stale display pin while retaining source coordinates
+ok 14 - actual owner map state suppresses stale display pin while retaining source coordinates
+  ---
+  duration_ms: 0.5684
+  type: 'test'
+  ...
+# Subtest: actual refresh never calls provider for owner-confirmed or already-current automatic/backfill pins
+ok 15 - actual refresh never calls provider for owner-confirmed or already-current automatic/backfill pins
+  ---
+  duration_ms: 0.2855
+  type: 'test'
+  ...
+# Subtest: actual pending/failure refresh RPC keeps original metadata and supplies original-pin/current-address CAS
+ok 16 - actual pending/failure refresh RPC keeps original metadata and supplies original-pin/current-address CAS
+  ---
+  duration_ms: 0.4212
+  type: 'test'
+  ...
+# Subtest: actual source-busy/stale preparation prevents unnecessary provider work
+ok 17 - actual source-busy/stale preparation prevents unnecessary provider work
+  ---
+  duration_ms: 0.4196
+  type: 'test'
+  ...
+# Subtest: actual canonical projection, owner refresh and directory maintenance obey coordinate validity
+    # Subtest: legacy, owner-confirmed and current automatic complete pins survive; partial/null/error/mismatched pins do not
+    ok 1 - legacy, owner-confirmed and current automatic complete pins survive; partial/null/error/mismatched pins do not
+      ---
+      duration_ms: 20.0291
+      type: 'test'
+      ...
+    # Subtest: automatic address edit preserves source pin, invalidates projection and re-enriches using the new fingerprint
+    ok 2 - automatic address edit preserves source pin, invalidates projection and re-enriches using the new fingerprint
+      ---
+      duration_ms: 82.4697
+      type: 'test'
+      ...
+    # Subtest: owner confirmation, replacement, claim, suppression and a second edit defeat stale automatic completion
+    ok 3 - owner confirmation, replacement, claim, suppression and a second edit defeat stale automatic completion
+      ---
+      duration_ms: 58.4091
+      type: 'test'
+      ...
+    # Subtest: old pin without matching successful Census provenance cannot be replaced
+    ok 4 - old pin without matching successful Census provenance cannot be replaced
+      ---
+      duration_ms: 4.2136
+      type: 'test'
+      ...
+    # Subtest: two different incomplete effective addresses still invalidate a preserved legacy pin
+    ok 5 - two different incomplete effective addresses still invalidate a preserved legacy pin
+      ---
+      duration_ms: 3.8543
+      type: 'test'
+      ...
+    # Subtest: manual city/ZIP do not synthesize a GPS center or mileage; actual point measures only current pins
+    ok 6 - manual city/ZIP do not synthesize a GPS center or mileage; actual point measures only current pins
+      ---
+      duration_ms: 127.6595
+      type: 'test'
+      ...
+    # Subtest: owner refresh metadata is CAS protected and keeps prior pin through failure; owner pin never overwritten
+    ok 7 - owner refresh metadata is CAS protected and keeps prior pin through failure; owner pin never overwritten
+      ---
+      duration_ms: 14.6246
+      type: 'test'
+      ...
+    # Subtest: owner mutation permission and private helper ACLs remain restricted
+    ok 8 - owner mutation permission and private helper ACLs remain restricted
+      ---
+      duration_ms: 3.4231
+      type: 'test'
+      ...
+    1..8
+ok 18 - actual canonical projection, owner refresh and directory maintenance obey coordinate validity
+  ---
+  duration_ms: 1630.856
+  type: 'test'
+  ...
+# Subtest: initial feed batch is service-only, preserves actor-bound canonical operations and rolls back partial sessions
+ok 19 - initial feed batch is service-only, preserves actor-bound canonical operations and rolls back partial sessions # SKIP
+  ---
+  duration_ms: 0.5676
+  type: 'test'
+  ...
+# Subtest: fresh first page uses two RPCs and maps only canonical prepared rows
+ok 20 - fresh first page uses two RPCs and maps only canonical prepared rows
+  ---
+  duration_ms: 64.945
+  type: 'test'
+  ...
+# Subtest: only absent migration permits the old create/page chain
+ok 21 - only absent migration permits the old create/page chain
+  ---
+  duration_ms: 46.8107
+  type: 'test'
+  ...
+# Subtest: malformed committed batch is not retried as another session write
+ok 22 - malformed committed batch is not retried as another session write
+  ---
+  duration_ms: 10.1461
+  type: 'test'
+  ...
+# Subtest: continuation preserves existing cursor and canonical page validation
+ok 23 - continuation preserves existing cursor and canonical page validation
+  ---
+  duration_ms: 10.3423
+  type: 'test'
+  ...
+# Subtest: signature and compact-prefix probes preserve every shipped fuzzy proof in the equivalence matrix
+ok 24 - signature and compact-prefix probes preserve every shipped fuzzy proof in the equivalence matrix
+  ---
+  duration_ms: 1333.8233
+  type: 'test'
+  ...
+# Subtest: frozen fuzzy candidates retain matching renames and reject current names that no longer prove the query
+ok 25 - frozen fuzzy candidates retain matching renames and reject current names that no longer prove the query
+  ---
+  duration_ms: 1187.7813
+  type: 'test'
+  ...
+# Subtest: preparation defaults to status-only and rejects unbounded options
+ok 26 - preparation defaults to status-only and rejects unbounded options
+  ---
+  duration_ms: 1.9402
+  type: 'test'
+  ...
+# Subtest: bounded batches resume after busy/stale work and activate only after completion
+ok 27 - bounded batches resume after busy/stale work and activate only after completion
+  ---
+  duration_ms: 0.2661
+  type: 'test'
+  ...
+# Subtest: maximum foreground batches leaves resumable state without premature activation
+ok 28 - maximum foreground batches leaves resumable state without premature activation
+  ---
+  duration_ms: 0.1109
+  type: 'test'
+  ...
+# Subtest: activation retries a busy clock and reconciles a source write at the boundary
+ok 29 - activation retries a busy clock and reconciles a source write at the boundary
+  ---
+  duration_ms: 0.2869
+  type: 'test'
+  ...
+# Subtest: already ready and interrupted runs never start more work
+ok 30 - already ready and interrupted runs never start more work
+  ---
+  duration_ms: 0.4304
+  type: 'test'
+  ...
+# Subtest: failed or malformed responses stop preparation and progress never dumps private fields
+ok 31 - failed or malformed responses stop preparation and progress never dumps private fields
+  ---
+  duration_ms: 0.2338
+  type: 'test'
+  ...
+# Subtest: preparation installs OFF, leaves search on its shipped path, and exposes maintenance only to service role
+ok 32 - preparation installs OFF, leaves search on its shipped path, and exposes maintenance only to service role
+  ---
+  duration_ms: 1389.2677
+  type: 'test'
+  ...
+# Subtest: bounded UUID batches resume, reconcile inserts behind the cursor and deletes, and never activate automatically
+ok 33 - bounded UUID batches resume, reconcile inserts behind the cursor and deletes, and never activate automatically
+  ---
+  duration_ms: 1230.7193
+  type: 'test'
+  ...
+# Subtest: a source change during staging preserves its new generation until the next reconciliation batch
+ok 34 - a source change during staging preserves its new generation until the next reconciliation batch
+  ---
+  duration_ms: 1043.9852
+  type: 'test'
+  ...
+# Subtest: activation rejects missing access indexes without taking a publication revision or exposing a partial index
+ok 35 - activation rejects missing access indexes without taking a publication revision or exposing a partial index
+  ---
+  duration_ms: 992.6034
+  type: 'test'
+  ...
+# Subtest: specific English services keep their keyword evidence and service category
+ok 36 - specific English services keep their keyword evidence and service category
+  ---
+  duration_ms: 3.8454
+  type: 'test'
+  ...
+# Subtest: service phrases stay intact before verified city or ZIP and do not demand GPS
+ok 37 - service phrases stay intact before verified city or ZIP and do not demand GPS
+  ---
+  duration_ms: 2.7725
+  type: 'test'
+  ...
+# Subtest: known service words cannot consume verified or explicitly named salon brands
+ok 38 - known service words cannot consume verified or explicitly named salon brands
+  ---
+  duration_ms: 1.2403
+  type: 'test'
+  ...
+# Subtest: local service requests use only complete finite coordinate pairs or explicit area
+ok 39 - local service requests use only complete finite coordinate pairs or explicit area
+  ---
+  duration_ms: 0.8801
+  type: 'test'
+  ...
+# Subtest: leading-area proposals require a complete service suffix and preserve existing style and name parsing
+ok 40 - leading-area proposals require a complete service suffix and preserve existing style and name parsing
+  ---
+  duration_ms: 0.8064
+  type: 'test'
+  ...
+# Subtest: region-first US searches verify their area in the existing single bounded lookup
+ok 41 - region-first US searches verify their area in the existing single bounded lookup
+  ---
+  duration_ms: 1.903
+  type: 'test'
+  ...
+# Subtest: region-first proposals preserve complete brands and explicit names and never invent unverified cities
+ok 42 - region-first proposals preserve complete brands and explicit names and never invent unverified cities
+  ---
+  duration_ms: 2.4806
+  type: 'test'
+  ...
+# Subtest: region-first verified areas retain manual priority and replace GPS, saved and activity context
+ok 43 - region-first verified areas retain manual priority and replace GPS, saved and activity context
+  ---
+  duration_ms: 0.8546
+  type: 'test'
+  ...
+# Subtest: real category-only routing hands an empty keyword to SQL and preserves explicit business names
+ok 44 - real category-only routing hands an empty keyword to SQL and preserves explicit business names
+  ---
+  duration_ms: 1960.9542
+  type: 'test'
+  ...
+# Subtest: local-quality state, ZIP and verified street-address scopes stay strict across relevance, Closest and newest
+ok 45 - local-quality state, ZIP and verified street-address scopes stay strict across relevance, Closest and newest
+  ---
+  duration_ms: 1343.5681
+  type: 'test'
+  ...
+# Subtest: actual published unblocked work is required for style facets under every new indexed sort
+ok 46 - actual published unblocked work is required for style facets under every new indexed sort
+  ---
+  duration_ms: 1203.4147
+  type: 'test'
+  ...
+# Subtest: local relevance preserves actual service evidence and whole words
+ok 47 - local relevance preserves actual service evidence and whole words
+  ---
+  duration_ms: 1643.4818
+  type: 'test'
+  ...
+# Subtest: profile contact and description keywords stay searchable without whole-directory profile scans
+ok 48 - profile contact and description keywords stay searchable without whole-directory profile scans
+  ---
+  duration_ms: 1191.134
+  type: 'test'
+  ...
+# Subtest: unconstrained city, ZIP and English service inflections use actual scoped evidence
+ok 49 - unconstrained city, ZIP and English service inflections use actual scoped evidence
+  ---
+  duration_ms: 1098.2044
+  type: 'test'
+  ...
+# Subtest: same-post proof, block, future and imported references cannot establish primary style matches
+ok 50 - same-post proof, block, future and imported references cannot establish primary style matches
+  ---
+  duration_ms: 969.7097
+  type: 'test'
+  ...
+# Subtest: activity cap excludes references and future posts; many actual posts cannot erase content tiers
+ok 51 - activity cap excludes references and future posts; many actual posts cannot erase content tiers
+  ---
+  duration_ms: 970.0677
+  type: 'test'
+  ...
+# Subtest: pre-migration v3 cursors keep their shipped continuation path and private tables stay private
+ok 52 - pre-migration v3 cursors keep their shipped continuation path and private tables stay private
+  ---
+  duration_ms: 1153.8282
+  type: 'test'
+  ...
+# Subtest: quality winners beyond UUID256 and activity are frozen, source edits stay live
+ok 53 - quality winners beyond UUID256 and activity are frozen, source edits stay live
+  ---
+  duration_ms: 2437.8371
+  type: 'test'
+  ...
+# Subtest: one bulk source statement refreshes each affected salon once per history statement
+ok 54 - one bulk source statement refreshes each affected salon once per history statement
+  ---
+  duration_ms: 858.6267
+  type: 'test'
+  ...
+# Subtest: retired-history cleanup neither refreshes current projections nor queues staging work
+ok 55 - retired-history cleanup neither refreshes current projections nor queues staging work
+  ---
+  duration_ms: 854.99
+  type: 'test'
+  ...
+# Subtest: exact names and bounded typo fallback retain intent while explicit sorts use indexed lanes
+ok 56 - exact names and bounded typo fallback retain intent while explicit sorts use indexed lanes
+  ---
+  duration_ms: 881.0139
+  type: 'test'
+  ...
+# Subtest: Closest and newest sort before quality and retain complete stable keyset pages
+ok 57 - Closest and newest sort before quality and retain complete stable keyset pages
+  ---
+  duration_ms: 1243.6764
+  type: 'test'
+  ...
+# Subtest: hiding a profile or replacing its incarnation cannot resurrect an old local session
+ok 58 - hiding a profile or replacing its incarnation cannot resurrect an old local session
+  ---
+  duration_ms: 932.6958
+  type: 'test'
+  ...
+# Subtest: manual area, current pins and same-post visibility remain authoritative
+ok 59 - manual area, current pins and same-post visibility remain authoritative
+  ---
+  duration_ms: 1226.8973
+  type: 'test'
+  ...
+# Subtest: geographic cells preserve quality winners across local cells despite higher-quality far salons
+ok 60 - geographic cells preserve quality winners across local cells despite higher-quality far salons
+  ---
+  duration_ms: 1431.8344
+  type: 'test'
+  ...
+# Subtest: longitude wrap uses exact spatial fallback without losing nearby points
+ok 61 - longitude wrap uses exact spatial fallback without losing nearby points
+  ---
+  duration_ms: 817.0603
+  type: 'test'
+  ...
+# Subtest: style keeps an exact business-name match after real posts and facets still require actual work
+ok 62 - style keeps an exact business-name match after real posts and facets still require actual work
+  ---
+  duration_ms: 871.9312
+  type: 'test'
+  ...
+# Subtest: Closest resolves complete finite boundary ties and unknown-coordinate tails without losing quality winners
+ok 63 - Closest resolves complete finite boundary ties and unknown-coordinate tails without losing quality winners
+  ---
+  duration_ms: 1386.1118
+  type: 'test'
+  ...
+# Subtest: Closest raw pages cross an ineligible nearest prefix without truncating a quality winner
+ok 64 - Closest raw pages cross an ineligible nearest prefix without truncating a quality winner
+  ---
+  duration_ms: 36964.076
+  type: 'test'
+  ...
+# Subtest: service, exact brand, area and GPS phrases keep distinct meanings
+ok 65 - service, exact brand, area and GPS phrases keep distinct meanings
+  ---
+  duration_ms: 3.2232
+  type: 'test'
+  ...
+# Subtest: organic design phrases retain mandatory themes after category and routing cues are removed
+ok 66 - organic design phrases retain mandatory themes after category and routing cues are removed
+  ---
+  duration_ms: 0.5764
+  type: 'test'
+  ...
+# Subtest: structured city/state and postal inputs are areas while quoted names are names
+ok 67 - structured city/state and postal inputs are areas while quoted names are names
+  ---
+  duration_ms: 0.6031
+  type: 'test'
+  ...
+# Subtest: routing text is bounded and control characters cannot enter public RPC inputs
+ok 68 - routing text is bounded and control characters cannot enter public RPC inputs
+  ---
+  duration_ms: 0.2572
+  type: 'test'
+  ...
+# Subtest: style and specific service constraints survive content routing
+ok 69 - style and specific service constraints survive content routing
+  ---
+  duration_ms: 1.8805
+  type: 'test'
+  ...
+# Subtest: common near-by and current-location aliases preserve service, explicit city and quoted brand meanings
+ok 70 - common near-by and current-location aliases preserve service, explicit city and quoted brand meanings
+  ---
+  duration_ms: 0.28
+  type: 'test'
+  ...
+# Subtest: combined service and area text preserves the service before state, ZIP and tentative city recognition
+ok 71 - combined service and area text preserves the service before state, ZIP and tentative city recognition
+  ---
+  duration_ms: 0.6366
+  type: 'test'
+  ...
+# Subtest: combined content and service searches retain styles while proposing a separate area
+ok 72 - combined content and service searches retain styles while proposing a separate area
+  ---
+  duration_ms: 0.4403
+  type: 'test'
+  ...
+# Subtest: all legacy targets share semantic parsing and retain real content constraints
+ok 73 - all legacy targets share semantic parsing and retain real content constraints
+  ---
+  duration_ms: 0.8357
+  type: 'test'
+  ...
+# Subtest: filters are bounded allowlisted values and facets contribute mandatory real content terms
+ok 74 - filters are bounded allowlisted values and facets contribute mandatory real content terms
+  ---
+  duration_ms: 0.4482
+  type: 'test'
+  ...
+# Subtest: nearby typos preserve location intent without changing ordinary or explicitly named brands
+ok 75 - nearby typos preserve location intent without changing ordinary or explicitly named brands
+  ---
+  duration_ms: 0.5937
+  type: 'test'
+  ...
+# Subtest: street addresses are separate validated hints rather than city or salon-name guesses
+ok 76 - street addresses are separate validated hints rather than city or salon-name guesses
+  ---
+  duration_ms: 1.2724
+  type: 'test'
+  ...
+# Subtest: broad category requests retain category ordering despite generic brand collisions; specific requirements survive
+ok 77 - broad category requests retain category ordering despite generic brand collisions; specific requirements survive
+  ---
+  duration_ms: 4.9654
+  type: 'test'
+  ...
+# Subtest: city text and names with city phrases route using current public areas rather than workspace guesses
+ok 78 - city text and names with city phrases route using current public areas rather than workspace guesses
+  ---
+  duration_ms: 0.4654
+  type: 'test'
+  ...
+# Subtest: manual fields win conflicts; query places override GPS, saved and activity fallback and clear frozen GPS filters
+ok 79 - manual fields win conflicts; query places override GPS, saved and activity fallback and clear frozen GPS filters
+  ---
+  duration_ms: 0.5283
+  type: 'test'
+  ...
+# Subtest: near-me uses actual GPS context and asks for location when coordinates are absent
+ok 80 - near-me uses actual GPS context and asks for location when coordinates are absent
+  ---
+  duration_ms: 0.295
+  type: 'test'
+  ...
+# Subtest: ambiguous city suggests states without choosing the first shop, and uses only positive matching context
+ok 81 - ambiguous city suggests states without choosing the first shop, and uses only positive matching context
+  ---
+  duration_ms: 0.4528
+  type: 'test'
+  ...
+# Subtest: content themes retain style semantics in one salon search and legacy Ideas cannot bypass exact names
+ok 82 - content themes retain style semantics in one salon search and legacy Ideas cannot bypass exact names
+  ---
+  duration_ms: 0.7572
+  type: 'test'
+  ...
+# Subtest: entity failures are explicit and cancellation reaches the resolver rather than returning a false empty match
+ok 83 - entity failures are explicit and cancellation reaches the resolver rather than returning a false empty match
+  ---
+  duration_ms: 0.5278
+  type: 'test'
+  ...
+# Subtest: near-by aliases require location even when an unquoted phrase is also a full business name
+ok 84 - near-by aliases require location even when an unquoted phrase is also a full business name
+  ---
+  duration_ms: 0.5945
+  type: 'test'
+  ...
+# Subtest: combined service/state/ZIP/city uses one bounded entity proof and avoids the former nails-city interpretation
+ok 85 - combined service/state/ZIP/city uses one bounded entity proof and avoids the former nails-city interpretation
+  ---
+  duration_ms: 0.849
+  type: 'test'
+  ...
+# Subtest: complete brand proof wins combined-area heuristics while unknown cities and lookup failures never silently truncate names
+ok 86 - complete brand proof wins combined-area heuristics while unknown cities and lookup failures never silently truncate names
+  ---
+  duration_ms: 1.2093
+  type: 'test'
+  ...
+# Subtest: combined cities keep manual/GPS precedence, ambiguous choices and mandatory content styles
+ok 87 - combined cities keep manual/GPS precedence, ambiguous choices and mandatory content styles
+  ---
+  duration_ms: 1.6941
+  type: 'test'
+  ...
+# Subtest: selected, saved and GPS areas all prioritize their salon address region
+ok 88 - selected, saved and GPS areas all prioritize their salon address region
+  ---
+  duration_ms: 0.332
+  type: 'test'
+  ...
+# Subtest: nearby aliases use a known address area without demanding coordinates or becoming a generic brand
+ok 89 - nearby aliases use a known address area without demanding coordinates or becoming a generic brand
+  ---
+  duration_ms: 1.4199
+  type: 'test'
+  ...
+# Subtest: validated public street addresses remain the search region and retain salon/style terms
+ok 90 - validated public street addresses remain the search region and retain salon/style terms
+  ---
+  duration_ms: 1.1232
+  type: 'test'
+  ...
+# Subtest: unmatched or ambiguous addresses retain their request instead of falling back to GPS or a global area
+ok 91 - unmatched or ambiguous addresses retain their request instead of falling back to GPS or a global area
+  ---
+  duration_ms: 0.4023
+  type: 'test'
+  ...
+# Subtest: address lookup failures and cancellation retain system-error semantics
+ok 92 - address lookup failures and cancellation retain system-error semantics
+  ---
+  duration_ms: 0.3174
+  type: 'test'
+  ...
+# Subtest: captured public salon named Nails cannot turn a generic near-me request into a brand search
+ok 93 - captured public salon named Nails cannot turn a generic near-me request into a brand search
+  ---
+  duration_ms: 0.4367
+  type: 'test'
+  ...
+# Subtest: captured generic brand collision preserves category semantics for explicit location phrases
+ok 94 - captured generic brand collision preserves category semantics for explicit location phrases
+  ---
+  duration_ms: 0.4154
+  type: 'test'
+  ...
+# Subtest: verified explicit areas and generic service-city combinations cannot be consumed by exact full names
+ok 95 - verified explicit areas and generic service-city combinations cannot be consumed by exact full names
+  ---
+  duration_ms: 0.7123
+  type: 'test'
+  ...
+# Subtest: Anywhere searches keywords and typed ZIP/state/place without requiring device location
+ok 96 - Anywhere searches keywords and typed ZIP/state/place without requiring device location
+  ---
+  duration_ms: 0.7691
+  type: 'test'
+  ...
+# Subtest: a matching salon name cannot consume literal style terms; explicit names remain available
+ok 97 - a matching salon name cannot consume literal style terms; explicit names remain available
+  ---
+  duration_ms: 0.682
+  type: 'test'
+  ...
+# Subtest: local rerenders preserve pagination; a fresh server page replaces the feed session
+ok 98 - local rerenders preserve pagination; a fresh server page replaces the feed session
+  ---
+  duration_ms: 175.5596
+  type: 'test'
+  ...
+# Subtest: changing viewer replaces feed state even when the page object is unchanged
+ok 99 - changing viewer replaces feed state even when the page object is unchanged
+  ---
+  duration_ms: 86.8715
+  type: 'test'
+  ...
+# Subtest: search propagates caller cancellation and releases its deadline
+ok 100 - search propagates caller cancellation and releases its deadline
+  ---
+  duration_ms: 12.665
+  type: 'test'
+  ...
+# Subtest: search distinguishes the request deadline from caller cancellation
+ok 101 - search distinguishes the request deadline from caller cancellation
+  ---
+  duration_ms: 9.416
+  type: 'test'
+  ...
+# Subtest: search keeps caller cancellation connected while a successful response body is still loading
+ok 102 - search keeps caller cancellation connected while a successful response body is still loading
+  ---
+  duration_ms: 6.8968
+  type: 'test'
+  ...
+# Subtest: search applies its deadline to delayed JSON and classifies body expiry as timeout
+ok 103 - search applies its deadline to delayed JSON and classifies body expiry as timeout
+  ---
+  duration_ms: 7.4933
+  type: 'test'
+  ...
+# Subtest: search preserves a body network rejection and releases resources only after body settlement
+ok 104 - search preserves a body network rejection and releases resources only after body settlement
+  ---
+  duration_ms: 6.699
+  type: 'test'
+  ...
+# Subtest: search clears its deadline after a delayed JSON body finishes successfully
+ok 105 - search clears its deadline after a delayed JSON body finishes successfully
+  ---
+  duration_ms: 5.318
+  type: 'test'
+  ...
+# Subtest: discovery propagates caller cancellation and releases its deadline
+ok 106 - discovery propagates caller cancellation and releases its deadline
+  ---
+  duration_ms: 10.0196
+  type: 'test'
+  ...
+# Subtest: discovery distinguishes the request deadline from caller cancellation
+ok 107 - discovery distinguishes the request deadline from caller cancellation
+  ---
+  duration_ms: 5.7075
+  type: 'test'
+  ...
+# Subtest: discovery keeps caller cancellation connected while a successful response body is still loading
+ok 108 - discovery keeps caller cancellation connected while a successful response body is still loading
+  ---
+  duration_ms: 5.3241
+  type: 'test'
+  ...
+# Subtest: discovery applies its deadline to delayed JSON and classifies body expiry as timeout
+ok 109 - discovery applies its deadline to delayed JSON and classifies body expiry as timeout
+  ---
+  duration_ms: 7.0644
+  type: 'test'
+  ...
+# Subtest: discovery preserves a body network rejection and releases resources only after body settlement
+ok 110 - discovery preserves a body network rejection and releases resources only after body settlement
+  ---
+  duration_ms: 4.6517
+  type: 'test'
+  ...
+# Subtest: discovery clears its deadline after a delayed JSON body finishes successfully
+ok 111 - discovery clears its deadline after a delayed JSON body finishes successfully
+  ---
+  duration_ms: 4.9625
+  type: 'test'
+  ...
+# Subtest: discovery preserves an expired session error returned by the server
+ok 112 - discovery preserves an expired session error returned by the server
+  ---
+  duration_ms: 5.3082
+  type: 'test'
+  ...
+# Subtest: search rejects an obsolete successful payload and an already-aborted call never fetches
+ok 113 - search rejects an obsolete successful payload and an already-aborted call never fetches
+  ---
+  duration_ms: 11.8843
+  type: 'test'
+  ...
+# Subtest: search discards a delayed body even if the transport ignores cancellation
+ok 114 - search discards a delayed body even if the transport ignores cancellation
+  ---
+  duration_ms: 8.6079
+  type: 'test'
+  ...
+# Subtest: search preserves the server error kind instead of turning query failures into network failures
+ok 115 - search preserves the server error kind instead of turning query failures into network failures
+  ---
+  duration_ms: 17.5692
+  type: 'test'
+  ...
+# Subtest: fresh real media replaces suggestions by salon ID without changing rank, combining names or inserting an unseen salon
+ok 116 - fresh real media replaces suggestions by salon ID without changing rank, combining names or inserting an unseen salon
+  ---
+  duration_ms: 1.1056
+  type: 'test'
+  ...
+# Subtest: hydration uses complete committed query/location/filter/session metadata, even after the final page
+ok 117 - hydration uses complete committed query/location/filter/session metadata, even after the final page
+  ---
+  duration_ms: 0.2196
+  type: 'test'
+  ...
+# Subtest: focus/restore rechecks a bounded window and suppresses hidden-tab refresh
+ok 118 - focus/restore rechecks a bounded window and suppresses hidden-tab refresh
+  ---
+  duration_ms: 24.9455
+  type: 'test'
+  ...
+# Subtest: late media from a previous query cannot replace a new page; account reset clears and suspends the old session
+ok 119 - late media from a previous query cannot replace a new page; account reset clears and suspends the old session
+  ---
+  duration_ms: 21.4318
+  type: 'test'
+  ...
+# Subtest: legacy/error pages never reuse media sessions and failed validation keeps current data
+ok 120 - legacy/error pages never reuse media sessions and failed validation keeps current data
+  ---
+  duration_ms: 32.478
+  type: 'test'
+  ...
+# Subtest: operational search metrics distinguish real empty, content delegation, location and failure without private values
+ok 121 - operational search metrics distinguish real empty, content delegation, location and failure without private values
+  ---
+  duration_ms: 0.7519
+  type: 'test'
+  ...
+# Subtest: initial search, next page and bounded card refresh retain their actual ranking path
+ok 122 - initial search, next page and bounded card refresh retain their actual ranking path
+  ---
+  duration_ms: 0.1698
+  type: 'test'
+  ...
+# Subtest: a read action refreshing the server tree does not replace an active search cursor
+ok 123 - a read action refreshing the server tree does not replace an active search cursor
+  ---
+  duration_ms: 163.1582
+  type: 'test'
+  ...
+# Subtest: temporary database timeout retries once and preserves returned data
+ok 124 - temporary database timeout retries once and preserves returned data
+  ---
+  duration_ms: 356.3392
+  type: 'test'
+  ...
+# Subtest: persistent timeout stops after two attempts
+ok 125 - persistent timeout stops after two attempts
+  ---
+  duration_ms: 358.746
+  type: 'test'
+  ...
+# Subtest: validation and authorization errors are not retried
+ok 126 - validation and authorization errors are not retried
+  ---
+  duration_ms: 0.3492
+  type: 'test'
+  ...
+# Subtest: timeout, network, query and expired cursor stay distinct
+ok 127 - timeout, network, query and expired cursor stay distinct
+  ---
+  duration_ms: 0.3176
+  type: 'test'
+  ...
+# Subtest: aborted requests never start a timeout retry
+ok 128 - aborted requests never start a timeout retry
+  ---
+  duration_ms: 0.1531
+  type: 'test'
+  ...
+# Subtest: a legacy high page never dispatches OFFSET or an extra count query
+ok 129 - a legacy high page never dispatches OFFSET or an extra count query
+  ---
+  duration_ms: 62.3347
+  type: 'test'
+  ...
+# Subtest: first search resolves current city and service/name phrases, preserving raw query while freezing regional filters
+ok 130 - first search resolves current city and service/name phrases, preserving raw query while freezing regional filters
+  ---
+  duration_ms: 11.5138
+  type: 'test'
+  ...
+# Subtest: styles and legacy posts execute unified salon search while unresolved near-me blocks broad results
+ok 131 - styles and legacy posts execute unified salon search while unresolved near-me blocks broad results
+  ---
+  duration_ms: 31.5637
+  type: 'test'
+  ...
+# Subtest: entity errors remain system errors, resolved SSR routing is reused, and cursor continuations never reinterpret filters
+ok 132 - entity errors remain system errors, resolved SSR routing is reused, and cursor continuations never reinterpret filters
+  ---
+  duration_ms: 20.6319
+  type: 'test'
+  ...
+# Subtest: true empty, timeout, expired cursor and network failure do not share error state
+ok 133 - true empty, timeout, expired cursor and network failure do not share error state
+  ---
+  duration_ms: 52.7371
+  type: 'test'
+  ...
+# Subtest: style filters, legacy target and continuation preserve the unified canonical RPC contract
+ok 134 - style filters, legacy target and continuation preserve the unified canonical RPC contract
+  ---
+  duration_ms: 11.57
+  type: 'test'
+  ...
+# Subtest: missing migration and old cursor fail explicitly instead of returning old split-search semantics
+ok 135 - missing migration and old cursor fail explicitly instead of returning old split-search semantics
+  ---
+  duration_ms: 38.8555
+  type: 'test'
+  ...
+# Subtest: same-session media hydration is bounded, requires a current cursor and preserves requested IDs
+ok 136 - same-session media hydration is bounded, requires a current cursor and preserves requested IDs
+  ---
+  duration_ms: 9.4952
+  type: 'test'
+  ...
+# Subtest: an intentionally empty canonical content query is not replaced by raw query text
+ok 137 - an intentionally empty canonical content query is not replaced by raw query text
+  ---
+  duration_ms: 10.227
+  type: 'test'
+  ...
+# Subtest: hydrated salon rows dedup by ID and references remain separate from real matching results
+ok 138 - hydrated salon rows dedup by ID and references remain separate from real matching results
+  ---
+  duration_ms: 9.9485
+  type: 'test'
+  ...
+# Subtest: primary-empty search can continue labelled references without replacing query, scope or matching evidence
+ok 139 - primary-empty search can continue labelled references without replacing query, scope or matching evidence
+  ---
+  duration_ms: 10.7832
+  type: 'test'
+  ...
+# Subtest: unknown category-less query stays truthful when the server has no related candidates
+ok 140 - unknown category-less query stays truthful when the server has no related candidates
+  ---
+  duration_ms: 11.116
+  type: 'test'
+  ...
+# Subtest: unknown or ambiguous street addresses stop before search and retain their area choices
+ok 141 - unknown or ambiguous street addresses stop before search and retain their area choices
+  ---
+  duration_ms: 20.4923
+  type: 'test'
+  ...
+# Subtest: partial real post evidence remains a labelled style reference rather than a primary style match
+ok 142 - partial real post evidence remains a labelled style reference rather than a primary style match
+  ---
+  duration_ms: 11.0841
+  type: 'test'
+  ...
+# Subtest: search API forwards bounded canonical filters and media hydration through the existing private endpoint
+ok 143 - search API forwards bounded canonical filters and media hydration through the existing private endpoint
+  ---
+  duration_ms: 3.1523
+  type: 'test'
+  ...
+# Subtest: invalid or oversized hydration IDs are rejected before any search or hydration RPC can execute
+ok 144 - invalid or oversized hydration IDs are rejected before any search or hydration RPC can execute
+  ---
+  duration_ms: 6.9364
+  type: 'test'
+  ...
+# Subtest: aborted search response is never returned as a reusable successful result
+ok 145 - aborted search response is never returned as a reusable successful result
+  ---
+  duration_ms: 1.8797
+  type: 'test'
+  ...
+1..145
+# tests 153
+# suites 0
+# pass 152
+# fail 0
+# cancelled 0
+# skipped 1
+# todo 0
+# duration_ms 64468.9381

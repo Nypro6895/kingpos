@@ -1,12 +1,7 @@
-
-import { SalonName } from "@/components/salon-member-badge";
-import {getContextBusinessTimezone} from "@/lib/salon-business-clock";
-import {TicketDetailInlineHistory} from "@/app/pos-tickets/closed-ticket-correction-form";
 import { withExperiencePage } from "@/components/experience-page";
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { WorkspaceText } from "@/components/workspace-language";
 import { ContextualSupport } from "@/components/contextual-support";
-import { isOwnerMembership } from "@/lib/current-context";
 
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -30,62 +25,35 @@ import {
   type PosTicketStaffOption,
   POS_TICKET_PERMISSIONS,
 } from "@/lib/pos-tickets";
-import {
-  POS_PAYMENT_METHOD_LABELS,
-  POS_PAYMENT_METHOD_OPTIONS,
-} from "@/lib/pos-payments";
+import { POS_PAYMENT_METHOD_OPTIONS } from "@/lib/pos-payments";
+import { ClosedTicketDetailEditor, TicketDetailInlineHistory } from "@/app/pos-tickets/closed-ticket-correction-form";
+import { TicketDetailView } from "@/app/pos-tickets/ticket-detail-view";
+import styles from "@/app/pos-tickets/ticket-detail-view.module.css";
+import { buildTicketDetailHref, buildTicketListHref, sanitizeTicketDetailReturnTo, ticketBusinessDate } from "@/lib/pos-ticket-navigation";
+import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
+import { canApplyFinancialCorrections, FINANCIAL_CORRECTION_PERMISSIONS, isDailyClosingLocked } from "@/lib/daily-pos-report";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
-import { ticketFinancialView } from "@/lib/pos-ticket-financial-view";
-import { TicketPaymentSummary } from "@/components/ticket-payment-summary";
-import {TicketGiftDelivery} from "@/components/gift-card/ticket-gift-delivery";
 import { buildTicketReceipt } from "@/lib/pos-ticket-receipt";
 import { getTicketTimeline } from "@/lib/pos-ticket-timeline";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import type {
   PosTicketDiscountType,
-  PosTicketStatus,
   PosTicketTipType,
 } from "@/types/pos-ticket";
 import type { Service } from "@/types/service";
 import { STAFF_WORKDAY_STATUS_LABELS } from "@/lib/staff-workdays";
-import Link from "next/link";
+
+import { isOwnerMembership } from "@/lib/current-context";
+import { ticketFinancialView } from "@/lib/pos-ticket-financial-view";
+import { TicketPaymentSummary } from "@/components/ticket-payment-summary";
+import { TicketGiftDelivery } from "@/components/gift-card/ticket-gift-delivery";
+import { ReceiptPrintActions } from "@/components/receipt-print-actions";
 
 type PosTicketDetailPageProps = {
   params: Promise<{ ticketId: string }>;
-  searchParams: Promise<{ error?: string; returnTo?: string }>;
+  searchParams: Promise<{ edit?: string | string[]; error?: string | string[]; returnTo?: string | string[] }>;
 };
-
-const STATUS_LABELS: Record<PosTicketStatus, string> = {
-  open: "Open",
-  closed: "Closed",
-  cancelled: "Cancelled",
-  voided: "Voided",
-};
-
-const DISCOUNT_TYPE_LABELS: Record<PosTicketDiscountType, string> = {
-  fixed_amount: "Fixed Amount",
-  percentage: "Percentage",
-};
-
-const TIP_TYPE_LABELS: Record<PosTicketTipType, string> = {
-  fixed_amount: "Fixed Amount",
-  percentage: "Percentage",
-};
-
-function formatTicketDateTime(value: string | null) {
-  if (!value) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -98,33 +66,6 @@ function toCents(value: number) {
   return Math.round((value + Number.EPSILON) * 100);
 }
 
-function formatQuantity(value: number) {
-  return Number.isInteger(value) ? value.toString() : value.toFixed(2);
-}
-
-function formatDuration(value: number | null | undefined) {
-  if (!value) {
-    return "-";
-  }
-
-  return `${value} min`;
-}
-
-function StatusBadge({ status }: { status: PosTicketStatus }) {
-  const isOpen = status === "open";
-
-  return (
-    <span
-      className={
-        isOpen
-          ? "inline-flex rounded-md bg-zinc-950 px-2 py-1 text-xs font-medium text-white"
-          : "inline-flex rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700"
-      }
-    >
-      <WorkspaceText text={STATUS_LABELS[status]} />
-    </span>
-  );
-}
 
 function TicketInputFields({revision,note=true}:{revision:number;note?:boolean}) {
   return <>
@@ -504,49 +445,40 @@ async function PosTicketDetailPage({
   params,
   searchParams,
 }: PosTicketDetailPageProps) {
-  const __vt = await getWorkspaceTranslation();
-
-  const [{ ticketId }, { error, returnTo }, context] = await Promise.all([
+  const [{ ticketId }, query, context, translate] = await Promise.all([
     params,
     searchParams,
     params.then(({ ticketId: id }) =>
       requireSalonManagePageContext(`/pos-tickets/${id}`),
     ),
+    getWorkspaceTranslation(),
   ]);
-
   const canViewTickets = await hasPermission(POS_TICKET_PERMISSIONS.view, context);
-
   if (!canViewTickets) {
-    return (
-      <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-          <WorkspaceText text="You do not have permission to view POS tickets." />
-        </p>
-      </main>
-    );
+    return <main className="mx-auto w-full max-w-3xl px-6 py-12"><p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600"><WorkspaceText text="You do not have permission to view POS tickets." /></p></main>;
   }
-
-  const [{ ticket }, canManageTickets, canVoidTickets] = await Promise.all([
+  const [{ ticket }, canManageTickets, canVoidTickets, timeZone] = await Promise.all([
     getCurrentSalonPosTicket(ticketId),
     hasPermission(POS_TICKET_PERMISSIONS.manage, context),
     hasPermission(POS_TICKET_PERMISSIONS.void, context),
+    getContextBusinessTimezone(context),
   ]);
-
   if (!ticket) {
-    return (
-      <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-          <WorkspaceText text="POS Ticket was not found for the current salon." />
-        </p>
-      </main>
-    );
+    return <main className="mx-auto w-full max-w-3xl px-6 py-12"><p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600"><WorkspaceText text="POS Ticket was not found for the current salon." /></p></main>;
   }
 
+  const businessDate = ticketBusinessDate(ticket.opened_at, timeZone);
+  const [isBusinessDateLocked, canRequestStaffCorrection, canApplyFinancialCorrection] = await Promise.all([
+    isDailyClosingLocked(businessDate, context),
+    hasPermission(FINANCIAL_CORRECTION_PERMISSIONS.request, context),
+    canApplyFinancialCorrections(context),
+  ]);
+  const isOwner = isOwnerMembership(context.currentMembership);
   const isOpen = ticket.status === "open";
   const isClosed = ticket.status === "closed";
-  const canWorkTicket = isOwnerMembership(context.currentMembership) && canManageTickets && isOpen;
-  const canVoidOrReopenTicket = isOwnerMembership(context.currentMembership) && canVoidTickets && isClosed;
-  const returnPath = `/pos-tickets/${ticket.id}`;
+  const canWorkTicket = isOwner && canManageTickets && isOpen;
+  const canVoidOrReopenTicket = isOwner && canVoidTickets && isClosed;
+  // Match the daily ticket screen's financial-lock and correction permissions.
   const serviceTotals = calculateTicketTotals({
     discountType: ticket.discount_type,
     discountValue: ticket.discount_value,
@@ -556,31 +488,28 @@ async function PosTicketDetailPage({
     tipType: ticket.tip_type,
     tipValue: ticket.tip_value,
   });
-  const financial = ticketFinancialView(ticket,serviceTotals);
+  const financial = ticketFinancialView(ticket, serviceTotals);
   const totals = financial.totals;
-  const options = canWorkTicket
+  const canCorrectTickets = canManageTickets || canVoidTickets;
+  const canEditClosedTicket = isOwner && isClosed && !financial.giftOnly && (isBusinessDateLocked
+    ? canCorrectTickets || canRequestStaffCorrection || canApplyFinancialCorrection
+    : canCorrectTickets);
+  const isEditing = query.edit === "1" && (canWorkTicket || canEditClosedTicket);
+  const backHref = sanitizeTicketDetailReturnTo(typeof query.returnTo === "string" ? query.returnTo : undefined, buildTicketListHref({ date: businessDate, ticketId: ticket.id }));
+  const viewHref = buildTicketDetailHref(ticket.id, { returnTo: backHref });
+  const editHref = buildTicketDetailHref(ticket.id, { edit: true, returnTo: backHref });
+  const returnPath = isEditing && canWorkTicket ? editHref : viewHref;
+  const options = isEditing
     ? await getCurrentSalonPosTicketOptions(context)
     : { services: [], staff: [] };
   const hasItems = (ticket.ticket_items ?? []).length > 0;
   const totalCents = toCents(totals.total);
   const paidCents = toCents(totals.paid);
   const remainingCents = toCents(totals.remaining);
-  const paymentStatus =
-    paidCents <= 0
-      ? "Unpaid"
-      : remainingCents === 0 && paidCents === totalCents
-        ? "Paid"
-        : "Partially Paid";
-  const paymentProgress =
-    totalCents > 0
-      ? Math.min(100, Math.max(0, (paidCents / totalCents) * 100))
-      : 0;
-  const checkoutAvailable =
-    canWorkTicket &&
-    hasItems &&
-    totalCents > 0 &&
-    paidCents === totalCents &&
-    remainingCents === 0;
+  const paymentStatus = paidCents <= 0
+    ? "Unpaid"
+    : remainingCents === 0 && paidCents === totalCents ? "Paid" : "Partially Paid";
+  const checkoutAvailable = canWorkTicket && hasItems && totalCents > 0 && paidCents === totalCents && remainingCents === 0;
   const checkoutUnavailableReason = !hasItems
     ? "Add at least one service before checkout."
     : totalCents <= 0
@@ -590,710 +519,69 @@ async function PosTicketDetailPage({
         : paidCents < totalCents || remainingCents > 0
           ? "Collect full payment before checkout."
           : "";
-  const receipt = buildTicketReceipt({
-    customer: ticket.customer,
-    items: ticket.ticket_items ?? [],
-    payments: ticket.payments ?? [],
-    salon: context.currentSalon,
-    ticket,
-    totals: serviceTotals,
-  });
+  const receipt = buildTicketReceipt({ customer: ticket.customer, items: ticket.ticket_items ?? [], payments: ticket.payments ?? [], salon: context.currentSalon, ticket, totals: serviceTotals });
   const timeline = getTicketTimeline(ticket);
-  const businessTimezone=await getContextBusinessTimezone(context);
-  const businessDate=new Intl.DateTimeFormat("en-CA",{timeZone:businessTimezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(ticket.opened_at));
+  const editingOpenTicket = isEditing && canWorkTicket;
+  const translatedStatus = translate(ticket.status);
+  const ticketStatusLabel = translatedStatus !== ticket.status ? translatedStatus : translate({ open: "Open", closed: "Closed", cancelled: "Cancelled", voided: "Voided" }[ticket.status]);
 
-  return (
-    <main className="min-w-0 w-full px-4 py-6 sm:px-6">
-      <div className="border-b border-zinc-200 pb-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link className="text-sm font-medium text-zinc-950 underline" href={returnTo && /^\/(reports|pos\/report)\?(?!.*[\\\r\n]).*$/.test(returnTo) ? returnTo : "/pos-tickets"}>
-          <WorkspaceText text={returnTo && /^\/(reports|pos\/report)\?/.test(returnTo) ? "Back to Reports" : "Back to POS tickets"} />
-          </Link>
-          <div className="flex items-center gap-3"><StatusBadge status={ticket.status} /><ContextualSupport /></div>
-        </div>
-        <TicketDetailInlineHistory ticket={ticket} salonId={context.currentSalon.id} businessDate={businessDate} timeZone={businessTimezone} timeline={timeline}>
-        <div className="mt-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-4">
-          <p>
-            <span className="font-medium text-zinc-950"><WorkspaceText text="Ticket:" /></span>{" "}
-            {ticket.ticket_number}
-          </p>
-          <p>
-            <span className="font-medium text-zinc-950"><WorkspaceText text="Created Time:" /></span>{" "}
-            <WorkspaceText text={formatTicketDateTime(ticket.created_at)} />
-          </p>
-          <p>
-            <span className="font-medium text-zinc-950"><WorkspaceText text="Closed Time:" /></span>{" "}
-            <WorkspaceText text={formatTicketDateTime(ticket.closed_at)} />
-          </p>
-          <p>
-            <span className="font-medium text-zinc-950"><WorkspaceText text="Assigned Salon:" /></span>{" "}
-            <SalonName name={context.currentSalon.name} salonId={context.currentSalon.id}/>
-          </p>
-        </div>
-        </TicketDetailInlineHistory>
+  return <TicketDetailView
+    backHref={backHref}
+    backLabel={/^\/(reports|pos\/report)(?:\?|$)/.test(backHref) ? "Back to Reports" : "POS tickets"}
+    editHref={isEditing ? (canWorkTicket ? viewHref : undefined) : canWorkTicket || canEditClosedTicket ? editHref : undefined}
+    editLabel={isEditing ? "Done" : "Edit"}
+    error={typeof query.error === "string" ? query.error : undefined}
+    support={<ContextualSupport />}
+    ticket={ticket}
+    ticketStatusLabel={ticketStatusLabel}
+    totals={totals}
+    totalLabel={isEditing && canEditClosedTicket ? "Saved total" : "Total"}
+    paymentStatus={paymentStatus}
+    receipt={receipt}
+    receiptActions={<ReceiptPrintActions receipt={receipt} receiptId={ticket.id} context={{ scope: `salon:${context.currentSalon.id}`, timezone: timeZone, brand: { salonName: context.currentSalon.name, phone: context.currentSalon.phone, address: [context.currentSalon.address_line1, context.currentSalon.address_line2, context.currentSalon.city, context.currentSalon.state, context.currentSalon.postal_code].filter(Boolean).join(", ") } }} />}
+    recordedHistory={<TicketDetailInlineHistory ticket={ticket} salonId={context.currentSalon.id} businessDate={businessDate} timeZone={timeZone} timeline={timeline}><div className="min-h-11 py-3 text-sm font-medium"><WorkspaceText text="Recorded ticket history" /></div></TicketDetailInlineHistory>}
+    giftItems={financial.giftSales.map(sale=><li key={sale.id} className={styles.service} data-ticket-gift-item><div className={styles.row}><span className={styles.serviceName}><WorkspaceText text="Gift card" /> · •••• {sale.last4}{sale.status === "voided" ? " · Voided" : ""}</span><span className={styles.amount}>{formatMoney(sale.amountCents/100)}</span></div><p className={styles.small}><WorkspaceText text="Gift purchase" /></p><span data-ticket-gift-staff aria-hidden="true" />{canManageTickets && ticket.status === "closed" && sale.status === "completed" ? <TicketGiftDelivery ticketId={ticket.id} saleId={sale.id} last4={sale.last4} /> : null}</li>)}
+    paymentSummary={(financial.giftSales.length > 0 || financial.giftRedeemed > 0) && !canWorkTicket ? <TicketPaymentSummary payments={financial.payments} timeZone={timeZone} /> : undefined}
+    timeline={timeline}
+    salonName={context.currentSalon.name}
+    timeZone={timeZone}
+    serviceEditor={isEditing && canEditClosedTicket ? <ClosedTicketDetailEditor
+      ticket={ticket}
+      services={options.services}
+      staff={options.staff}
+      returnTo={viewHref}
+      cancelHref={viewHref}
+      canEdit={canEditClosedTicket}
+      isBusinessDateLocked={isBusinessDateLocked}
+      canApplyFinancialCorrection={canApplyFinancialCorrection}
+      timeZone={timeZone}
+      businessDateCompactLabel={new Intl.DateTimeFormat("en-US", { timeZone, month: "short", day: "numeric", year: "numeric" }).format(new Date(ticket.opened_at))}
+    /> : undefined}
+    itemEditors={editingOpenTicket ? Object.fromEntries((ticket.ticket_items ?? []).map(item => [item.id,
+      <details key={item.id} className="text-sm"><summary className="min-h-10 cursor-pointer text-xs font-medium text-emerald-800"><WorkspaceText text="Edit service" /></summary><div className="grid gap-3 pb-1 pt-2"><AssignStaffForm revision={ticket.workspace_revision ?? 0} itemId={item.id} returnPath={returnPath} staff={options.staff} staffId={item.assigned_staff_id} /><ItemPriceForm itemId={item.id} quantity={item.quantity} unitPrice={item.unit_price} revision={ticket.workspace_revision ?? 0} returnPath={returnPath} /><form action={deletePosTicketItem}><TicketInputFields revision={ticket.workspace_revision ?? 0} /><input name="item_id" type="hidden" value={item.id} /><input name="return_to" type="hidden" value={returnPath} /><SubmitButton pendingLabel="Removing…" className="min-h-10 text-xs font-medium text-red-700" type="submit"><WorkspaceText text="Remove Item" /></SubmitButton></form></div></details>
+    ])) : undefined}
+    serviceActions={editingOpenTicket ? <AddServiceForm revision={ticket.workspace_revision ?? 0} returnPath={returnPath} services={options.services} ticketId={ticket.id} /> : undefined}
+    financialEditor={editingOpenTicket ? <div className="mt-4 grid gap-3">
+      <details className="rounded-md border border-zinc-200 p-3"><summary className="cursor-pointer text-sm font-medium"><WorkspaceText text="Discount" /></summary><DiscountForm revision={ticket.workspace_revision ?? 0} discountType={ticket.discount_type} discountValue={ticket.discount_value} returnPath={returnPath} ticketId={ticket.id} /></details>
+      <details className="rounded-md border border-zinc-200 p-3"><summary className="cursor-pointer text-sm font-medium"><WorkspaceText text="Tax" /></summary><TaxForm revision={ticket.workspace_revision ?? 0} returnPath={returnPath} taxRate={ticket.tax_rate} ticketId={ticket.id} /></details>
+      <details className="rounded-md border border-zinc-200 p-3"><summary className="cursor-pointer text-sm font-medium"><WorkspaceText text="Tip" /></summary><TipForm revision={ticket.workspace_revision ?? 0} returnPath={returnPath} ticketId={ticket.id} tipType={ticket.tip_type} tipValue={ticket.tip_value} /></details>
+    </div> : undefined}
+    paymentEditors={editingOpenTicket ? Object.fromEntries((ticket.payments ?? []).map(payment => [payment.id,
+      <form action={deletePosPayment} key={payment.id}><TicketInputFields revision={ticket.workspace_revision ?? 0} /><input name="payment_id" type="hidden" value={payment.id} /><input name="return_to" type="hidden" value={returnPath} /><SubmitButton pendingLabel="Removing…" className="min-h-10 text-xs font-medium text-red-700" type="submit"><WorkspaceText text="Delete" /></SubmitButton></form>
+    ])) : undefined}
+    paymentEditor={editingOpenTicket && remainingCents > 0 ? <AddPaymentForm revision={ticket.workspace_revision ?? 0} remaining={totals.remaining} returnPath={returnPath} ticketId={ticket.id} /> : undefined}
+    actions={canWorkTicket || canVoidOrReopenTicket ? <>
+      {canWorkTicket && !checkoutAvailable ? <p className={styles.notice}><WorkspaceText text={checkoutUnavailableReason} /></p> : null}
+      <div className={styles.actionForms}>
+        {checkoutAvailable ? <form action={closePosTicket}><TicketInputFields revision={ticket.workspace_revision ?? 0} note={false} /><input name="ticket_id" type="hidden" value={ticket.id} /><input name="return_to" type="hidden" value={viewHref} /><SubmitButton pendingLabel="Processing…" className="min-h-11 rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white" type="submit"><WorkspaceText text="Checkout" /></SubmitButton></form> : null}
+        {canWorkTicket ? <details><summary><WorkspaceText text="Cancel Ticket" /></summary><WorkflowActionForm revision={ticket.workspace_revision ?? 0} action={cancelPosTicket} buttonLabel="Cancel Ticket" returnPath={returnPath} ticketId={ticket.id} /></details> : null}
+        {canVoidOrReopenTicket ? <>
+          {!financial.giftSales.length ? <details><summary><WorkspaceText text="Reopen Ticket" /></summary><WorkflowActionForm revision={ticket.workspace_revision ?? 0} action={reopenPosTicket} buttonLabel="Reopen Ticket" returnPath={viewHref} ticketId={ticket.id} /></details> : null}
+          <details><summary className="text-red-700"><WorkspaceText text="Void Ticket" /></summary><WorkflowActionForm revision={ticket.workspace_revision ?? 0} action={voidPosTicket} buttonLabel="Void Ticket" returnPath={viewHref} ticketId={ticket.id} /></details>
+        </> : null}
       </div>
-
-      {error ? (
-        <p className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <WorkspaceText text={error} />
-        </p>
-      ) : null}
-
-      {ticket.source_booking_id ? (
-        <section className="mt-8 min-w-0 bg-sky-50 p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase text-sky-800">
-                <WorkspaceText text="From appointment" />
-              </p>
-              <h2 className="mt-1 text-lg font-semibold text-zinc-950">
-                <WorkspaceText text={ticket.source_booking
-                  ? formatTicketDateTime(ticket.source_booking.start_at)
-                  : "Linked appointment"} />
-              </h2>
-              <p className="mt-1 text-sm text-sky-900">
-                <WorkspaceText text="Booking reference:" /> {ticket.source_booking_id}
-              </p>
-            </div>
-            <Link
-              className="inline-flex w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-              href={
-                ticket.source_booking
-                  ? `/bookings?date=${ticket.source_booking.start_at.slice(0, 10)}&bookingId=${ticket.source_booking.id}`
-                  : `/bookings?bookingId=${ticket.source_booking_id}`
-              }
-            >
-              <WorkspaceText text="View appointment" />
-            </Link>
-          </div>
-        </section>
-      ) : null}
-
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Customer" /></h2>
-        <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5 text-sm text-zinc-700">
-          <p className="font-medium text-zinc-950">
-            {ticket.customer?.name ?? "Unknown customer"}
-          </p>
-          <p className="mt-1">{ticket.customer?.phone ?? "-"}</p>
-          <p className="mt-1">{ticket.customer?.email ?? "-"}</p>
-        </div>
-      </section>
-
-      <section className="mt-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Services" /></h2>
-          {canWorkTicket ? (
-            <span className="text-sm font-medium text-zinc-700">
-              <WorkspaceText text="Service Actions" />
-            </span>
-          ) : null}
-        </div>
-
-        {(ticket.ticket_items ?? []).length === 0 && !financial.giftSales.length ? (
-          <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
-            <WorkspaceText text="No services added yet." />
-          </p>
-        ) : (
-          <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
-            <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-              <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Service" /></div>
-              <div className="hidden sm:col-span-1 sm:block"><WorkspaceText text="Duration" /></div>
-              <div className="hidden sm:col-span-1 sm:block"><WorkspaceText text="Price" /></div>
-              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Assigned Staff" /></div>
-              <div className="hidden sm:col-span-1 sm:block"><WorkspaceText text="Quantity" /></div>
-              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Subtotal" /></div>
-              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Actions" /></div>
-            </div>
-            <ul className="divide-y divide-zinc-200">
-              {(ticket.ticket_items ?? []).map((item) => (
-                <li className="grid grid-cols-12 gap-3 px-4 py-3" key={item.id}>
-                  <div className="col-span-12 text-sm font-medium text-zinc-950 sm:col-span-3">
-                    <p>
-                      {item.service_name_snapshot ??
-                        item.service?.name ??
-                        "Unknown service"}
-                    </p>
-                    {item.source_kind === "booking" ? (
-                      <p className="mt-1 text-xs font-semibold text-sky-700">
-                        <WorkspaceText text="Booking snapshot" />
-                        <WorkspaceText text={item.source_booking_line_id
-                          ? ` / line ${item.source_booking_line_id.slice(0, 8)}`
-                          : ""} />
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="col-span-12 text-sm text-zinc-700 sm:col-span-1">
-                    <span className="font-medium text-zinc-500 sm:hidden">
-                      <WorkspaceText text="Duration:" />{" "}
-                    </span>
-                    <WorkspaceText text={formatDuration(item.service?.duration_minutes)} />
-                  </div>
-                  <div className="col-span-12 text-sm text-zinc-700 sm:col-span-1">
-                    <span className="font-medium text-zinc-500 sm:hidden">
-                      <WorkspaceText text="Price:" />{" "}
-                    </span>
-                    {formatMoney(item.unit_price)}
-                    {canWorkTicket?<ItemPriceForm itemId={item.id} quantity={item.quantity} unitPrice={item.unit_price} revision={ticket.workspace_revision??0} returnPath={returnPath}/>:null}
-                    {item.booked_unit_price_snapshot !== null ? (
-                      <p className="mt-1 text-xs text-zinc-500">
-                        <WorkspaceText text="Booked" /> {formatMoney(item.booked_unit_price_snapshot)}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="col-span-12 text-sm text-zinc-700 sm:col-span-2">
-                    {canWorkTicket ? (
-                      <AssignStaffForm
-                        revision={ticket.workspace_revision??0}
-                        itemId={item.id}
-                        returnPath={returnPath}
-                        staff={options.staff}
-                        staffId={item.assigned_staff_id}
-                      />
-                    ) : (
-                      <>
-                        <span className="font-medium text-zinc-500 sm:hidden">
-                          <WorkspaceText text="Assigned Staff:" />{" "}
-                        </span>
-                        {item.assigned_staff?.display_name ?? "-"}
-                        {item.performed_staff ? (
-                          <p className="mt-1 text-xs text-zinc-500">
-                            <WorkspaceText text="Performed by" /> {item.performed_staff.display_name}
-                          </p>
-                        ) : null}
-                      </>
-                    )}
-                  </div>
-                  <div className="col-span-12 text-sm text-zinc-700 sm:col-span-1">
-                    <span className="font-medium text-zinc-500 sm:hidden">
-                      <WorkspaceText text="Quantity:" />{" "}
-                    </span>
-                    {formatQuantity(item.quantity)}
-                  </div>
-                  <div className="col-span-12 text-sm font-medium text-zinc-950 sm:col-span-2">
-                    <span className="font-medium text-zinc-500 sm:hidden">
-                      <WorkspaceText text="Subtotal:" />{" "}
-                    </span>
-                    {formatMoney(item.line_total)}
-                  </div>
-                  <div className="col-span-12 text-sm sm:col-span-2">
-                    {canWorkTicket ? (
-                      <form action={deletePosTicketItem}>
-                        <input name="item_id" type="hidden" value={item.id} />
-                        <input name="return_to" type="hidden" value={returnPath} />
-                        <TicketInputFields revision={ticket.workspace_revision??0} />
-                        <SubmitButton pendingLabel="Removing…"
-                          className="font-medium text-zinc-950 underline"
-                          type="submit"
-                        >
-                          <WorkspaceText text="Remove Item" />
-                        </SubmitButton>
-                      </form>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-              {financial.giftSales.map(sale=><li key={sale.id} className="grid grid-cols-12 gap-3 bg-amber-50/50 px-4 py-4 text-sm" data-ticket-gift-item><div className="col-span-12 font-medium sm:col-span-3"><WorkspaceText text="Gift card" /><p className="mt-1 text-xs font-normal text-zinc-500">•••• {sale.last4}{sale.status === "voided" ? " · Voided" : ""}</p></div><div className="col-span-6 text-zinc-500 sm:col-span-2"><WorkspaceText text="Gift purchase" /></div><div className="col-span-6 sm:col-span-2" data-ticket-gift-staff aria-hidden="true" /><div className="col-span-6 sm:col-span-1">1</div><div className="col-span-6 text-right font-medium sm:col-span-2 sm:text-left">{formatMoney(sale.amountCents/100)}</div>{canManageTickets&&ticket.status==="closed"&&sale.status==="completed"&&<div className="col-span-12"><TicketGiftDelivery ticketId={ticket.id} saleId={sale.id} last4={sale.last4}/></div>}</li>)}
-            </ul>
-          </div>
-        )}
-
-        {canWorkTicket ? (
-          <AddServiceForm
-            revision={ticket.workspace_revision??0}
-            returnPath={returnPath}
-            services={options.services}
-            ticketId={ticket.id}
-          />
-        ) : null}
-      </section>
-
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Discount" /></h2>
-        <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-5">
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Current Discount" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.discount_amount)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Discount Type" /></span>
-            <span className="font-semibold text-zinc-950">
-              <WorkspaceText text={DISCOUNT_TYPE_LABELS[ticket.discount_type]} />
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Discount Value" /></span>
-            <span className="font-semibold text-zinc-950">
-              {ticket.discount_type === "percentage"
-                ? `${ticket.discount_value}%`
-                : formatMoney(ticket.discount_value)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Discounted Amount" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.discount_amount)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Updated Total" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.total)}
-            </span>
-          </p>
-        </div>
-
-        {canWorkTicket ? (
-          <DiscountForm
-            revision={ticket.workspace_revision??0}
-            discountType={ticket.discount_type}
-            discountValue={ticket.discount_value}
-            returnPath={returnPath}
-            ticketId={ticket.id}
-          />
-        ) : null}
-      </section>
-
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Tax" /></h2>
-        <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-4">
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Tax Rate" /></span>
-            <span className="font-semibold text-zinc-950">
-              {ticket.tax_rate}%
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Taxable Amount" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.taxable_amount)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Calculated Tax" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.tax_amount)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Updated Total" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.total)}
-            </span>
-          </p>
-        </div>
-
-        {canWorkTicket ? (
-          <TaxForm
-            revision={ticket.workspace_revision??0}
-            returnPath={returnPath}
-            taxRate={ticket.tax_rate}
-            ticketId={ticket.id}
-          />
-        ) : null}
-      </section>
-
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Tip" /></h2>
-        <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-5">
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Tip Type" /></span>
-            <span className="font-semibold text-zinc-950">
-              <WorkspaceText text={TIP_TYPE_LABELS[ticket.tip_type]} />
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Tip Value" /></span>
-            <span className="font-semibold text-zinc-950">
-              {ticket.tip_type === "percentage"
-                ? `${ticket.tip_value}%`
-                : formatMoney(ticket.tip_value)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Calculated Tip" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.tip_amount)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Updated Total" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.total)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Remaining" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.remaining)}
-            </span>
-          </p>
-        </div>
-
-        {canWorkTicket ? (
-          <TipForm
-            revision={ticket.workspace_revision??0}
-            returnPath={returnPath}
-            ticketId={ticket.id}
-            tipType={ticket.tip_type}
-            tipValue={ticket.tip_value}
-          />
-        ) : null}
-      </section>
-
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Payment Summary" /></h2>
-        <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-5">
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Subtotal" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.subtotal)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Total" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.total)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Paid" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.paid)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Remaining" /></span>
-            <span className="font-semibold text-zinc-950">
-              {formatMoney(totals.remaining)}
-            </span>
-          </p>
-          <p>
-            <span className="block text-zinc-500"><WorkspaceText text="Payment Status" /></span>
-            <span className="font-semibold text-zinc-950">
-              <WorkspaceText text={paymentStatus} />
-            </span>
-          </p>
-        </div>
-      </section>
-
-      <section className="mt-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Payments" /></h2>
-          {canWorkTicket ? (
-            <span className="text-sm font-medium text-zinc-700">
-              <WorkspaceText text="Payment Actions" />
-            </span>
-          ) : null}
-        </div>
-
-        <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5 text-sm">
-          <div className="grid gap-3 sm:grid-cols-4">
-            <p>
-              <span className="block text-zinc-500"><WorkspaceText text="Total" /></span>
-              <span className="font-semibold text-zinc-950">
-                {formatMoney(totals.total)}
-              </span>
-            </p>
-            <p>
-              <span className="block text-zinc-500"><WorkspaceText text="Paid" /></span>
-              <span className="font-semibold text-zinc-950">
-                {formatMoney(totals.paid)}
-              </span>
-            </p>
-            <p>
-              <span className="block text-zinc-500"><WorkspaceText text="Remaining" /></span>
-              <span className="font-semibold text-zinc-950">
-                {formatMoney(totals.remaining)}
-              </span>
-            </p>
-            <p>
-              <span className="block text-zinc-500"><WorkspaceText text="Payment Progress" /></span>
-              <span className="font-semibold text-zinc-950">
-                {paymentProgress.toFixed(0)}%
-              </span>
-            </p>
-          </div>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-100">
-            <div
-              className="h-full bg-zinc-950"
-              style={{ width: `${paymentProgress}%` }}
-            />
-          </div>
-        </div>
-
-        {(financial.giftSales.length>0 || financial.giftRedeemed>0) && !canWorkTicket ? <TicketPaymentSummary payments={financial.payments} timeZone={businessTimezone}/> : (ticket.payments ?? []).length === 0 ? (
-          <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
-            <WorkspaceText text="No payments recorded yet." />
-          </p>
-        ) : (
-          <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
-            <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-              <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Method" /></div>
-              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Amount" /></div>
-              <div className="hidden sm:col-span-3 sm:block"><WorkspaceText text="Created Time" /></div>
-              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Note" /></div>
-              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Actions" /></div>
-            </div>
-            <ul className="divide-y divide-zinc-200">
-              {(ticket.payments ?? []).map((payment) => (
-                <li
-                  className="grid grid-cols-12 gap-3 px-4 py-3"
-                  key={payment.id}
-                >
-                  <div className="col-span-12 text-sm font-medium text-zinc-950 sm:col-span-3">
-                    <WorkspaceText text={POS_PAYMENT_METHOD_LABELS[payment.payment_method]} />
-                  </div>
-                  <div className="col-span-12 text-sm text-zinc-700 sm:col-span-2">
-                    <span className="font-medium text-zinc-500 sm:hidden">
-                      <WorkspaceText text="Amount:" />{" "}
-                    </span>
-                    {formatMoney(payment.amount)}
-                  </div>
-                  <div className="col-span-12 text-sm text-zinc-700 sm:col-span-3">
-                    <span className="font-medium text-zinc-500 sm:hidden">
-                      <WorkspaceText text="Created Time:" />{" "}
-                    </span>
-                    <WorkspaceText text={formatTicketDateTime(payment.created_at)} />
-                  </div>
-                  <div className="col-span-12 text-sm text-zinc-700 sm:col-span-2">
-                    <span className="font-medium text-zinc-500 sm:hidden">
-                      <WorkspaceText text="Note:" />{" "}
-                    </span>
-                    {payment.note ?? "-"}
-                  </div>
-                  <div className="col-span-12 text-sm sm:col-span-2">
-                    {canWorkTicket ? (
-                      <form action={deletePosPayment}>
-                        <input name="ticket_id" type="hidden" value={ticket.id} />
-                        <input name="payment_id" type="hidden" value={payment.id} />
-                        <input name="return_to" type="hidden" value={returnPath} />
-                        <TicketInputFields revision={ticket.workspace_revision??0} />
-                        <SubmitButton pendingLabel="Removing…"
-                          className="font-medium text-zinc-950 underline"
-                          type="submit"
-                        >
-                          <WorkspaceText text="Delete" />
-                        </SubmitButton>
-                      </form>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {canWorkTicket && remainingCents > 0 ? (
-          <AddPaymentForm
-            revision={ticket.workspace_revision??0}
-            remaining={totals.remaining}
-            returnPath={returnPath}
-            ticketId={ticket.id}
-          />
-        ) : null}
-      </section>
-
-      <section className="mt-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Receipt Preview" /></h2>
-          <span className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700">
-            {receipt.header.receipt_status}
-          </span>
-        </div>
-        <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5">
-          <div className="border-b border-zinc-200 pb-4 text-sm">
-            <p className="text-lg font-semibold text-zinc-950">
-              <SalonName name={receipt.header.salon_name} salonId={context.currentSalon?.id}/>
-            </p>
-            {receipt.header.salon_phone ? (
-              <p className="mt-1 text-zinc-700">{receipt.header.salon_phone}</p>
-            ) : null}
-            <div className="mt-4 grid gap-2 text-zinc-700 sm:grid-cols-2">
-              <p>
-                <span className="font-medium text-zinc-950"><WorkspaceText text="Ticket:" /></span>{" "}
-                {receipt.header.ticket_number}
-              </p>
-              <p>
-                <span className="font-medium text-zinc-950"><WorkspaceText text="Status:" /></span>{" "}
-                {receipt.header.ticket_status}
-              </p>
-              <p>
-                <span className="font-medium text-zinc-950"><WorkspaceText text="Customer:" /></span>{" "}
-                {receipt.header.customer_name}
-              </p>
-              <p>
-                <span className="font-medium text-zinc-950"><WorkspaceText text="Created:" /></span>{" "}
-                <WorkspaceText text={formatTicketDateTime(receipt.header.created_time)} />
-              </p>
-              <p>
-                <span className="font-medium text-zinc-950"><WorkspaceText text="Closed:" /></span>{" "}
-                <WorkspaceText text={formatTicketDateTime(receipt.header.closed_time)} />
-              </p>
-            </div>
-          </div>
-
-          <div className="border-b border-zinc-200 py-4">
-            <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Items" /></h3>
-            {receipt.items.length === 0 ? (
-              <p className="mt-3 text-sm text-zinc-600"><WorkspaceText text="No items." /></p>
-            ) : (
-              <ul className="mt-3 divide-y divide-zinc-100">
-                {receipt.items.map((item, index) => (
-                  <li className="grid gap-2 py-3 text-sm sm:grid-cols-5" key={`${item.service_name}-${index}`}>
-                    <p className="font-medium text-zinc-950">{item.service_name}</p>
-                    <p className="text-zinc-700">{item.assigned_staff}</p>
-                    <p className="text-zinc-700"><WorkspaceText text="Qty" /> {formatQuantity(item.quantity)}</p>
-                    <p className="text-zinc-700">{formatMoney(item.unit_price)}</p>
-                    <p className="font-medium text-zinc-950">
-                      {formatMoney(item.line_total)}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="grid gap-6 border-b border-zinc-200 py-4 md:grid-cols-2">
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Totals" /></h3>
-              <dl className="mt-3 grid gap-2 text-sm">
-                <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600"><WorkspaceText text="Subtotal" /></dt>
-                  <dd className="font-medium text-zinc-950">
-                    {formatMoney(receipt.totals.subtotal)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600"><WorkspaceText text="Discount" /></dt>
-                  <dd className="font-medium text-zinc-950">
-                    {formatMoney(receipt.totals.discount)}
-                  </dd>
-                </div>
-                {(receipt.totals.reward ?? 0)>0 && <div className="flex justify-between gap-3 text-teal-800"><dt><WorkspaceText text="Reward used" /></dt><dd>−{formatMoney(receipt.totals.reward??0)}</dd></div>}
-                <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600"><WorkspaceText text="Tax" /></dt>
-                  <dd className="font-medium text-zinc-950">
-                    {formatMoney(receipt.totals.tax)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600"><WorkspaceText text="Tip" /></dt>
-                  <dd className="font-medium text-zinc-950">
-                    {formatMoney(receipt.totals.tip)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3 border-t border-zinc-200 pt-2">
-                  <dt className="font-semibold text-zinc-950"><WorkspaceText text="Grand Total" /></dt>
-                  <dd className="font-semibold text-zinc-950">
-                    {formatMoney(receipt.totals.grand_total)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600"><WorkspaceText text="Paid" /></dt>
-                  <dd className="font-medium text-zinc-950">
-                    {formatMoney(receipt.totals.paid)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600"><WorkspaceText text="Remaining" /></dt>
-                  <dd className="font-medium text-zinc-950">
-                    {formatMoney(receipt.totals.remaining)}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Payments" /></h3>
-              {receipt.payments.length === 0 ? (
-                <p className="mt-3 text-sm text-zinc-600"><WorkspaceText text="No payments." /></p>
-              ) : (
-                <ul className="mt-3 divide-y divide-zinc-100">
-                  {receipt.payments.map((payment, index) => (
-                    <li className="flex justify-between gap-3 py-3 text-sm" key={`${payment.method}-${index}`}>
-                      <div>
-                        <p className="font-medium text-zinc-950">{payment.method}</p>
-                        <p className="text-xs text-zinc-500">
-                          <WorkspaceText text={formatTicketDateTime(payment.created_time)} />
-                        </p>
-                      </div>
-                      <p className="font-medium text-zinc-950">
-                        {formatMoney(payment.amount)}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-
-          <p className="pt-4 text-center text-sm text-zinc-700">
-            <WorkspaceText text={receipt.footer.message} />
-          </p>
-        </div>
-      </section>
-
-      {canWorkTicket || canVoidOrReopenTicket ? (
-        <section className="mt-8 min-w-0 border-t border-zinc-200 bg-white pt-5">
-          <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Actions" /></h2>
-          {canWorkTicket && !checkoutAvailable ? (
-            <p className="mt-3 text-sm text-zinc-600">
-              {checkoutUnavailableReason}
-            </p>
-          ) : null}
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            {canWorkTicket ? (
-              <>
-                {checkoutAvailable ? (
-                  <form action={closePosTicket} className="min-w-0 bg-white p-4">
-                    <input name="ticket_id" type="hidden" value={ticket.id} />
-                    <input name="return_to" type="hidden" value={returnPath} />
-                        <TicketInputFields revision={ticket.workspace_revision??0} />
-                    <SubmitButton pendingLabel="Processing…"
-                      className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-                      type="submit"
-                    >
-                      <WorkspaceText text="Checkout" />
-                    </SubmitButton>
-                  </form>
-                ) : null}
-                <WorkflowActionForm
-                  revision={ticket.workspace_revision??0}
-                  action={cancelPosTicket}
-                  buttonLabel={__vt("Cancel Ticket")}
-                  returnPath={returnPath}
-                  ticketId={ticket.id}
-                />
-              </>
-            ) : null}
-            {canVoidOrReopenTicket ? (
-              <>
-                <WorkflowActionForm
-                  revision={ticket.workspace_revision??0}
-                  action={voidPosTicket}
-                  buttonLabel={__vt("Void Ticket")}
-                  returnPath={returnPath}
-                  ticketId={ticket.id}
-                />
-                {!financial.giftSales.length && <WorkflowActionForm
-                  revision={ticket.workspace_revision??0}
-                  action={reopenPosTicket}
-                  buttonLabel={__vt("Reopen Ticket")}
-                  returnPath={returnPath}
-                  ticketId={ticket.id}
-                />}
-              </>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
-
-    </main>
-  );
+    </> : undefined}
+  />;
 }
 
 export default withExperiencePage(PosTicketDetailPage);

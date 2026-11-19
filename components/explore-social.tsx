@@ -15,6 +15,7 @@ import type { AccountSavedPostStateTarget } from "@/types/saved-post";
 import type { PostCommentTarget } from "@/types/post-comments";
 import styles from "./explore-social.module.css";
 import { sharePostLink } from "@/lib/post-share";
+import { SALON_FOLLOW_CHANGED, publishSalonFollowChange, salonFollowChange } from "@/lib/salon-follow-state";
 
 type SocialContext = { states: Record<string, SalonSocialState>; busy: Set<string>; register: (id: string) => void; change: (id: string, field: SalonSocialField, active: boolean) => Promise<void>; authenticated: boolean; viewerId: string | null };
 const Context = createContext<SocialContext | null>(null);
@@ -31,10 +32,34 @@ function SocialProvider({ viewerId, children }: { viewerId: string | null; child
   const registered = useRef(new Set<string>()), pending = useRef(new Set<string>()), changed = useRef(new Set<string>()), locks = useRef(new Set<string>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null), alive = useRef(true);
   const flush = useRef<() => void>(() => {});
+  const followingChanges = useRef(new Map<string, boolean>());
+  const readEpoch = useRef(0);
+  useEffect(() => {
+    const changed = (event: Event) => {
+      const value = salonFollowChange(event, viewerId);
+      if (!value) return;
+      followingChanges.current.set(value.salonId, value.following);
+      setStates(current => current[value.salonId] ? { ...current, [value.salonId]: { ...current[value.salonId], following: value.following } } : current);
+    };
+    window.addEventListener(SALON_FOLLOW_CHANGED, changed);
+    return () => window.removeEventListener(SALON_FOLLOW_CHANGED, changed);
+  }, [viewerId]);
   useEffect(() => {
     alive.current = true;
+    const refresh = () => {
+      if (!viewerId || document.visibilityState === "hidden") return;
+      readEpoch.current++;
+      changed.current.clear();
+      followingChanges.current.clear();
+      registered.current.forEach(id => pending.current.add(id));
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = pending.current.size ? setTimeout(() => flush.current(), 30) : null;
+    };
+    refresh();
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
     const frame = !viewerId ? requestAnimationFrame(() => { try { const ids: unknown = JSON.parse(localStorage.getItem("reylumi-hidden-salons:guest") ?? "[]"); if (Array.isArray(ids)) setStates(Object.fromEntries(ids.filter(isSalonId).map(id => [id, { ...EMPTY_SALON_SOCIAL, hidden: true }]))); } catch {} }) : null;
-    return () => { alive.current = false; if (timer.current) clearTimeout(timer.current); if (frame !== null) cancelAnimationFrame(frame); };
+    return () => { alive.current = false; readEpoch.current++; if (timer.current) clearTimeout(timer.current); timer.current = null; if (frame !== null) cancelAnimationFrame(frame); window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); };
   }, [viewerId]);
   const register = useCallback((id: string) => {
     if (!viewerId || !isSalonId(id) || registered.current.has(id)) return;
@@ -46,11 +71,12 @@ function SocialProvider({ viewerId, children }: { viewerId: string | null; child
       timer.current = null;
       const ids = [...pending.current].slice(0, 60); ids.forEach(id => pending.current.delete(id));
       if (!ids.length) return;
+      const epoch = readEpoch.current;
       const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 12000);
       void fetch(`/api/explore/salon-social?ids=${ids.join(",")}`, { cache: "no-store", signal: controller.signal }).then(async response => {
         const result = await response.json(); if (!response.ok) throw Error(result.error);
-        if (alive.current) setStates(current => ({ ...current, ...Object.fromEntries(Object.entries(result.states as Record<string, SalonSocialState>).filter(([id]) => !changed.current.has(id))) }));
-      }).catch(() => { if (alive.current) { ids.forEach(id => registered.current.delete(id)); setMessage("Preferences could not be loaded. Try the action again."); } }).finally(() => clearTimeout(timeout));
+        if (alive.current && epoch === readEpoch.current) setStates(current => ({ ...current, ...Object.fromEntries(Object.entries(result.states as Record<string, SalonSocialState>).filter(([id]) => !changed.current.has(id)).map(([id, state]) => [id, followingChanges.current.has(id) ? { ...state, following: followingChanges.current.get(id)! } : state])) }));
+      }).catch(() => { if (alive.current && epoch === readEpoch.current) { ids.forEach(id => registered.current.delete(id)); setMessage("Preferences could not be loaded. Try the action again."); } }).finally(() => clearTimeout(timeout));
       if (pending.current.size) timer.current = setTimeout(() => flush.current(), 30);
     };
   }, []);
@@ -63,6 +89,7 @@ function SocialProvider({ viewerId, children }: { viewerId: string | null; child
       if (viewerId) { const result = await setExploreSalonPreferenceAction(id, field, active); if (result.error) throw Error(result.error); }
       if (!alive.current) return;
       changed.current.add(id);
+      if (viewerId && field === "following") publishSalonFollowChange({ viewerId, salonId: id, following: active });
       setStates(current => {
         const next = { ...current, [id]: { ...(current[id] ?? EMPTY_SALON_SOCIAL), [field]: active } };
         if (!viewerId) { try { localStorage.setItem("reylumi-hidden-salons:guest", JSON.stringify(Object.keys(next).filter(key => next[key].hidden))); } catch {} }

@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "app-local-advertising-transport-20261118",
+  "status": "working",
+  "summary": "Native shell allowlist compatibility for private-body ad selection and actor-bound ad reports, preserving original handlers and security gates",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-advertising-input.ts",
+    "lib/app-local-command-trace-names.generated.json",
+    "app/api/app-local/command/route.ts",
+    "tests/app-local-advertising-transport.test.mjs",
+    "docs/app-local-advertising-transport-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "ads-reporting-transparency-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Actual adapter/server/original report handler scoped synthetic tests",
+      "result": "pending"
+    },
+    {
+      "name": "Generated native bundle/archive and physical iOS acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "51820b4b-8101-4382-8adc-823db7b21dbe",
+  "recordedAt": "2026-11-19T05:28:45.832Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

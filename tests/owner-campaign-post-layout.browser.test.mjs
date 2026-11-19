@@ -20,7 +20,7 @@ export const loadCampaignCardAction=async()=>({brand:"visa",last4:"4242"}),loadC
 export const loadCampaignPreviewAction=async(id)=>{window.previewReads=(window.previewReads||0)+1;const c=window.fixture.campaigns.find(c=>c.id===id);return {campaign:c,returns:{total:0,known:0,closure:0,limit:0,complete:true,reason:null},checkedAt:new Date().toISOString(),creativeError:null,creative:{title:c.title,caption:id.endsWith("1")?"A fresh French manicure, ready for your next visit.\\nSoft pink with a clean white finish.":"A little color for your next visit.",image:location.search.includes("broken")&&!window.repairPhoto?"/broken.webp":id.endsWith("1")?"/post-photo.webp":"/portrait.svg"}}};
 export const createCampaignCreativeAction=async()=>{throw Error("No upload fixture")};`;
 const entry=`import React from "react";import{createRoot}from"react-dom/client";
-import{OwnerSponsoredPost}from"./components/owner-sponsored-post";
+import{OwnerSponsoredPost}from"./components/owner-sponsored-post";import{MarketTargetProvider}from"./app/market/scoped-market-client";
 import{CampaignWorkspace}from"./app/campaigns/campaign-workspace";
 import{CreditPanel}from"./app/campaigns/credit-panel";
 import{OwnerCampaignDialog}from"./components/owner-campaign-dialog";
@@ -29,14 +29,17 @@ window.fixture={wallet:{available_credits:300,reserved_credits:300,welcome_credi
 const c={id:"30000000-0000-0000-0000-000000000001",salon_id:"10000000-0000-0000-0000-000000000001",source_type:"custom",source_id:"20000000-0000-0000-0000-000000000001",title:"New salon look",area:"city",location:"Milwaukee",country:"US",state:"WI",city:"Milwaukee",days:3,daily_views:500,daily_price_cents:100,total_price_cents:300,status:"awaiting_payment",views:0,clicks:0,likes:0,comments:0,bookings:0,spent_cents:0,created_at:new Date().toISOString(),starts_at:null,ends_at:null};
 window.fixture.campaigns=[c,{...c,id:"30000000-0000-0000-0000-000000000002",title:"We can do this!",status:"pending_review"}];
 const route=location.pathname;
-createRoot(document.getElementById("root")).render(route.startsWith("/ad")?<OwnerSponsoredPost location="Milwaukee"/>:route==="/credits"?<CreditPanel wallet={window.fixture.wallet} initialView="auto"/>:route==="/create"?<OwnerCampaignDialog target={{sourceType:"custom",sourceId:c.source_id,salonId:c.salon_id,title:"New salon look"}} settings={settings} initialLocation={{city:"Milwaukee",state:"WI",country:"US"}} initialStep="setup" availableCredits={300} onClose={()=>{}}/>:<CampaignWorkspace initialCampaigns={window.fixture.campaigns} initialError="" wallet={window.fixture.wallet} settings={settings}/>);`;
+createRoot(document.getElementById("root")).render(<MarketTargetProvider salonId="10000000-0000-0000-0000-000000000001">{route.startsWith("/ad")?<OwnerSponsoredPost location="Milwaukee"/>:route==="/credits"?<CreditPanel wallet={window.fixture.wallet} initialView="auto"/>:route==="/create"?<OwnerCampaignDialog target={{sourceType:"custom",sourceId:c.source_id,salonId:c.salon_id,title:"New salon look"}} settings={settings} initialLocation={{city:"Milwaukee",state:"WI",country:"US"}} initialStep="setup" availableCredits={300} onClose={()=>{}}/>:<CampaignWorkspace initialCampaigns={window.fixture.campaigns} initialError="" wallet={window.fixture.wallet} settings={settings}/>}</MarketTargetProvider>);`;
+const scopedNames=[...fs.readFileSync('app/market/scoped-market-actions.ts','utf8').matchAll(/export\s+async\s+function\s+(\w+)/g)].map(m=>m[1]);
+const scopedTransport="import * as domain from 'fixture-domain-actions';"+scopedNames.map(name=>actions.includes(name)?'export async function '+name+'(salonId,...args){if(salonId!=="10000000-0000-0000-0000-000000000001")throw Error("Fixture salon binding rejected");return domain["'+name+'"](...args)}':'export async function '+name+'(){throw Error("Unmocked scoped transport: '+name+'")}').join('\n');
 async function fixture(){
  const built=await build({stdin:{contents:entry,loader:'tsx',resolveDir:process.cwd()},bundle:true,write:false,outfile:'fixture.js',format:'iife',jsx:'automatic',alias:{'@':process.cwd()},define:{'process.env.NODE_ENV':'"development"','process.env':'{}'},plugins:[{name:'isolated-actions',setup(b){
+  b.onResolve({filter:/(?:^fixture-domain-actions$|scoped-market-actions$)/},a=>({path:a.path==='fixture-domain-actions'?'actions':'scoped-actions',namespace:'fixture'}));
   b.onResolve({filter:/(^@\/app\/campaigns\/actions$|\/?(credit-actions|preview-actions|creative-actions)$|^\.\/actions$)/},()=>({path:'actions',namespace:'fixture'}));
   b.onResolve({filter:/^@\/components\/workspace-language$/},()=>({path:'language',namespace:'fixture'}));
   b.onResolve({filter:/^next\/navigation$/},()=>({path:'navigation',namespace:'fixture'}));
   b.onResolve({filter:/^next\/link$/},()=>({path:'link',namespace:'fixture'}));
-  b.onLoad({filter:/.*/,namespace:'fixture'},a=>({contents:a.path==='actions'?actions:a.path==='language'?'export const WorkspaceText=({text})=>text;const translate=s=>s;export const useWorkspaceTranslation=()=>translate;':a.path==='navigation'?'const router={refresh(){}};export const useRouter=()=>router;export const usePathname=()=>"/campaigns";export const useSearchParams=()=>new URLSearchParams();':'export default function Link(p){return <a {...p}/>}',loader:'jsx',resolveDir:process.cwd()}));
+  b.onLoad({filter:/.*/,namespace:'fixture'},a=>({contents:a.path==='scoped-actions'?scopedTransport:a.path==='actions'?actions:a.path==='language'?'export const WorkspaceText=({text})=>text;const translate=s=>s;export const useWorkspaceTranslation=()=>translate;':a.path==='navigation'?'const router={refresh(){}};export const useRouter=()=>router;export const usePathname=()=>"/campaigns";export const useSearchParams=()=>new URLSearchParams();':'export default function Link(p){return <a {...p}/>}',loader:'jsx',resolveDir:process.cwd()}));
  }}]});
  const js=built.outputFiles.find(f=>f.path.endsWith('.js')).text,css=built.outputFiles.find(f=>f.path.endsWith('.css')).text;
  const events=[];
@@ -49,7 +52,7 @@ async function fixture(){
   if(req.url==='/broken.webp'){res.writeHead(404);return res.end()}
   if(req.url==='/photo.svg')return send('image/svg+xml',svg);
   if(req.url.startsWith('/api/campaigns/delivery')){
-   if(req.method==='POST'){let raw='';for await(const chunk of req)raw+=chunk;events.push({...JSON.parse(raw),referer:req.headers.referer});return send('application/json','{"ok":true}')}
+   if(req.method==='POST'){let raw='';for await(const chunk of req)raw+=chunk;const body=JSON.parse(raw);if(body.kind!=='select'){events.push({...body,referer:req.headers.referer});return send('application/json','{"ok":true}')}}
    const count=req.headers.referer?.includes('single')?1:5;
    return send('application/json',JSON.stringify(Array.from({length:count},(_,i)=>({salonName:'Lumi Nail Studio',salonLocation:'Milwaukee, WI',title:'New salon look '.repeat(10),caption:'Beautiful nails and thoughtful service. '.repeat(60),image:'/photo.svg',href:'/destination',ticket:'ticket-'+i}))));
   }

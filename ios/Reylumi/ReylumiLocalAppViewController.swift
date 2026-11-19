@@ -13,6 +13,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     private let launchPanel = ReylumiLaunchView()
     private let startPath: String
     private lazy var portableBridge = ReylumiPortableBridge(origin: origin, transport: transport)
+    private let receiptPrinter = ReylumiReceiptPrinter()
     private var pending: [String: (kind: String, task: Task<Void, Never>)] = [:]
     private var foregroundObserver: NSObjectProtocol?
     private var resetObserver: NSObjectProtocol?
@@ -94,7 +95,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         var script = "window.__reylumiAppLocalContext=\(metadata);\n"
         if transport.diagnostics.isEnabled { script += "window.__reylumiDiagnosticsEnabled=true;\n" }
-        for name in ["AppViewport", "AppLocalBridge"] {
+        for name in ["AppViewport", "AppLocalBridge", "ReceiptPrintBridge"] {
             if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" }
         }
         configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
@@ -324,7 +325,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         else if policy.isSafariPayment(url) || url.scheme != "https" { UIApplication.shared.open(url) }
         else { present(SFSafariViewController(url: url), animated: true) }
     }
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) { portableBridge.documentWillNavigate() }
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) { receiptPrinter.cancel(); portableBridge.documentWillNavigate() }
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) { transport.diagnostics.record(.documentCommit); documentCommitted = true }
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         transport.diagnostics.record(.documentFinish)
@@ -336,6 +337,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { if (error as NSError).code != NSURLErrorCancelled { transport.diagnostics.record(.navigationFailure, outcome: .failed, status: (error as NSError).code); launchPanel.showError() } }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { self.webView(webView, didFail: navigation, withError: error) }
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        receiptPrinter.cancel()
         transport.diagnostics.record(.processTermination, outcome: .invalidated)
         let path = webView.url.map { $0.path + ($0.query.map { "?" + $0 } ?? "") } ?? startPath
         for operation in pending.values where operation.kind != "command" { operation.task.cancel() }
@@ -345,7 +347,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         var script = "window.__reylumiAppLocalContext=\(metadata);\n"
         if transport.diagnostics.isEnabled { script += "window.__reylumiDiagnosticsEnabled=true;\n" }
-        for name in ["AppViewport", "AppLocalBridge"] { if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" } }
+        for name in ["AppViewport", "AppLocalBridge", "ReceiptPrintBridge"] { if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" } }
         webView.configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         portableBridge.install(in: webView.configuration)
         guard lastProcessRecovery.map({ Date().timeIntervalSince($0) >= 60 }) ?? true else { launchPanel.showError(); return }
@@ -358,7 +360,17 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         switch value["action"] as? String {
         case "diagnostics-export":
             shareDiagnosticReport(javascript: value["entries"])
+        case "print-receipt":
+            guard let job = value["job"] as? [String: Any] else { return }
+            receiptPrinter.present(job, from: self, source: webView) { [weak self] in
+                guard let self else { return false }
+                if job["kind"] as? String != "provisional" { return true }
+                guard let scope = job["scope"] as? String, let id = job["operationId"] as? String else { return false }
+                return await self.portableBridge.permitsProvisionalPrint(scope: scope, operationID: id)
+            }
+        case "cancel-receipt-print": receiptPrinter.cancel()
         case "print":
+            guard !receiptPrinter.isBusy else { return }
             let controller = UIPrintInteractionController.shared
             controller.printFormatter = webView.viewPrintFormatter(); controller.present(animated: true, completionHandler: nil)
         case "share":
@@ -466,6 +478,9 @@ final class ReylumiAppContainer: UIViewController {
     private var checkinSequence = 0
     private var initialCheckinPath: String?
     private var pendingHostedCheckinPath: String?
+    private var giftCardSequence = 0
+    private var pendingHostedGiftCardPath: String?
+    private var incomingLinkGeneration = 0
     init(origin: URL = URL(string: "https://reylumi.com")!, bundle: ReylumiLocalBundle? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil, transport: ReylumiLocalAppTransport? = nil) {
         self.origin = origin; self.installedBundle = bundle; self.offlineRoutes = offlineRoutes ?? ReylumiOfflineRouteStore(origin: origin); self.localTransport = transport
         self.portableMode = ReylumiPortableMode(origin: origin)
@@ -488,12 +503,22 @@ final class ReylumiAppContainer: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         presentPendingHostedCheckin()
+        presentPendingHostedGiftCard()
     }
     private func presentPendingHostedCheckin() {
         guard isViewLoaded, view.window != nil, presentedViewController == nil,
               let path = pendingHostedCheckinPath else { return }
         pendingHostedCheckinPath = nil
         openOnline(path)
+    }
+    private func presentPendingHostedGiftCard() {
+        guard isViewLoaded, view.window != nil, presentedViewController == nil,
+              let path = pendingHostedGiftCardPath else { return }
+        pendingHostedGiftCardPath = nil
+        // Delivery fragments remain in the hosted task, never in installed
+        // route persistence, diagnostics, or an automatic claim command.
+        if local != nil { openOnline(path) }
+        else { hosted?.openGiftCard(path: path) }
     }
     private func embed(_ controller: UIViewController) {
         addChild(controller); controller.view.translatesAutoresizingMaskIntoConstraints = false; view.addSubview(controller.view)
@@ -561,6 +586,11 @@ final class ReylumiAppContainer: UIViewController {
     }
     func returnToMarket(sequence: Int) {
         guard sequence > marketReturnSequence else { return }; marketReturnSequence = sequence
+        incomingLinkGeneration += 1
+        initialCheckinPath = nil
+        pendingHostedCheckinPath = nil
+        pendingHostedGiftCardPath = nil
+        handoffTask?.cancel(); handoffID = nil
         loadViewIfNeeded()
         if let local { if presentedViewController != nil { dismiss(animated: true) }; local.navigate("/market?marketReturn=\(sequence)") }
         else { hosted?.returnToMarket(sequence: sequence) }
@@ -571,6 +601,9 @@ final class ReylumiAppContainer: UIViewController {
               let entry = components.queryItems?.first(where: { $0.name == "entry" })?.value,
               UUID(uuidString: entry) != nil else { return }
         checkinSequence = sequence
+        incomingLinkGeneration += 1
+        let generation = incomingLinkGeneration
+        pendingHostedGiftCardPath = nil
         if !isViewLoaded {
             initialCheckinPath = path
             loadViewIfNeeded()
@@ -579,7 +612,7 @@ final class ReylumiAppContainer: UIViewController {
         loadViewIfNeeded()
         handoffTask?.cancel(); handoffID = nil
         let navigate = { [weak self] in
-            guard let self else { return }
+            guard let self, self.incomingLinkGeneration == generation else { return }
             if let local = self.local {
                 if local.bundle.routeExists(components.path) { local.navigate(path) }
                 else {
@@ -590,6 +623,25 @@ final class ReylumiAppContainer: UIViewController {
                 }
             }
             else { self.hosted?.openPersonalCheckin(entry: entry) }
+        }
+        if presentedViewController != nil { dismiss(animated: false, completion: navigate) }
+        else { navigate() }
+    }
+    func openGiftCard(path: String?, sequence: Int) {
+        guard sequence > giftCardSequence, let path,
+              let canonical = URL(string: path, relativeTo: URL(string: "https://reylumi.com")!)?.absoluteURL,
+              let validated = NavigationPolicy.giftCardPath(canonical), validated == path else { return }
+        giftCardSequence = sequence
+        incomingLinkGeneration += 1
+        let generation = incomingLinkGeneration
+        initialCheckinPath = nil
+        pendingHostedCheckinPath = nil
+        handoffTask?.cancel(); handoffID = nil
+        pendingHostedGiftCardPath = validated
+        if !isViewLoaded { loadViewIfNeeded(); return }
+        let navigate = { [weak self] in
+            guard let self, self.incomingLinkGeneration == generation else { return }
+            self.presentPendingHostedGiftCard()
         }
         if presentedViewController != nil { dismiss(animated: false, completion: navigate) }
         else { navigate() }

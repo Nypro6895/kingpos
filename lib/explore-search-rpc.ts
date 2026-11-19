@@ -21,6 +21,16 @@ export function exploreSearchErrorMessage(kind: ExploreSearchErrorKind) {
 export async function runExploreSearchRpc<T extends { error: { code?: string | null } | null }>(request: () => Promise<T>, signal?: AbortSignal): Promise<T> {
   const first = await request();
   if (first.error?.code !== "57014" || signal?.aborted) return first;
+  // A saturated database needs breathing room. Keep the existing one-retry
+  // ceiling and let a changed query cancel the backoff before another RPC starts.
+  const retry = await new Promise<boolean>(resolve => {
+    const finish = (allowed: boolean) => { clearTimeout(timer); signal?.removeEventListener("abort", abort); resolve(allowed); };
+    const abort = () => finish(false);
+    const timer = setTimeout(() => finish(true), 350);
+    signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) finish(false);
+  });
+  if (!retry || signal?.aborted) return first;
   console.warn("Explore search retried after database timeout");
   return request();
 }

@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "public-photo-processing-consent-20261118",
+  "status": "working",
+  "summary": "Add current-notice/provider-specific end-user photo AI consent boundary and artifact-only Beauty/Salon composer proposal; no UI activation or transfers.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/public-photo-processing-consent.ts",
+    "tests/public-photo-processing-consent.test.mjs",
+    "docs/public-photo-processing-consent-20261118.md"
+  ],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26"
+  },
+  "validation": [
+    {
+      "name": "Fail-closed consent guard and zero-transport regression tests, client import boundary and synthetic preview",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "scopeBoundary": "Helper/test/doc plus artifact-only composer preview. Root owns optional input/canonical request/receipt ordering and caller wiring. No product UI, other upload consent, credential/API/provider calls or frozen adapter changes. Admin Remove/Restore preview untouched.",
+  "id": "fb0a06af-9e41-497d-b966-93fc31a0e3b3",
+  "recordedAt": "2026-11-18T21:26:38.364Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

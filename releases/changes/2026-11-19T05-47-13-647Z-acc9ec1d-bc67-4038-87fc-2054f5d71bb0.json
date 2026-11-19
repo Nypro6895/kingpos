@@ -1,0 +1,49 @@
+{
+  "kind": "change",
+  "changeId": "app-local-advertising-transport-20261118",
+  "status": "needs-integration",
+  "summary": "Native ad transport revision2: explicit stable-input TypeScript narrowing; strict validation/cookies/admission gates preserved;25behaviorchecks+ownedsemanticTS passed",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-advertising-input.ts",
+    "lib/app-local-command-trace-names.generated.json",
+    "app/api/app-local/command/route.ts",
+    "tests/app-local-advertising-transport.test.mjs",
+    "tests/app-local-shell-auxiliary.test.mjs",
+    "docs/app-local-advertising-transport-20261118.md"
+  ],
+  "source": {
+    "snapshot": "artifacts/app-local-advertising-transport-20261118/revision2/frozen",
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "ads-reporting-transparency-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Actual adapter/outer command/original report+platform handler scoped synthetic tests25/25, zero skipped",
+      "result": "passed",
+      "evidence": "artifacts/app-local-advertising-transport-20261118/revision2/validation.json"
+    },
+    {
+      "name": "ESLint+whitespace+semanticTS5ownedmodules zero errors; dependency nodemailer missing locally recorded separately",
+      "result": "passed",
+      "evidence": "artifacts/app-local-advertising-transport-20261118/revision2/semantic-typescript.json"
+    },
+    {
+      "name": "Coordinated final R10 build/native regeneration/archive/physicaliOS",
+      "result": "pending"
+    }
+  ],
+  "id": "acc9ec1d-bc67-4038-87fc-2054f5d71bb0",
+  "recordedAt": "2026-11-19T05:47:13.647Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

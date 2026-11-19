@@ -28,25 +28,51 @@ export function ContentViewer({ children, onClose, open = true, className = "", 
     if (!mounted || !open || !overlay) return;
     const navigation = Array.from(document.querySelectorAll<HTMLElement>(".workspace-mobile-nav"));
     const viewport = window.visualViewport;
+    let focusFrame = 0;
+    const revealFocusedField = () => {
+      cancelAnimationFrame(focusFrame);
+      focusFrame = requestAnimationFrame(() => {
+        const field = document.activeElement;
+        if (!(field instanceof HTMLElement) || !overlay.contains(field) || !field.matches('input, textarea, select, [contenteditable="true"]')) return;
+        const bounds = overlay.getBoundingClientRect();
+        // Scroll only this viewer's panel. Scrolling the document moves the
+        // underlying feed and can leave the composer outside the resized panel.
+        for (let panel = field.parentElement; panel && panel !== overlay; panel = panel.parentElement) {
+          if (!/(auto|scroll)/.test(getComputedStyle(panel).overflowY) || panel.scrollHeight <= panel.clientHeight) continue;
+          const box = panel.getBoundingClientRect(), target = field.getBoundingClientRect();
+          const top = Math.max(bounds.top, box.top) + 12;
+          const bottom = Math.min(bounds.bottom, box.bottom) - 12;
+          const delta = target.bottom > bottom ? target.bottom - bottom : target.top < top ? target.top - top : 0;
+          if (delta) panel.scrollTop += delta;
+        }
+      });
+    };
     const fit = () => {
       const nav = navigation.find(element => element.getClientRects().length && element.getBoundingClientRect().height > 0);
       const top = viewport?.offsetTop ?? 0;
-      const bottom = Math.min(top + (viewport?.height ?? innerHeight), nav?.getBoundingClientRect().top ?? innerHeight);
+      const viewportBottom = top + (viewport?.height ?? innerHeight);
+      // iOS pans the layout viewport while focusing an input. innerHeight is
+      // not the bottom coordinate once offsetTop is nonzero.
+      const bottom = Math.min(viewportBottom, nav?.getBoundingClientRect().top ?? viewportBottom);
       overlay.style.setProperty("--content-viewer-top", `${top}px`);
       overlay.style.setProperty("--content-viewer-height", `${Math.max(0, bottom - top)}px`);
       // Navigation is part of the usable page on mobile, so this is non-modal.
       overlay.setAttribute("aria-modal", nav ? "false" : "true");
+      revealFocusedField();
     };
     const resize = new ResizeObserver(fit);
     navigation.forEach(element => resize.observe(element));
     const dismissFromNavigation = () => close();
     navigation.forEach(element => element.addEventListener("click", dismissFromNavigation));
     fit();
+    overlay.addEventListener("focusin", revealFocusedField);
     window.addEventListener("resize", fit);
     viewport?.addEventListener("resize", fit);
     viewport?.addEventListener("scroll", fit);
     return () => {
       resize.disconnect();
+      cancelAnimationFrame(focusFrame);
+      overlay.removeEventListener("focusin", revealFocusedField);
       navigation.forEach(element => element.removeEventListener("click", dismissFromNavigation));
       window.removeEventListener("resize", fit);
       viewport?.removeEventListener("resize", fit);

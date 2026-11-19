@@ -11,6 +11,7 @@
     "http.owner.shop-money",
     "http.public-booking.confirm",
     "http.shell.advertising-event",
+    "http.shell.advertising-report",
     "http.shell.campaign-event",
     "http.staff.booking-preferences",
     "http.staff.confirm-booking",

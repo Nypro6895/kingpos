@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "ads-reporting-transparency-20261118",
+  "status": "working",
+  "summary": "Prepare source-aligned ad transparency/report UI flow for owner review before product UI implementation; no live intake or billing changes",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ads-reporting-transparency-plan-20261118.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "validation": [
+    {
+      "name": "Actual-renderer artifact, mobile/desktop flow and no-provider validation",
+      "result": "pending"
+    },
+    {
+      "name": "Owner visual approval before product UI changes",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "d0e0b6e0-3d16-4436-b5ca-ba3836286ecc",
+  "recordedAt": "2026-11-19T04:17:53.318Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

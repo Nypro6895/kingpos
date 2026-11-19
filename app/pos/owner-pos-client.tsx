@@ -952,7 +952,7 @@ function OwnerPosWorkspace({
         inputTarget: "amount",
         serviceId: id,
         customServiceName: undefined,
-        amount: editingField.current
+        amount: editingField.current && cart?.amount
           ? (cart?.amount ?? "")
           : serviceDefaultAmount(selected?.base_price),
         step: "amount",

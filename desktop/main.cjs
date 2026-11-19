@@ -9,6 +9,7 @@ const { OfflineShell } = require('./offline-shell.cjs');
 const { UpdatePlan } = require('./update-plan.cjs');
 const { prepareUpdateInstaller, launchUpdateInstaller } = require('./update-installer.cjs');
 const { receiptHtml } = require('./checkin-receipt.cjs');
+const { createReceiptPrinter } = require('./receipt-print.cjs');
 const config = validConfig({ ...require('./config.json'), ...(!app.isPackaged && process.env.KINGPOS_DESKTOP_TEST_ORIGIN ? { origin: process.env.KINGPOS_DESKTOP_TEST_ORIGIN, channel: 'test', updates: false } : {}) });
 // Stable across upgrades; never inside the installation directory. Test and
 // production have separate profiles and cannot accidentally share credentials.
@@ -20,6 +21,7 @@ let offlineShell, recoveryTimer, openingPos = false;
 let win, customerWindow, displayToken, vault, updater, updateReady = false, installing = false;
 let updatePlan, updateVersion = '', updatePhase = 'unavailable', updateMessage = '', checkingUpdate = false;
 let updateCheckPromise, updateDownloadPromise, installRequest, updateProgress = 0;
+let receiptPrinter;
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } });
@@ -93,6 +95,13 @@ async function start() {
       if (sameOrigin && !['GET','HEAD'].includes(request.method) && request.initiatorOrigin === config.origin) headers.set('Origin', config.origin);
       return partition.fetch(sameOrigin ? new Request(request, {credentials:'include', headers}) : request, { bypassCustomProtocolHandlers: true });
     });
+  receiptPrinter=createReceiptPrinter({BrowserWindow,session,offlineShell,vault});
+  ipcMain.handle('kingpos:receipt-print',async(event,request)=>{
+    if(!trusted(event))throw Error('Access denied');
+    if(request?.method==='readiness')return offlineShell.printReadiness(request.scope);
+    if(request?.method==='print')return receiptPrinter.print(request.job);
+    throw Error('Invalid receipt action');
+  });
   // Restore only the app's own session cookies, encrypted under this Windows user.
   // Explicit sign-out removes them through the same cookie change listener.
   const names = ['kingpos-portable-pos-key-id', 'kingpos-portable-pos-session', 'kingpos-workspace-device'];
@@ -116,7 +125,7 @@ async function start() {
   });
   ipcMain.on('kingpos:offline-lock', event => {
     if (!trusted(event)) { event.returnValue = false; return; }
-    offlineShell.lock(); event.returnValue = true;
+    receiptPrinter?.cancel(); offlineShell.lock(); event.returnValue = true;
   });
 
   if (!app.isPackaged && process.env.KINGPOS_DESKTOP_TEST_OFFLINE === '1') {

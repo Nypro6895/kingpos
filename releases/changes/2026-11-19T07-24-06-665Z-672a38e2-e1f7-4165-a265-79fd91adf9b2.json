@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-version-alignment-20261119",
+  "status": "working",
+  "summary": "Align the local iOS marketing version with existing App Store draft1.0.1; preserve bundle/team/signing identity and leave final build number to actual Apple version preflight",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/project.yml"
+  ],
+  "source": {
+    "commit": "8f8877605534087b2425a62e3b10044376953667"
+  },
+  "validation": [
+    {
+      "name": "Source version/Info.plist macro and unchanged signing identity",
+      "result": "pending"
+    }
+  ],
+  "id": "672a38e2-e1f7-4165-a265-79fd91adf9b2",
+  "recordedAt": "2026-11-19T07:24:06.665Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

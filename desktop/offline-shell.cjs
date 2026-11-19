@@ -20,6 +20,11 @@ class OfflineShell {
   lock() { this.epoch++; this.db.exec("DELETE FROM resources; DELETE FROM metadata;"); }
   cached(path) { const row = this.db.prepare('SELECT body FROM resources WHERE url=?').get(path); return row ? this.decode(row.body) : null; }
   response(path) { const value = this.cached(path); return value ? new Response(Buffer.from(value.body, 'base64'), { headers: value.headers }) : null; }
+  printReadiness(scope) {
+    const prepared=this.meta('prepared');
+    const ready=typeof scope==='string' && this.meta('scope')===scope && prepared?.scope===scope && prepared.localCommands===true && Boolean(this.cached(ROOT));
+    return {ready,scope:ready?scope:'',localCommands:ready};
+  }
   prepare(scope, assets = [], displayPath) {
     const epoch = this.epoch;
     const task = this.pending.catch(() => {}).then(() => this.capture(scope, assets, displayPath, epoch));
@@ -39,7 +44,7 @@ class OfflineShell {
     }
     const fetch = url => this.fetcher(new Request(new URL(url, this.origin), { headers: { Accept: url === path ? 'text/html' : '*/*' }, credentials: 'include', cache: url === path ? 'no-store' : 'default', signal: AbortSignal.timeout(20000) }));
     const prepared=this.meta('prepared');
-    const renew=prepared?.scope!==scope || !this.cached(path) || Date.now()-(prepared?.paths?.[path] ?? 0)>=300000;
+    const renew=prepared?.scope!==scope || !this.cached(path) || path===ROOT&&prepared?.localCommands===undefined || Date.now()-(prepared?.paths?.[path] ?? 0)>=300000;
     let response,html='';
     if(renew){
       response=await fetch(path);
@@ -71,7 +76,8 @@ class OfflineShell {
       const write = this.db.prepare('INSERT OR REPLACE INTO resources VALUES(?,?)');
       for (const [url, value] of rows) write.run(url, this.encode(value));
       this.setMeta('scope', scope);
-      if(renew)this.setMeta('prepared',{scope,paths:{...(prepared?.scope===scope?prepared.paths:{}),[path]:Date.now()}});
+      const shellTag=html.match(/<main\b[^>]*\bdata-portable-pos-shell\b[^>]*>/i)?.[0]??'';
+      if(renew)this.setMeta('prepared',{scope,localCommands:path===ROOT?shellTag.includes('data-receipt-local-commands="true"')&&shellTag.match(/data-receipt-local-scope="([^"]+)"/)?.[1]===scope:prepared?.scope===scope&&prepared.localCommands===true,paths:{...(prepared?.scope===scope?prepared.paths:{}),[path]:Date.now()}});
       this.db.exec('COMMIT');
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }

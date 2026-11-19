@@ -159,7 +159,7 @@ export function AccountDeletionPanel({
         url: result.signedUrl,
       });
       setBackupNotice(
-        `Private export prepared. This link expires ${formatDateTime(result.expiresAt)}.`,
+        `Private export prepared. Download link expires ${formatDateTime(result.downloadExpiresAt)}. Hosted export access expires ${formatDateTime(result.expiresAt)}. Save the downloaded file securely.`,
       );
     });
   }

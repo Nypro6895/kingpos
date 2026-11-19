@@ -79,6 +79,40 @@ test(
       await db.exec("alter table tax_company_subscriptions add column if not exists trial_ends_at timestamptz");
       await db.exec(readFileSync("supabase/migrations/20261111020000_tax_invites_and_renewal.sql","utf8"));
       await actor(owner);
+      let ownerReportWithoutTaxPlugin;
+      await t.test(
+        "owner reads the published numeric report without a Tax subscription or salon credentials",
+        async () => {
+          for (const table of ["tax_company_subscriptions", "tax_company_credentials"])
+            assert.equal(
+              (await db.query(`select count(*)::integer as count from ${table} where salon_id=$1`, [salon])).rows[0].count,
+              0,
+            );
+          await role();
+          try {
+            assert.equal(await rpc("tax_is_owner", [salon]), true);
+            assert.equal(await rpc("tax_company_has_access", [salon]), false);
+            ownerReportWithoutTaxPlugin = await rpc("tax_workspace_data", [salon]);
+            assert.equal(ownerReportWithoutTaxPlugin.salon.id, salon);
+            assert.deepEqual(ownerReportWithoutTaxPlugin.runs.map((item) => item.id), [run]);
+            assert.deepEqual(ownerReportWithoutTaxPlugin.lines.map((line) => [line.run_id, line.staff_id]), [[run, staff]]);
+            const line = ownerReportWithoutTaxPlugin.lines[0];
+            assert.deepEqual(
+              Object.fromEntries(["reported_wage", "tip", "bonus", "reported_gross", "tax", "actual_check", "wage_check_net", "cash_reported", "tax_rate"].map((key) => [key, line[key]])),
+              { reported_wage: 1350, tip: null, bonus: null, reported_gross: 1350, tax: 135, actual_check: 1215, wage_check_net: 1065, cash_reported: null, tax_rate: 10 },
+            );
+            assert.ok(!JSON.stringify(ownerReportWithoutTaxPlugin).includes(draft));
+            assert.ok(!JSON.stringify(ownerReportWithoutTaxPlugin).includes("NOT SHARED"));
+            await actor(tax);
+            await assert.rejects(rpc("tax_workspace_data", [salon]), /inactive/);
+            await actor(otherOwner);
+            await assert.rejects(rpc("tax_workspace_data", [salon]), /inactive/);
+          } finally {
+            await reset();
+            await actor(owner);
+          }
+        },
+      );
       await t.test("inline reservation captures the owner page only on INSERT and rejects non-owner/invalid destinations",async()=>{
         // Reservation internals have their own integration suite; this fixture
         // exercises the real new wrapper and INSERT trigger without a provider.
@@ -196,6 +230,30 @@ test(
         settings.login_id,
         "salon-password-123",
       ]);
+      await t.test(
+        "authorized accountant receives the same published report as the unsubscribed owner; disabling sharing keeps owner access only",
+        async () => {
+          await role();
+          try {
+            const accountantReport = await rpc("tax_workspace_data", [salon]);
+            assert.deepEqual(accountantReport.salon, ownerReportWithoutTaxPlugin.salon);
+            assert.deepEqual(accountantReport.runs, ownerReportWithoutTaxPlugin.runs);
+            assert.deepEqual(accountantReport.lines, ownerReportWithoutTaxPlugin.lines);
+            await reset();
+            await db.query("update tax_company_credentials set enabled=false where salon_id=$1", [salon]);
+            await role();
+            await assert.rejects(rpc("tax_workspace_data", [salon]), /inactive/);
+            await actor(owner);
+            const ownerReport = await rpc("tax_workspace_data", [salon]);
+            assert.deepEqual(ownerReport.runs, accountantReport.runs);
+            assert.deepEqual(ownerReport.lines, accountantReport.lines);
+          } finally {
+            await reset();
+            await db.query("update tax_company_credentials set enabled=true where salon_id=$1", [salon]);
+            await actor(tax);
+          }
+        },
+      );
       await t.test("owner invitations resume independently, redeem once and respect revocation/expiry/entitlement",async()=>{
         await actor(owner);const invitation=await rpc('tax_create_invitation',[salon]);
         assert.match(invitation.token,/^[0-9a-f]{64}$/);
@@ -235,6 +293,16 @@ test(
           assert.equal(list[0].missing_paystubs, null);
           assert.match(list[0].inactive_reason, /renew/);
           await assert.rejects(rpc("tax_workspace_data", [salon]), /inactive/);
+          await actor(owner);
+          await role();
+          try {
+            const ownerReport = await rpc("tax_workspace_data", [salon]);
+            assert.deepEqual(ownerReport.runs, ownerReportWithoutTaxPlugin.runs);
+            assert.deepEqual(ownerReport.lines, ownerReportWithoutTaxPlugin.lines);
+          } finally {
+            await reset();
+            await actor(tax);
+          }
           await db.query(
             "update tax_company_credentials set generation=generation+1 where salon_id=$1",
             [salon],

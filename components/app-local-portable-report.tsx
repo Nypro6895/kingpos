@@ -24,7 +24,7 @@ export function AppLocalPortableReport({data}:{data:AppLocalPortableReportData})
           <p className="text-sm font-medium text-zinc-600">
             {data.salonName} / <WorkspaceText text={formatDate(data.reportDate, data.timezone)} />
           </p>
-          <NavigationForm className="flex items-end gap-2" method="get">
+          <NavigationForm className="flex items-end gap-2" method="get" data-app-local-read-filter="portable-report-date">
             <label className="block">
               <span className="text-xs font-semibold uppercase text-zinc-500">
                 <WorkspaceText text="Date" />

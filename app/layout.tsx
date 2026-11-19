@@ -7,6 +7,8 @@ import { AppStartupShell } from "@/components/app-startup-shell";
 import { OverlayDismissal } from "@/components/overlay-dismissal";
 import ExperienceMediaCache from "@/components/experience-media-cache";
 import { ExperienceOfflineBootstrap } from "@/components/experience-offline-bootstrap";
+import { PublicAppInvite } from "@/components/public-app-invite";
+import { publicAppInviteConfig } from "@/lib/public-app-invite-config";
 import "./globals.css";
 import "@/components/settings-style.css";
 
@@ -30,12 +32,14 @@ export const metadata: Metadata = {
 
 /** A single document root keeps fonts, assets and router state across all shells. */
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const appInvite = publicAppInviteConfig();
   return <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} h-full bg-white antialiased`}>
     <head><ExperienceOfflineBootstrap /></head>
     <body className="min-h-full bg-white text-zinc-950">
       <NumericInputEditing />
       <Suspense fallback={null}><OverlayDismissal /></Suspense>
       <Suspense fallback={null}><ExperienceMediaCache supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""} /></Suspense>
+      {appInvite.enabled && <Suspense fallback={null}><PublicAppInvite config={appInvite} /></Suspense>}
       <Suspense fallback={<AppStartupShell />}>{children}</Suspense>
     </body>
   </html>;

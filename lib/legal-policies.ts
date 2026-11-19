@@ -71,10 +71,10 @@ export const LEGAL_DATES = {
   lastUpdated: LEGAL_LAST_UPDATED,
 } as const;
 
-// Legal review before launch: confirm legal entity name, support address,
-// governing law, dispute forum, arbitration language, liability cap, retention
-// schedule, statutory privacy disclosures, and payment/vendor disclosures for
-// any enabled payment-processing, analytics, monitoring, or messaging services.
+// Local review candidate. Publication still requires verified provider/data-role
+// disclosures, retention and deletion behavior, support operations, applicable
+// privacy/children's requirements, and owner review of the complete policy set.
+// No new liability cap, arbitration agreement, or DMCA registration is asserted.
 
 function strong(text: string): LegalInline {
   return { text, type: "strong" };
@@ -111,7 +111,10 @@ const termsSections: LegalSection[] = [
     blocks: [
       paragraph(
         strong(REYLUMI_APP_NAME),
-        " provides technology for beauty discovery, booking, customer history, salon operations, POS records, staff workflows, payroll support, tax-related operational records, public content, and related account experiences. These Terms explain the rules for using ReyLUMI as a client, beauty professional, staff member, salon owner, or business user.",
+        " is operated by Reylumi LLC and provides technology for beauty discovery, booking, customer history, salon operations, POS records, staff workflows, payroll support, tax-related operational records, public content, and related account experiences. These Terms explain the rules for using ReyLUMI as a client, beauty professional, staff member, salon owner, or business user.",
+      ),
+      paragraph(
+        "The ReyLUMI iOS app is free to download and use in the United States. This does not make salon services or separately identified products and services free. Prices and any additional terms for those offerings apply where they are offered.",
       ),
       paragraph(
         "A person may use ReyLUMI in more than one way. For example, someone may have a personal profile, book services as a client, work as staff at a salon, and help manage a business workspace. Your rights and responsibilities can depend on the context in which you are using the platform.",
@@ -140,6 +143,9 @@ const termsSections: LegalSection[] = [
       paragraph(
         "Some features may present additional terms, notices, or confirmations. Those terms apply to the feature they describe, but they do not replace these Terms unless they expressly say so.",
       ),
+      paragraph(
+        "Agreement to these Terms is not blanket consent to every use or disclosure of personal information. A permission to manage a workspace or submit a record does not replace a notice, consent, or other authorization required for the particular information and purpose. Displaying this policy alone does not establish that a required consent has been obtained.",
+      ),
     ],
   },
   {
@@ -148,6 +154,9 @@ const termsSections: LegalSection[] = [
     blocks: [
       paragraph(
         "You must be able to form a legally binding agreement, or use ReyLUMI with appropriate consent where required by law. You may not use the platform if applicable law prohibits you from doing so.",
+      ),
+      paragraph(
+        "These Terms do not set a universal minimum age. Particular features, laws, or platform requirements may require additional age-related protections or parent or guardian involvement. Appropriate consent to use a feature does not replace any notice, parental consent, or other safeguard required before collecting a child's personal information.",
       ),
       paragraph(
         "Business users are responsible for confirming that their salon, services, staff relationships, licenses, customer communications, prices, taxes, and professional obligations comply with laws and rules that apply to them.",
@@ -182,7 +191,7 @@ const termsSections: LegalSection[] = [
         "You are responsible for keeping account credentials secure, maintaining accurate contact information, and using ReyLUMI only for lawful and authorized purposes.",
       ),
       paragraph(
-        "You are also responsible for activity that occurs under your account or under a business workspace you are authorized to manage, to the extent permitted by law. If you supervise a salon workspace, you should review staff access regularly and remove users who no longer need access.",
+        "You are responsible for your authorized use of an account or business workspace and for people you authorize to act for you, to the extent permitted by law. If you supervise a salon workspace, review staff access regularly and remove users who no longer need access. These responsibilities do not excuse unauthorized access caused by a defect in ReyLUMI's own processing or security practices.",
       ),
       paragraph(
         "If ReyLUMI provides account recovery, phone verification, staff invitation, or similar identity workflows, you must provide accurate information and may not use those workflows to take over someone else's account, customer history, or business relationship.",
@@ -212,7 +221,13 @@ const termsSections: LegalSection[] = [
         "Many ReyLUMI outputs depend on information entered by users or configured by a salon. This can include service prices, staff assignments, booking settings, POS ticket lines, discounts, tips, tax settings, payroll settings, commission rules, customer records, and other operational inputs.",
       ),
       paragraph(
+        "You must have the rights, authority, and permissions needed to submit information, choose its recipients, and use the requested feature. This includes appropriate rights and permissions for another person's photograph, likeness, work, customer information, staff information, or confidential records. Authority to manage a salon is not permission to publish every record in its workspace.",
+      ),
+      paragraph(
         "Because outputs depend on those inputs, users and businesses should review important results before relying on them. This is especially important before paying staff, filing taxes, issuing refunds, correcting tickets, publishing salon information, or making financial or business decisions.",
+      ),
+      paragraph(
+        "Provide accurate information to the best of your knowledge, correct information you control, and promptly report errors or suspected unauthorized use. These duties concern your conduct and inputs. They do not remove ReyLUMI's obligations for its own calculations, processing, security practices, representations, or other conduct, or waive any right or remedy that cannot lawfully be waived.",
       ),
       paragraph(
         "ReyLUMI works to provide useful tools, but it cannot guarantee that every user-entered value, configuration, calculation, or record is complete, current, or suitable for every legal, tax, payroll, or accounting purpose.",
@@ -257,10 +272,18 @@ const termsSections: LegalSection[] = [
     title: "Payments and Refunds",
     blocks: [
       paragraph(
+        "A free app download is separate from a paid Market feature, subscription, sponsored placement, or advertising-credit purchase where offered. Those transactions can have their own price, billing interval, renewal, cancellation, and refund terms. Review the terms for the actual offer and checkout. These Terms do not remove a refund or cancellation right protected by applicable law.",
+      ),
+      paragraph(
         "ReyLUMI may help record payment-related information, such as amounts, methods, tips, discounts, taxes, deposits, refunds, and adjustments, including POS workflows where enabled. Unless a separate checkout or payment-processing integration expressly says otherwise, ReyLUMI's current POS payment records are operational records and do not by themselves process or settle payment.",
       ),
       paragraph(
         "Refund and cancellation outcomes depend on the applicable salon policy, any payment processor actually used for the transaction, and applicable law. These Terms do not create a universal refund rule unless ReyLUMI presents one in a specific checkout, booking, or business agreement.",
+      ),
+      paragraph(
+        "For an advertising-credit purchase, Support reviews refund requests individually under the terms of the actual purchase and applicable law. Canceling or stopping a campaign returns eligible unused campaign credits to the advertising balance; it does not automatically refund a payment to a card or other payment method. A return of credits to the balance and a cash refund are separate outcomes. Contact ",
+        link("Support", "/contact-support"),
+        " if you want a purchase reviewed. This review process does not restrict a refund right protected by applicable law.",
       ),
       paragraph(
         "If third-party payment processing is enabled for a transaction, additional processor terms, fees, settlement timelines, chargeback rules, and verification requirements may apply. Salons should review ",
@@ -309,15 +332,26 @@ const termsSections: LegalSection[] = [
     title: "Intellectual Property",
     blocks: [
       paragraph(
-        "ReyLUMI, its product experience, software, design, trademarks, and platform materials are owned by ReyLUMI or its licensors. You may not copy, modify, distribute, reverse engineer, or misuse them except as allowed by these Terms, product functionality, applicable law, or written permission.",
+        "Reylumi LLC and its licensors retain their rights in the platform software, original designs, branding, and other platform materials. A platform copyright notice does not claim ownership of user submissions. You may not copy, modify, distribute, reverse engineer, or misuse platform materials except as allowed by these Terms, product functionality, applicable law, or written permission.",
       ),
       paragraph(
-        "You keep ownership of content you submit, such as profile details, photos, videos, reviews, service information, salon content, or business content. You grant ReyLUMI a limited license to host, display, process, reproduce, and share that content as needed to operate, secure, support, and improve the platform, consistent with the ",
+        "You and other existing rights holders retain the rights you have in submitted content and information, including photos, videos, reviews, profiles, salon content, and business records. Uploading material does not transfer ownership to ReyLUMI or give you ownership of someone else's material. To provide the features you request, you grant ReyLUMI a non-exclusive, royalty-free license to host, store, reproduce, technically format, deliver, and display your submissions to the audience permitted by the feature and available settings, consistent with the ",
         link("Privacy Policy", "/privacy"),
-        " and available product settings.",
+        ". ReyLUMI may perform those activities through service providers for the applicable service purposes.",
+      ),
+      paragraph(
+        "This license is limited to processing reasonably necessary to operate, secure, maintain, and support the requested service and comply with applicable law. It does not make private workspace records, payroll information, tax documents, or drafts public. It does not grant permission for unrelated public promotion, sale, or AI-model training. Any use beyond this service scope needs a separate lawful basis and any required notice or permission.",
+      ),
+      paragraph(
+        "The license applies while the content is provided through the service and, after removal, only to the extent needed for lawful retention, security or dispute obligations, and authorized copies that remain as described in the Privacy Policy. It does not authorize indefinite retention without a continuing lawful purpose. Deleting a submission cannot by itself recall copies already lawfully received or shared by others.",
       ),
       paragraph(
         "If you publish content publicly, such as public salon profile content, reviews, or beauty profile content, other users may be able to view it, interact with it, or use it to decide whether to book or work with a salon.",
+      ),
+      paragraph(
+        "Only submit content you own or are otherwise entitled to use. To raise a rights concern, use ",
+        link("Contact Support", "/contact-support"),
+        " and identify the material, its location in ReyLUMI, the rights involved, your authority to report, and a way to contact you. Rights complaints, privacy reports, and safety reports may require different information. These Terms do not require users to transfer copyright in an honest review or prevent lawful criticism.",
       ),
     ],
   },
@@ -335,6 +369,9 @@ const termsSections: LegalSection[] = [
       ),
       paragraph(
         "AI-generated images may contain unrealistic details. They do not guarantee that a design or service is available or that the same result can be achieved. Confirm the design, suitability, price, and availability directly with the salon or professional before booking.",
+      ),
+      paragraph(
+        "Platform-produced lumiAi reference images are separate from user submissions. Their availability does not promise copyright protection for every AI-generated element or give users ownership of third-party material.",
       ),
     ],
   },
@@ -370,6 +407,9 @@ const termsSections: LegalSection[] = [
       paragraph(
         "Users and businesses should verify important information before making service, financial, payroll, tax, employment, refund, or legal decisions.",
       ),
+      paragraph(
+        "ReyLUMI will use reasonable efforts to investigate reported technical issues and assist with available correction or recovery options. Assistance depends on authorization, available records, technical feasibility, and applicable law. This does not guarantee recovery of every file, correction of a third party's records, or a particular response deadline.",
+      ),
     ],
   },
   {
@@ -377,10 +417,13 @@ const termsSections: LegalSection[] = [
     title: "Limitation of Liability",
     blocks: [
       paragraph(
+        "Nothing in these Terms excludes or limits a right, remedy, or liability that applicable law does not permit to be excluded or limited. User responsibilities and duties to review information do not remove ReyLUMI's independent obligations for its own processing, security practices, representations, or other conduct.",
+      ),
+      paragraph(
         "To the maximum extent permitted by applicable law, ReyLUMI will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages, or for lost profits, lost revenue, lost goodwill, or loss of data.",
       ),
       paragraph(
-        "Any liability cap, exclusion, consumer protection language, or statutory limitation that requires specific legal drafting should be confirmed in the final legally reviewed version of these Terms.",
+        "The exclusions above apply only to the extent permitted by the law applicable to the claim. They do not override nonwaivable consumer protections or any support, privacy, or security obligation that cannot lawfully be limited. These Terms do not set a monetary liability cap or require users to indemnify ReyLUMI for every consequence of a platform error.",
       ),
     ],
   },
@@ -401,10 +444,10 @@ const termsSections: LegalSection[] = [
     title: "Governing Law and Disputes",
     blocks: [
       paragraph(
-        "Governing law, venue, arbitration, class action waiver, and similar dispute terms will apply only when included in a legally effective version of these Terms or required by applicable law.",
+        "Applicable law governs the rights and remedies available for a dispute. These Terms do not select an exclusive court or require arbitration, a jury waiver, or a class-action waiver.",
       ),
       paragraph(
-        "Until those final terms are confirmed, users should contact ReyLUMI through the available support channel where practical so the issue can be reviewed.",
+        "You may contact ReyLUMI about an issue so it can be reviewed. Contacting support is not a condition for exercising a right or seeking a remedy that applicable law protects.",
       ),
     ],
   },
@@ -413,7 +456,11 @@ const termsSections: LegalSection[] = [
     title: "Contact",
     blocks: [
       paragraph(
-        "For questions about these Terms, contact ReyLUMI through the support channel available in your account or through the official contact channel published for the product.",
+        "For questions about these Terms or Reylumi LLC's operation of ReyLUMI, use ",
+        link("Contact Support", "/contact-support"),
+        ", email ",
+        link("support@reylumi.com", "mailto:support@reylumi.com"),
+        ", or use the support feature in your account. Do not submit passwords, payment credentials, or other unnecessary confidential records with a general inquiry.",
       ),
     ],
   },
@@ -425,7 +472,7 @@ const privacySections: LegalSection[] = [
     title: "Introduction",
     blocks: [
       paragraph(
-        "This Privacy Policy explains how ReyLUMI collects, uses, shares, secures, and retains information for personal accounts, clients, beauty professionals, staff, salon owners, salon workspaces, business accounts, public discovery, booking, POS, payroll, tax-related operational records, and related product experiences.",
+        "Reylumi LLC operates ReyLUMI. This Privacy Policy explains information handling for personal accounts, clients, beauty professionals, staff, salon owners, salon workspaces, business accounts, public discovery, community content, booking, POS, payroll, tax-related records, and document-sharing features.",
       ),
       paragraph(
         "A person may have more than one relationship with ReyLUMI. For example, you may book services as a client, maintain a beauty profile, work as staff at a salon, and help manage a business workspace. The information visible in each context depends on the relationship, the workspace, the feature being used, and the authorization controls that apply.",
@@ -439,6 +486,10 @@ const privacySections: LegalSection[] = [
     id: "information-we-collect",
     title: "Information We Collect",
     blocks: [
+      subheading("Where information comes from"),
+      paragraph(
+        "Information can come directly from you; from a salon, employer, staff member, client, tax professional, or other user authorized to use the relevant workflow; from your device and interactions with the service; and from providers that return authentication, payment, delivery, or other feature results. A salon may supply a customer or staff record even if that person has not created a ReyLUMI account. Public posts, private workspace records, and provider confirmations have different purposes and audiences.",
+      ),
       subheading("Account and profile information"),
       paragraph(
         "When you create or use an account, ReyLUMI may collect account identifiers and profile information such as your name or display name, email address, phone number where provided or verified, profile photo or avatar, account status, login session information, and account preferences.",
@@ -476,14 +527,31 @@ const privacySections: LegalSection[] = [
       ),
       subheading("Payroll and tax operational records"),
       paragraph(
-        "Where payroll or tax-company workflows are used, ReyLUMI may handle compensation settings, commission rates, tips, staff earnings, work or service attribution, payroll runs, paystub records, tax-related calculations, reported wage figures, taxable gross amounts, withholding-related values, and operational reports. These records are business operational data and may be subject to retention needs.",
+        "Where payroll or tax workflows are used, records can include legal names, contact details, compensation settings, commissions, tips, bonuses, cash and check amounts, deductions, staff earnings, work or service attribution, payroll runs, paystubs, reported wages, taxable gross, withholding-related values, and reports. Tax profiles, messages, and uploaded PDF or image documents can contain Social Security numbers, EINs, tax forms, financial details, and other information supplied by the sender. Calling a record business data does not remove the privacy interests of the people it identifies.",
+      ),
+      paragraph(
+        "Where bank or Check Writer features are used, records can include bank routing and account details, bank and issuer information, payee information, check amounts and numbers, memos, and generated files. An authorized server workflow can decrypt bank details to prepare a check PDF; encryption of stored fields does not mean those details are never accessible or processed. Use these features only with authority and do not place this information in public posts or ordinary support messages.",
+      ),
+      subheading("Purchases and payment-provider information"),
+      paragraph(
+        "Where payment features are used, ReyLUMI can handle order, subscription, transaction, account or salon identifiers, purchased products or credits, amounts, billing status, and payment-provider results. A payment provider may collect card or billing information through its own checkout. That does not mean ReyLUMI collects no financial information: the related transaction records and any bank details submitted to a separate Check Writer workflow are different data flows.",
+      ),
+      subheading("Location and maps"),
+      paragraph(
+        "If you allow a location feature to use your position, Explore can send GPS coordinates to ReyLUMI's server to identify your area. Area lookups and map display can involve external map or location providers and requests containing location or map-area information, IP addresses, and technical request details. Browser state can retain location-related information for reuse. A temporary cache is not a promise that every copy is deleted at a fixed time.",
+      ),
+      paragraph(
+        "Location-related requests can include the coordinates returned by your device or an address or area you type. Some map resources are requested directly from your device, while other lookups pass through ReyLUMI's server. Opening an external directions link sends its destination to the maps service you open. You can decline device location access and use the available manual city, ZIP, or address search instead; a device permission does not authorize unrelated uses of location information.",
       ),
       subheading("Device, technical, and usage information"),
       paragraph(
         "ReyLUMI may process technical information needed to operate the app, such as cookies, browser storage preferences, selected workspace, saved Explore preferences, booking draft continuity, POS device preferences, authentication routing, request logs, browser or device details, and diagnostic information generated by normal app, auth, hosting, or browser workflows.",
       ),
       paragraph(
-        "Where analytics, monitoring, or similar tools are enabled, ReyLUMI should disclose and operate those tools consistently with the actual implementation.",
+        "Security and login records can link an account or action with an IP address, user agent, approximate area derived from network information, session history, and a signed or hashed browser identifier. These records can still identify or distinguish a person or device even when a direct name is not included.",
+      ),
+      paragraph(
+        "Sponsored-content features can record campaign and session identifiers, the page or entry path, time, device or audience categories, and interaction events such as views and clicks. Signup attribution can associate a campaign interaction with a newly created account. These records support campaign measurement and platform integrity; a session identifier or hashed value is not necessarily anonymous.",
       ),
     ],
   },
@@ -522,6 +590,9 @@ const privacySections: LegalSection[] = [
       paragraph(
         "Technical and diagnostic information may be used to investigate errors, improve reliability, debug product behavior, maintain performance, and understand whether features operate as intended.",
       ),
+      paragraph(
+        "Sponsored-content interaction and attribution information is used to measure campaign delivery and responses, associate eligible signups with campaigns, and investigate campaign misuse. Location and map information is used to find an area and display nearby or selected content when those features are used.",
+      ),
       subheading("Meet legal and business obligations"),
       paragraph(
         "Information may be retained, preserved, disclosed, or used when needed to comply with applicable law, respond to lawful requests, resolve disputes, enforce agreements, maintain business records, support accounting or tax obligations, or protect the rights and safety of users and the platform.",
@@ -534,6 +605,9 @@ const privacySections: LegalSection[] = [
     blocks: [
       paragraph(
         "Business workspaces may include account membership, salon profile information, staff profile details, invitations, role assignments, permissions, service assignments, availability, POS access, payroll setup, paystub records, tax-company records, operational reports, and related audit or correction history.",
+      ),
+      paragraph(
+        "For workspace features, salons and authorized business users decide which records to submit and whom to authorize within the feature. ReyLUMI processes those records to provide the requested tools, enforce access, support the service, and meet applicable obligations. ReyLUMI also uses information for its own account, community, security, and disclosed platform purposes. Responsibilities depend on the purpose and applicable law; storing records in a salon workspace does not transfer all privacy responsibility to the salon or make ReyLUMI only a processor for every use.",
       ),
       paragraph(
         strong("Staff @ Salon"),
@@ -582,7 +656,15 @@ const privacySections: LegalSection[] = [
         "ReyLUMI may process request logs, error details, diagnostic events, browser information, device information, and performance information to operate, secure, troubleshoot, and improve the service.",
       ),
       paragraph(
-        "If analytics, monitoring, advertising, or similar technologies are enabled, disclosures and controls should be updated to match the actual tools, purposes, and choices available to users.",
+        "The native app can retain authorized read models and queued workspace operations on the device for continuity and offline use. Browser storage can also hold draft or recovery information, including an unresolved post request, its caption, and uploaded file references. Local storage and a queued action are different from a confirmed server update. Local copies, hosted records, exports, and copies you download can have different access and removal lifecycles.",
+      ),
+      paragraph(
+        "Native troubleshooting records can include bounded timing, status, command category, app or build information, and random request identifiers. The native diagnostic-report feature lets you choose to save or share a report rather than automatically uploading that report. This does not describe all server or hosting logs: normal requests and server-side security or troubleshooting records are handled separately.",
+      ),
+      paragraph(
+        "Sponsored-content interactions and signup attribution can use campaign and session identifiers, page information, time, device or audience categories, and an account link when a signup is attributed. These uses are described under ",
+        link("Information We Collect", "/privacy#information-we-collect"),
+        ". Browser or device controls can affect cookies, storage, or location access, and disabling them can affect the related feature.",
       ),
     ],
   },
@@ -591,13 +673,18 @@ const privacySections: LegalSection[] = [
     title: "Service Providers",
     blocks: [
       paragraph(
-        "ReyLUMI uses or may use service providers to host the application, operate databases, authenticate users, store files, deliver password reset or account emails, display maps, process payments where enabled, monitor reliability where enabled, and support similar platform operations.",
+        "With your explicit permission for the post, ReyLUMI can send a processed copy of photos you choose for a Beauty or salon post to OpenAI for an automated content-safety check. Processing can include people or other personal information visible in the photo; resizing an image or removing file metadata does not make its pixels anonymous. This photo-check flow does not send private payroll, tax, bank, or support uploads, or the post caption, to OpenAI. Automated checks do not establish copyright ownership or detect every harmful or private detail. Declining this permission keeps the photo from being sent through this check; you can keep your draft and continue using unrelated features.",
       ),
       paragraph(
-        "These providers process information so they can provide services to ReyLUMI or to users through ReyLUMI. Provider access should be limited to the services they perform and governed by appropriate terms, technical controls, and security commitments.",
+        "Requested features depend on providers for application hosting, database and file storage, authentication, and communications. Map and location features involve map or area-lookup providers. A checkout or other payment feature can involve the payment provider identified for that transaction. The information involved depends on the feature, such as account and request details for authentication, a file selected for storage or delivery, location or map-area information for maps, or transaction details for checkout.",
       ),
       paragraph(
-        "If ReyLUMI enables additional payment processing, analytics, monitoring, support, or messaging vendors, provider disclosures and controls should match the actual implementation.",
+        "Providers can receive information needed to handle the relevant request, including technical connection details. A provider can also have its own terms or privacy notice for a service it supplies directly to you. A provider's role depends on the service and its use of information; this policy does not treat every outside recipient as processing solely on ReyLUMI's instructions.",
+      ),
+      paragraph(
+        "Do not send account credentials or unrelated private records to an outside provider. For questions about a provider involved in a ReyLUMI feature or a request concerning your information, use ",
+        link("Contact Support", "/contact-support"),
+        ".",
       ),
     ],
   },
@@ -609,9 +696,12 @@ const privacySections: LegalSection[] = [
       paragraph(
         "Information may be shared when you choose to publish content, create a public profile, submit a review, send information to a salon, request a booking, accept a staff invitation, or otherwise use a feature that shares information with another user or workspace.",
       ),
+      paragraph(
+        "Choosing a recipient, exporting a file, or publishing a post changes who can receive that information. A recipient may download, print, or otherwise keep a copy. A public audience is different from a selected private recipient; neither action grants unrelated people access to payroll, tax, customer, bank, or staff records.",
+      ),
       subheading("With salons, staff, and professionals"),
       paragraph(
-        "ReyLUMI may share booking, customer, staff, POS, payroll, profile, and operational information with salons, owners, staff, and beauty professionals when needed for bookings, service delivery, schedule management, POS workflows, payroll support, customer history, or business operations.",
+        "Booking, customer, staff, POS, payroll, tax, and operational records can be made available to the salon, assigned staff, an authorized tax professional, or a selected document recipient through the feature used. Access depends on the salon, role, assignment, permission, and recipient relationship. Public posts and profiles have different audiences from private workspace records and drafts.",
       ),
       subheading("With service providers"),
       paragraph(
@@ -630,7 +720,7 @@ const privacySections: LegalSection[] = [
         ".",
       ),
       paragraph(
-        "ReyLUMI does not describe a sale of personal information for advertising purposes in this policy. If advertising or sale/share practices are introduced, disclosures and choices should be updated to match the actual practice and applicable law.",
+        "Sponsored-content measurement can involve session information and account-linked attribution as described above. Advertising-related use and disclosure remain subject to applicable law and any required notice, choice, or permission. Publishing content or accepting these Terms does not by itself authorize unrelated disclosure of private payroll, tax, customer, or staff records.",
       ),
     ],
   },
@@ -645,7 +735,7 @@ const privacySections: LegalSection[] = [
         "Access to business and staff records should depend on authorization controls, not merely on what a user says their role is. Businesses should invite only authorized users, remove users who no longer need access, and review permissions after staffing or ownership changes.",
       ),
       paragraph(
-        "No online system can guarantee absolute security. Users should protect credentials, use accurate recovery information, avoid sharing access, and report suspected unauthorized access promptly.",
+        "No online system can guarantee absolute security. Users should protect credentials, use accurate recovery information, avoid sharing access, and report suspected unauthorized access promptly. These precautions do not transfer ReyLUMI's own security or privacy obligations to users or eliminate rights that applicable law protects.",
       ),
     ],
   },
@@ -654,28 +744,38 @@ const privacySections: LegalSection[] = [
     title: "Data Retention",
     blocks: [
       paragraph(
-        "No single retention period applies to every record. ReyLUMI retains information for as long as needed based on the type of information, why it was collected, the active relationship between the user and ReyLUMI, business record needs, fraud and security needs, disputes, accounting, payroll, tax, audit, and applicable law.",
+        "No single retention period applies to every record. Retention must be tied to a specific lawful purpose, the record involved, applicable recordkeeping obligations, and any valid legal or security hold. Account use, a salon relationship, or a business preference is not by itself permission to retain all associated personal information indefinitely.",
       ),
       paragraph(
         strong("Personal profile data"),
-        " may be retained while an account is active and for a reasonable period afterward when needed for account recovery, legal compliance, dispute resolution, or security.",
+        " supports the active account and its requested features. When account deletion is completed, the personal profile fields covered by the deletion process are removed or cleared. Limited records may remain only under the retention exceptions described here and in Account Deletion.",
       ),
       paragraph(
         strong("Public content"),
-        " may remain visible while published and may be retained after removal when needed for moderation, safety, evidence, dispute resolution, backups, or legal obligations.",
+        " is visible to the audience of the publishing feature while it is published. Removal from public view and removal of retained copies are different steps. A limited copy can remain for a specific lawful moderation, safety, dispute, or legal purpose; copies already lawfully received or shared by other people cannot necessarily be recalled.",
+      ),
+      paragraph(
+        "A photo can be used by more than one feature, such as a salon cover, a selected booking inspiration, or shared published media. Deleting one post does not necessarily remove those other uses, the underlying stored file, or cached copies at the same time. These differences do not remove applicable privacy or content-removal rights, or justify unnecessary retention. When requesting review of a photo's removal, identify the photo and any other places it appears through Contact Support so the relevant uses, rights, retention purpose, and access can be assessed.",
+      ),
+      paragraph(
+        "When ReyLUMI creates a private copy of an ordinary photo as evidence for a support or content-rights case, access is limited to authorized operators assigned to that case. The ordinary copy is scheduled for deletion 30 days after the case is explicitly closed. A reopened case pauses that ordinary deadline. A specific legal hold must record a reason and a review date; a hold requires review and is not permission for indefinite retention. Failed cleanup is retried, so scheduled expiry is not a guarantee of immediate physical deletion. Earlier account-erasure requirements can still apply. This ordinary-photo rule does not set retention periods for POS, payroll, tax or other business records, and does not govern suspected illegal material handled through a separate safety and legal process.",
       ),
       paragraph(
         strong("Booking history and customer records"),
-        " may be retained so salons can provide customer service, understand visit history, resolve appointment disputes, support receipts, maintain business continuity, and comply with applicable recordkeeping obligations.",
+        " can be part of a salon's service and transaction records. Any retention after a personal account is deleted must have an applicable lawful basis and remain limited to the purpose, period, and authorized recipients for that record.",
       ),
       paragraph(
         strong("POS, payroll, tax, and audit records"),
-        " may need longer retention because businesses may rely on them for accounting, payroll, taxes, corrections, audits, disputes, and legal compliance.",
+        " can have recordkeeping or other lawful retention obligations distinct from an account profile. Not every field in those records is required by law, and a label such as payroll or tax does not justify keeping unnecessary personal details. Sensitive retained records must remain restricted to appropriate recipients.",
       ),
       paragraph(
-        "Some records, including booking, POS, payroll, tax, customer history, staff relationship, and audit-related records, may need to be retained even after a personal account is closed or deleted. Learn more about ",
+        "Tax documents, paystubs, and other records delivered to an authorized recipient can remain in that recipient's record history. Removing or archiving a document from the sender's view does not necessarily remove the recipient's access or copies already downloaded or printed. These records remain subject to applicable retention, privacy, and access requirements. Learn more about ",
         link("Account Deletion", "/privacy#account-deletion"),
         ".",
+      ),
+      subheading("Hosted account and salon export access and cleanup"),
+      paragraph(
+        "Hosted account and salon exports created under the seven-day export controls allow new authenticated access until their stated expiry, seven days after creation. Newly issued download links last up to 15 minutes, capped by the remaining export access period, and must be kept private; anyone holding a valid download link can use it until its expiry. A permission change alone does not recall a valid bearer link already shared. Access expiry and removal of a stored file are different events. Eligible new exports enter scheduled file cleanup after expiry, with failed removals retried; physical deletion is not guaranteed at the exact access deadline. Older files and previously issued links have separate expiry and cleanup histories, and these controls do not automatically revoke or purge every historical copy. Downloaded or printed copies are not removed by hosted-file cleanup.",
       ),
     ],
   },
@@ -684,23 +784,26 @@ const privacySections: LegalSection[] = [
     title: "Account Deletion",
     blocks: [
       paragraph(
-        "Request deletion in Settings → Personal account → Delete personal account. You can cancel during the 30-day pending period. After that period, deletion normally completes within 24 hours; service failures are retried. Save the private status link shown in Settings to check completion after sign-out. We also send an email confirmation when an email address and email delivery service are available.",
+        "Request deletion in Settings → Personal account → Delete personal account. You can cancel during the displayed 30-day pending period. After that period, the service processes the request and retries failed steps. Save the private status link shown in Settings to check progress and whether deletion has completed after sign-out. An email notification depends on an available address and delivery service; the private status receipt remains the way to check the request without relying on email delivery.",
       ),
       paragraph(
-        "During the pending period, a deletion request may be cancelled if the applicable workflow or support process allows it. ReyLUMI may also delay or block deletion where necessary to verify the request, prevent fraud, protect security, comply with law, resolve disputes, or preserve records that must be retained.",
+        "A request can require verification or a lawful hold for particular records. A retention exception does not automatically prevent deletion of the account or other personal information that is no longer needed. Technical processing is not complete merely because a request has been scheduled or a pending period has ended.",
+      ),
+      paragraph(
+        "The pending period describes the in-app account-deletion workflow, not an extension of a deadline imposed by applicable privacy law. You can raise a separate privacy request through Contact Support without waiting for that period to end. Removing the app from a device is not the same as requesting deletion of its hosted account or records.",
       ),
       list(
         item(
           "A sole salon Owner can transfer ownership or choose the in-app option to permanently close last-owner salons before scheduling deletion. Contacting support is not required to request deletion.",
         ),
         item(
-          "Personal Account deletion does not automatically delete lawful business, accounting, payroll, tax, audit, customer, booking, or POS records.",
+          "Personal account deletion can leave particular business, payroll, tax, audit, customer, booking, or POS records only where a specific retention exception is consistent with applicable law. Business convenience alone is not a blanket exception to account deletion.",
         ),
         item(
-          "Deletion removes the sign-in identity, personal profile fields, authored social posts, comment and review text, personal images and private account exports. Contentless references may remain to preserve reply threads and accounting references.",
+          "The deletion workflow covers the sign-in identity, personal profile fields, authored social posts, comment and review text, personal images, and private account exports. Completion is recorded after its processing steps succeed. Minimal references can remain to preserve reply threads and structurally valid transaction records without retaining the removed public text or profile fields.",
         ),
         item(
-          "Where appropriate, ReyLUMI may anonymize, de-identify, detach, or restrict personal identifiers instead of destructively deleting operational records.",
+          "Clearing an account profile or restricting a retained record does not necessarily make every related business record anonymous. Other lawful records can still identify a person and must be handled accordingly.",
         ),
       ),
       paragraph(
@@ -715,10 +818,13 @@ const privacySections: LegalSection[] = [
     title: "Business Records After Account Deletion",
     blocks: [
       paragraph(
-        "Business records may remain available to an authorized salon, account, or successor owner where needed for continuity, recordkeeping, dispute resolution, payroll, tax, legal compliance, audit, customer service, or legitimate business operations.",
+        "Specific business records may remain with an authorized salon or recipient after personal account deletion when retention is permitted under applicable law and consistent with the record's purpose. Records delivered to a staff member, tax professional, or other authorized recipient can have a different lifecycle from the sender's account or document list.",
       ),
       paragraph(
-        "For example, deleting a personal account should not automatically erase a salon's POS history, payroll run, tax-company record, customer receipt, booking history or audit trail when the salon or platform has a legitimate reason or legal requirement to retain it.",
+        "Examples include a transaction receipt, payroll run, paystub, tax document, or audit trail that has an applicable recordkeeping requirement or other permitted retention exception. This is not a claim that every historical field must be retained or that all records are available to a successor owner.",
+      ),
+      paragraph(
+        "Retained customer or staff contact details, legal-name or payroll snapshots, bank or check records, private support messages, and documents can still identify a person after an account link is disconnected. The same purpose, access, minimization, and applicable privacy-request requirements continue to matter for those records. A request about them is not limited to the personal-profile deletion control.",
       ),
       paragraph(
         "Access to sensitive historical records should remain limited to authorized users and should not be exposed merely because a personal account was removed or ownership changed. See ",
@@ -735,10 +841,21 @@ const privacySections: LegalSection[] = [
         "Depending on where you live and the law that applies, you may have rights to access, correct, delete, export, restrict, or object to certain uses of your personal information.",
       ),
       paragraph(
-        "Privacy requests may require identity verification. ReyLUMI may deny, limit, or delay a request where law permits, including when the request conflicts with security, fraud prevention, legal obligations, business records that must be retained, another person's rights, or records controlled by an authorized salon workspace.",
+        "Where applicable, these rights can include knowing the categories and sources of information collected, its uses and recipients; opting out of a sale or sharing of personal information; limiting certain uses or disclosures of sensitive personal information; and exercising protected rights without unlawful discrimination. Which rights apply depends on the governing law and the particular processing, not just whether a person has an active account.",
       ),
       paragraph(
-        "This section is jurisdiction-neutral. State, national, or regional privacy notices may need to be added when ReyLUMI has verified legal obligations for a specific jurisdiction.",
+        "Requests can require proportionate identity verification and protection of other people's information. A request concerning salon-controlled records may require coordination with the responsible business. A record's presence in a salon workspace does not by itself remove applicable privacy rights. Any denial, limit, or delay must have a basis permitted by the law governing the request.",
+      ),
+      paragraph(
+        "To ask about your information or exercise an applicable right, use ",
+        link("Contact Support", "/contact-support"),
+        " or email ",
+        link("support@reylumi.com", "mailto:support@reylumi.com"),
+        ". Explain the request without including passwords, full bank details, or unnecessary identity or tax documents. An account export supports the data included in that feature; it is not the only way to raise a privacy request.",
+      ),
+      subheading("Children and authorized use"),
+      paragraph(
+        "There is no universal minimum age in these Terms. Legal authority, appropriate consent, and any protections required for the feature and location still apply. Children's privacy requirements can apply when a service is directed to children under 13 or has actual knowledge that it is collecting their personal information, as well as in other circumstances covered by applicable law. Required notices, verifiable parental consent where required, and safeguards must precede the relevant collection. If you believe ReyLUMI is collecting a child's information in circumstances requiring additional protection, contact us through the privacy request channel above. A general permission to use a feature is not a substitute for legally required parental consent.",
       ),
     ],
   },
@@ -750,7 +867,7 @@ const privacySections: LegalSection[] = [
         "ReyLUMI uses cookies and local browser storage for login sessions, selected workspace, authentication routing, saved preferences, and continuity of certain product workflows.",
       ),
       paragraph(
-        "Where analytics or monitoring technologies are enabled, they should be used to understand reliability, performance, product behavior, or security needs, and disclosures should match the actual implementation. This policy does not describe advertising tracking that has not been implemented.",
+        "Sponsored-content features can also use cookies or session identifiers to measure interactions and attribute eligible signups to campaigns, including a link to a newly created account. Location-related browser state can support reuse of an area lookup. Technical and diagnostic information supports security, troubleshooting, and reliability. These descriptions do not treat identifiers as automatically anonymous or make a claim that every such activity is exempt from applicable advertising or privacy requirements.",
       ),
     ],
   },
@@ -783,7 +900,9 @@ const privacySections: LegalSection[] = [
     title: "Contact",
     blocks: [
       paragraph(
-        "For privacy questions or requests, contact ReyLUMI through the support channel available in your account or through the official contact channel published for the product.",
+        "For privacy questions or requests concerning Reylumi LLC and ReyLUMI, use ",
+        link("Contact Support", "/contact-support"),
+        " or the support feature in your account. Include enough information to identify the feature and request, and avoid sending unnecessary confidential records.",
       ),
     ],
   },
@@ -1036,6 +1155,9 @@ const businessSections: LegalSection[] = [
       paragraph(
         "The business is responsible for making sure the people using the workspace are authorized and that the information entered into ReyLUMI is accurate, lawful, and appropriate for the business purpose.",
       ),
+      paragraph(
+        "A business must have authority and any required permission to submit customer, staff, payroll, tax, identity, or other confidential information and to choose its recipients. Workspace authority is not a substitute for the rights of the people concerned. These responsibilities do not remove Reylumi LLC's independent obligations for its own processing, security practices, or representations.",
+      ),
     ],
   },
   {
@@ -1178,7 +1300,7 @@ const businessSections: LegalSection[] = [
         "Where payment collection or payment records are supported, the business remains responsible for accurate collection, reconciliation, refunds, disputes, chargebacks, taxes, merchant obligations, and provider obligations.",
       ),
       paragraph(
-        "If ReyLUMI later enables a payment-processing integration, the business may need to accept additional processor terms, verify settlement information, handle disputes, and comply with merchant rules. ReyLUMI's POS record alone does not prove that money was collected or settled.",
+        "A feature that uses an actual payment-processing integration can require additional processor terms, settlement checks, dispute handling, and merchant obligations. The terms and provider identified for the transaction apply. A ReyLUMI POS record alone does not prove that money was collected or settled.",
       ),
       paragraph(
         "Refund and cancellation treatment should align with the salon policy shown to the client, any processor rules that apply, and applicable law. ReyLUMI does not create a universal salon refund policy.",
@@ -1191,7 +1313,7 @@ const businessSections: LegalSection[] = [
     blocks: [
       note(
         "Payroll disclaimer",
-        "ReyLUMI provides tools that may support calculations and record keeping, but ReyLUMI does not become the employer, accountant, payroll provider, tax advisor, or law firm for the business.",
+        "Using ReyLUMI for calculations or records does not by itself make ReyLUMI the employer, accountant, payroll disbursement provider, tax advisor, or law firm for the business. Any separately agreed service remains subject to its actual scope and applicable law.",
       ),
       paragraph(
         strong("Payroll outputs"),
@@ -1209,6 +1331,9 @@ const businessSections: LegalSection[] = [
         link("Tax", "/business-terms#tax"),
         " settings. Businesses should consult qualified advisors for employment, payroll, accounting, and tax questions.",
       ),
+      paragraph(
+        "A payroll report or payment entry does not by itself establish that wages were paid, required deposits were made, or returns were filed. The business must verify those events through the actual payment or filing process. Its duty to review outputs does not excuse a defect in ReyLUMI's own calculations, processing, or access controls.",
+      ),
     ],
   },
   {
@@ -1225,6 +1350,12 @@ const businessSections: LegalSection[] = [
       paragraph(
         "Businesses should review all tax-related outputs with qualified advisors before filing returns, paying taxes, issuing tax forms, or making legal compliance decisions.",
       ),
+      paragraph(
+        "Tax profiles, messages, paystubs, and uploaded forms or images can contain legal names, contact information, Social Security numbers, EINs, wage and withholding details, and other private financial information. Submit only information you are authorized to provide, select recipients carefully, and use it only for the authorized purpose. A technical connection to a tax professional does not establish professional credentials or an authorization to file or pay tax on another person's behalf.",
+      ),
+      paragraph(
+        "Removing or archiving a sent document can remove it from the sender's view without withdrawing an authorized recipient's record or a copy already downloaded or printed. Retention and access remain subject to the document's purpose, applicable law, and the relevant permissions; do not assume all historical documents become available to a newly connected owner or professional.",
+      ),
     ],
   },
   {
@@ -1236,6 +1367,9 @@ const businessSections: LegalSection[] = [
       ),
       paragraph(
         "Customer records may include contact information, appointment history, service history, receipts, account-claim information, reviews, and salon-specific customer history. Business users should avoid accessing or exporting customer data without a legitimate purpose.",
+      ),
+      paragraph(
+        "Salons determine the inputs, recipients, and business decisions for their requested workspace activities. ReyLUMI processes the records to provide those tools and also has responsibilities for its own platform purposes and conduct. The applicable data role depends on each use and the governing law; these Terms do not declare ReyLUMI a service provider or processor for every activity or replace any additional data-processing terms required by law.",
       ),
       paragraph(
         "Privacy handling for customer and booking data is described in the ",
@@ -1341,7 +1475,9 @@ const businessSections: LegalSection[] = [
     title: "Contact",
     blocks: [
       paragraph(
-        "For business terms questions, contact ReyLUMI through the support channel available in your account or through the official contact channel published for the product.",
+        "For questions about these Business & Salon Terms, use ",
+        link("Contact Support", "/contact-support"),
+        " or the support feature in your account. Identify the business and feature involved without including credentials or unnecessary customer, staff, payroll, or tax records.",
       ),
     ],
   },
@@ -1352,7 +1488,7 @@ export const legalDocuments = {
     description:
       "Terms that explain how clients, professionals, staff, and businesses use ReyLUMI.",
     href: "/terms",
-    lastUpdated: "October 13, 2026",
+    lastUpdated: LEGAL_LAST_UPDATED,
     intro:
       "Rules for accounts, bookings, payments, content, disputes, platform outputs, and responsible use of ReyLUMI.",
     sections: termsSections,

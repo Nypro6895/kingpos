@@ -5,7 +5,7 @@ export const REYLUMI_COPYRIGHT_YEAR = 2026;
 export const REYLUMI_METADATA_BASE = new URL(getPublicAppOrigin());
 
 export const LEGAL_EFFECTIVE_DATE = "August 21, 2026";
-export const LEGAL_LAST_UPDATED = "October 14, 2026";
+export const LEGAL_LAST_UPDATED = "November 18, 2026";
 
 export const LEGAL_ROUTE_PATHS = [
   "/legal",

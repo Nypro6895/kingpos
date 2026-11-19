@@ -1,5 +1,14 @@
 plugins { id 'com.android.application' }
 
+def qaAppPortText = providers.gradleProperty('qaAppPort').orElse('3117').get()
+if (!(qaAppPortText ==~ /[1-9][0-9]{3,4}/) || qaAppPortText.toInteger() < 1024 || qaAppPortText.toInteger() > 65535) {
+    throw new GradleException('qaAppPort must be a local development port from 1024 to 65535')
+}
+def qaBackendPortText = providers.gradleProperty('qaBackendPort').orElse('55421').get()
+if (!(qaBackendPortText ==~ /[1-9][0-9]{3,4}/) || qaBackendPortText.toInteger() < 1024 || qaBackendPortText.toInteger() > 65535 || qaBackendPortText == qaAppPortText) {
+    throw new GradleException('qaBackendPort must be a distinct local development port from 1024 to 65535')
+}
+
 android {
     namespace 'com.reylumi.android'
     compileSdk 36
@@ -12,6 +21,10 @@ android {
         versionCode 1
         versionName '1.0.0'
         buildConfigField 'boolean', 'QA_LOCAL', 'false'
+        buildConfigField 'boolean', 'PORTABLE_POS', 'false'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        buildConfigField 'int', 'QA_APP_PORT', '3117'
+        buildConfigField 'int', 'QA_BACKEND_PORT', '55421'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -33,12 +46,46 @@ android {
             applicationIdSuffix '.qa'
             versionNameSuffix '-qa'
             buildConfigField 'boolean', 'QA_LOCAL', 'true'
+            buildConfigField 'int', 'QA_APP_PORT', qaAppPortText
+            buildConfigField 'int', 'QA_BACKEND_PORT', qaBackendPortText
             matchingFallbacks = ['debug']
         }
         release {
             minifyEnabled false
             signingConfig signingConfigs.release
         }
+        posQa {
+            initWith qa
+            applicationIdSuffix '.pos.qa'
+            versionNameSuffix '-pos-qa'
+            buildConfigField 'boolean', 'PORTABLE_POS', 'true'
+            matchingFallbacks = ['qa', 'debug']
+        }
+        posDebug {
+            initWith debug
+            applicationIdSuffix '.pos.debug'
+            versionNameSuffix '-pos-debug'
+            buildConfigField 'boolean', 'PORTABLE_POS', 'true'
+            matchingFallbacks = ['debug']
+        }
+        posRelease {
+            initWith release
+            // Proposed identity; no store registration/upload is performed by this build.
+            applicationIdSuffix '.pos'
+            versionNameSuffix '-pos'
+            buildConfigField 'boolean', 'PORTABLE_POS', 'true'
+            matchingFallbacks = ['release']
+        }
+    }
+    testBuildType 'posQa'
+    sourceSets {
+        posQa {
+            manifest.srcFile 'src/posQa/AndroidManifest.xml'
+            assets.srcDirs = ['src/qa/assets']
+            res.srcDirs = ['src/qa/res']
+        }
+        posDebug.res.srcDirs = ['src/pos/res']
+        posRelease.res.srcDirs = ['src/pos/res']
     }
 }
 
@@ -47,6 +94,9 @@ dependencies {
     implementation 'androidx.core:core:1.16.0'
     implementation 'androidx.webkit:webkit:1.14.0'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
 }
 
 // Never accidentally deliver an unsigned store candidate as a signed release.
@@ -62,7 +112,8 @@ def verifyReleaseSigning = tasks.register('verifyReleaseSigning') {
     }
 }
 tasks.configureEach {
-    if (name in ['preReleaseBuild', 'bundleRelease', 'assembleRelease']) {
+    if (name in ['preReleaseBuild', 'bundleRelease', 'assembleRelease',
+                 'prePosReleaseBuild', 'bundlePosRelease', 'assemblePosRelease']) {
         dependsOn verifyReleaseSigning
     }
 }

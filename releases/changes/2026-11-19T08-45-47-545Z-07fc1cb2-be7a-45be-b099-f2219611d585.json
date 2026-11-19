@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "tax-delivered-file-integrity-20261119",
+  "status": "needs-integration",
+  "summary": "Keep delivered Tax PDF bytes immutable under ordinary application updates while preserving new-version publication and leased business-record COPY. Eight actual full-schema groups pass; advanced runtime test and final publication gates remain unverified.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261119061000_tax_delivered_file_integrity.sql",
+    "tests/tax-delivered-file-integrity.integration.test.mjs",
+    "tests/helpers/isolated-tax-storage-bytes.mjs",
+    "docs/tax-delivered-file-integrity-20261119.md"
+  ],
+  "dependencies": [
+    "tax-recipient-storage-custody-20261119"
+  ],
+  "source": {
+    "commit": "f3de8f291aedcfbb5b87de5fc46f1aa7431c0c42",
+    "snapshot": "C:\\Reylumi-worktrees\\combined-store-release-20261119\\artifacts\\tax-delivered-file-integrity-completion-r1\\frozen-source"
+  },
+  "validation": [
+    {
+      "name": "Actual full449-schema ordinary upload/version/COPY/lifecycle/isolation acceptance, eight groups, unchanged source and verified cleanup",
+      "result": "passed",
+      "evidence": "C:/Reylumi/qa-evidence/combined-store-final-18a981-20261119-r1/tax-integrity-functional-449-r1/controller-acceptance.json"
+    },
+    {
+      "name": "Final committed-source combined acceptance and production/native/Store gates",
+      "result": "pending"
+    },
+    {
+      "name": "Advanced pre-issued upload-token runtime experiment",
+      "result": "pending",
+      "evidence": "Stopped after automatic review; not retried or used as acceptance"
+    }
+  ],
+  "id": "07fc1cb2-be7a-45be-b099-f2219611d585",
+  "recordedAt": "2026-11-19T08:45:47.545Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

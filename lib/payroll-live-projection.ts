@@ -2,7 +2,7 @@ import { moneyCents } from "./payroll-live-money";
 import type { PayrollStaffLineWithDailyTotals } from "@/types/payroll";
 
 export const incomeFields = ["gross_sales","staff_commission_gross","shop_share","base_check_amount","base_cash_amount","cash_amount","check_gross","check_net","tip_amount","tip_check_amount","tip_cash_amount","bonus_amount","bonus_check_amount","bonus_cash_amount","earned_amount","final_check_amount","final_cash_amount","final_staff_income","fixed_pay_amount_used","tax_withheld","tax_company_reported_wage_gross","tax_company_taxable_gross","tax_company_check_amount","tax_company_cash_amount"] as const;
-export type LiveIncomeDay = { businessDate: string; amounts: Partial<Record<typeof incomeFields[number],number>> };
+export type LiveIncomeDay = { businessDate: string; amounts: Partial<Record<typeof incomeFields[number],number>>; taxReportingSnapshot?: import("@/types/payroll").PayrollTaxReportingSnapshot };
 
 /** Period extras settle on their source period's end date, never the end of an
  * arbitrary download range. A sliced range therefore cannot duplicate a bonus. */

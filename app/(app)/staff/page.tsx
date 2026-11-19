@@ -371,6 +371,7 @@ function StaffForm({
       action={createStaff}
       className="grid min-w-0 gap-5 bg-white p-5 sm:grid-cols-2"
     >
+      <h2 className="text-base font-semibold sm:col-span-2"><WorkspaceText text="Create a staff profile" /></h2>
       {error ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:col-span-2">
           <WorkspaceText text={error} />

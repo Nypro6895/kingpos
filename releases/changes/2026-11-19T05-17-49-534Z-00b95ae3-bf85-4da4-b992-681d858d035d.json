@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "rights-evidence-runtime-20261118",
+  "status": "ready",
+  "summary": "Revision2: remove redundant explicit Node segment runtime export rejected by Next16 Cache Components; private evidence authorization/bytes contract unchanged.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/rights-evidence-worker.ts",
+    "lib/rights-evidence-storage.ts",
+    "lib/rights-evidence-access.ts",
+    "lib/account-maintenance-route.ts",
+    "app/api/admin/rights-evidence/[evidenceId]/route.ts",
+    "app/api/account/erase-due/route.ts",
+    "tests/rights-evidence-worker.test.mjs",
+    "tests/rights-evidence-access.test.mjs",
+    "tests/rights-evidence-maintenance-route.test.mjs",
+    "tests/account-maintenance-route.test.mjs",
+    "tests/public-image-staging-expiry.test.mjs",
+    "docs/rights-evidence-runtime-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\rights-evidence-runtime-20261118\\revision-2\\frozen-source"
+  },
+  "dependencies": [
+    "rights-image-evidence-backend-20261118"
+  ],
+  "validation": [
+    {
+      "name": "32focusedroute/SDK/oldmaintenance records,0skip",
+      "result": "passed",
+      "evidence": "artifacts/rights-evidence-runtime-20261118/revision-2/freeze-acceptance.json"
+    },
+    {
+      "name": "ESLint11runtimeproduct/testfiles",
+      "result": "passed"
+    },
+    {
+      "name": "6ownedproductTSsyntactic/semantic0diagnostics",
+      "result": "passed",
+      "evidence": "artifacts/rights-evidence-runtime-20261118/revision-2/typescript-diagnostics.json"
+    },
+    {
+      "name": "12fileSHAequality,onlyroute+docdelta;originalruntimeandUI10snapshotsunchanged",
+      "result": "passed",
+      "evidence": "artifacts/rights-evidence-runtime-20261118/revision-2/freeze-acceptance.json"
+    }
+  ],
+  "scopeBoundary": "Scopedruntimecandidate; backendfinalisolatedactualSQL/Storage andcombinedNextbuild remainseparateintegrationgates. Policydefaultoff, nooperators/holdoverride/cronactivation. No productoperatorUI, legacy/unpinned/specialriskorforcedsharedrefremoval. Noenvinspection/livecustomer/providercalls/commit/push/deploy.",
+  "supersedesEvents": [
+    "f43241a9-d6e5-43cf-a06f-2e09aa04fc27"
+  ],
+  "id": "00b95ae3-bf85-4da4-b992-681d858d035d",
+  "recordedAt": "2026-11-19T05:17:49.534Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "fileHashes": {
+    "lib/rights-evidence-worker.ts": "24658523622888fe4d2f328148cdeb8d2aea04aebfcfc821c53cedbfa3b71a06",
+    "lib/rights-evidence-storage.ts": "37534280d47ec0622c6c147bb21239997de08bc06976efb4db75ee1097c60378",
+    "lib/rights-evidence-access.ts": "ffe0deb18e66cd947e2ddcbd2eb6e9f0e919105cf6479a19a3124d111cebf7ae",
+    "lib/account-maintenance-route.ts": "b3410c873807450f3de04e83792695e09e5f67cb10fbc280d4f3ecd48f04e3da",
+    "app/api/admin/rights-evidence/[evidenceId]/route.ts": "6a35b1d24d285dea95e3dd911bbc0047b46eac0fce535cc77ec95632a4d24c52",
+    "app/api/account/erase-due/route.ts": "05d8cfd76426ccd808945d1537c70cf825af408c93c8ce0ce2ac8252fc4e033a",
+    "tests/rights-evidence-worker.test.mjs": "53b46151b749198eb2ffebfd9b8d7f7e266f7f5abc47ef43bd3e7a3023c4111b",
+    "tests/rights-evidence-access.test.mjs": "c7c79f0e09187927212876a7bca4143b8436e9a520590008d0cd84bf55015d37",
+    "tests/rights-evidence-maintenance-route.test.mjs": "5d345edcfb3dd2a8e80e5925f6a10e74938731c517cec72b69c8d698791827de",
+    "tests/account-maintenance-route.test.mjs": "a3b536c19d2a778e4f08a87bb5a41b711f7c675b0da5d6286fb8323c253b5df7",
+    "tests/public-image-staging-expiry.test.mjs": "46302ab93e28cff72c49429d6fa3302fa38e6ad21feba9778bfc8c5100528af5",
+    "docs/rights-evidence-runtime-20261118.md": "13bf38ea76606490eed5d6fe3c99eaa7c357ce4965592e6d03811ead13d4bd67"
+  }
+}

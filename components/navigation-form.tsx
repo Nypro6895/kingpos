@@ -3,6 +3,7 @@
 import { createContext, useContext, useLayoutEffect, useRef, useState, type ComponentProps } from "react";
 import { ActionFeedback } from "@/components/action-feedback";
 import { NavigationProgress } from "@/components/feedback-link";
+import { APP_LOCAL_SEARCH_NAVIGATION_EVENT, appLocalSearchNavigationDetail } from "@/lib/app-local-search-navigation";
 
 const NavigationPendingContext = createContext(false);
 
@@ -10,9 +11,12 @@ const NavigationPendingContext = createContext(false);
 export function NavigationForm({ children, onSubmit, ...props }: ComponentProps<"form">) {
   const [pending, setPending] = useState(false);
   const submitting = useRef(false);
+  const searchListener = useRef<(() => void) | null>(null);
 
   useLayoutEffect(() => {
     const reset = () => {
+      searchListener.current?.();
+      searchListener.current = null;
       submitting.current = false;
       setPending(false);
     };
@@ -30,6 +34,23 @@ export function NavigationForm({ children, onSubmit, ...props }: ComponentProps<
       if (submitting.current) {
         event.preventDefault();
         return;
+      }
+      const form = event.currentTarget;
+      if (form.getAttribute("role") === "search" || form.matches('[data-app-local-read-filter="payroll-tax-period"],[data-app-local-read-filter="portable-report-date"]')) {
+        // Only the installed helper acknowledges its approved Explore search or
+        // explicitly marked read filters. Hosted document handoffs stay native.
+        let active: { attempt: string; destination: string } | null = null;
+        const receive = (event: Event) => {
+          if (event.target !== form) return;
+          const detail = appLocalSearchNavigationDetail(event);
+          if (!detail) return;
+          if (detail.phase === "start") { active = detail; return; }
+          if (!active || active.attempt !== detail.attempt || active.destination !== detail.destination) return;
+          searchListener.current?.(); searchListener.current = null;
+          submitting.current = false; setPending(false);
+        };
+        form.addEventListener(APP_LOCAL_SEARCH_NAVIGATION_EVENT, receive);
+        searchListener.current = () => form.removeEventListener(APP_LOCAL_SEARCH_NAVIGATION_EVENT, receive);
       }
       submitting.current = true;
       setPending(true);

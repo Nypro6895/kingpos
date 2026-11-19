@@ -502,7 +502,7 @@ export type ExploreSearchResponse = {
   sortFallbackReason?: string | null;
   rankVersion?: number | null;
   rankAsOf?: string | null;
-  rankingBasis?: "indexed_scope" | "candidate_pool" | "unified_indexed_scope";
+  rankingBasis?: "indexed_scope" | "candidate_pool" | "unified_indexed_scope" | "local_quality_indexed_lanes";
   sort?: ExploreSearchInput["sort"];
   errorKind?: ExploreSearchErrorKind | null;
   countKind?: "exact" | "loaded";

@@ -1,6 +1,7 @@
 import "server-only";
 import { attachTicketFinancialSources } from "@/lib/pos-ticket-financial-sources";
 import { ticketFinancialView } from "@/lib/pos-ticket-financial-view";
+import { buildTicketListHref } from "@/lib/pos-ticket-navigation";
 
 import {
   getCurrentBusinessContext,
@@ -612,7 +613,7 @@ function buildCustomerTimeline(input: {
 
   for (const ticket of input.tickets) {
     items.push({
-      href: `/pos-tickets/${ticket.id}`,
+      href: buildTicketListHref({ ticketId: ticket.id }),
       id: `ticket-${ticket.id}`,
       label:
         ticket.status === "closed"

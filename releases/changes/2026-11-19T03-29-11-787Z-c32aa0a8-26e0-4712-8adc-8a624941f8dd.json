@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "openai-photo-live-acceptance-20261118",
+  "status": "needs-integration",
+  "summary": "Actual server adapter accepted one synthetic benign image using the owner-created and owner-saved key: HTTP200, reviewed schema/verdict,2434ms single observation. No public upload, production activation, secret write or release. Consent/admin UI and remaining product/runtime/store gates remain pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/openai-photo-live-acceptance-20261118.md",
+    "artifacts/openai-photo-live-acceptance-20261118/acceptance.json",
+    "artifacts/openai-photo-live-acceptance-20261118/run-benign-acceptance.mjs",
+    "releases/changes/2026-11-19T03-26-02-133Z-d9ef8716-d3fa-4e89-8b35-d9e6c760559b.json"
+  ],
+  "fileHashes": {
+    "docs/openai-photo-live-acceptance-20261118.md": "1bbfa414b6a0061f81d3b45ced36a12efe3a3a004e81df283fe11260b616eda7",
+    "artifacts/openai-photo-live-acceptance-20261118/acceptance.json": "ba3355b329d40cc2553abf2756836e5ba80e9041c5bc2773d86ac2cd3b4a451a",
+    "artifacts/openai-photo-live-acceptance-20261118/run-benign-acceptance.mjs": "9b90addb48d7d4433b0b136e4217ad546bedaa7e9fa75c28382401722c1a3f1f",
+    "releases/changes/2026-11-19T03-26-02-133Z-d9ef8716-d3fa-4e89-8b35-d9e6c760559b.json": "876662341b5a76d516a2d9b1b4b0fe5245871ed05beb7ad1921e813a33b979b4"
+  },
+  "source": {
+    "snapshot": "artifacts/openai-photo-live-acceptance-20261118/frozen",
+    "commit": "c5921a710ab31470928fc70c74e115130847c2cc",
+    "sha256": "c2e0bfe636d751304855aad86ecb81fad09fad1c472207ae96f673617b3a5951"
+  },
+  "validation": [
+    {
+      "name": "One actual benign Moderations request through unchanged adapter",
+      "result": "passed",
+      "evidence": "artifacts/openai-photo-live-acceptance-20261118/acceptance.json"
+    },
+    {
+      "name": "Independent sanitized receipt and harness review; frozen source and two local evidence links",
+      "result": "passed",
+      "evidence": "docs/openai-photo-live-acceptance-20261118.md"
+    },
+    {
+      "name": "User-facing permission/admin controls, production config/privacy operations, combined source and native/store acceptance",
+      "result": "pending",
+      "evidence": "docs/ios-store-next-20261118.md"
+    }
+  ],
+  "dependencies": [
+    "openai-public-photo-verifier-20261118",
+    "openai-photo-consented-wiring-20261118"
+  ],
+  "id": "c32aa0a8-26e0-4712-8adc-8a624941f8dd",
+  "recordedAt": "2026-11-19T03:29:11.787Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

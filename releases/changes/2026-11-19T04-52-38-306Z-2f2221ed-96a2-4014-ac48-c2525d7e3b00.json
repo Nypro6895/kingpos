@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "rights-case-evidence-query-20261118",
+  "status": "working",
+  "summary": "Assigned-case private-evidence candidate enumeration for owner-approved operator UI; no Storage pointers or activation",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119011000_rights_case_evidence_query.sql",
+    "tests/rights-case-evidence-query.integration.test.mjs",
+    "docs/rights-case-evidence-query-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "rights-image-evidence-backend-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Case capability/RLS/canonical candidate filtering",
+      "result": "pending"
+    }
+  ],
+  "id": "2f2221ed-96a2-4014-ac48-c2525d7e3b00",
+  "recordedAt": "2026-11-19T04:52:38.306Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

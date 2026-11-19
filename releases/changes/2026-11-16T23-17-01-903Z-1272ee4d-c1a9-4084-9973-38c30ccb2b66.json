@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "public-image-safety-20261116",
+  "status": "working",
+  "summary": "Author-only immediate photo previews and pending submission cards, private staging and automated safety gate before Beauty and Salon post publication; no routine admin approval",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/beauty/beauty-profile-client.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "lib/beauty.ts",
+    "lib/salon-profile.ts",
+    "supabase/migrations/20261116220000_public_image_safety.sql"
+  ],
+  "source": {
+    "commit": "b8580c8"
+  },
+  "dependencies": [
+    "ios-store-privacy-20261116"
+  ],
+  "validation": [
+    {
+      "name": "Implementation, isolated safety acceptance and exact source build",
+      "result": "pending"
+    },
+    {
+      "name": "External moderation provider selection and credential authorization",
+      "result": "pending"
+    }
+  ],
+  "id": "1272ee4d-c1a9-4084-9973-38c30ccb2b66",
+  "recordedAt": "2026-11-16T23:17:01.903Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

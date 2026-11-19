@@ -13,6 +13,7 @@ import campaignCopy from "@/lib/vietnamese-campaign-copy.json";
 import staffScanCopy from "@/lib/vietnamese-staff-scan.json";
 import personalQrCopy from "@/lib/vietnamese-personal-qr.json";
 import contextCopy from "@/lib/vietnamese-context-copy.json";
+import ticketDetailCopy from "@/lib/vietnamese-ticket-detail.json";
 // UI copy only. Names, services, customer notes and financial values stay as entered.
 export const VIETNAMESE_UI: Record<string, string> = {
   "Shared reviews may have different totals.": "Tổng số có thể khác do bao gồm đánh giá từ nguồn khác.",
@@ -95,6 +96,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   ...staffScanCopy,
   ...personalQrCopy,
   ...checkWriterCopy,
+  ...ticketDetailCopy,
   "Salons I manage": "Tiệm tôi quản lý",
   "My staff workspaces": "Nơi tôi làm việc",
   "Services & booking": "Dịch vụ & đặt lịch",

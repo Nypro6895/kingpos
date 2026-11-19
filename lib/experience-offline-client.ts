@@ -5,6 +5,7 @@ import { acceptExperienceOfflineGrant, clearExperienceSnapshots, getExperienceDe
 import { fetchBoundedGet } from "./bounded-get";
 import { nextExperienceTraceOperation, recordExperienceTrace } from "./experience-trace";
 import { createExperienceAuthorizedReads } from "./experience-authorized-read";
+import { portableNativePlatform } from "./portable-native-platform";
 
 const preparing = new Map<string, Promise<ExperienceOfflineGrant | null>>();
 const authorizing = createExperienceAuthorizedReads<ExperienceOfflineGrant>();
@@ -15,6 +16,9 @@ let listening = false;
 let lastLock: Promise<boolean> = Promise.resolve(true);
 function accessChanged(scope?: string, status = 403) { window.dispatchEvent(new CustomEvent("reylumi:experience-access-changed", { detail: { scope, status } })); }
 async function workerFor(path: string): Promise<ServiceWorker | null> {
+  // The dedicated Android host owns its durable shell and private cache. Do
+  // not prepare a competing browser HTML snapshot or reuse its old controller.
+  if (portableNativePlatform(navigator.userAgent) === "android") return null;
   if (!("serviceWorker" in navigator) || !window.isSecureContext) return null;
   // A /pos/ registration cannot control the bare /pos document.
   const pos = path.startsWith("/pos/"), scope = pos ? "/pos/" : "/", script = pos ? "/portable-sw.js" : "/experience-sw.js";

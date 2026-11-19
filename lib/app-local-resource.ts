@@ -13,6 +13,9 @@ import { nextExperienceTraceOperation, recordExperienceTrace, type ExperienceTra
 import { appLocalContextFailureReason, isAppLocalContextCancellation } from "./app-local-context-recovery";
 import { appLocalReadTraceFields } from "./read-request-trace-protocol";
 import { readPriorityScheduler } from "./read-priority-scheduler";
+import { payrollReadTab } from "./payroll-read-args";
+import { ownerStaffReadArgsFromRecord } from "./owner-staff-read-args";
+import { ownerLocalReadArgsFromRecord } from "./owner-local-workspace";
 
 function traceResource(name: string, args: Record<string, unknown>): Pick<ExperienceTraceFields, "area" | "phase"> {
   const phase = ["shell", "staff", "bookings", "waiting", "financials", "extras", "full"].includes(String(args.phase)) ? args.phase as ExperienceTraceFields["phase"] : "none";
@@ -46,6 +49,12 @@ function cellFor(scope: string, name: string, args: unknown) {
     cell = { context, state: { data: saved?.data, etag: saved?.etag, updatedAt: saved?.updatedAt ?? 0, verifiedAt: saved && !saved.offline ? retained?.updatedAt : undefined, loading: !saved, refreshing: false, offline: saved?.offline }, listeners: new Set(), active: 0, validatedAt: retained?.updatedAt ?? 0, epoch, revision: 0, deliveryRevision: 0 }; cells.set(key, cell);
   }
   return { key, cell };
+}
+/** Observe an existing scoped cell without reading, creating or reseeding it. */
+export function peekAppLocalResource<T>(scope: string | undefined, name: string, args: Record<string, unknown> = {}): Readonly<AppLocalResourceState<T>> | undefined {
+  if (!scope) return undefined;
+  const cell = cells.get(JSON.stringify([scope, name, stable(args)]));
+  return cell && appLocalResourceCache.isAvailable(cell.context) ? cell.state as AppLocalResourceState<T> : undefined;
 }
 function emit(cell: Cell, patch: Partial<AppLocalResourceState<unknown>>) { cell.state = { ...cell.state, ...patch }; for (const listener of cell.listeners) listener(); }
 function retainActiveResource(cell: Cell) { cell.active++; return () => { cell.active--; }; }
@@ -226,6 +235,11 @@ export async function hydrateAppLocalResource<T>(scope: string, name: string, ar
   return cell.hydrated;
 }
 export function seedAppLocalResource<T>(scope: string, name: string, args: Record<string, unknown>, snapshot: AppLocalRead<T>) {
+  // Older hosts still label equivalent money-tab bootstrap DTOs with the
+  // visible tab. Admit that same fresh DTO under the client's shared read key.
+  if (name === "page.owner-payroll" && typeof args.tab === "string") args = { ...args, tab: payrollReadTab(args.tab) };
+  if (name === "page.owner-staff") args = ownerStaffReadArgsFromRecord(args);
+  if (name === "owner.bookings") args = ownerLocalReadArgsFromRecord(name, args);
   if (snapshot.scope !== scope || snapshot.status !== 200 || snapshot.data === undefined) return;
   const { cell } = cellFor(scope, name, args);
   if ((snapshot.updatedAt >= cell.state.updatedAt || cell.state.offline && !snapshot.offline) && appLocalResourceCache.isAvailable(cell.context)) {

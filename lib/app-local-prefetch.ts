@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import type { AppLocalContext } from "./app-local-host";
 import { prefetchAppLocalResource } from "./app-local-resource";
+import { appLocalPayrollReadArgs } from "./app-local-payroll-read";
 import { appLocalPrefetchPlan, appLocalPrefetchRouteKey, appLocalTodayPrefetchJobs, type AppLocalPrefetchJob } from "./app-local-prefetch-plan";
 import { readPriorityScheduler } from "./read-priority-scheduler";
 
@@ -52,7 +53,8 @@ export function useAppLocalPrefetch(context: AppLocalContext | null, path: strin
           if (!job) break;
           if (!matches(job)) hiddenReads++;
           pending.delete(jobKey(job)); done.add(jobKey(job));
-          const data = await prefetchAppLocalResource(scope, job.name, job.args, {
+          const args = job.name === "page.owner-payroll" ? appLocalPayrollReadArgs(scope, job.path) : job.args;
+          const data = await prefetchAppLocalResource(scope, job.name, args, {
             route: job.path, priority: 80 + job.rank, signal: controller.signal,
           });
           if (!active) return;

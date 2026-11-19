@@ -1,0 +1,150 @@
+{
+  "capturedAt": "2026-11-19T07:32:49.006Z",
+  "passed": true,
+  "files": [
+    {
+      "path": "scripts/backfill-explore-local-quality.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "scripts/benchmark-explore-local-quality.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "scripts/profile-explore-local-quality.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "scripts/test-explore-local-quality-browser.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "scripts/test-explore-local-quality-native-cursors.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "scripts/test-explore-local-quality-native-overlay.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "scripts/test-explore-local-quality-native-sorts.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "scripts/test-explore-local-quality-regressions.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "scripts/test-explore-local-quality-rich-profile.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "scripts/test-explore-local-quality-write-pressure.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-anywhere-ui-runtime.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-bounded-refresh-runtime.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-coordinate-validity-runtime.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-coordinate-validity-sql.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-local-quality-name-probe.integration.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-local-quality-preparation-runtime.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-local-quality-preparation.integration.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-local-quality-routing.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-local-quality-scope-regressions.integration.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-local-quality.integration.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-query-intent.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-query-routing-runtime.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-refresh-runtime.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-request-cancellation.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-search-media-refresh-runtime.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-search-metrics.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-search-refresh-runtime.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-search-rpc.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-search-service-runtime.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/explore-unified-search-api.test.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-catalog-fingerprint.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-effective-identity.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-migration-manifest.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-native-bootstrap.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-native-preparation.mjs",
+      "exitCode": 0
+    },
+    {
+      "path": "tests/fixtures/explore-unified-search-bootstrap.mjs",
+      "exitCode": 0
+    }
+  ]
+}

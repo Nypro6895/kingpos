@@ -89,6 +89,14 @@ Build with Java 17 and SDK 36 configured:
 .\gradlew.bat --no-daemon testQaUnitTest testDebugUnitTest lintQa lintDebug assembleQa
 ```
 
+To target another isolated local app/backend pair, build with
+`-PqaAppPort=3119 -PqaBackendPort=55521`. Defaults remain 3117/55421. QA accepts
+exactly the configured localhost app port and 127.0.0.1 backend port. Those ports
+also govern HMR/realtime, bridge trust and synthetic checkout returns.
+Production keeps its HTTPS origin and existing policy.
+Forward the configured port explicitly before opening that candidate; the
+default Open-AndroidQA helper still targets 3117.
+
 From the repo root, install/open on one explicitly selected ADB device:
 
 ```powershell
@@ -100,14 +108,14 @@ then reverses only ports 3117 and 55421. Keep USB/ADB, Docker and the local app
 running. It never launches or stops the production app. No QA credentials or
 provider tokens are bundled into the APK; use only the synthetic local accounts.
 
-QA HTTP resources (including service-worker fetches) are confined to
+With the default build, QA HTTP resources (including service-worker fetches) are confined to
 `http://localhost:3117` and `http://127.0.0.1:55421`. Camera/location/bridge access
 is confined to the app origin, excluding the backend. External navigation is
 blocked. Only generated checkout URLs matching
 `https://checkout.stripe.com/qa/cs_test_qa_<32 lowercase hex>` map to the same-origin
 QA checkout screen, which uses the local provider simulator server-side. This
 never opens Stripe or tests real card, 3DS, refunds, delivery or billing approval.
-Document WebSockets are confined to `ws://localhost:3117/_next/webpack-hmr`
+Default document WebSockets are confined to `ws://localhost:3117/_next/webpack-hmr`
 and `ws://127.0.0.1:55421/realtime/v1/websocket` (the isolated backend).
 
 QA is a developer test harness, not an operating-system firewall or a production

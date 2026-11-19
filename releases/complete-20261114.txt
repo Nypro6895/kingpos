@@ -1,0 +1,75 @@
+REYLUMI COORDINATED RELEASE - 2026-11-14
+Completed UTC: 2026-11-14T07:05:22.915Z
+Publication source: 830f0a6ec3029177c94e88137a8165f784c47ae4
+Immutable source ref: release/complete-20261114-source
+Baseline: dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU / 274a3ab4300956a458c564ad6beab44ff85e7264
+
+PUBLISHED CHANNELS
+Web: https://reylumi.com / dpl_F5yYNDU4nXW2epT5pozciBmPfHhv; verified 4327 source files; 19 recent groups.
+Web source SHA256: 731b418d697e34bde56da98550cb7fc2b955bc30d6e2d442fe60b697f285ee42
+Web overlay SHA256: f73b27bdaa8bda7558cedad08d0f0f01539b4921f304a49df0c64720dcc08d28
+Combined frozen 263-path overlay SHA256: f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8
+Source transport: CLI 65 individual content-addressed files. All 4327 SHA1 identities matched; all 187 changed blobs were downloaded and SHA256 verified; 4140 inherited files tie to the verified baseline archive.
+Windows Portable: 0.7.6 published; https://reylumi.com/download/windows; updater feed, both HEAD routes, 206 range and full identity/compressed downloads verified.
+Windows binary: 111709584 bytes; SHA256 ada031d76ec4969c7d86052f2148249a3b270e640910c65571d2ee393bbdc9ef
+Windows native source: 5738b41ec68a7a7acf9d6b3014428876840bf4e7; all 9 packaged native source files match this release. Running installed 0.7.5 was not replaced.
+iOS/iPad: 1.0.0 (100); testflight-available; actual archive/upload source 830f0a6ec3029177c94e88137a8165f784c47ae4.
+iOS evidence: C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/native-release-final.json; C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/testflight-verified-43567533278.json; C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json
+Android: compatible hosted web is updated; no native host delta requires a new APK. Debug CI 43566248147 succeeded. No Play Store publication.
+
+VERIFICATION
+Production Next.js/TypeScript build and scoped ESLint passed. Scoped Payroll, booking/check-in, Gift/Reward, OTP, cache/loading, public links, portable draft, Windows updater and native contracts passed.
+Offline asset budget passed at approximately 11.8 MB. Cache/loading assertions passed; no whole-app latency percentage is claimed.
+Financial and permissions checks used disposable full-schema Auth/PostgREST fixtures; actual Gift app/API journeys used isolated data. No release QA created a real payment or sent customer SMS/email.
+iPad Simulator and iPhone Simulator each passed the full 264-case native suite across 15 hosts, with source-bound bundles and unsigned archives. Signed actual archive version/build, accepted upload, Apple VALID and existing TestFlight group association are verified in the native receipt.
+Public Chromium: 12 initial-render cases, zero page errors or horizontal overflow, correct Support links. Explore writes were blocked; dynamic live workflows are not inferred.
+Six migrations applied atomically; 12/12 postflight checks passed. All 33 protected table digests, 80 original receipt rows, 411 notifications, 8 receipt notices and external dispatch queues preserved.
+Only 3 historical Gift-only metadata receipts/links were added; 4 cards/4 sales unchanged; 13 closings/8 locked unchanged. No additional issuance, balance, wage, payment, reward points or notification.
+Database transaction SHA256: 4bc6771de2feaddea2dc791861da4f1560fb51471efc9b7f5f3d868c03f17597
+
+INTEGRATED RECENT GROUPS (original channels retained)
+- checkin-windows-gift-lifecycle-20261111 | ready 539b61c6-340f-447f-97e2-a2f6cf157969 | web
+- windows-update-one-click-20261112 | ready 9e0407d7-5f2a-44a4-8ea5-56b3ea1922ca | web
+- payroll-compact-settings-20261112 | ready 36c1d90e-c16a-47dc-a252-50deded05fe9 | web,ios
+- support-public-contact-20261112 | ready ce989450-b3b0-424f-9f98-f5d60e6c043d | web,ios
+- experiences-approved-mockup-20261112 | ready b4bbc6f8-5c6a-4a00-b823-05e0e726f126 | web
+- payroll-staff-details-accordion-20261112 | ready b554dae9-e351-4e9a-98a8-e6d6ed261e6b | web,ios
+- iphone-three-layout-fixes-20261112 | ready 78e53ce4-788e-4ccd-a3f8-326de1888443 | web,ios
+- customer-checkout-benefits-20261112 | ready d72d2016-b14d-4e1e-913c-ef47191ce67e | web,ios
+- payroll-payment-ledger-live-20261112 | ready 70d413f3-3619-4aed-ac27-dd71c729a439 | web,ios
+- forum-tab-performance-20261112 | ready 7edf308a-25b3-43d4-85c6-2c0a81dd7a43 | web
+- staff-my-pay-ledger-20261113 | ready d38cb460-71b6-49b4-a8f9-a7bda810145b | web,ios
+- gift-ticket-unified-20261113 | ready cf1485e1-cc40-4ba7-9334-3e52c40de5d6 | web,ios
+- phone-otp-sms-target-20261113 | ready ea259265-a16c-42df-8c6a-d842973e82c7 | web,ios
+- gift-ticket-qa-seller-20261113 | ready 0b7f4af3-59b3-48bd-b929-5b217c3d002f | web,ios
+- gift-wallet-pos-recovery-20261113 | ready a60b519b-783a-4fa2-b6ba-142c5402f678 | web,ios
+- basic-page-loading-20261113 | ready 295feea8-ea14-4922-8fce-73ab47e0df59 | web,ios
+- gift-action-hierarchy-20261113 | ready 1235ecfb-890e-4397-a4d1-29b9ee1bfb64 | web,ios
+- basic-page-loading-wave2-20261113 | ready c248e25e-5861-4f37-96d4-4815dd8e51de | web,ios
+- ipad-portable-app-20261113 | ready d5eedb9a-8aa6-4a34-ac19-f6e404182fbf | web,ios
+
+ACCOUNTED OLDER SCOPE
+112 older journal records remain separately classified in release-disposition.json; they are not represented as newly shipped.
+Final queue audit: 0 selected recent groups pending; 112 accounted older records; 0 unaccounted new events.
+External Market/Publisher work remains held by missing external integration and conflicting older schema. No partial Publisher transplant was retained.
+Check Writer code and 3 migrations were already in the production baseline; existing price/sales/trial/security behavior remains. Provider and physical printer/MICR acceptance are separate.
+mobile-page-spacing-20261028 was already shipped in prior combined receipt 5d197e2f-983c-4f85-a152-d1fb227bc4e7 / TestFlight 64.
+
+LIMITS
+- Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.
+- Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.
+- Android emulator availability is not physical Android or Play Store acceptance.
+- Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.
+- App Store and Play Store publication are not claimed.
+- Running installed Windows 0.7.5 was preserved; release verified the 0.7.6 distribution, not an upgrade of the owner session.
+- Hosted Support defaults to English in fresh anonymous Chromium contexts; explicit-language local checks are separate.
+- Public Explore POST requests were intentionally blocked; live smoke accepts initial rendering only.
+
+JOURNAL AND EVIDENCE
+Web release event: 3901b68a-e0c0-486e-80ee-8271530391e7
+iOS release event: 2200fe32-604d-45dd-9f91-9f5d2c3d3b8d
+Aggregate ready event: e6f21bbf-a62b-48af-9dbb-e7bdc5fd5220
+Detailed receipt: releases/complete-20261114-evidence.json
+Local evidence: C:/Reylumi/artifacts/release-review-20261114
+
+Rollback was not needed. Any future rollback must verify the live alias still belongs to this release and must preserve database/financial metadata and later outside releases.

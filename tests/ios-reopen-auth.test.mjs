@@ -14,7 +14,7 @@ function recover(path, error = 'sign-in', logout = false, family = 'account', re
     isPublic:p=>p==='/help', authorityFamily:()=>family, getAppLocalPage:()=>({requiresContext}),
     clearAppLocalRoleResources:()=>calls.push('roles'), resetAppLocalResources:()=>calls.push('resources'),
     setAppLocalCommandScope:value=>calls.push(['commands',value]),
-    setAdmissions:value=>calls.push(['admissions',value]), setHelpPresentation:()=>{},setVisited:()=>{},
+      setAdmissions:value=>calls.push(['admissions',value]), setHelpPresentation:()=>{},setHelpReturn:()=>{},setVisited:()=>{},
     setSignInReturnPath:value=>calls.push(['next',value]), navigate:(...args)=>calls.push(['navigate',...args]),
   });
   return {calls,admitted};

@@ -1,4 +1,6 @@
 "use client";
+import { PayrollTaxItemFields } from "@/app/payroll/payroll-tax-item-fields";
+import { payrollTaxSettingsFromForm } from "@/lib/payroll-tax-settings";
 import { salonSetupHref } from "@/lib/salon-setup-navigation";
 import { StaffHoursBooking } from "./staff-hours-booking";
 import {SettingsDetails} from "@/app/settings/settings-child-pages";
@@ -6,7 +8,8 @@ import {SettingsDetails} from "@/app/settings/settings-child-pages";
 import { getStaffLegalName, staffHasPersonalAccount } from "@/lib/staff-legal-name";
 import Link from "next/link";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { StaffPayrollSetting } from "@/types/payroll";
 import {
   saveDirectStaff,
   runDirectStaffRequest,
@@ -274,6 +277,26 @@ export function TeamSettingsPanel({
   );
 }
 
+function TeamPayrollTaxItemFields({ setting }: { setting: StaffPayrollSetting | null }) {
+  const host = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState<Partial<StaffPayrollSetting>>(setting ?? {});
+  useEffect(() => {
+    const form = host.current?.closest("form");
+    if (!form) return;
+    const update = () => {
+      const fields = new FormData(form);
+      setCurrent(previous => ({ ...previous,
+        pay_type: fields.get("pay_type") === "fixed" ? "fixed" : "commission",
+        apply_tax_to_fixed_pay: fields.get("apply_tax_to_fixed_pay") === "on" || fields.get("apply_tax_to_fixed_pay") === "true",
+        tax_rate: Number(fields.get("tax_rate") ?? 0),
+      }));
+    };
+    form.addEventListener("change", update);
+    return () => form.removeEventListener("change", update);
+  }, []);
+  return <div ref={host}><PayrollTaxItemFields setting={current} /></div>;
+}
+
 export function PayrollSettingsPanel({
   data,
   onSaved,
@@ -330,6 +353,7 @@ export function PayrollSettingsPanel({
                 save={(form) =>
                   saveDirectPayroll(data.salonId, {
                     staffId: row.staff.id,
+                    itemTaxSettings: payrollTaxSettingsFromForm(form),
                     expectedSettingId:s?.id??null,expectedUpdatedAt:s?.updated_at??null,
                     effectiveFrom: text(form, "effective_from"),
                     payType:
@@ -340,9 +364,9 @@ export function PayrollSettingsPanel({
                     fixedPayAmount: number(form, "fixed_pay_amount"),
                     checkRate: number(form, "check_rate"),
                     taxRate: number(form, "tax_rate"),
-                    taxTips: checked(form, "tax_tips"),
-                    taxBonus: checked(form, "tax_bonus"),
-                    cashToTaxCompany: checked(form, "cash_to_tax_company"),
+                    taxTips: text(form, "tax_tips") === "true",
+                    taxBonus: text(form, "tax_bonus") === "true",
+                    cashToTaxCompany: Boolean(s?.cash_to_tax_company),
                     applyTaxToFixedPay: checked(form, "apply_tax_to_fixed_pay"),
                     tipPayoutMethod:
                       text(form, "tip_payout_method") === "check"
@@ -410,7 +434,7 @@ export function PayrollSettingsPanel({
                 <SettingsFieldGroup title="Tax company settings">
                 <Field
                   name="tax_rate"
-                  label={__vt("Tax company rate (%)")}
+                  label={__vt("Default tax rate (%)")}
                   type="number"
                   step="0.01"
                   min={0}
@@ -418,24 +442,11 @@ export function PayrollSettingsPanel({
                   value={s?.tax_rate ?? 0}
                   required
                 />
-                <Check
-                  name="tax_tips"
-                  label={__vt("Include tips in tax company calculation")}
-                  checked={s?.tax_tips}
-                />
-                <Check
-                  name="tax_bonus"
-                  label={__vt("Include bonuses in tax company calculation")}
-                  checked={s?.tax_bonus}
-                />
-                <Check
-                  name="cash_to_tax_company"
-                  label={__vt("Send cash portion to tax company")}
-                  checked={s?.cash_to_tax_company}
-                />
+                <input type="hidden" name="cash_to_tax_company" value={String(Boolean(s?.cash_to_tax_company))} />
+                <TeamPayrollTaxItemFields setting={s} />
                 <Check
                   name="apply_tax_to_fixed_pay"
-                  label={__vt("Apply tax company rate to fixed pay")}
+                  label={__vt("Default tax on fixed pay")}
                   checked={s?.apply_tax_to_fixed_pay}
                 />
                 </SettingsFieldGroup>

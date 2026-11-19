@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "public-post-media-deletion-cron-20261118",
+  "status": "working",
+  "summary": "Connect exact leased terminal-post photo cleanup to the existing authenticated maintenance route, preserving all worker failure and background-disable gates.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/account/erase-due/route.ts",
+    "tests/account-maintenance-route.test.mjs",
+    "tests/public-image-staging-expiry.test.mjs",
+    "docs/public-post-media-deletion-cron-20261118.md"
+  ],
+  "validation": [
+    {
+      "name": "Existing cron authorization, disable guard, independent failures and four-worker response",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "public-post-media-deletion-worker-20261118",
+    "public-post-media-deletion-20261118"
+  ],
+  "id": "801e98db-7ce8-4817-8834-27ea28d86632",
+  "recordedAt": "2026-11-18T21:33:10.294Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

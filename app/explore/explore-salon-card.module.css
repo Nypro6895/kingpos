@@ -1,4 +1,4 @@
-.card { display:flex; flex-direction:column; min-width:0; background:white; border-bottom:1px solid #e5e7eb; padding-bottom:8px; }
+.card { display:flex; flex-direction:column; min-width:0; background:white; border-bottom:1px solid #e5e7eb; padding-bottom:8px; content-visibility:auto; contain-intrinsic-block-size:auto 420px; }
 .photo { position:relative; display:block; aspect-ratio:3/2; overflow:hidden; background:#f4f4f5; }
 .body { padding:8px 12px 0; }
 .header { display:flex; align-items:center; gap:8px; position:relative; }

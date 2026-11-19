@@ -18,8 +18,33 @@ export type TaxStatus =
   | "reviewed"
   | "needs_information"
   | "complete";
+export const TAX_REPORT_COMPONENT_KEYS = ["check_wage", "cash_wage", "tip", "bonus"] as const;
+export type TaxReportComponentKey = (typeof TAX_REPORT_COMPONENT_KEYS)[number];
+export type TaxReportAmounts = {
+  gross: number | null;
+  tax: number | null;
+  net: number | null;
+  check_gross: number | null;
+  check_tax: number | null;
+  check_net: number | null;
+  cash_gross: number | null;
+  cash_tax: number | null;
+  cash_net: number | null;
+};
+export type TaxReportComponent = TaxReportAmounts & {
+  shown: boolean;
+  tax_applied: boolean | null;
+  tax_rate: number | null;
+  payout_method: "check" | "cash" | "mixed" | null;
+};
+export type TaxReportBreakdown = {
+  version: 1;
+  state: "published" | "historical_unavailable";
+  components: Record<TaxReportComponentKey, TaxReportComponent>;
+  totals: TaxReportAmounts;
+};
 export type TaxLine = {
-  reported_wage: number;
+  reported_wage: number | null;
   mixed_settings?: boolean;
   tip_method?: string | null;
   bonus_method?: string | null;
@@ -28,16 +53,17 @@ export type TaxLine = {
   staff_id: string;
   name: string;
   legal_name: string | null;
-  reported_gross: number;
-  tax: number;
-  actual_check: number;
-  wage_check_net: number;
+  reported_gross: number | null;
+  tax: number | null;
+  actual_check: number | null;
+  wage_check_net: number | null;
   cash_reported: number | null;
   tip: number | null;
   bonus: number | null;
   tax_rate: number | null;
   work_status: TaxStatus;
   work_version: number;
+  breakdown?: TaxReportBreakdown;
 };
 export type TaxDocument = {
   salon_name?: string;

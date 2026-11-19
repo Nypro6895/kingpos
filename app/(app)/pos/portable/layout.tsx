@@ -3,7 +3,7 @@ import { SalonIdentityContext } from "@/components/salon-member-badge";
 import { PortableOfflineShell } from "@/app/pos/portable/portable-offline-shell";
 import { PortableNativeStorageBoundary } from "@/app/pos/portable/portable-native-storage-boundary";
 import { headers } from "next/headers";
-import { isReylumiIOSClient } from "@/lib/ios-client";
+import { portableNativePlatform } from "@/lib/portable-native-platform";
 import Image from "next/image";
 import { Suspense } from "react";
 import { PortablePanels } from "@/app/pos/portable/portable-panels";
@@ -24,6 +24,8 @@ import { PORTABLE_POS_CAPABILITIES } from "@/lib/pos-portable-capabilities";
 import { PORTABLE_POS_ROUTE_LINKS } from "@/lib/pos-portable-routes";
 import { WorkspaceLanguageProvider, WorkspaceText } from "@/components/workspace-language";
 import { marketServiceClient } from "@/lib/market-payments";
+import { ReceiptContextProvider } from "@/components/receipt-print-context";
+import { loadPortableReceiptBrand } from "@/lib/receipt-brand-server";
 
 // Available in the initial server HTML, including login and every Portable tab.
 export const metadata: Metadata = {
@@ -85,6 +87,7 @@ export default async function PortablePosLayout({
   if (!session) {
     return <PortableLoginScreen />;
   }
+  const receiptBrand = await loadPortableReceiptBrand(session);
   // Portable uses its own authenticated device session, rather than owner cookies.
   const language = await Promise.resolve().then(async () => {
     const { data } = await marketServiceClient().from("vietnamese_plugin_subscriptions").select("installed,portable_enabled,trial_ends_at,paid_until").eq("salon_id", session.salon_id).maybeSingle();
@@ -138,8 +141,11 @@ export default async function PortablePosLayout({
       data-portable-pos-shell
       data-portable-shell
       data-pos-persistent-workspace
+      data-receipt-local-scope={`${session.salon_id}:${session.key_id}`}
+      data-receipt-local-commands={offlineEnabled && session.capabilities.includes(PORTABLE_POS_CAPABILITIES.posUse) ? "true" : "false"}
     >
-      <PortableNativeStorageBoundary nativeExpected={isReylumiIOSClient((await headers()).get("user-agent"))} scope={`${session.salon_id}:${session.key_id}`}><SalonIdentityContext salonId={session.salon_id}><WorkspaceLanguageProvider portableSession enabled={vietnamese} portableEnabled={vietnamese} expiresAt={languageExpiry ?? null}><PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
+      <PortableNativeStorageBoundary nativeExpected={portableNativePlatform((await headers()).get("user-agent")) ?? false} scope={`${session.salon_id}:${session.key_id}`}><SalonIdentityContext salonId={session.salon_id}><WorkspaceLanguageProvider portableSession enabled={vietnamese} portableEnabled={vietnamese} expiresAt={languageExpiry ?? null}><PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
+        <ReceiptContextProvider scope={`${session.salon_id}:${session.key_id}`} brand={receiptBrand} timezone={session.salon_timezone}>
         <PortableWorkspaceTabs
           canConfirmBookings={session.capabilities.includes(PORTABLE_POS_CAPABILITIES.bookCreate)}
           localPanels
@@ -155,6 +161,7 @@ export default async function PortablePosLayout({
         <PortableOfflineShell />
         <PortableShellRefresh />
         <PortableTouchKeyboard />
+        </ReceiptContextProvider>
       </PortableWorkspaceStateProvider></WorkspaceLanguageProvider></SalonIdentityContext></PortableNativeStorageBoundary>
     </main>
   );

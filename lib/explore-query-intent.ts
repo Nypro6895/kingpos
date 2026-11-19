@@ -18,6 +18,29 @@ const GENERIC_SERVICE_WORDS = new Set(["salon", "salons", "service", "services",
 // mandatory content terms even when they also identify a category.
 const CONTENT_CATEGORY_WORDS = new Set(["nail", "nails", "hair", "lash", "lashes", "brow", "brows", "spa", "spas", "makeup", "massage", "massages", "waxing"]);
 const CONTENT_ROUTING_WORDS = new Set(["salon", "salons", "service", "services", "shop", "shops", "place", "places", "studio", "studios", "and", "for", "a", "the", "best"]);
+// Recognize specific American service vocabulary without making isolated words
+// such as "powder", "builder", or "color" into broad category/brand matches.
+// These phrases only choose a search lane; their original terms remain required
+// evidence. No extra queries, remote classification, or synonym fanout is added.
+const ENGLISH_SERVICE_PHRASES = [
+  { category: "Nails", phrases: ["dip powder", "dipping powder", "dip nails", "sns", "builder gel", "biab", "hard gel", "soft gel", "gel x", "gel-x", "nail repair", "nail repairs", "nail fill", "nail fills", "nail refill", "nail refills", "fill in", "fill-in", "polish change", "nail removal", "acrylic removal", "soak off", "soak-off", "silk wrap", "silk wraps"] },
+  { category: "Hair", phrases: ["balayage", "hair color", "hair coloring", "highlights", "lowlights", "color correction", "root touch up", "root touch-up", "root retouch", "keratin treatment", "keratin treatments", "brazilian blowout", "blowout", "blowouts", "blow dry", "blow-dry", "hair straightening", "silk press", "hair braids"] },
+  { category: "Lashes", phrases: ["lash lift", "lash lifts", "lash tint", "lash tinting", "eyelash lift", "eyelash tint", "eyelash tinting"] },
+  { category: "Brows", phrases: ["brow tint", "brow tinting", "brow lamination", "eyebrow tint", "eyebrow tinting", "eyebrow lamination", "microblading"] },
+  { category: "Waxing", phrases: ["brazilian wax", "bikini wax", "sugaring"] },
+  { category: "Spa", phrases: ["chemical peel", "dermaplaning", "hydrafacial", "microdermabrasion"] },
+].map(group => ({ category: group.category, phrases: group.phrases.map(words) }));
+
+function englishServiceCategory(tokens: string[]) {
+  for (const group of ENGLISH_SERVICE_PHRASES) for (const phrase of group.phrases) {
+    for (let start = 0; start <= tokens.length - phrase.length; start++) {
+      if (!phrase.every((word, index) => tokens[start + index] === word)) continue;
+      if (tokens.every((word, index) => index >= start && index < start + phrase.length
+        || CATEGORY_WORDS[word] === group.category || GENERIC_SERVICE_WORDS.has(word))) return group.category;
+    }
+  }
+  return "";
+}
 const NAIL_STYLE_WORDS = new Set("red burgundy pink nude beige white black brown orange yellow green blue purple silver gold almond square squoval round oval coffin ballerina stiletto stilettos stilitle stilleto stilletto short medium long glossy matte sheer glazed chrome glitter french floral ombre marble neon pastel pearl cat eye 3d spring summer fall autumn winter holiday bridal christmas wedding lavender lilac ruby scarlet cherry chocolate cocoa emerald sage mint cobalt".split(" "));
 for (const word of "jelly glass aura airbrush tortoise shell tortoiseshell polka dot dots animal print fawn deer bambi cheetah leopard micro milky matcha olive velvet magnetic amber caramel plum chartreuse citron soap clean minimal liquid metal silver sculpture abstract accents knit sweater cable cashmere mixed mix match mismatched reverse soft vivid dark neutral metallic".split(" ")) NAIL_STYLE_WORDS.add(word);
 export function exploreQueryNailStylePhrase(value: string) {
@@ -81,10 +104,13 @@ export function exploreQueryAreaLabel(area: ExploreQueryArea) {
 /** A service followed by an area is tentative until the server checks the full name. */
 function combinedServiceArea(value: string) {
   const parts = value.split(" ");
-  if (!parts.some(part => words(part).some(word => CATEGORY_WORDS[word]))) return null;
+  if (englishServiceCategory(words(value))) return null;
   let lastService = -1;
   for (let index = 0; index < parts.length; index++) {
     if (words(parts[index]).some(word => CATEGORY_WORDS[word] || CONTENT_CUES.has(word))) lastService = index;
+    // Keep "dip powder Chicago" and "hair color Chicago" from splitting
+    // before the specific service's final word. The server still verifies city.
+    if (englishServiceCategory(words(parts.slice(0, index + 1).join(" ")))) lastService = index;
   }
   // Keep multiword services such as "hair extensions" and "nail place" together.
   while (lastService + 1 < parts.length && words(parts[lastService + 1]).length > 0
@@ -94,6 +120,26 @@ function combinedServiceArea(value: string) {
   const locationHint = parts.slice(lastService + 1).join(" ").replace(/[,.!?]+$/, "").trim();
   if (exploreQueryNailStylePhrase(locationHint)) return null;
   return query && locationHint ? { query, locationHint } : null;
+}
+
+/** A leading area is only a proposal for the server's existing entity lookup. */
+export function exploreQueryLeadingServiceArea(value: string) {
+  const text = cleanExploreQueryText(value), parts = text.split(" ");
+  const service = (tokens: string[]) => Boolean(englishServiceCategory(tokens))
+    || tokens.some(token => CATEGORY_WORDS[token]) && tokens.every(token => CATEGORY_WORDS[token] || GENERIC_SERVICE_WORDS.has(token));
+  if (service(words(text)) || exploreQueryNailStylePhrase(text)) return null;
+  for (let split = 1; split < parts.length; split++) {
+    const query = parts.slice(split).join(" ").replace(/^[,\s]+/, "");
+    if (!service(words(query))) continue;
+    const locationHint = parts.slice(0, split).join(" ").replace(/[,\s]+$/, "");
+    // Styles such as "red nails" and complete services never become guessed
+    // cities. Real multiword areas such as Green Bay still reach verification.
+    if (!locationHint || exploreQueryStreetAddress(locationHint)
+      || !parseExploreQueryArea(locationHint) && (exploreQueryNailStylePhrase(locationHint)
+        || words(locationHint).some(token => CATEGORY_WORDS[token] || CONTENT_CUES.has(token)))) continue;
+    return { query, locationHint };
+  }
+  return null;
 }
 
 export type ParsedExploreQueryIntent = {
@@ -133,7 +179,7 @@ export function parseExploreQueryIntent(value: string, options: { target?: Explo
     else {
       const nearly = body.match(/^(.*?)\s+nearly$/i);
       const terms = nearly ? words(nearly[1]) : [];
-      if (terms.some(term => CATEGORY_WORDS[term]) && terms.every(term => CATEGORY_WORDS[term] || GENERIC_SERVICE_WORDS.has(term))) body = `${nearly![1]} near me`;
+      if (englishServiceCategory(terms) || terms.some(term => CATEGORY_WORDS[term]) && terms.every(term => CATEGORY_WORDS[term] || GENERIC_SERVICE_WORDS.has(term))) body = `${nearly![1]} near me`;
     }
     const nearby = body.match(/^(.*?)\s*(?:\bnear(?:\s+by)?\s+(?:me|here|my location|current location)|\bnear by|\baround me|\bclose to me|\bnearby)$/i);
     if (nearby) { body = nearby[1].trim(); nearMe = true; }
@@ -169,10 +215,11 @@ export function parseExploreQueryIntent(value: string, options: { target?: Explo
   }
   const tokens = words(body);
   const serviceWords = tokens.filter(token => CATEGORY_WORDS[token]);
-  const category = serviceWords.length ? CATEGORY_WORDS[serviceWords[0]] : "";
+  const specificServiceCategory = englishServiceCategory(tokens);
+  const category = specificServiceCategory || (serviceWords.length ? CATEGORY_WORDS[serviceWords[0]] : "");
   const hasContentCue = tokens.some(token => CONTENT_CUES.has(token)) || exploreQueryNailStylePhrase(body);
   const target = "salons" as const;
-  const genericService = serviceWords.length > 0 && tokens.every(token => CATEGORY_WORDS[token] || GENERIC_SERVICE_WORDS.has(token));
+  const genericService = Boolean(specificServiceCategory) || serviceWords.length > 0 && tokens.every(token => CATEGORY_WORDS[token] || GENERIC_SERVICE_WORDS.has(token));
   const categoryOnly = !explicitName && serviceWords.length > 0 && tokens.every(token => CONTENT_CATEGORY_WORDS.has(token) || CONTENT_ROUTING_WORDS.has(token));
   const queryKind: ExploreSearchQueryKind = explicitName ? "name" : hasContentCue ? "style" : genericService || !tokens.length ? "service" : "name";
   const categoryHint = !explicitName && (hasContentCue || genericService) ? category || (exploreQueryNailStylePhrase(body) ? "Nails" : "") : "";
@@ -182,6 +229,6 @@ export function parseExploreQueryIntent(value: string, options: { target?: Explo
   return {
     target, queryKind, query: body, contentQuery, displayQuery, categoryHint, locationHint, addressHint, explicitLocation, locationArea,
     cityQuery: addressHint ? "" : locationHint ? locationArea?.kind === "city" ? locationArea.city : locationArea ? "" : locationHint : !explicitName && !genericService && !hasContentCue ? body : "",
-    nearMe, tentativeArea, directArea, explicitName, categoryOnly, salonCue: serviceWords.length > 0 || tokens.some(token => GENERIC_SERVICE_WORDS.has(token)),
+    nearMe, tentativeArea, directArea, explicitName, categoryOnly, salonCue: Boolean(specificServiceCategory) || serviceWords.length > 0 || tokens.some(token => GENERIC_SERVICE_WORDS.has(token)),
   };
 }

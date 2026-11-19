@@ -1,11 +1,13 @@
 "use client";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { AppLocalOwnerStaffView } from "./app-local-owner-staff-view";
 import { AppLocalOwnerCustomersView } from "./app-local-owner-customers-view";
 import { AppLocalOwnerCustomerDetailView } from "./app-local-owner-customer-detail-view";
 import { AppLocalOwnerPayrollView } from "./app-local-owner-payroll-view";
 import { PayrollRefreshProvider } from "@/app/payroll/payroll-live-refresh";
 import { payrollReadArgs } from "./payroll-read-args";
+import { DEFAULT_PAYROLL_READ_ARGS } from "./app-local-payroll-read";
+import { ownerStaffReadArgs } from "./owner-staff-read-args";
 import { CustomerForm } from "@/app/customers/customer-form";
 import { createCustomer, updateCustomer } from "@/app/customers/actions";
 import { WorkspaceText } from "@/components/workspace-language";
@@ -23,15 +25,17 @@ function argsFor(name: keyof typeof policy.reads, path: string) {
   const allowed: readonly string[] = policy.reads[name].argumentKeys;
   return Object.fromEntries(Object.entries(query(path)).filter(([key]) => allowed.includes(key)));
 }
-function Read<T>({ context, host, path, title, name, args, children }: AppLocalPageProps & { title: string; name: string; args: Record<string, string>; children: (data: T, refresh: () => Promise<void>) => ReactNode }) {
+function Read<T>({ context, host, path, title, name, args, children, pending, pendingValue }: AppLocalPageProps & { title: string; name: string; args: Record<string, string>; children: (data: T, refresh: () => Promise<void>) => ReactNode; pending?: ReactNode; pendingValue?: T }) {
   const scope = context?.context.scope;
   const allowed = Boolean(context?.context.authenticated && context.access?.ownerWorkspace);
   const state = useAppLocalResource<T>(scope, name, args, { enabled: allowed });
   if (!allowed) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold"><WorkspaceText text={title} /></h1><p><WorkspaceText text="Open this page from a Business workspace." /></p><button type="button" onClick={() => void (host ?? getAppLocalHost()).openOnline(`/login?next=${encodeURIComponent(path)}`)}><WorkspaceText text="Sign in" /></button></main>;
   if (state.data !== undefined) return children(state.data, state.refresh);
+  if (!state.accessDenied && pendingValue !== undefined) return children(pendingValue, state.refresh);
+  if (!state.error && pending) return pending;
   return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold"><WorkspaceText text={title} /></h1>{state.error ? <div role="alert"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}><WorkspaceText text="Try again" /></button></div> : <LumiLoadingStatus />}</main>;
 }
-function StaffPage(props: AppLocalPageProps) { return <Read<AppLocalOwnerStaffData> {...props} title="Staff" name="page.owner-staff" args={argsFor("page.owner-staff", props.path)}>{data => <AppLocalOwnerStaffView data={data} params={query(props.path)} />}</Read>; }
+function StaffPage(props: AppLocalPageProps) { return <Read<AppLocalOwnerStaffData> {...props} title="Staff" name="page.owner-staff" args={ownerStaffReadArgs(props.path)}>{data => <AppLocalOwnerStaffView data={data} params={query(props.path)} />}</Read>; }
 function CustomersPage(props: AppLocalPageProps) { return <Read<AppLocalOwnerCustomersData> {...props} title="Customers" name="page.owner-customers" args={argsFor("page.owner-customers", props.path)}>{data => <AppLocalOwnerCustomersView data={data} params={query(props.path)} />}</Read>; }
 function CustomerDetailPage(props: AppLocalPageProps) {
   const args = { customerId: urlFor(props.path).pathname.split("/")[2], ...argsFor("page.owner-customer-detail", props.path) };
@@ -40,9 +44,34 @@ function CustomerDetailPage(props: AppLocalPageProps) {
 function CustomerFormPage(props: AppLocalPageProps) {
   const url = urlFor(props.path), mode = url.pathname === "/customers/new" ? "create" : "edit";
   const args: Record<string, string> = mode === "edit" ? { customerId: url.pathname.split("/")[2] } : {};
-  return <Read<AppLocalOwnerCustomerFormData> {...props} title={mode === "edit" ? "Edit customer" : "Create customer"} name="page.owner-customer-form" args={args}>{data => <main className="mx-auto w-full max-w-3xl px-6 py-10"><CustomerForm action={mode === "edit" ? updateCustomer : createCustomer} customer={data.customer} error={url.searchParams.get("error") ?? undefined} mode={mode} /><Link className="mt-6 inline-flex text-sm font-medium text-zinc-950 underline" href={data.customer ? `/customers/${data.customer.id}` : "/customers"}><WorkspaceText text={data.customer ? "Back to Customer" : "Back to Customers"} /></Link></main>}</Read>;
+  return <Read<AppLocalOwnerCustomerFormData> {...props} title={mode === "edit" ? "Edit customer" : "Create customer"} name="page.owner-customer-form" args={args}>{data => <main className="mx-auto w-full max-w-3xl px-6 py-10"><h1 className="mb-6 text-xl font-semibold"><WorkspaceText text={mode === "edit" ? "Edit customer" : "New Customer"} /></h1><CustomerForm action={mode === "edit" ? updateCustomer : createCustomer} customer={data.customer} error={url.searchParams.get("error") ?? undefined} mode={mode} /><Link className="mt-6 inline-flex text-sm font-medium text-zinc-950 underline" href={data.customer ? `/customers/${data.customer.id}` : "/customers"}><WorkspaceText text={data.customer ? "Back to Customer" : "Back to Customers"} /></Link></main>}</Read>;
 }
-function PayrollPage(props: AppLocalPageProps) { return <Read<AppLocalOwnerPayrollData> {...props} title="Payroll" name="page.owner-payroll" args={payrollReadArgs(props.path)}>{(value, refresh) => <PayrollRefreshProvider refresh={refresh}><AppLocalOwnerPayrollView value={value} params={query(props.path)} /></PayrollRefreshProvider>}</Read>; }
+function PayrollPending() {
+  return <main className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8" aria-busy="true" data-payroll-pending="true">
+    <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
+    <div aria-hidden="true" className="flex gap-2 rounded-2xl border border-border-subtle bg-white p-2">{[0, 1, 2, 3].map(key => <div key={key} className="h-11 min-w-0 flex-1 rounded-xl bg-surface-muted" />)}</div>
+    <div aria-hidden="true" className="flex items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-white p-4"><div className="h-10 w-10 rounded-xl bg-surface-muted" /><div className="h-5 w-40 rounded bg-surface-muted" /><div className="h-10 w-10 rounded-xl bg-surface-muted" /></div>
+    <section className="rounded-2xl border border-border-subtle bg-white p-5"><p role="status" className="text-sm text-text-secondary"><WorkspaceText text="Loading payroll…" /></p><div aria-hidden="true" className="mt-5 grid gap-3">{[0, 1, 2].map(key => <div key={key} className="h-14 rounded-xl bg-surface-muted" />)}</div></section>
+  </main>;
+}
+function PayrollPage(props: AppLocalPageProps) {
+  const allowed = Boolean(props.context?.context.authenticated && props.context.access?.ownerWorkspace);
+  const reference = useAppLocalResource<AppLocalOwnerPayrollData>(allowed ? props.context?.context.scope : undefined, "page.owner-payroll", DEFAULT_PAYROLL_READ_ARGS, { enabled: false });
+  const args = payrollReadArgs(props.path, reference.accessDenied ? undefined : reference.data?.payroll?.period);
+  const key = JSON.stringify([props.context?.context.scope, props.path]);
+  const aliasesDefault = JSON.stringify(args) === JSON.stringify(DEFAULT_PAYROLL_READ_ARGS)
+    && JSON.stringify(payrollReadArgs(props.path)) !== JSON.stringify(DEFAULT_PAYROLL_READ_ARGS);
+  const [acceptedDefault, setAcceptedDefault] = useState<{ key: string; data: AppLocalOwnerPayrollData } | null>(null);
+  // Keep this explicit period's mounted editor if the default rolls over.
+  // This is view continuity only; the original scoped read still refreshes.
+  if (!allowed || reference.accessDenied || reference.data === undefined) {
+    if (acceptedDefault !== null) setAcceptedDefault(null);
+  } else if (aliasesDefault && (acceptedDefault?.key !== key || acceptedDefault.data !== reference.data)) {
+    setAcceptedDefault({ key, data: reference.data });
+  }
+  const pendingValue = allowed && !aliasesDefault && !reference.accessDenied && reference.data !== undefined && acceptedDefault?.key === key ? acceptedDefault.data : undefined;
+  return <Read<AppLocalOwnerPayrollData> {...props} title="Payroll" name="page.owner-payroll" args={args} pending={<PayrollPending />} pendingValue={pendingValue}>{(value, refresh) => <PayrollRefreshProvider refresh={refresh}><AppLocalOwnerPayrollView value={value} params={query(props.path)} /></PayrollRefreshProvider>}</Read>;
+}
 const pages: Record<string, AppLocalPage> = {
   staff: { id: "owner.staff", title: "Staff", requiresContext: true, Component: StaffPage, features: ["original-directory", "original-requests", "original-approval-and-reconfirmation", "original-detail-drawers"] },
   customers: { id: "owner.customers", title: "Customers", requiresContext: true, Component: CustomersPage, features: ["original-crm-list", "search", "pagination", "original-duplicate-merge"] },

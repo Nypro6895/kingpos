@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "changeId": "checkin-windows-gift-lifecycle-20261111",
+  "status": "ready",
+  "summary": "Coordinator integrated checkin-windows-gift-lifecycle-20261111 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-idle-screen.css",
+    "components/gift-card/customer-gift-dialog.tsx",
+    "components/gift-card/gift-approved-dialog.css",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/gift-card/gift-completion.tsx",
+    "components/gift-card/gift-screen-lifecycle.ts",
+    "types/gift-card.ts",
+    "supabase/migrations/20261112000000_gift_screen_lifecycle.sql",
+    "tests/checkin-design-ui.test.mjs",
+    "tests/gift-counter-sale.integration.test.mjs",
+    "tests/pos-gift-shared-ui.test.mjs",
+    "tests/rewardlumi-full-schema.integration.test.mjs",
+    "tests/gift-screen-lifecycle-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "89c5806d-59b5-4982-afff-1558bc89d9ac",
+    "originalSource": {
+      "commit": "a2d3fb3483d836ae0108fa8a1c22648ca434d614",
+      "snapshot": "C:\\Reylumi-worktrees\\checkin-windows-qa-20261111\\artifacts\\windows-checkin-qa\\frozen"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-12T05:55:53.939Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "539b61c6-340f-447f-97e2-a2f6cf157969",
+  "recordedAt": "2026-11-14T06:47:37.659Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/pos/customer-display/customer-idle-screen.css": "afed841337ca0b48dd668b39a6aae7567b9eff88c6e29fe3545a6d4403a69b8a",
+    "components/gift-card/customer-gift-dialog.tsx": "a50f43a873db80072cacc6f9446652b495c8c201094ec56d3dbc803085393b55",
+    "components/gift-card/gift-approved-dialog.css": "ed471885ed71357f2495f516c9489a253ccb17d37d3bdeebf219c4d3f88a8a5b",
+    "components/gift-card/pos-gift-card.tsx": "9b0a801239ef90ec7e91167eb984d76d0c67c2746a77dc8d6cd95cbd4c92ac32",
+    "components/gift-card/gift-completion.tsx": "ba13e637c2a41f81cf03a4008e3774eed0e163061e0a1fff711ae4e6cecfce5d",
+    "components/gift-card/gift-screen-lifecycle.ts": "2e0c6691aeb8fffb076142620fbfd0089a937820e3f44e9f3b03d9469cf7fa38",
+    "types/gift-card.ts": "f59fb533983fa61032bbe3c5e4df38228173804be9ebd9b118383a27db6d7c0e",
+    "supabase/migrations/20261112000000_gift_screen_lifecycle.sql": "6501f916526861f4efe77f4ca4959f7402d5d5ef31733dae0ed66cc6f58bb467",
+    "tests/checkin-design-ui.test.mjs": "29921f312ad2e0c2d2e033959d2ef504f9705d0625293b4c54810bff0f995838",
+    "tests/gift-counter-sale.integration.test.mjs": "e2a307da2c2c2632b34b47e7ba5ef06fcb082c49ba75b91fff40de61315cf244",
+    "tests/pos-gift-shared-ui.test.mjs": "1bed70016e0c203e15ec7fab13ec76f711c35494f9a1c271ebee8fb4055471a8",
+    "tests/rewardlumi-full-schema.integration.test.mjs": "0dde284307ef77a2e09b246512bc170d5dc45ecf79628377d6bbf2c0041655cc",
+    "tests/gift-screen-lifecycle-ui.test.mjs": "d0f0f292080dcbc5ef8a8ca4bf07baca76e369581227afc462cd745fe33c5008"
+  }
+}

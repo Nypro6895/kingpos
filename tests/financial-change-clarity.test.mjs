@@ -11,6 +11,20 @@ const base={id,salon_id:id,staff_id:null,source_id:id,source_table:'ticket',peri
 const event=(before,after,extra={})=>({...base,before_values:before,after_values:after,...extra});
 const line=(key,name='Manicure',amount=40,staff='Anna')=>({id:key,service_name:name,service_total:amount,staff_name:staff,unit_price:amount,quantity:1,parts:[amount]});
 
+test('tax disclosure changes and item withholding changes have distinct readable history',()=>{
+ const edited=event(
+  {show_cash_to_tax_company:false,tax_cash:false,check_tax_rate:10},
+  {show_cash_to_tax_company:true,tax_cash:false,check_tax_rate:20},
+  {source_table:'staff_payroll_settings',staff_id:id},
+ );
+ const presentation=describe(edited);
+ const detail=presentation.details;
+ assert.ok(detail.some(row=>row.label==='Show cash wages to Tax'&&row.before==='No'&&row.after==='Yes'));
+ assert.ok(detail.some(row=>row.label==='Check wage withholding rate'&&row.before==='10%'&&row.after==='20%'));
+ assert.ok(!detail.some(row=>row.label==='Withhold from cash wages'));
+ assert.doesNotMatch(render({changes:[edited]}),/show_cash_to_tax_company|check_tax_rate/);
+});
+
 test('creation-only and unchanged default bonus render no change module; initial settings and report facts stay out of edits',()=>{
  const created={...base,event_action:'created',before_values:{},after_values:{...base.after_values,lines:[line(id)]}};
  assert.equal(isFinancialInputCreation(created),true);assert.equal(render({changes:[created],compact:true}),'');assert.equal(render({changes:[]}), '');

@@ -7,6 +7,10 @@ import { BeautyComposerDialog } from "./beauty-composer-dialog";
 import { ContentViewer } from "@/components/content-viewer";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
 import { mediaBatchProgress, type MediaUploadPhase } from "@/lib/media-upload-progress";
+import { PublicImageUploadCancelledError, runPublicImageUploadBatch } from "@/lib/public-image-upload-client";
+import { clearPublicPostReceipt, readPublicPostReceipt, writePublicPostReceipt } from "@/lib/public-post-receipt";
+import { PublicPhotoProcessingPermission, usePublicPhotoProcessingPermission } from "@/components/public-photo-processing-permission";
+import { PUBLIC_PHOTO_PROCESSING_DECLINE_NOTICE, type PublicPhotoProcessingConsent } from "@/lib/public-photo-processing-consent";
 
 import { BeautyProfileHeader } from "@/components/beauty-profile-header";
 import { SettingsIcon } from "@/components/settings-icon";
@@ -49,6 +53,7 @@ import type {
   BeautyAttributionSalon,
   BeautyAttributionStaff,
   BeautyPostMediaInput,
+  BeautyPostCreateInput,
   BeautyProfileSummary,
   BeautyProfileVisibility,
   BeautyRecentVisitCandidate,
@@ -60,6 +65,7 @@ import type { PostCommentViewer } from "@/types/post-comments";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -90,6 +96,11 @@ type UploadedBeautyMedia = BeautyPostMediaInput & {
   previewUrl: string;
 };
 
+type ComposerBeautyMedia = Omit<UploadedBeautyMedia, "objectPath"> & {
+  file?: File;
+  objectPath?: string;
+};
+
 type UploadedProfileImage = {
   path: string;
   previewUrl: string;
@@ -105,6 +116,24 @@ type SelectedAttribution = {
   staffName: string | null;
   staffOptions: BeautyAttributionStaff[];
   source: "customer_claimed" | "recent_visit_suggestion";
+};
+
+type BeautyPublishAttempt = {
+  requestId: string;
+  scope: string;
+  epoch: number;
+  caption: string;
+  mode: ComposerMode;
+  media: ComposerBeautyMedia[];
+  attribution: SelectedAttribution | null;
+  photoProcessingConsent?: PublicPhotoProcessingConsent;
+  input: (BeautyPostCreateInput & { requestId: string }) | null;
+  submitted: boolean;
+};
+type PendingBeautyPost = Pick<BeautyPublishAttempt, "requestId" | "scope" | "caption" | "media"> & {
+  phase: "uploading" | "checking" | "unknown" | "failed";
+  error: string | null;
+  canRetry: boolean;
 };
 
 const acceptedMimeTypes = new Set<string>(BEAUTY_ALLOWED_IMAGE_TYPES);
@@ -565,9 +594,14 @@ function uploadToSupabase(input: {
   onProgress?: (value: number) => void;
   path: string;
   supabaseUrl: string;
+  signal?: AbortSignal;
 }) {
   return new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    if (input.signal?.aborted) { reject(new PublicImageUploadCancelledError()); return; }
+    const abort = () => xhr.abort();
+    input.signal?.addEventListener("abort", abort, { once: true });
+    const finish = () => input.signal?.removeEventListener("abort", abort);
     const objectUrl = `${input.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${encodeURIComponent(
       input.bucket,
     )}/${encodeStoragePath(input.path)}`;
@@ -584,6 +618,7 @@ function uploadToSupabase(input: {
       }
     };
     xhr.onload = () => {
+      finish();
       if (xhr.status >= 200 && xhr.status < 300) {
         input.onProgress?.(100);
         resolve();
@@ -592,9 +627,9 @@ function uploadToSupabase(input: {
 
       reject(new Error(xhr.responseText || "Upload failed."));
     };
-    xhr.onerror = () => reject(new Error("Upload failed."));
-    xhr.ontimeout = () => reject(new Error("Upload timed out. Check your connection and try again."));
-    xhr.onabort = () => reject(new Error("Upload cancelled."));
+    xhr.onerror = () => { finish(); reject(new Error("Upload failed.")); };
+    xhr.ontimeout = () => { finish(); reject(new Error("Upload timed out. Check your connection and try again.")); };
+    xhr.onabort = () => { finish(); reject(new PublicImageUploadCancelledError()); };
     xhr.send(input.blob);
   });
 }
@@ -915,6 +950,19 @@ export function BeautyProfileClient({
   const publishingRef = useRef(false);
   const profileSavingRef = useRef(false);
   const objectUrlsRef = useRef(new Set<string>());
+  const uploadEpochRef = useRef(0);
+  const uploadAliveRef = useRef(true);
+  const uploadControllersRef = useRef(new Set<AbortController>());
+  const uploadJobsRef = useRef(new Map<string, Promise<UploadedBeautyMedia>>());
+  const uploadingRef = useRef(false);
+  const publishAttemptRef = useRef<BeautyPublishAttempt | null>(null);
+  const pendingCardRef = useRef<HTMLElement | null>(null);
+  const revealPendingCardRef = useRef(false);
+  const authorScope = commentViewer.isAuthenticated && commentViewer.userId && initialProfile.isSelf
+    ? `beauty:${commentViewer.userId}:${initialProfile.id}` : null;
+  const authorScopeRef = useRef(authorScope);
+  useLayoutEffect(() => { authorScopeRef.current = authorScope; }, [authorScope]);
+  const previousAuthorScopeRef = useRef(authorScope);
   const [profile, setProfile] = useState(initialProfile);
   useEffect(() => {
     const changed = (event: Event) => {
@@ -947,7 +995,7 @@ export function BeautyProfileClient({
   const [posts, setPosts] = useState(initialTimeline.items);
   const savedTargetsKey = JSON.stringify(posts.filter(post => post.visibility === "public").map(post => ({ sourceId: post.id, sourceType: "beauty_post" })));
   useEffect(() => {
-    if (home) return;
+    if (home || libraryPage) return;
     let active = true;
     const targets = JSON.parse(savedTargetsKey) as AccountSavedPostTarget[];
     if (!targets.length) return;
@@ -959,7 +1007,7 @@ export function BeautyProfileClient({
       setSavedStates(current => ({ ...current, ...Object.fromEntries(targets.map(target => [target.sourceId, { saved: keys.has(`beauty_post:${target.sourceId}`), count: result.saveCountsByKey[`beauty_post:${target.sourceId}`] }])) }));
     }).catch(() => { if (active) setSavedLoadError(true); });
     return () => { active = false; };
-  }, [home, savedTargetsKey, savedRetry]);
+  }, [home, libraryPage, savedTargetsKey, savedRetry]);
 
   const [activeFilter, setActiveFilter] = useState<TimelineFilter>("all");
   const [cursor, setCursor] = useState<BeautyTimelineCursor | null>(
@@ -974,17 +1022,19 @@ export function BeautyProfileClient({
   useTransientOverlay(() => setComposerOpen(false), composerOpen);
   const [composerMode, setComposerMode] = useState<ComposerMode>("regular");
   const [caption, setCaption] = useState("");
-  const [normalMedia, setNormalMedia] = useState<UploadedBeautyMedia[]>([]);
-  const [beforeMedia, setBeforeMedia] = useState<UploadedBeautyMedia | null>(
+  const [normalMedia, setNormalMedia] = useState<ComposerBeautyMedia[]>([]);
+  const [beforeMedia, setBeforeMedia] = useState<ComposerBeautyMedia | null>(
     null,
   );
-  const [afterMedia, setAfterMedia] = useState<UploadedBeautyMedia | null>(null);
+  const [afterMedia, setAfterMedia] = useState<ComposerBeautyMedia | null>(null);
+  const [pendingPost, setPendingPost] = useState<PendingBeautyPost | null>(null);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
   const [composerError, setComposerError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadPhase, setUploadPhase] = useState<MediaUploadPhase>("preparing");
   const [uploadBatch, setUploadBatch] = useState({ current: 1, total: 1 });
-  const [failedUpload, setFailedUpload] = useState<{ files: File[]; role: "image" | "before" | "after" } | null>(null);
+  const [failedUpload, setFailedUpload] = useState<{ items: ComposerBeautyMedia[]; role: "image" | "before" | "after" } | null>(null);
   const [attribution, setAttribution] = useState<SelectedAttribution | null>(
     null,
   );
@@ -1003,8 +1053,11 @@ export function BeautyProfileClient({
     composerMode === "regular"
       ? normalMedia
       : [beforeMedia, afterMedia].filter(
-          (item): item is UploadedBeautyMedia => Boolean(item),
+          (item): item is ComposerBeautyMedia => Boolean(item),
         );
+  const photoPermission = usePublicPhotoProcessingPermission(JSON.stringify([
+    authorScope, composerMode, attribution?.salonId ?? null, currentComposerMedia.map(item => item.id),
+  ]));
   // Rank only the visit history supplied by the server.
   const suggestedSalons = useMemo(() => {
     const grouped = new Map<string, { candidate: BeautyRecentVisitCandidate; count: number }>();
@@ -1036,6 +1089,44 @@ export function BeautyProfileClient({
     composerMode === "before_after"
       ? "Add the transformation, then choose the salon visit if it applies."
       : "Add a caption, photos, or both. Keep it easy.";
+
+  useEffect(() => {
+    const alive = uploadAliveRef, epoch = uploadEpochRef;
+    const controllers = uploadControllersRef.current;
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      epoch.current++;
+      for (const controller of controllers) controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (previousAuthorScopeRef.current === authorScope) return;
+    previousAuthorScopeRef.current = authorScope;
+    uploadEpochRef.current++;
+    for (const controller of uploadControllersRef.current) controller.abort();
+    uploadJobsRef.current.clear();
+    uploadingRef.current = false;
+    publishAttemptRef.current = null;
+    revealPendingCardRef.current = false;
+    publishingRef.current = false;
+    for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
+    objectUrlsRef.current.clear();
+    setNormalMedia([]); setBeforeMedia(null); setAfterMedia(null);
+    setPendingPost(null); setFailedUpload(null); setUploading(false);
+    setReceiptError(null);
+    setCaption(""); setAttribution(null); setComposerError(""); setComposerOpen(false);
+    setSuccessNotice("");
+    timelineGenerationRef.current++;
+    loadingMoreRef.current = false;
+    setLoadingMore(false);
+    setProfile(initialProfile); setPosts(initialTimeline.items);
+    setCoverUpload(null); setAvatarUpload(null); setRemoveCover(false); setRemoveAvatar(false);
+    setProfileEditorOpen(false); setProfileDraftBio(initialProfile.bio ?? ""); setProfileDraftVisibility(initialProfile.visibility);
+    setCursor(initialTimeline.nextCursor); setHasMore(initialTimeline.hasMore);
+    setSavedStates({});
+  }, [authorScope, initialProfile, initialTimeline]);
 
   const loadMorePosts = useCallback(async () => {
     if (!cursor || loadingMoreRef.current) {
@@ -1454,7 +1545,7 @@ export function BeautyProfileClient({
     }
   }
 
-  function releaseMedia(media: UploadedBeautyMedia | null) {
+  function releaseMedia(media: ComposerBeautyMedia | UploadedBeautyMedia | null) {
     if (!media) {
       return;
     }
@@ -1464,10 +1555,14 @@ export function BeautyProfileClient({
       objectUrlsRef.current.delete(media.previewUrl);
     }
 
-    void deleteBeautyMediaAction(media.objectPath);
+    uploadJobsRef.current.delete(media.id);
+
+    if (media.objectPath) void deleteBeautyMediaAction(media.objectPath).catch(() => {});
   }
 
   function openComposer(mode: ComposerMode) {
+    if (publishAttemptRef.current) return;
+    photoPermission.reset();
     setComposerMode(mode);
     setComposerOpen(true);
     setComposerError("");
@@ -1475,11 +1570,13 @@ export function BeautyProfileClient({
   }
 
   function resetComposer(cleanup: boolean) {
+    photoPermission.reset();
     if (cleanup) {
       normalMedia.forEach(releaseMedia);
       releaseMedia(beforeMedia);
       releaseMedia(afterMedia);
     }
+    for (const media of failedUpload?.items ?? []) releaseObjectUrl(media.previewUrl);
 
     setCaption("");
     setNormalMedia([]);
@@ -1505,9 +1602,12 @@ export function BeautyProfileClient({
     setComposerOpen(false);
   }
 
-  async function uploadBeautyFile(file: File, role: BeautyPostMediaInput["role"], options?: {
+  async function uploadBeautyFile(file: File, role: BeautyPostMediaInput["role"], options: {
     processed: Awaited<ReturnType<typeof processBeautyImage>>;
     onProgress: (value: number) => void;
+    selection: ComposerBeautyMedia;
+    signal: AbortSignal;
+    isCurrent: () => boolean;
   }) {
     if (!acceptedMimeTypes.has(file.type)) {
       throw new Error("Use a JPEG, PNG, or WebP image.");
@@ -1517,45 +1617,37 @@ export function BeautyProfileClient({
       throw new Error(`Image must be ${formatBytes(BEAUTY_IMAGE_LIMIT)} or smaller.`);
     }
 
-    let previewUrl: string | null = null;
     let uploadedPath: string | null = null;
 
     try {
-      const processed = options?.processed ?? await processBeautyImage(file);
-      previewUrl = URL.createObjectURL(processed.file);
-      rememberObjectUrl(previewUrl);
+      const processed = options.processed;
+      if (!options.isCurrent()) throw new PublicImageUploadCancelledError();
       const session = await getBeautyMediaUploadSessionAction(role);
-      uploadedPath = session.path;
+      uploadedPath = session.objectPath ?? session.path;
+      if (!options.isCurrent()) throw new PublicImageUploadCancelledError();
 
       await uploadToSupabase({
         accessToken: session.accessToken,
         anonKey: session.anonKey,
         blob: processed.file,
         bucket: session.bucket,
-        onProgress: options?.onProgress ?? ((value) => {
-          setUploadProgress(value);
-          setUploadPhase(value >= 100 ? "confirming" : "uploading");
-        }),
+        onProgress: options.onProgress,
         path: session.path,
         supabaseUrl: session.supabaseUrl,
+        signal: options.signal,
       });
 
       return {
         bytes: processed.file.size,
         height: processed.height,
-        id: crypto.randomUUID(),
+        id: options.selection.id,
         mimeType: processed.file.type,
-        objectPath: session.path,
-        previewUrl,
+        objectPath: uploadedPath,
+        previewUrl: options.selection.previewUrl,
         role,
         width: processed.width,
       } satisfies UploadedBeautyMedia;
     } catch (error) {
-      if (previewUrl && objectUrlsRef.current.has(previewUrl)) {
-        URL.revokeObjectURL(previewUrl);
-        objectUrlsRef.current.delete(previewUrl);
-      }
-
       if (uploadedPath) {
         try {
           await deleteBeautyMediaAction(uploadedPath);
@@ -1568,112 +1660,144 @@ export function BeautyProfileClient({
     }
   }
 
-  async function addNormalFiles(files: FileList | File[] | null) {
-    if (composerBusy) return;
-    const selected = Array.from(files ?? []).slice(0, 4 - normalMedia.length);
-
-    if (selected.length === 0) {
-      return;
-    }
-
+  async function runSelectedUploads(items: ComposerBeautyMedia[], role: "image" | "before" | "after", previous?: ComposerBeautyMedia | null) {
+    const scope = authorScopeRef.current;
+    const epoch = uploadEpochRef.current;
+    if (!scope || !items.length || uploadingRef.current) return;
+    uploadingRef.current = true;
+    const isCurrent = () => uploadAliveRef.current && authorScopeRef.current === scope && uploadEpochRef.current === epoch;
+    const controller = new AbortController();
+    uploadControllersRef.current.add(controller);
     setComposerError("");
     setUploading(true);
     setUploadProgress(0);
     setUploadPhase("preparing");
-    setUploadBatch({ current: 1, total: selected.length });
+    setUploadBatch({ current: 1, total: items.length });
     setFailedUpload(null);
-
-    const uploaded: UploadedBeautyMedia[] = [];
-
-    try {
-      // Prepare first so the total represents actual compressed bytes.
-      const prepared: Awaited<ReturnType<typeof processBeautyImage>>[] = [];
-      for (const file of selected) {
-        if (!acceptedMimeTypes.has(file.type)) throw new Error("Use a JPEG, PNG, or WebP image.");
-        if (file.size > BEAUTY_IMAGE_LIMIT) throw new Error(`Image must be ${formatBytes(BEAUTY_IMAGE_LIMIT)} or smaller.`);
-        prepared.push(await processBeautyImage(file));
-      }
+    const work = (async () => {
+      const prepared = await runPublicImageUploadBatch({
+        items, concurrency: 2, isCurrent,
+        upload: item => {
+          if (!item.file) throw new Error("Choose this photo again before uploading.");
+          return processBeautyImage(item.file);
+        }, cleanup: () => {},
+      });
       const totalBytes = prepared.reduce((sum, item) => sum + item.file.size, 0);
-      let completedBytes = 0;
+      const progress = new Array<number>(items.length).fill(0);
+      let completed = 0;
+      if (!isCurrent()) throw new PublicImageUploadCancelledError();
       setUploadPhase("uploading");
-      for (const [index, file] of selected.entries()) {
-        const processed = prepared[index];
-        setUploadBatch({ current: index + 1, total: selected.length });
-        uploaded.push(await uploadBeautyFile(file, "image", {
-          processed,
-          onProgress: (value) => {
-            setUploadProgress(mediaBatchProgress(completedBytes, processed.file.size, value, totalBytes));
-            setUploadPhase(value >= 100 ? "confirming" : "uploading");
-          },
-        }));
-        completedBytes += processed.file.size;
-        setUploadProgress(mediaBatchProgress(completedBytes, 0, 0, totalBytes));
+      return runPublicImageUploadBatch({
+        items, concurrency: 2, isCurrent,
+        upload: async (item, index) => {
+          const result = await uploadBeautyFile(item.file!, item.role, {
+            processed: prepared[index], selection: item, signal: controller.signal, isCurrent,
+            onProgress: value => {
+              if (!isCurrent()) return;
+              progress[index] = value;
+              const transferred = prepared.reduce((sum, file, i) => sum + file.file.size * progress[i] / 100, 0);
+              setUploadProgress(mediaBatchProgress(transferred, 0, 0, totalBytes));
+              setUploadPhase(progress.every(percent => percent >= 100) ? "confirming" : "uploading");
+            },
+          });
+          if (isCurrent()) setUploadBatch({ current: Math.min(++completed + 1, items.length), total: items.length });
+          return result;
+        },
+        cleanup: result => deleteBeautyMediaAction(result.objectPath),
+      });
+    })();
+    for (const item of items) {
+      const job = work.then(results => results.find(result => result.id === item.id)!);
+      void job.catch(() => {});
+      uploadJobsRef.current.set(item.id, job);
+    }
+    try {
+      const uploaded = await work;
+      if (!isCurrent()) return;
+      const merged = new Map(uploaded.map(item => [item.id, item]));
+      if (role === "image") setNormalMedia(current => current.map(item => merged.has(item.id) ? { ...item, ...merged.get(item.id)! } : item));
+      else {
+        const next = { ...items[0], ...uploaded[0] };
+        if (role === "before") setBeforeMedia(next); else setAfterMedia(next);
+        if (previous && previous.id !== next.id) releaseMedia(previous);
       }
-
-      setNormalMedia((current) => [...current, ...uploaded].slice(0, 4));
       setUploadPhase("complete");
       setUploadProgress(100);
     } catch (error) {
-      uploaded.forEach(releaseMedia);
-      setFailedUpload({ files: selected, role: "image" });
+      if (!isCurrent()) return;
+      setFailedUpload({ items, role });
+      if (role !== "image" && previous) {
+        if (role === "before") setBeforeMedia(previous); else setAfterMedia(previous);
+      }
       setComposerError(
         error instanceof Error ? error.message : "Upload failed.",
       );
     } finally {
-      setUploading(false);
-
-      if (normalFileInputRef.current) {
-        normalFileInputRef.current.value = "";
+      uploadControllersRef.current.delete(controller);
+      if (isCurrent()) {
+        uploadingRef.current = false;
+        setUploading(false);
+        if (normalFileInputRef.current) normalFileInputRef.current.value = "";
+        if (beforeInputRef.current) beforeInputRef.current.value = "";
+        if (afterInputRef.current) afterInputRef.current.value = "";
       }
     }
+  }
+
+  function selectedMedia(file: File, role: BeautyPostMediaInput["role"]): ComposerBeautyMedia {
+    if (!acceptedMimeTypes.has(file.type)) throw new Error("Use a JPEG, PNG, or WebP image.");
+    if (!file.size || file.size > BEAUTY_IMAGE_LIMIT) throw new Error(`Choose an image under ${formatBytes(BEAUTY_IMAGE_LIMIT)}.`);
+    const previewUrl = URL.createObjectURL(file);
+    rememberObjectUrl(previewUrl);
+    return { id: crypto.randomUUID(), file, role, previewUrl, mimeType: file.type };
+  }
+
+  async function addNormalFiles(files: FileList | File[] | null) {
+    if (composerBusy || uploadingRef.current || publishAttemptRef.current) return;
+    const items: ComposerBeautyMedia[] = [];
+    try {
+      for (const file of Array.from(files ?? []).slice(0, 4 - normalMedia.length)) items.push(selectedMedia(file, "image"));
+    } catch (error) {
+      items.forEach(item => releaseObjectUrl(item.previewUrl));
+      setComposerError(error instanceof Error ? error.message : "Choose a valid image.");
+      return;
+    }
+    if (!items.length) return;
+    photoPermission.reset();
+    setNormalMedia(current => [...current, ...items]);
+    await runSelectedUploads(items, "image");
   }
 
   async function replaceBeforeAfterFile(
     file: File | null,
     role: "after" | "before",
   ) {
-    if (!file || composerBusy) {
+    if (!file || composerBusy || uploadingRef.current || publishAttemptRef.current) {
       return;
     }
 
-    setComposerError("");
-    setUploading(true);
-    setUploadProgress(0);
-    setUploadPhase("preparing");
-    setUploadBatch({ current: 1, total: 1 });
-    setFailedUpload(null);
-
     try {
-      const uploaded = await uploadBeautyFile(file, role);
-
-      if (role === "before") {
-        releaseMedia(beforeMedia);
-        setBeforeMedia(uploaded);
-      } else {
-        releaseMedia(afterMedia);
-        setAfterMedia(uploaded);
-      }
-      setUploadPhase("complete");
-      setUploadProgress(100);
+      const item = selectedMedia(file, role);
+      photoPermission.reset();
+      const previous = role === "before" ? beforeMedia : afterMedia;
+      if (role === "before") setBeforeMedia(item); else setAfterMedia(item);
+      await runSelectedUploads([item], role, previous);
     } catch (error) {
-      setFailedUpload({ files: [file], role });
       setComposerError(
         error instanceof Error ? error.message : "Upload failed.",
       );
-    } finally {
-      setUploading(false);
-
-      if (beforeInputRef.current) {
-        beforeInputRef.current.value = "";
-      }
-      if (afterInputRef.current) {
-        afterInputRef.current.value = "";
-      }
     }
   }
 
-  function removeNormalMedia(media: UploadedBeautyMedia) {
+  function removeNormalMedia(media: ComposerBeautyMedia) {
+    photoPermission.reset();
     releaseMedia(media);
+    uploadJobsRef.current.delete(media.id);
+    setFailedUpload(current => {
+      if (!current || current.role !== "image") return current;
+      const items = current.items.filter(item => item.id !== media.id);
+      return items.length ? { ...current, items } : null;
+    });
     setNormalMedia((current) => current.filter((item) => item.id !== media.id));
   }
 
@@ -1727,83 +1851,190 @@ export function BeautyProfileClient({
     });
   }
 
-  function publishPost() {
-    if (composerBusy || publishingRef.current) {
-      return;
-    }
+  function attemptIsCurrent(attempt: BeautyPublishAttempt) {
+    return uploadAliveRef.current && authorScopeRef.current === attempt.scope &&
+      uploadEpochRef.current === attempt.epoch && publishAttemptRef.current === attempt;
+  }
 
-    setComposerError("");
-
-    const media = currentComposerMedia.map((item) => ({
-      bytes: item.bytes,
-      height: item.height,
-      mimeType: item.mimeType,
-      objectPath: item.objectPath,
-      role: item.role,
-      width: item.width,
-    }));
-
-    if (composerMode === "regular" && !caption.trim() && media.length === 0) {
-      setComposerError("Write a caption or add a photo.");
-      return;
-    }
-
-    if (composerMode === "before_after") {
-      if (!beforeMedia || !afterMedia) {
-        setComposerError("Add one before image and one after image.");
-        return;
+  function restorePendingReceipt(scope: string) {
+    try {
+      const saved = readPublicPostReceipt<BeautyPostCreateInput & { requestId: string }>(scope);
+      setReceiptError(null);
+      if (!saved) return false;
+      const input = saved.input;
+      if (!Array.isArray(input.media) || input.media.length > 4 ||
+          !["regular", "before_after"].includes(input.postType) ||
+          (input.caption != null && typeof input.caption !== "string") ||
+          input.media.some(item => !item || typeof item.objectPath !== "string" || !["image", "before", "after"].includes(item.role))) {
+        throw new Error("The saved post needs review before another copy can be created. Contact support.");
       }
-
-      if (!attribution) {
-        setComposerError("Choose the salon for this Before & After.");
-        return;
-      }
+      const media: ComposerBeautyMedia[] = input.media.map((item, index) => ({ ...item, id: `${saved.requestId}:${index}`, previewUrl: "" }));
+      const attempt: BeautyPublishAttempt = {
+        scope, requestId: saved.requestId, epoch: uploadEpochRef.current,
+        caption: input.caption ?? "", mode: input.postType,
+        attribution: input.salonId ? { salonId: input.salonId, salonName: "Selected salon", staffId: input.staffId ?? null, staffName: null, staffOptions: [], source: input.attributionSource ?? "customer_claimed" } : null,
+        media, input, submitted: true,
+      };
+      publishAttemptRef.current = attempt;
+      setCaption(attempt.caption); setComposerMode(attempt.mode);
+      setAttribution(attempt.attribution);
+      setNormalMedia(media.filter(item => item.role === "image"));
+      setBeforeMedia(media.find(item => item.role === "before") ?? null);
+      setAfterMedia(media.find(item => item.role === "after") ?? null);
+      setComposerOpen(false);
+      showPendingAttempt(attempt, "unknown", "A previous post has not been confirmed. Retry the same saved request safely.");
+      return true;
+    } catch (error) {
+      setReceiptError(error instanceof Error ? error.message : "Saved post status is unavailable. Restore browser storage before posting.");
+      return true;
     }
+  }
 
+  function showPendingAttempt(attempt: BeautyPublishAttempt, phase: PendingBeautyPost["phase"], error: string | null = null) {
+    if (attemptIsCurrent(attempt)) setPendingPost({ ...attempt, phase, error, canRetry: Boolean(attempt.input) });
+  }
+
+  useEffect(() => {
+    let active = true;
+    // Hydrate the external browser receipt after this author scope commits.
+    queueMicrotask(() => { if (active && authorScope && authorScopeRef.current === authorScope) restorePendingReceipt(authorScope); });
+    return () => { active = false; };
+  // A receipt is scoped to the authenticated author, never the current route.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authorScope]);
+
+  const pendingRequestId = pendingPost?.requestId;
+  const pendingScope = pendingPost?.scope;
+  useEffect(() => {
+    if (!pendingRequestId || pendingScope !== authorScope || !revealPendingCardRef.current) return;
+    revealPendingCardRef.current = false;
+    const frame = requestAnimationFrame(() => {
+      if (authorScopeRef.current === pendingScope) pendingCardRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pendingRequestId, pendingScope, authorScope]);
+
+  function submitPublishAttempt(attempt: BeautyPublishAttempt) {
+    if (publishingRef.current || !attemptIsCurrent(attempt)) return;
     publishingRef.current = true;
-
+    showPendingAttempt(attempt, attempt.input || !attempt.media.some(item => !item.objectPath) ? "checking" : "uploading");
     startPublishing(async () => {
       try {
-        const result = await createBeautyPostAction({
-          attributionSource: attribution?.source,
-          caption,
-          media,
-          postType: composerMode,
-          salonId: attribution?.salonId ?? null,
-          staffId: attribution?.staffId ?? null,
-        });
-
-        if (result.error !== null) {
-          setComposerError(result.error);
+        if (!attempt.input) {
+          const ready = await Promise.all(attempt.media.map(item => {
+            if (item.objectPath) return Promise.resolve(item as UploadedBeautyMedia);
+            const job = uploadJobsRef.current.get(item.id);
+            if (!job) throw new Error("Retry the photo upload before posting.");
+            return job;
+          }));
+          if (!attemptIsCurrent(attempt)) return;
+          attempt.input = {
+            requestId: attempt.requestId,
+            attributionSource: attempt.attribution?.source ?? "customer_claimed",
+            caption: attempt.caption,
+            media: ready.map(({ bytes, height, mimeType, objectPath, role, width }) => ({ bytes: bytes ?? null, height: height ?? null, mimeType: mimeType ?? null, objectPath, role, width: width ?? null })),
+            postType: attempt.mode,
+            salonId: attempt.attribution?.salonId ?? null,
+            staffId: attempt.attribution?.staffId ?? null,
+            ...(attempt.photoProcessingConsent ? { photoProcessingConsent: attempt.photoProcessingConsent } : {}),
+          };
+        }
+        // A lost response or route reload must never turn the next tap into a
+        // fresh create request. Persist only the frozen JSON input, not files.
+        writePublicPostReceipt(attempt.scope, { requestId: attempt.requestId, input: attempt.input });
+        showPendingAttempt(attempt, "checking");
+        attempt.submitted = true;
+        const result = await createBeautyPostAction(attempt.input);
+        if (!attemptIsCurrent(attempt)) return;
+        if ("requestId" in result && result.requestId && result.requestId !== attempt.requestId) {
+          showPendingAttempt(attempt, "unknown", "This post response could not be matched. Retry the same saved request safely.");
           return;
         }
-
+        if (result.error !== null) {
+          if (!("outcome" in result && result.outcome === "unknown")) clearPublicPostReceipt(attempt.scope, attempt.requestId);
+          setComposerError(result.error);
+          showPendingAttempt(attempt, "outcome" in result && result.outcome === "unknown" ? "unknown" : "failed", result.error);
+          return;
+        }
+        if ("publicationStatus" in result && result.publicationStatus !== "published") {
+          showPendingAttempt(attempt, "unknown", "Your post has not been confirmed. Retry this same post to check safely.");
+          return;
+        }
+        clearPublicPostReceipt(attempt.scope, attempt.requestId);
         window.dispatchEvent(new CustomEvent("reylumi:post-published"));
-        const newestPost = result.timeline.items[0];
-        const newestVerification = newestPost?.verification;
-
-        // A successful publish replaces the timeline boundary. Retire older
-        // pagination replies and their finalizers before admitting a new page.
-        timelineGenerationRef.current += 1;
+        const newestVerification = result.timeline.items[0]?.verification;
+        timelineGenerationRef.current++;
         loadingMoreRef.current = false;
         setLoadingMore(false);
-        setPosts(result.timeline.items);
-        setCursor(result.timeline.nextCursor);
-        setHasMore(result.timeline.hasMore);
+        if (!result.timeline.error) {
+          setPosts(result.timeline.items);
+          setCursor(result.timeline.nextCursor);
+          setHasMore(result.timeline.hasMore);
+        }
         setTimelineError(result.timeline.error ?? "");
-        setSuccessNotice(
-          composerMode === "before_after"
+        setSuccessNotice(result.timeline.error ? "Your post was created. The timeline could not refresh yet."
+          : attempt.mode === "before_after"
             ? newestVerification?.state === "verified"
               ? "Before & After published with a verified visit. Salon approval is pending."
               : "Before & After published. Salon approval and visit verification are pending."
-            : "Beauty moment shared.",
-        );
+            : "Beauty moment shared.");
+        for (const media of attempt.media) {
+          releaseObjectUrl(media.previewUrl);
+          uploadJobsRef.current.delete(media.id);
+        }
+        const publishedIds = new Set(attempt.media.map(item => item.id));
+        for (const media of [...normalMedia, beforeMedia, afterMedia]) {
+          if (media && !publishedIds.has(media.id)) releaseMedia(media);
+        }
+        publishAttemptRef.current = null;
+        setPendingPost(null);
         resetComposer(false);
         setComposerOpen(false);
+      } catch (error) {
+        if (!attemptIsCurrent(attempt)) return;
+        const message = attempt.submitted
+          ? "We could not confirm whether your post was created. Retry this same post safely."
+          : error instanceof Error ? error.message : "The photos could not be uploaded. Your draft is still here.";
+        setComposerError(message);
+        showPendingAttempt(attempt, attempt.submitted ? "unknown" : "failed", message);
       } finally {
-        publishingRef.current = false;
+        if (authorScopeRef.current === attempt.scope && uploadEpochRef.current === attempt.epoch) publishingRef.current = false;
       }
     });
+  }
+
+  function editPendingDraft() {
+    if (publishingRef.current || pendingPost?.phase === "unknown") return;
+    publishAttemptRef.current = null;
+    setPendingPost(null);
+    photoPermission.reset();
+    setComposerOpen(true);
+  }
+
+  function publishPost() {
+    if (publishingRef.current || publishAttemptRef.current) return;
+    if (!authorScope) { setComposerError("Sign in to your own Beauty profile before posting."); return; }
+    if (restorePendingReceipt(authorScope)) return;
+    if (composerMode === "regular" && !caption.trim() && !currentComposerMedia.length) {
+      setComposerError("Write a caption or add a photo."); return;
+    }
+    if (composerMode === "before_after" && (!beforeMedia || !afterMedia || !attribution)) {
+      setComposerError(!beforeMedia || !afterMedia ? "Add one before image and one after image." : "Choose the salon for this Before & After."); return;
+    }
+    if (currentComposerMedia.length && !photoPermission.consent) {
+      setComposerError(PUBLIC_PHOTO_PROCESSING_DECLINE_NOTICE); return;
+    }
+    setComposerError("");
+    const attempt: BeautyPublishAttempt = {
+      requestId: crypto.randomUUID(), scope: authorScope, epoch: uploadEpochRef.current,
+      caption, mode: composerMode, media: currentComposerMedia.map(item => ({ ...item })),
+      attribution: attribution ? { ...attribution } : null, input: null, submitted: false,
+      ...(currentComposerMedia.length ? { photoProcessingConsent: photoPermission.consent } : {}),
+    };
+    publishAttemptRef.current = attempt;
+    revealPendingCardRef.current = true;
+    setComposerOpen(false);
+    submitPublishAttempt(attempt);
   }
 
   function updatePostCaption(postId: string, nextCaption: string | null) {
@@ -1839,6 +2070,24 @@ export function BeautyProfileClient({
   return (
     <main className="beauty-profile-page min-h-screen overflow-x-hidden bg-surface-muted px-3 py-4 sm:px-6 lg:px-8">
       <div className="grid w-full min-w-0 gap-4">
+        {receiptError && authorScope ? <div role="alert" className="grid gap-2 rounded-2xl bg-surface p-4 text-sm text-red-700"><p>{receiptError}</p><button type="button" className="beauty-action" onClick={() => restorePendingReceipt(authorScope)}>Check saved post status</button></div> : null}
+        {pendingPost && pendingPost.scope === authorScope && initialProfile.isSelf ? (
+          <article ref={pendingCardRef} aria-label="Your pending Beauty post" data-publication-status={pendingPost.phase} className="grid min-w-0 gap-3 rounded-2xl bg-surface p-4 ring-1 ring-divider-subtle" style={{ overflowWrap: "anywhere" }}>
+            <div><strong className="text-sm">Your Beauty post</strong><p className="text-xs text-text-secondary">Only you can see this pending card.</p></div>
+            {pendingPost.caption ? <p className="whitespace-pre-wrap text-sm">{pendingPost.caption}</p> : null}
+            {pendingPost.media.length ? <div className={classNames("grid gap-2", pendingPost.media.length === 1 ? "grid-cols-1" : "grid-cols-2")}>{pendingPost.media.map(media => (
+              // eslint-disable-next-line @next/next/no-img-element
+              media.previewUrl ? <img key={media.id} src={media.previewUrl} alt={media.role === "image" ? "Your selected photo" : `${media.role} photo`} className="max-h-64 w-full rounded-lg object-contain" /> : <p key={media.id} className="rounded-lg bg-surface-muted p-4 text-xs text-text-secondary">Photo uploaded. Local preview is unavailable after reloading.</p>
+            ))}</div> : null}
+            <p role="status" className="text-sm font-semibold text-brand-teal">{pendingPost.phase === "uploading" ? "Uploading your photos…" : pendingPost.phase === "checking" ? "Checking and posting…" : pendingPost.phase === "unknown" ? "Posting has not been confirmed" : "Your draft needs attention"}</p>
+            {pendingPost.phase === "uploading" ? <MediaUploadProgress phase={uploadPhase} progress={uploadProgress} current={uploadBatch.current} total={uploadBatch.total} /> : null}
+            {pendingPost.error ? <p role="alert" className="text-sm text-red-700">{pendingPost.error}</p> : null}
+            {pendingPost.phase === "failed" || pendingPost.phase === "unknown" ? <div className="flex flex-wrap gap-2">
+              {pendingPost.canRetry ? <button type="button" disabled={publishing} className="beauty-action" onClick={() => { const attempt = publishAttemptRef.current; if (attempt) submitPublishAttempt(attempt); }}>Retry this same post</button> : null}
+              {pendingPost.phase === "failed" ? <button type="button" disabled={publishing} className="beauty-action" onClick={editPendingDraft}>Review draft</button> : <p className="text-xs text-text-secondary">Keep this draft while we confirm the result. A retry uses the same request.</p>}
+            </div> : null}
+          </article>
+        ) : null}
         {home ? <BeautyHome profile={profile} posts={posts} viewerId={commentViewer.userId} appointment={appointment} favorites={favorites} onCompose={photo => {
           flushSync(() => openComposer("regular"));
           if (photo) normalFileInputRef.current?.click();
@@ -1849,7 +2098,7 @@ export function BeautyProfileClient({
         {section === "library" ? <section aria-label="Your photo library"><BeautyLibrary posts={posts} />{hasMore ? <button type="button" className="beauty-action mt-3" disabled={loadingMore} onClick={() => void loadMorePosts()}>{loadingMore ? "Loading…" : "Load more photos"}</button> : null}{timelineError ? <p role="alert" className="text-sm text-red-700">{timelineError}</p> : null}</section> : null}
         </>}
 
-        {!home && savedLoadError ? <button type="button" className="beauty-action" onClick={() => setSavedRetry(value => value + 1)}>Could not load Love status. Retry</button> : null}
+        {!home && !libraryPage && savedLoadError ? <button type="button" className="beauty-action" onClick={() => setSavedRetry(value => value + 1)}>Could not load Love status. Retry</button> : null}
         {successNotice ? (
           <p
             aria-live="polite"
@@ -1859,7 +2108,7 @@ export function BeautyProfileClient({
           </p>
         ) : null}
 
-        {!home && <section className="grid gap-4" aria-label="Beauty timeline" data-continuation={overviewContinuation} hidden={section === "library"}>
+        {!home && !libraryPage && <section className="grid gap-4" aria-label="Beauty timeline" data-continuation={overviewContinuation} hidden={section === "library"}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-extrabold text-text-primary">
@@ -2268,7 +2517,7 @@ export function BeautyProfileClient({
               >
                 Close
               </button>
-              <button type="button" onClick={publishPost} disabled={composerBusy} className="min-h-11 rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white disabled:opacity-60">
+                <button type="button" onClick={publishPost} disabled={publishing || Boolean(pendingPost) || Boolean(currentComposerMedia.length && !photoPermission.accepted)} className="min-h-11 rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white disabled:opacity-60">
                 {publishing ? "Posting..." : "Post"}
               </button>
               </div>
@@ -2276,7 +2525,7 @@ export function BeautyProfileClient({
 
             <div className="min-h-0 flex-1 overscroll-contain overflow-auto px-4 py-4 sm:px-5">
               <div className="grid gap-4">
-                <div className="flex gap-2" aria-label="Post type"><button type="button" className="beauty-action" aria-pressed={composerMode === "regular"} disabled={composerBusy} onClick={() => setComposerMode("regular")}>Photo</button><button type="button" className="beauty-action" aria-pressed={composerMode === "before_after"} disabled={composerBusy} onClick={() => setComposerMode("before_after")}>Before &amp; After</button></div>
+                <div className="flex gap-2" aria-label="Post type"><button type="button" className="beauty-action" aria-pressed={composerMode === "regular"} disabled={composerBusy} onClick={() => { photoPermission.reset(); setComposerMode("regular"); }}>Photo</button><button type="button" className="beauty-action" aria-pressed={composerMode === "before_after"} disabled={composerBusy} onClick={() => { photoPermission.reset(); setComposerMode("before_after"); }}>Before &amp; After</button></div>
                 {composerMode === "regular" ? (
                   <>
                     <label className="grid gap-1.5">
@@ -2329,11 +2578,11 @@ export function BeautyProfileClient({
                               key={media.id}
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
+                              {media.previewUrl ? <img
                                 alt="Selected Beauty post preview"
                                 className="h-full w-full object-cover"
                                 src={media.previewUrl}
-                              />
+                              /> : <p className="grid h-full place-items-center p-3 text-xs text-text-secondary">Photo uploaded. Select a new photo to replace it.</p>}
                               <button
                                 aria-label="Remove photo"
                                 className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full bg-white/90 text-sm font-extrabold text-text-primary shadow-sm"
@@ -2394,7 +2643,7 @@ export function BeautyProfileClient({
                               onClick={() => slot.inputRef.current?.click()}
                               type="button"
                             >
-                              {slot.media ? (
+                              {slot.media?.previewUrl ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   alt={`${slot.label} preview`}
@@ -2402,7 +2651,7 @@ export function BeautyProfileClient({
                                   src={slot.media.previewUrl}
                                 />
                               ) : (
-                                slot.label
+                                slot.media ? `${slot.label} photo uploaded` : slot.label
                               )}
                               <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-extrabold uppercase text-text-primary shadow-sm">
                                 {slot.label}
@@ -2578,6 +2827,8 @@ export function BeautyProfileClient({
                       ) : null}
                     </section>
 
+                {currentComposerMedia.length ? <PublicPhotoProcessingPermission accepted={photoPermission.accepted} disabled={publishing || Boolean(pendingPost)} onChange={photoPermission.setAccepted} /> : null}
+
                 {uploading ? (
                   <MediaUploadProgress phase={uploadPhase} progress={uploadProgress} current={uploadBatch.current} total={uploadBatch.total} />
                 ) : null}
@@ -2589,8 +2840,12 @@ export function BeautyProfileClient({
                   </p>
                 ) : null}
                 {failedUpload && !composerBusy ? <button type="button" className="min-h-11 justify-self-start rounded-full bg-brand-teal-soft px-5 text-sm font-semibold text-brand-teal" onClick={() => {
-                  if (failedUpload.role === "image") void addNormalFiles(failedUpload.files);
-                  else void replaceBeforeAfterFile(failedUpload.files[0], failedUpload.role);
+                  if (failedUpload.role === "image") void runSelectedUploads(failedUpload.items, "image");
+                  else {
+                    const previous = failedUpload.role === "before" ? beforeMedia : afterMedia;
+                    if (failedUpload.role === "before") setBeforeMedia(failedUpload.items[0]); else setAfterMedia(failedUpload.items[0]);
+                    void runSelectedUploads(failedUpload.items, failedUpload.role, previous);
+                  }
                 }}>Try again</button> : null}
               </div>
             </div>

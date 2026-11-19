@@ -84,7 +84,7 @@
 .positive { color: #14785b; }
 .negative { color: #a64726; }
 .chart { margin: 12px 0; }
-.bars { height: 150px; display: flex; align-items: end; gap: 3px; border-bottom: 1px solid #e6eaee; }
+.bars { overflow: hidden; height: 150px; display: flex; align-items: end; gap: 3px; border-bottom: 1px solid #e6eaee; }
 .bar { flex: 1; background: #70ad8b; border-radius: 3px 3px 0 0; min-width: 0; }
 .axis { display: flex; justify-content: space-between; font-size: 11px; color: #63717c; margin: 6px 0; }
 .empty { padding: 16px; border-block: 1px solid #e6eaee; border-radius: 0; color: #63717c; }

@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "admin-exact-text-r2-ui-20261118",
+  "status": "working",
+  "summary": "Correct explicit nullable-state TypeScript guard in approved r2 UI without changing behavior; prepare a newly verified frozen revision.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/reports/report-case-view.tsx",
+    "app/(app)/admin/reports/report-case-view.module.css",
+    "app/(app)/admin/reports/social-content-decision.tsx",
+    "tests/admin-exact-text-r2-ui.browser.test.mjs",
+    "tests/fixtures/admin-exact-text-r2-entry.tsx",
+    "tests/social-report-consumer.integration.test.mjs",
+    "docs/admin-exact-text-r2-ui-20261118.md"
+  ],
+  "source": {
+    "commit": "40b1b6e7909f6e50e3372dbf873b814ab4eb1f66"
+  },
+  "validation": [
+    {
+      "name": "Focused browser/SSR, ESLint and TypeScript diagnostics for owned sources",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "admin-exact-text-moderation-20261118"
+  ],
+  "scopeBoundary": "Scoped UI candidate only. Backend migration/types/helper/actions/resolver are separately owned dependency. Coordinator combined Next build/product preview/hosted RLS and device acceptance remain separate; no production/deploy claim. Mounted-session unknown intent only, no hard-reload draft persistence. No provider calls, secrets, realdata, commit/push/deploy.",
+  "id": "29717edb-79c4-4712-8de0-97cebf8b7750",
+  "recordedAt": "2026-11-19T03:51:59.469Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

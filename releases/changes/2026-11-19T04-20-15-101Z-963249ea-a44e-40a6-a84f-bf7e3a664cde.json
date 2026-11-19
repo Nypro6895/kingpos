@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "rights-evidence-runtime-20261118",
+  "status": "working",
+  "summary": "Implement policy-gated exact-byte private rights evidence capture/removal worker and current case-authorized bounded server read; no operator UI or retention selection.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/rights-evidence-worker.ts",
+    "lib/rights-evidence-storage.ts",
+    "lib/rights-evidence-access.ts",
+    "app/api/admin/rights-evidence/[evidenceId]/route.ts",
+    "tests/rights-evidence-worker.test.mjs",
+    "tests/rights-evidence-access.test.mjs",
+    "docs/rights-evidence-runtime-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "validation": [
+    {
+      "name": "Mocked bounded Storage/SDK and authenticated access regressions plus coordinated isolated actual Storage acceptance",
+      "result": "pending"
+    }
+  ],
+  "scopeBoundary": "No shared SQL/UI edits. Missing approved policy/operator blocks all bytes. Unknown/suspected/known minor safety requires separate escalation with no source download/AI/routine escrow. No retention selected, no env/key inspection, no production/customer/provider calls, no new cron, no commit/push/deploy.",
+  "id": "963249ea-a44e-40a6-a84f-bf7e3a664cde",
+  "recordedAt": "2026-11-19T04:20:15.101Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

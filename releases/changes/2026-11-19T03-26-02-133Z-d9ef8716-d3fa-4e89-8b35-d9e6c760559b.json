@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "openai-photo-live-acceptance-20261118",
+  "status": "working",
+  "summary": "Verify the manually created, user-saved key with one synthetic benign image through the current server photo adapter; no secret output, public upload or production activation.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/openai-photo-live-acceptance-20261118.md",
+    "artifacts/openai-photo-live-acceptance-20261118/acceptance.json"
+  ],
+  "validation": [
+    {
+      "name": "One real benign Moderations request using actual adapter",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "openai-public-photo-verifier-20261118",
+    "openai-photo-consented-wiring-20261118"
+  ],
+  "id": "d9ef8716-d3fa-4e89-8b35-d9e6c760559b",
+  "recordedAt": "2026-11-19T03:26:02.133Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

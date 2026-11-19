@@ -14,7 +14,7 @@ test('Library entry shows the photo library while ordinary profiles retain Overv
     if (!ts.isImportDeclaration(node) || !node.importClause || node.importClause.isTypeOnly) continue;
     const module = node.moduleSpecifier.text;
     // Exercise the real component, real photo-library view and CSS.
-    if (['react', 'react-dom', './beauty-library'].includes(module)) continue;
+    if (['react', 'react-dom', './beauty-library', '@/components/public-photo-processing-permission', '@/lib/public-photo-processing-consent'].includes(module)) continue;
     const bindings = node.importClause.namedBindings;
     const names = bindings && ts.isNamedImports(bindings) ? bindings.elements.filter(n => !n.isTypeOnly).map(n => n.propertyName?.text ?? n.name.text) : [];
     let code = node.importClause.name ? 'export default function Stub(){return null;}\n' : '';
@@ -31,6 +31,7 @@ test('Library entry shows the photo library while ordinary profiles retain Overv
     const initialSection=new URLSearchParams(location.search).get('section')||undefined;
     createRoot(document.getElementById('root')).render(<BeautyProfileClient initialSection={initialSection} profile={{id:'self',isSelf:true,displayName:'QA',initials:'Q',visibility:'public',avatarUrl:null,coverImageUrl:null}} initialTimeline={{items:[],nextCursor:null,hasMore:false,error:null}} commentViewer={{isAuthenticated:true,userId:'self'}} visitCandidates={[]}/>);
   `},plugins:[{name:'isolated-library-services',setup(b){
+    b.onResolve({filter:/^@\/(components\/public-photo-processing-permission|lib\/public-photo-processing-consent)$/},a=>({path:process.cwd()+'/'+a.path.slice(2)+(a.path.includes('/components/')?'.tsx':'.ts')}));
     b.onResolve({filter:/.*/},a=>a.importer.replaceAll('\\','/')===path && mocks.has(a.path)?{path:a.path,namespace:'mock'}:undefined);
     b.onResolve({filter:/^next\/(link|image)$/},a=>({path:a.path,namespace:'next-mock'}));
     b.onLoad({filter:/.*/,namespace:'mock'},a=>({contents:mocks.get(a.path),loader:'tsx',resolveDir:process.cwd()}));
@@ -38,8 +39,8 @@ test('Library entry shows the photo library while ordinary profiles retain Overv
   }}]});
   const js=bundle.outputFiles.find(f=>f.path.endsWith('.js')).text,css=bundle.outputFiles.find(f=>f.path.endsWith('.css')).text;
   const html=`<meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial;margin:0}button{font:inherit}${css}</style><div id="root"></div><script>${js}</script>`;
-  mkdirSync('artifacts/ipad-page-audit-fixes-20261104',{recursive:true});
-  writeFileSync('artifacts/ipad-page-audit-fixes-20261104/library-fixture.html',html);
+  mkdirSync('artifacts/public-photo-processing-consent-ui-20261118',{recursive:true});
+  writeFileSync('artifacts/public-photo-processing-consent-ui-20261118/library-fixture.html',html);
   const server=createServer((_,res)=>{res.setHeader('Content-Type','text/html');res.end(html)});
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH??'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
@@ -63,6 +64,11 @@ test('Library entry shows the photo library while ordinary profiles retain Overv
     await page.getByRole('heading',{name:'Latest post'}).waitFor();
     assert.equal(await page.getByRole('button',{name:'Overview',exact:true}).getAttribute('aria-pressed'),'true');
     assert.deepEqual(errors,[]);
-    assert.match(readFileSync('app/(app)/beauty/library/page.tsx','utf8'),/<BeautyProfileClient\s+initialSection="library"/);
+    const route=ts.createSourceFile('library-page.tsx',readFileSync('app/(app)/beauty/library/page.tsx','utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+    let entry;
+    const visit=node=>{if(ts.isJsxSelfClosingElement(node)&&node.tagName.getText(route)==='BeautyProfileClient')entry=node;ts.forEachChild(node,visit);};visit(route);
+    const attrs=entry?.attributes.properties.filter(ts.isJsxAttribute)??[];
+    assert.ok(attrs.some(attr=>attr.name.getText(route)==='initialSection'&&attr.initializer&&ts.isStringLiteral(attr.initializer)&&attr.initializer.text==='library'));
+    assert.ok(attrs.some(attr=>attr.name.getText(route)==='libraryPage'&&!attr.initializer));
   } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
 });

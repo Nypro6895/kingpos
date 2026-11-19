@@ -5,6 +5,7 @@ import SafariServices
 final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, WKDownloadDelegate {
     private var checkWriterPrintInFlight = false
     private var checkWriterPrintJobs = Set<String>()
+    private let receiptPrinter = ReylumiReceiptPrinter()
     private var marketReturnSequence = 0
     func returnToMarket(sequence: Int) {
         guard sequence > marketReturnSequence else { return }
@@ -17,6 +18,15 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         guard let id = UUID(uuidString: entry) else { return }
         loadViewIfNeeded()
         openPublicDestination("/qr", query: [URLQueryItem(name: "entry", value: id.uuidString.lowercased())])
+    }
+    func openGiftCard(path: String) {
+        guard let canonical = URL(string: path, relativeTo: URL(string: "https://reylumi.com")!)?.absoluteURL,
+              let validated = NavigationPolicy.giftCardPath(canonical), validated == path,
+              let destination = URL(string: validated, relativeTo: policy.origin)?.absoluteURL,
+              policy.isInternal(destination), !policy.isExcluded(destination) else { return }
+        loadViewIfNeeded()
+        view.endEditing(true)
+        loadRequest(URLRequest(url: destination, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15))
     }
     private var startupDisplayLink: CADisplayLink?
     private var firstPresentedFrame: CFTimeInterval?
@@ -144,7 +154,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         configuration.ignoresViewportScaleLimits = false
         // Register with the WebView and unregister when the controller is destroyed.
         configuration.userContentController.add(WeakMessageHandler(self), name: "reylumi")
-        for resource in ["AppViewport", "NativeBridge"] {
+        for resource in ["AppViewport", "NativeBridge", "ReceiptPrintBridge"] {
             if let scriptURL = Bundle.main.url(forResource: resource, withExtension: "js"),
                var script = try? String(contentsOf: scriptURL, encoding: .utf8) {
                 #if DEBUG
@@ -397,6 +407,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         guard !retiredNavigations.contains(where: { $0 === navigation }) else { return }
         portableBridge.documentWillNavigate()
+        receiptPrinter.cancel()
         if navigation !== activeNavigation {
             retireCurrentNavigation()
             startup.begin(pendingRequest)
@@ -434,6 +445,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { showLoadError(error, navigation: navigation) }
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { showLoadError(error, navigation: navigation) }
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        receiptPrinter.cancel()
         portableBridge.documentWillNavigate()
         let recovery = startup.retryRequest(origin: policy.origin, currentURL: webView.url)
         navigationWatchdog?.cancel()
@@ -523,7 +535,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
                 if !opened { self?.alert("Secure payment could not open. Please try again.") }
             }
         case "print-check-pdf":
-            guard url.path == "/check-writer", !checkWriterPrintInFlight,
+            guard url.path == "/check-writer", !checkWriterPrintInFlight, !receiptPrinter.isBusy,
                   let jobID = body["jobId"] as? String, UUID(uuidString: jobID) != nil,
                   !checkWriterPrintJobs.contains(jobID),
                   let value = body["data"] as? String, value.count < 16_000_000,
@@ -559,8 +571,17 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
             }
             if !presented { checkWriterPrintInFlight = false; controller.printingItem = nil }
 
+        case "print-receipt":
+            guard let job = body["job"] as? [String: Any] else { return }
+            receiptPrinter.present(job, from: self, source: webView) { [weak self] in
+                guard let self, !self.checkWriterPrintInFlight else { return false }
+                if job["kind"] as? String != "provisional" { return true }
+                guard let scope = job["scope"] as? String, let id = job["operationId"] as? String else { return false }
+                return await self.portableBridge.permitsProvisionalPrint(scope: scope, operationID: id)
+            }
+        case "cancel-receipt-print": receiptPrinter.cancel()
         case "print":
-            guard !checkWriterPrintInFlight else { return }
+            guard !checkWriterPrintInFlight, !receiptPrinter.isBusy else { return }
             let controller = UIPrintInteractionController.shared
             controller.printingItem = nil
             controller.printingItems = nil

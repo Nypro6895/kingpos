@@ -1,0 +1,31 @@
+{
+  "kind": "synthetic-real-component-and-action-boundary",
+  "physicalNativeAcceptance": false,
+  "source": {
+    "source": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+    "revision": 1,
+    "hashes": {
+      "app/(app)/pos-tickets/[ticketId]/page.tsx": "3901c5bd6778caa35cb337f42ab6c96297dd4de218ca22e4457925bd47b6c0fd",
+      "app/pos-tickets/closed-ticket-correction-form.tsx": "5f00d629f55d1532e341e77cbb3e3fe2ec573473cde56034ec1f75b175a69640",
+      "app/pos-tickets/ticket-detail-view.tsx": "d2e5dd68aeff6d6063d5b30b72bb7d21341e0b7a9a57605350be2d8bacc0b52b",
+      "app/pos-tickets/ticket-detail-view.module.css": "f1987b105d352b8dcb0fb296654e6f48b266e878e6b527f06bddf768076d9887",
+      "app/navigation-shell.tsx": "aa64504ebc30f015f9449c4b3c9ff1208cadddfaf7c64d607886ae4857bf2280",
+      "app/globals.css": "2a665467de1916c51c6d8c9fe7321e249098094f1ed7d55ef05d9197f74aaf72",
+      "lib/pos-ticket-navigation.ts": "37ca78a61fe198a7861088d000aa4d748919ad05c4376eb57e36f59d48ea8278",
+      "lib/pos-ticket-calculations.ts": "3e261c970e5a8b49fb3e2c8dc3936be68b66627a3afe772e9f548b9401da9e56",
+      "lib/pos-ticket-receipt.ts": "60a0af2f33f3542cbd0fb352d3bab2ead0de9e0dc107f362852be0d0643f6282",
+      "lib/vietnamese-dictionary.ts": "5c67f61e1de72078e08601c9d00f4669ef2d32ec61581da188d0ffd9245a4899",
+      "lib/vietnamese-ticket-detail.json": "7dcf93a93bbd6f0abb4e70745c8a3939889483cd62c390dbde1ee0b62e7cb70c"
+    }
+  },
+  "checks": [
+    "Actual manager page with permissive mocked management reads exposes no Owner mutations.",
+    "Actual Gift delivery control and canonical $105 receipt preview/print dispatch render; neither action closes, pays, or changes the ticket. Native print acknowledgement is synthetic.",
+    "Real receipt readback retains Reward$5 separately and combined Gift/service grand total$100.",
+    "Actual closed editor opens with revision7/nonempty UUID, requires changed cents+reason, and repeated same captured form dispatch preserves exact request/payload. No database action is executed.",
+    "Locked date retains explicit confirmation and separate request/apply controls."
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "passed": true
+}

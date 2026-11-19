@@ -3,10 +3,30 @@ import { useEffect, useLayoutEffect, useRef, useSyncExternalStore, type RefObjec
 import { usePathname, useSearchParams } from "next/navigation";
 import { installPopoverDismissal, closePopovers } from "@/lib/dismissible-popovers";
 export const OVERLAY_NAVIGATION_EVENT = "reylumi:overlay-navigation";
+export const NATIVE_OVERLAY_DISMISS_EVENT = "reylumi:native-overlay-dismiss";
 const LOCATION_EVENT = "reylumi:overlay-location";
 const subscribePortalHost = () => () => {};
 const getPortalHost = () => document.body;
 const getServerPortalHost = () => null;
+
+/** Opt a custom dialog into native Back through its own close callback.
+ * Claiming the event also preserves a callback's pending/dirty refusal to close.
+ */
+export function useNativeOverlayDismissal(ref: RefObject<HTMLElement | null>, onDismiss: () => void, enabled = true) {
+  const latest = useRef(onDismiss);
+  useLayoutEffect(() => { latest.current = onDismiss; });
+  useLayoutEffect(() => {
+    const overlay = ref.current;
+    if (!enabled || !overlay) return;
+    const dismiss = (event: Event) => {
+      if (event.target !== overlay || !event.cancelable) return;
+      event.preventDefault();
+      latest.current();
+    };
+    overlay.addEventListener(NATIVE_OVERLAY_DISMISS_EVENT, dismiss);
+    return () => overlay.removeEventListener(NATIVE_OVERLAY_DISMISS_EVENT, dismiss);
+  }, [enabled, ref]);
+}
 // Keep server rendering and hydration identical before moving a drawer outside
 // transformed page containers that can clip it or trap it below navigation.
 export function useOverlayPortalHost() {

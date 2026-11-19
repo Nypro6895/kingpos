@@ -19,6 +19,7 @@ import {
 import { searchTextMatches } from "@/lib/search-normalization";
 import { ticketGiftSearchValues } from "@/lib/pos-ticket-financial-view";
 import { TicketFilters } from "@/app/pos-tickets/ticket-filters";
+import { PortableReceiptPrintActions } from "@/components/portable-receipt-print-actions";
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -344,7 +345,7 @@ function PortableDailyWorkLog({
       <section>
         <div className="bg-white">
           {tickets.map((ticket) => (
-            <DailyPosTicketCard
+            <div key={ticket.id}><DailyPosTicketCard
               actions={{
                 correctClosedTicket: correctPortableClosedPosTicketInline,
               }}
@@ -361,6 +362,7 @@ function PortableDailyWorkLog({
               ticket={toEditableTicket(ticket, services)}
               timeZone={timeZone}
             />
+            <PortableReceiptPrintActions ticket={ticket} /></div>
           ))}
         </div>
       </section>

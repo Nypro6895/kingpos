@@ -39,6 +39,11 @@ html[data-owner-device=tablet] .owner-checkout[data-owner-reference] .owner-keyp
 html[data-owner-device=tablet] .owner-checkout[data-owner-reference] .owner-keypad button{order:initial;font-size:30px}
 html[data-owner-device=tablet] .owner-workspace-content{min-width:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 
+/* Retained native pages share the same fixed navigation clearance. Reserve it
+   on the panel, including its loading state, rather than individual forms. */
+html[data-owner-device=tablet] [data-owner-local-panel]{box-sizing:border-box;min-width:0;width:100%;padding-right:calc(112px + env(safe-area-inset-right,0px))}
+html[data-owner-device=phone] [data-owner-local-panel]{padding-bottom:calc(var(--owner-bottom-nav) + 16px);scroll-padding-bottom:calc(var(--owner-bottom-nav) + 16px)}
+
 /* Match the actual viewport, including parent padding and the on-screen keyboard. */
 html:is([data-owner-device=phone],[data-owner-device=tablet]) .owner-workspace-panel{height:var(--owner-panel-height,calc(100dvh - var(--owner-bottom-nav,0px) - 16px))}
 html[data-owner-device=phone] main.pos-settings{padding-bottom:calc(var(--owner-bottom-nav) + 24px)}

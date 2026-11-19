@@ -28,6 +28,7 @@ export function staffCompactSettings(line: PayrollStaffLineWithDailyTotals) {
 
 type RowRule = {
   pay: string[]; checkRate: string; cashRate: string; taxRate: string;
+  checkTaxRate: string; cashTaxRate: string; tipTaxRate: string;
   checkTax: boolean | null; cashTax: boolean | null;
   tipMethod: "Check" | "Cash"; tipTax: boolean;
 };
@@ -54,8 +55,11 @@ export function staffPayrollRowDisplay(line: PayrollStaffLineWithDailyTotals) {
       pay: fixed ? ["Fixed pay", new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(s?.fixedPayAmount ?? line.fixed_pay_amount_used))]
         : ["Commission", percent(Number(s?.commissionRate ?? line.commission_rate_used))],
       checkRate: percent(checkRate), cashRate: percent(100 - checkRate), taxRate: percent(Number(s?.taxRate ?? line.tax_rate_used)),
-      checkTax: wageTax,
-      cashTax: wageTax === false ? false : (s?.cashToTaxCompany ?? line.cash_to_tax_company_snapshot) ? wageTax : false,
+      checkTaxRate: percent(Number(s?.check_tax_rate ?? s?.taxRate ?? line.tax_rate_used)),
+      cashTaxRate: percent(Number(s?.cash_tax_rate ?? s?.taxRate ?? line.tax_rate_used)),
+      tipTaxRate: percent(Number(s?.tip_tax_rate ?? s?.taxRate ?? line.tax_rate_used)),
+      checkTax: typeof s?.tax_check === "boolean" ? s.tax_check : wageTax,
+      cashTax: typeof s?.tax_cash === "boolean" ? s.tax_cash : wageTax === false ? false : (s?.cashToTaxCompany ?? line.cash_to_tax_company_snapshot) ? wageTax : false,
       tipMethod: payoutMethod(String(s?.tipPayoutMethod ?? line.tip_payout_method_snapshot)),
       tipTax: Boolean(s?.taxTips ?? line.tax_tips_snapshot),
     };
@@ -69,7 +73,7 @@ export function staffPayrollRowDisplay(line: PayrollStaffLineWithDailyTotals) {
   const formula = (rule: RowRule, method: "Check" | "Cash") => {
     const taxed = method === "Check" ? rule.checkTax : rule.cashTax;
     return [method === "Check" ? rule.checkRate : rule.cashRate,
-      ...(taxed === null ? ["Mixed settings"] : taxed ? ["−", "Tax", rule.taxRate] : []),
+      ...(taxed === null ? ["Mixed settings"] : taxed ? ["−", "Tax", method === "Check" ? rule.checkTaxRate : rule.cashTaxRate] : []),
       ...(rule.tipMethod === method ? ["+", "Tip"] : []),
       ...(bonusMethods.includes(method) ? ["+", "Bonus"] : [])];
   };
@@ -83,14 +87,14 @@ export function staffPayrollRowDisplay(line: PayrollStaffLineWithDailyTotals) {
   const bonusNet = (moneyCents(line.final_check_amount) + moneyCents(line.final_cash_amount)
     - moneyCents(line.base_check_amount) - moneyCents(line.base_cash_amount)
     - moneyCents(line.tip_check_amount) - moneyCents(line.tip_cash_amount)) / 100;
-  const tipTaxes = distinct(rules.map(r => r.tipTax ? `Tax\u0000${r.taxRate}` : "No tax"));
+  const tipTaxes = distinct(rules.map(r => r.tipTax ? `Tax\u0000${r.tipTaxRate}` : "No tax"));
   // Old statements do not retain the period-end bonus tax rate. Do not borrow
   // a wage rate or today's setting to fill that gap.
-  const bonusTaxes = distinct(bonusSettings.map(s => s.taxBonus ? `Tax\u0000${percent(Number(s.taxRate))}` : "No tax"));
+  const bonusTaxes = distinct(bonusSettings.map(s => s.taxBonus ? `Tax\u0000${percent(Number(s.bonus_tax_rate ?? s.taxRate))}` : "No tax"));
   const wageTaxLabel = (method: "Check" | "Cash") => {
     const labels = distinct(rules.map(r => {
       const taxed = method === "Check" ? r.checkTax : r.cashTax;
-      return taxed === null ? "Mixed settings" : taxed ? `Tax\u0000${r.taxRate}` : "No tax";
+      return taxed === null ? "Mixed settings" : taxed ? `Tax\u0000${method === "Check" ? r.checkTaxRate : r.cashTaxRate}` : "No tax";
     }));
     return unknown || labels.length !== 1 ? ["Mixed settings"] : labels[0].split("\u0000");
   };
@@ -107,7 +111,7 @@ export function staffPayrollRowDisplay(line: PayrollStaffLineWithDailyTotals) {
     settings: unknown ? [["Mixed settings"]] : [
       ...distinct(rules.map(r => r.pay.join("\u0000"))).map(p => p.split("\u0000")),
       ["Cash", joined(rules.map(r => r.cashRate))], ["Check", joined(rules.map(r => r.checkRate))],
-      ["Tax", joined(rules.map(r => r.taxRate))],
+      ["Tax", joined(rules.flatMap(r => [r.checkTaxRate, r.cashTaxRate, r.tipTaxRate]))],
     ],
   };
 }

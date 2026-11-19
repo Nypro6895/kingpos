@@ -9,6 +9,7 @@ import {
 } from "@/lib/daily-pos-report";
 import {
   getCurrentSalonPosTickets,
+  getCurrentSalonPosTicket,
   getCurrentSalonPosTicketOptions,
   POS_TICKET_PERMISSIONS,
 } from "@/lib/pos-tickets";
@@ -17,6 +18,7 @@ import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import { getTodayDate } from "@/lib/staff-workdays";
 import {isOwnerMembership} from "@/lib/current-context";
+import { isPosTicketId, ticketBusinessDate } from "@/lib/pos-ticket-navigation";
 
 type PosTicketsPageProps = {
   searchParams: Promise<{
@@ -24,6 +26,7 @@ type PosTicketsPageProps = {
     error?: string;
     q?: string;
     staff?: string;
+    ticketId?: string;
   }>;
 };
 
@@ -178,7 +181,7 @@ function getTicketFilterHref({
 async function PosTicketsPage({
   searchParams,
 }: PosTicketsPageProps) {
-  const [{ date, error, q }, context] = await Promise.all([
+  const [{ date, error, q, ticketId }, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/pos-tickets"),
   ]);
@@ -195,8 +198,14 @@ async function PosTicketsPage({
     );
   }
 
-  const timeZone = await getContextBusinessTimezone(context);
-  const selectedDate = isDateInputValue(date)
+  const [timeZone, focusedTicketResult] = await Promise.all([
+    getContextBusinessTimezone(context),
+    isPosTicketId(ticketId) ? getCurrentSalonPosTicket(ticketId) : Promise.resolve(null),
+  ]);
+  const focusedTicket = focusedTicketResult?.ticket;
+  const selectedDate = focusedTicket
+    ? ticketBusinessDate(focusedTicket.opened_at, timeZone)
+    : isDateInputValue(date)
     ? date!
     : getLocalDateString(timeZone);
   const searchQuery = q?.trim() ?? "";
@@ -234,6 +243,7 @@ async function PosTicketsPage({
       {/* Server response time bounds client reconciliation of this snapshot. */}
       {/* eslint-disable-next-line react-hooks/purity */}
       <OwnerLiveTickets selectedDate={selectedDate} snapshotAt={Date.now()} key={selectedDate+searchQuery} salonId={context.currentSalon.id} initialTickets={tickets} bounds={getUtcBoundsForLocalDate(selectedDate,timeZone)} searchQuery={searchQuery}
+        focusTicketId={focusedTicket?.id}
         canApplyFinancialCorrection={canApplyFinancialCorrection}
         canEdit={canEditDailyTickets}
         isBusinessDateLocked={isSelectedDateLocked}

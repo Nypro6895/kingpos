@@ -3297,7 +3297,8 @@ export function ExploreClient({
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
         page: targetPage,
-        pageSize: initialResponse.pageSize,
+        // Home previews use four cards; explicit searches use the normal page.
+        pageSize: 12,
         query: searchQuery,
         scopePolicy,
         sort,
@@ -3702,7 +3703,7 @@ export function ExploreClient({
       const response = await fetchExploreSearchPage({
         query: searchQuery, category: "", target, location, filters: searchQuery === query ? activeResponse.filters : {},
         locationSource: !location.trim() ? "none" : activeResponse.locationOrigin === "query" ? "saved" : locationSource,
-        scopePolicy: scope, sort: "relevance", page: 1, pageSize: initialResponse.pageSize,
+        scopePolicy: scope, sort: "relevance", page: 1, pageSize: 12,
       }, controller.signal);
       if (version !== gpsRequestVersion.current) return;
       setSessionResponse(response); setGpsResponse(null); setCommittedGpsContext(null);

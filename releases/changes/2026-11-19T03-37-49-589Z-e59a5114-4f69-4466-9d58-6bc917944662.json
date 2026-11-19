@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "admin-exact-text-r2-ui-20261118",
+  "status": "working",
+  "summary": "Implement owner-approved compact exact-text content decision UI r2 with separate collapsed Support handling and safe versioned/idempotent recovery.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/reports/report-case-view.tsx",
+    "app/(app)/admin/reports/report-case-view.module.css",
+    "app/(app)/admin/reports/social-content-decision.tsx",
+    "tests/admin-exact-text-r2-ui.browser.test.mjs",
+    "tests/fixtures/admin-exact-text-r2-entry.tsx",
+    "docs/admin-exact-text-r2-ui-20261118.md"
+  ],
+  "source": {
+    "commit": "40b1b6e7909f6e50e3372dbf873b814ab4eb1f66"
+  },
+  "validation": [
+    {
+      "name": "Focused actual-component browser regressions with mocked server actions and network blocked",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "admin-exact-text-moderation-20261118"
+  ],
+  "scopeBoundary": "Approved r2 exact-text UI only. Backend agent owns case-authorized state/actions/RPC/types/context. No photo preapproval, private-image escrow, rights/ad flows, env/keys/realdata/provider calls, commit/push/deploy; coordinator owns combined Next build and product preview.",
+  "id": "e59a5114-4f69-4466-9d58-6bc917944662",
+  "recordedAt": "2026-11-19T03:37:49.589Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "admin-exact-text-moderation-20261118",
+  "status": "needs-integration",
+  "summary": "Case-bound exact-text Hide/Restore with independent overlay holds, immutable versioned receipts and full public projection/RLS coverage; private business/history preserved.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261118230000_admin_exact_text_moderation.sql",
+    "types/admin-exact-text-moderation.ts",
+    "lib/platform-admin/exact-text-moderation.ts",
+    "app/(app)/admin/reports/exact-text-actions.ts",
+    "lib/platform-admin/report-context.ts",
+    "tests/admin-exact-text-moderation.integration.test.mjs",
+    "docs/admin-exact-text-moderation-20261118.md"
+  ],
+  "dependencies": [
+    "ios-moderation-operations-20261118"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\admin-exact-text-moderation-20261118\\frozen",
+    "commit": "40b1b6e7909f6e50e3372dbf873b814ab4eb1f66"
+  },
+  "validation": [
+    {
+      "name": "Full7/7 tests zero skips, all436 migrations, real RPC/RLS/parent-edit concurrency",
+      "result": "passed",
+      "evidence": "artifacts/admin-exact-text-moderation-20261118/acceptance/admin-exact-text-acceptance.json"
+    },
+    {
+      "name": "Compiled typed public routing/grants/RLS inventory and canonical numeric/private exclusions",
+      "result": "passed",
+      "evidence": "artifacts/admin-exact-text-moderation-20261118/acceptance/compiled-social-read-inventory.json"
+    },
+    {
+      "name": "Exact SQL independently reviewed; scoped ESLint and frozen7/7/whitespace",
+      "result": "passed",
+      "evidence": "docs/admin-exact-text-moderation-20261118.md"
+    },
+    {
+      "name": "Combined Next R4 success reported independently by coordinator; runtime unchanged afterward",
+      "result": "passed"
+    },
+    {
+      "name": "Production baseline integration, hosted schema, regenerated native bundle/new binary and physical acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "595402d4-a23c-4105-8e2e-3e759020fb2f",
+  "recordedAt": "2026-11-19T04:11:33.054Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

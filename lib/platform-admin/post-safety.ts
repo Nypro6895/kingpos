@@ -10,7 +10,7 @@ export async function loadAdminPostSafetyCases(origin: string = "user", reportId
   if (!cases.length) return cases;
   const storage = abuseServiceClient().storage;
   return Promise.all(cases.map(async item => ({...item, media: await Promise.all(item.media.map(async media => {
-    if (!["salon-profile-media", "beauty-profile-media"].includes(media.bucket)) return {...media, url: null};
+    if (item.reason==='minor_safety'||!["salon-profile-media", "beauty-profile-media"].includes(media.bucket)) return {...media, url: null};
     const {data, error} = await storage.from(media.bucket).createSignedUrl(media.path, 3600);
     return {...media, url: error ? null : data?.signedUrl ?? null};
   }))})));
@@ -29,7 +29,7 @@ export async function loadAdminPostReviewWorkspace(origin="user", caseId?:string
   // Reuse signed URLs for repeated reports on the same post.
   const urls=new Map<string,Promise<string|null>>();
   data.cases=await Promise.all(data.cases.map(async item=>({...item,media:await Promise.all(item.media.map(async media=>{
-    if(!["salon-profile-media","beauty-profile-media"].includes(media.bucket))return {...media,url:null};
+    if(item.reason==='minor_safety'||!["salon-profile-media","beauty-profile-media"].includes(media.bucket))return {...media,url:null};
     const key=`${media.bucket}:${media.path}`;
     if(!urls.has(key))urls.set(key,storage.from(media.bucket).createSignedUrl(media.path,3600).then(({data,error})=>error?null:data?.signedUrl??null));
     return {...media,url:await urls.get(key)};

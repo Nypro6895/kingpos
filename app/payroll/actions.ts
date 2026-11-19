@@ -1,5 +1,7 @@
 "use server";
 
+import { payrollTaxSettingsFromForm } from "@/lib/payroll-tax-settings";
+
 import {
   markPayrollStatementPaid as markPayrollStatementPaidInService,
   savePayrollStatementFromLivePayroll,
@@ -247,6 +249,7 @@ export async function saveStaffPayrollSettingWithEffectiveDateAction(
 
   try {
     await updateStaffPayrollSetting({
+      itemTaxSettings: payrollTaxSettingsFromForm(formData),
       notifyStaff: readBoolean(formData, "notify_staff"),
       requestId: readOptionalString(formData, "setting_request_id") ?? undefined,
       expectedSettingId:readOptionalString(formData,"expected_setting_id"),

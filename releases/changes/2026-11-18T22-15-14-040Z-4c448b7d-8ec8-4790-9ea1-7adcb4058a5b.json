@@ -1,0 +1,27 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-declarations-next-20261118",
+  "status": "working",
+  "summary": "Read-only source8a9d933 App Privacy and age/content declaration audit against current official Apple documentation; draft only.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "docs/ios-store-declarations-next-20261118.md",
+    "artifacts/ios-store-declarations-next-20261118/declarations.json"
+  ],
+  "source": {
+    "commit": "8a9d9335207db37969bff824e6ef3e55f37b6484"
+  },
+  "validation": [
+    {
+      "name": "Current Apple definitions and source evidence",
+      "result": "pending"
+    }
+  ],
+  "id": "4c448b7d-8ec8-4790-9ea1-7adcb4058a5b",
+  "recordedAt": "2026-11-18T22:15:14.040Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

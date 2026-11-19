@@ -2,6 +2,9 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import type {
   TaxProfile,
+  TaxReportAmounts,
+  TaxReportBreakdown,
+  TaxReportComponent,
   TaxWorkspaceData,
   TaxWorkspaceMode,
 } from "@/types/tax-workspace";
@@ -18,6 +21,24 @@ const runtime = globalThis as typeof globalThis & {
 export const TAX_QA_SALON = "00000000-0000-4000-8000-000000000010";
 const uid = (n: number) =>
   `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+const amountKeys = ["gross", "tax", "net", "check_gross", "check_tax", "check_net", "cash_gross", "cash_tax", "cash_net"] as const;
+const componentKeys = ["check_wage", "cash_wage", "tip", "bonus"] as const;
+function qaPart(gross: number, rate: number, applyTax: boolean, method: "check" | "cash", shown = true): TaxReportComponent {
+  const tax = applyTax ? Math.round(gross * rate) / 100 : 0, net = Math.round((gross - tax) * 100) / 100;
+  return { shown, gross, tax, net, tax_applied: applyTax, tax_rate: rate, payout_method: method,
+    check_gross: method === "check" ? gross : 0, check_tax: method === "check" ? tax : 0, check_net: method === "check" ? net : 0,
+    cash_gross: method === "cash" ? gross : 0, cash_tax: method === "cash" ? tax : 0, cash_net: method === "cash" ? net : 0 };
+}
+/** Deterministic sanitized fixture with the same disclosure masks as the shared RPC. */
+function qaBreakdown(parts: Record<typeof componentKeys[number], TaxReportComponent>): TaxReportBreakdown {
+  const components = Object.fromEntries(componentKeys.map(key => [key, parts[key].shown ? parts[key] : {
+    shown: false, tax_applied: null, tax_rate: null, payout_method: null, ...Object.fromEntries(amountKeys.map(field => [field, null])),
+  }])) as TaxReportBreakdown["components"];
+  const totals = Object.fromEntries(amountKeys.map(field => [field,
+    componentKeys.some(key => !parts[key].shown && Number(parts[key][field]) !== 0) ? null : componentKeys.reduce((sum, key) => sum + Math.round(Number(parts[key][field]) * 100), 0) / 100,
+  ])) as TaxReportAmounts;
+  return { version: 1, state: "published", components, totals };
+}
 function seed(mode: TaxWorkspaceMode): Session {
   const profile = {
     user_id: uid(4),
@@ -108,6 +129,39 @@ function seed(mode: TaxWorkspaceMode): Session {
         work_status: row[5],
         work_version: 1,
       });
+  // One legacy employee remains exact but has no invented component history.
+  for (const line of data.lines) {
+    const index = rows.findIndex((_, value) => line.staff_id === uid(40 + value));
+    if (index === 3) continue;
+    const oldSophia = index === 2 && line.run_id === uid(31);
+    const rate = line.run_id === uid(32) ? 20 : 10;
+    const parts = index === 0 ? {
+      check_wage: qaPart(1000, 20, true, "check"), cash_wage: qaPart(300, 20, false, "cash"),
+      tip: qaPart(150, 20, false, "check"), bonus: qaPart(50, 20, false, "cash"),
+    } : index === 1 ? {
+      check_wage: qaPart(600, 10, true, "check"), cash_wage: qaPart(400, 10, false, "cash", false),
+      tip: qaPart(100, 10, false, "check"), bonus: qaPart(50, 10, false, "cash", false),
+    } : index === 2 ? {
+      check_wage: qaPart(oldSophia ? 800 : 900, rate, true, "check"), cash_wage: qaPart(0, rate, false, "cash"),
+      tip: qaPart(100, rate, true, "check"), bonus: qaPart(50, rate, true, "check"),
+    } : index === 4 ? {
+      check_wage: qaPart(0, 20, true, "check"), cash_wage: qaPart(1100, 20, true, "cash"),
+      tip: qaPart(120, 20, false, "cash"), bonus: qaPart(30, 20, true, "cash"),
+    } : {
+      check_wage: qaPart(780, 10, true, "check"), cash_wage: qaPart(520, 10, false, "cash"),
+      tip: qaPart(80, 10, true, "cash"), bonus: qaPart(20, 10, false, "check"),
+    };
+    const breakdown = qaBreakdown(parts);
+    Object.assign(line, {
+      breakdown,
+      reported_wage: parts.check_wage.shown && parts.cash_wage.shown ? Number(parts.check_wage.gross) + Number(parts.cash_wage.gross) : null,
+      reported_gross: breakdown.totals.gross, tax: breakdown.totals.tax, actual_check: breakdown.totals.check_net,
+      wage_check_net: breakdown.components.check_wage.net, cash_reported: breakdown.totals.cash_gross,
+      tip: breakdown.components.tip.gross, bonus: breakdown.components.bonus.gross,
+      tip_method: breakdown.components.tip.payout_method, bonus_method: breakdown.components.bonus.payout_method,
+      tax_rate: breakdown.components.check_wage.tax_rate,
+    });
+  }
   for (const i of [0, 1, 2, 4])
     data.documents.push({
       id: uid(200 + i),
@@ -250,7 +304,7 @@ export async function taxQaRequest(): Promise<Session | null> {
     string,
     Session
   >());
-  const sessionKey = key + ":" + mode;
+  const sessionKey = key + ":" + mode + ":component-report-v1";
   if (!sessions.has(sessionKey)) sessions.set(sessionKey, seed(mode));
   return sessions.get(sessionKey)!;
 }

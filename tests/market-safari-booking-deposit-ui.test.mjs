@@ -1,3 +1,10 @@
+
+// Keep the actual scoped hook/context; only server transport is replaced.
+function completeScopedTransport(source,root=process.cwd()){
+ const names=[...fs.readFileSync(root+'/app/market/scoped-market-actions.ts','utf8').matchAll(/export async function (\w+)/g)].map(match=>match[1]);
+ return source+names.filter(name=>!new RegExp('export (?:async )?function '+name+'\\b').test(source)).map(name=>'export async function '+name+'(){throw Error("Unused scoped transport: '+name+'")}').join('');
+}
+import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
@@ -12,7 +19,9 @@ const result=await build({stdin:{contents:`import React from 'react';import {cre
   '@/components/workspace-language':`export function useWorkspaceTranslation(){return x=>x}`,
   './trial-actions':`export async function marketTrialAction(){return {state:{started:false,active:false,endsAt:null,paid:false}}}`,
   './booking-deposit-purchase-actions':`export async function beginBookingDepositCheckoutAction(){return {url:'https://checkout.stripe.com/c/pay/test'}}`,
+  './scoped-market-actions':`import{marketTrialAction as trial}from'./trial-actions';import{beginBookingDepositCheckoutAction as begin}from'./booking-deposit-purchase-actions';function scoped(salon){if(salon!=='salon')throw Error('Fixture requires the actual selected salon');}export async function marketTrialAction(salon,...args){scoped(salon);return trial(...args)}export async function beginBookingDepositCheckoutAction(salon,...args){scoped(salon);return begin(...args)}`,
  };
+ mocks['./scoped-market-actions']=completeScopedTransport(mocks['./scoped-market-actions'],root);
  api.onResolve({filter:/\.css$/},a=>({path:a.path,namespace:'style'}));
  api.onLoad({filter:/.*/,namespace:'style'},()=>({contents:'export default {}'}));
  api.onResolve({filter:/.*/},a=>mocks[a.path]?{path:a.path,namespace:'mock'}:undefined);

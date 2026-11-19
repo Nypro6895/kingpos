@@ -243,5 +243,6 @@ export async function getCampaignCardSummary(owner: CampaignOwner) {
 
 export async function expireCreditCheckout(orderId:string){
  if(!/^[0-9a-f-]{36}$/i.test(orderId))return;
- await advertisingClient().from("campaign_credit_orders").update({status:"cancelled"}).eq("id",orderId).eq("automatic",false).eq("status","pending");
+ const {error}=await advertisingClient().from("campaign_credit_orders").update({status:"cancelled"}).eq("id",orderId).eq("automatic",false).eq("status","pending");
+ if(error)throw new Error("Credit checkout expiry needs retry.");
 }

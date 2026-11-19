@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-next-acceptance-20261118",
+  "status": "needs-integration",
+  "summary": "Completed source-backed next iOS declaration, commerce and rights handoff, native heuristic inventory and six-scenario physical acceptance draft. UI approval, key, runtime and actual Apple/native gates remain pending; no product change or release.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "docs/ios-store-next-20261118.md",
+    "docs/ios-store-next-20261118.json",
+    "releases/changes/2026-11-18T22-15-32-862Z-ef2da199-4ad6-4223-baa0-d9dedc897275.json"
+  ],
+  "fileHashes": {
+    "docs/ios-store-next-20261118.md": "eae1ab95bc9b8ea7a284488d1eb4e8a89b7d7f3aa7d8c341c771706066ad39f8",
+    "docs/ios-store-next-20261118.json": "3637fd092ca281bb4e7bdd8ee9fcd6c3a8c50e99f4f4c386fc951862b115ae00",
+    "releases/changes/2026-11-18T22-15-32-862Z-ef2da199-4ad6-4223-baa0-d9dedc897275.json": "56ef2703d4c1f0e6353420890e0266862bdbe6ecd61f8178a43f4f8f8101da38"
+  },
+  "source": {
+    "snapshot": "artifacts/ios-store-next-20261118/frozen",
+    "commit": "19abf8ac6a68b2cfe72efc1372a8ee467378dcf6",
+    "sha256": "c3f9b95a58845f21ecbaa75d4b959adfba7dba5027037aea05542566514de6ba"
+  },
+  "validation": [
+    {
+      "name": "Three frozen report handoffs and source hashes",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-next-20261118/document-validation.json"
+    },
+    {
+      "name": "Six internal document links and three evidence hashes",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-next-20261118/document-validation.json"
+    },
+    {
+      "name": "Native19-file first-party heuristic inventory; no missing observed reason categories",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-next-20261118/native-source-privacy-inventory.json"
+    },
+    {
+      "name": "Physical/archive/provider/UI/secure-key/final Apple readback",
+      "result": "pending",
+      "evidence": "docs/ios-store-next-20261118.md"
+    }
+  ],
+  "dependencies": [
+    "ios-store-steps234-coordination-20261118",
+    "ios-store-declarations-next-20261118",
+    "ios-commerce-store-next-20261118",
+    "ios-rights-operations-next-20261118"
+  ],
+  "id": "215be155-64d1-4ce1-be48-d79d94aadd4d",
+  "recordedAt": "2026-11-18T22:23:22.118Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,75 @@
+{
+  "kind": "change",
+  "changeId": "support-public-contact-20261112",
+  "status": "ready",
+  "summary": "Coordinator integrated support-public-contact-20261112 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/public-support-landing.tsx",
+    "components/app-local-help.tsx",
+    "lib/app-local-reference-content.ts",
+    "lib/app-local-page-registry.tsx",
+    "app/(app)/support/page.tsx",
+    "app/help/help-copy.json"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "8f8cc595-13df-4dc8-82f4-c62ed75d1699",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\frozen",
+      "commit": "ddc3cfebf21c2cde13e91d200f78087ea7696e16",
+      "patch": "C:\\Reylumi-worktrees\\support-public-contact-20261112\\artifacts\\support-public-contact-20261112\\source.patch"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-13T01:04:01.122Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "ce989450-b3b0-424f-9f98-f5d60e6c043d",
+  "recordedAt": "2026-11-14T06:48:08.726Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "components/public-support-landing.tsx": "1151315dff4a9766f25c64aba9bb9e642ece37aaa1c6414a23e50fa756ee58fd",
+    "components/app-local-help.tsx": "3c6fbb86fa3e6532dd0d50f25cac320f0a475072843266f7278802056faa605e",
+    "lib/app-local-reference-content.ts": "3a4d8555c29b4d1bb432ef3cd7db9ff22e4a02d2e33cee7875339ab923c129bd",
+    "lib/app-local-page-registry.tsx": "bbe172941818da94187ca4cf53ed8651fd49b8e9f4b780eb4000ba22a14c955b",
+    "app/(app)/support/page.tsx": "745b510a00c313b57bb5cdc78c1309890eb10a3b4b94f72763cd69d72b939854",
+    "app/help/help-copy.json": "976a4ff9baaa9376eb6ccd038ef9149e68de1915aa928cb3e2af9f009416451f"
+  }
+}

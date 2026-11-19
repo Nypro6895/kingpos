@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-completion-20261118",
+  "status": "needs-integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Validated private ad-report intake and owner-approved retention/refund/support copy; current Apple packet and exact R10 six-pack build frozen for combined release; no application publication",
+  "files": [
+    "docs/ios-store-completion-20261118.md",
+    "docs/openai-photo-consented-wiring-20261118.md",
+    "docs/openai-public-photo-verifier-20261118.md",
+    "docs/public-image-safety-20261116.md",
+    "lib/legal-policies.ts",
+    "lib/reylumi-config.ts",
+    "supabase/migrations/20261119020000_ad_reporting_transparency.sql",
+    "tests/ad-reporting-database.integration.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-store-completion-20261118\\completion-frozen-source",
+    "sourceSha256": "80838d0c87dc19c32b56aaf1b55bbb3fde87a0a3eea00b0f12d0806b8af3e4e8",
+    "manifest": "artifacts/ios-store-completion-20261118/completion-frozen-manifest.json",
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "ads-reporting-transparency-20261118",
+    "rights-image-evidence-backend-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Private intake actual schema/Auth/PostgREST, immutable retry, canonical targets, erasure concurrency and media fences:8 grouped checks",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-completion-20261118/database-acceptance-r8/ad-report-database-acceptance.json"
+    },
+    {
+      "name": "Owner-approved legal clauses:12 actual built page/viewport checks and exact-clause screenshots; legal runtime unchanged in R10",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-completion-20261118/legal-acceptance-r7.json"
+    },
+    {
+      "name": "Final isolated whole-project Next/TypeScript build and577offline assets; no production credentials/background dispatch",
+      "result": "passed",
+      "evidence": "artifacts/ios-steps-234-20261118/combined-build-result-r10.json"
+    },
+    {
+      "name": "All3450runtime hashes and6selectedimmutablepacks match final build; bounded cross-pack review no new defect found",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-completion-20261118/build-source-parity-r10.json"
+    },
+    {
+      "name": "Owner-authorized Free download/copyright saved and read back in Apple draft; USA remains only territory",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-completion-20261118/apple-settled-fields-saved.json"
+    },
+    {
+      "name": "Three obsolete key/provider/consent UI blockers reconciled without reconfiguring or reading secrets",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-completion-20261118/photo-gates-reconciled-manifest.json"
+    },
+    {
+      "name": "Legal config lint and meaningful whitespace checks",
+      "result": "passed"
+    },
+    {
+      "name": "All pending worktree integration, current provider environment/hosted activation, payments/legacy-special rights operations and final iOS bundle/archive/device/Apple declarations",
+      "result": "pending",
+      "evidence": "docs/ios-store-completion-20261118.md"
+    }
+  ],
+  "id": "d2be04b3-d6ed-4bac-90bc-7345526218d3",
+  "recordedAt": "2026-11-19T05:52:48.997Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

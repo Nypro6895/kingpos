@@ -1,10 +1,12 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { AdDisclosureControls } from "@/components/ad-disclosure-controls";
+import type { AdSelectionDisclosure } from "@/types/ad-disclosure";
 import { campaignDeliveryRequest } from "@/lib/campaign-delivery-area";
 import { adRequest, prepareAdImage } from "@/lib/advertising-client";
 import styles from "./owner-campaign.module.css";
-type Ad = { title: string; caption: string; image: string | null; href: string; ticket: string; salonName?: string | null; salonLocation?: string };
+type Ad = { adDisclosure?: AdSelectionDisclosure; title: string; caption: string; image: string | null; href: string; ticket: string; salonName?: string | null; salonLocation?: string };
 export function OwnerSponsoredPost({ location, latitude, longitude, query }: { query?: string; location?: string; latitude?:number|null; longitude?:number|null }) {
   const selection = useMemo(() => campaignDeliveryRequest(location,latitude,longitude,query),[location,latitude,longitude,query]);
   const requestKey = selection?.key ?? null;
@@ -12,7 +14,7 @@ export function OwnerSponsoredPost({ location, latitude, longitude, query }: { q
   useEffect(() => {
     if (!selection) return;
     const abort = new AbortController();
-    void adRequest(selection.body ? selection.url : `${selection.url}&batch=1`, { signal: abort.signal, ...(selection.body ? {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...JSON.parse(selection.body),batch:true})}: {}) }, selection.body ? 10000 : 4000)
+    void adRequest(selection.body ? selection.url : `${selection.url}&batch=1`, { referrerPolicy: "no-referrer", signal: abort.signal, ...(selection.body ? {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...JSON.parse(selection.body),batch:true})}: {}) }, selection.body ? 10000 : 4000)
       .then((value: Ad | Ad[] | null) => {
         const ads = (Array.isArray(value) ? value : value ? [value] : []).filter(ad => ad?.ticket && ad.href).slice(0,5);
         if (!abort.signal.aborted) setDelivery({ key:selection.key, ads });
@@ -42,11 +44,12 @@ function SponsoredCard({ad}:{ad:Ad}) {
   const [dismissedTicket, setDismissedTicket] = useState<string | null>(null);
   const imageLoaded = useCallback(() => setLoadedImage({ ticket: ad.ticket, src: ad.image ?? "" }), [ad.ticket, ad.image]);
   const imageFailed = useCallback(() => setDismissedTicket(ad.ticket), [ad.ticket]);
+  const [informationOpen, setInformationOpen] = useState(false);
   const ref = useRef<HTMLElement>(null);
   const claims = useRef(new Map<string, Promise<boolean>>());
   useEffect(() => {
     const element = ref.current;
-    if (!ad || !element || !imageReady || !displayedImageReady || dismissedTicket === ad.ticket) return;
+    if (!ad || !element || informationOpen || !imageReady || !displayedImageReady || dismissedTicket === ad.ticket) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let disposed = false, requested = false, visible = false;
     const cancel = () => { clearTimeout(timer); timer = undefined; };
@@ -58,7 +61,7 @@ function SponsoredCard({ad}:{ad:Ad}) {
         const height = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
         const image = element.querySelector("img");
         if (image && (!image.complete || !image.naturalWidth)) return;
-        if (disposed || document.visibilityState !== "visible" || height < rect.height * .5) return;
+        if (disposed || document.visibilityState !== "visible" || document.querySelector("dialog[open]") || height < rect.height * .5) return;
         requested = true;
         let claim = claims.current.get(ad.ticket);
         if (!claim) {
@@ -80,7 +83,7 @@ function SponsoredCard({ad}:{ad:Ad}) {
     observer.observe(element);
     document.addEventListener("visibilitychange", schedule);
     return () => { disposed = true; cancel(); observer.disconnect(); document.removeEventListener("visibilitychange", schedule); };
-  }, [ad, dismissedTicket, imageReady, displayedImageReady]);
+  }, [ad, dismissedTicket, imageReady, displayedImageReady, informationOpen]);
   if (!ad || dismissedTicket === ad.ticket || (imageResult?.ticket === ad.ticket && !imageResult.ready)) return null;
   // Reserve the server-selected slot while loading, preserving rotation order.
   // Failed images remove only their own slot and never create a billable view.
@@ -94,6 +97,7 @@ function SponsoredCard({ad}:{ad:Ad}) {
     {ad.salonName?<p className={`${styles.muted} ${styles.sponsoredIdentity}`}><strong>{ad.salonName}</strong>{ad.salonLocation?` · ${ad.salonLocation}`:""}</p>:null}
     {ad.image ? <Image unoptimized src={ad.image} alt="" width={640} height={400} sizes="(max-width: 600px) 100vw, 50vw" onLoad={imageLoaded} onError={imageFailed} style={{ width: "100%", height: "auto", maxHeight: 320, objectFit: "cover", borderRadius: 14, margin: "12px 0" }} /> : null}
     <h3 className={styles.sponsoredTitle}>{ad.title}</h3>{ad.caption ? <p className={`${styles.muted} ${styles.sponsoredCaption}`}>{ad.caption}</p> : null}
+    <AdDisclosureControls disclosure={ad.adDisclosure} onOpenChange={setInformationOpen} />
     <a className={styles.primary} href={ad.href} onClick={() => {
       // A signed click is non-billable and independent of the one-second view claim.
       void adRequest("/api/campaigns/delivery", { method: "POST", keepalive: true,

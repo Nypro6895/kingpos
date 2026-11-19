@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { iosPortableDevice } from "@/lib/portable-device-storage";
+import { nativePortableDevice } from "@/lib/portable-device-storage";
 import { preparePortableNativeWorkspace } from "@/lib/portable-native-preparation";
 import type { PortablePosCapability } from "@/lib/pos-portable-capabilities";
 
 export function PortableNativePreparation({ scope, capabilities }: { scope: string; capabilities: readonly PortablePosCapability[] }) {
   useEffect(() => {
-    if (!iosPortableDevice()) return;
+    if (!nativePortableDevice()) return;
     let active = true, running = false;
     const prepare = async () => {
       if (!active || running || document.visibilityState !== "visible") return;

@@ -2,21 +2,22 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { CurrentWorkspaceOption } from "@/lib/current-context";
 import type {
   TaxDocument,
   TaxLine,
   TaxProfile,
   TaxReceipt,
+  TaxRun,
   TaxWorkspaceData,
   TaxWorkspaceMode,
 } from "@/types/tax-workspace";
 import {
   latestTaxRuns,
   summarizeTaxLines,
-  taxChangedLine,
   taxCurrentPaystub,
+  taxLineChangedFields,
   taxPeriodRuns,
   refreshTaxRunSelection,
 } from "@/lib/tax-workspace-model";
@@ -33,6 +34,7 @@ import "./tax-workspace.css";
 import "./tax-refinements.css";
 import { TaxAccountMenu } from "./tax-account-menu";
 import { LogoutButton } from "@/app/account/logout-button";
+import { TaxFiguresSheet } from "./tax-figures-sheet";
 import {
   OwnerConnectionPanel,
   type OwnerTaxConnection,
@@ -164,7 +166,6 @@ export function TaxWorkspace({
     [notice, setNotice] = useState(""),
     [error, setError] = useState(""),
     [dialog, setDialog] = useState<Dialog | null>(null),
-    [expanded, setExpanded] = useState<string | null>(null),
     [unavailable, setUnavailable] = useState(false);
   const [batch, setBatch] = useState<BatchFile[]>([]),
     [batchConfirmed, setBatchConfirmed] = useState(false),
@@ -176,60 +177,59 @@ export function TaxWorkspace({
     isStaff = mode === "staff",
     summary = runId === "summary",
     salonId = data.salon.id;
-  const runs = taxPeriodRuns(data.runs, range, today).filter(
-    (r) =>
-      (!from || !to || from <= to) &&
-      (!from || r.period_end >= from) &&
-      (!to || r.period_start <= to),
-  );
-  const eligibleIds = new Set(
-    (summary ? runs : runs.filter((r) => r.id === runId)).map((r) => r.id),
-  );
-  const periodLines = data.lines.filter((l) => eligibleIds.has(l.run_id));
-  const displayLines = (
-    summary ? summarizeTaxLines(periodLines) : periodLines
-  ).filter(
-    (l) =>
-      (!search ||
-        `${l.name} ${l.legal_name ?? ""}`
-          .toLowerCase()
-          .includes(search.toLowerCase())) &&
-      (filter === "all" ||
-        (filter === "missing" &&
-          (summary
-            ? periodLines.some(
-                (p) =>
-                  p.staff_id === l.staff_id &&
-                  !taxCurrentPaystub(data.documents, p.staff_id, p.run_id),
-              )
-            : !taxCurrentPaystub(data.documents, l.staff_id, l.run_id))) ||
-        (filter === "changed" &&
-          (summary
-            ? periodLines.some(
-                (p) =>
-                  p.staff_id === l.staff_id && Boolean(taxChangedLine(data, p)),
-              )
-            : Boolean(taxChangedLine(data, l))))),
-  );
-  const currentRun = data.runs.find((r) => r.id === runId),
-    allPeople = [
-      ...new Map(
-        [
-          ...(data.people ?? []).map((p) => ({
-            staff_id: p.id,
-            name: p.name,
-            legal_name: p.legal_name,
-          })),
-          ...data.lines,
-        ].map((l) => [
-          l.staff_id,
-          { id: l.staff_id, name: l.name, legalName: l.legal_name },
-        ]),
-      ).values(),
-    ];
-  const changed = summary
-    ? []
-    : displayLines.filter((l) => taxChangedLine(data, l));
+  const runs = useMemo(() => taxPeriodRuns(data.runs, range, today).filter(
+    run => (!from || !to || from <= to) && (!from || run.period_end >= from) && (!to || run.period_start <= to),
+  ), [data.runs, range, today, from, to]);
+  const indexes = useMemo(() => {
+    const runById = new Map(data.runs.map(run => [run.id, run]));
+    const lineByRunStaff = new Map(data.lines.map(line => [line.run_id + ":" + line.staff_id, line]));
+    const linesByRun = new Map<string, TaxLine[]>();
+    for (const line of data.lines) {
+      const values = linesByRun.get(line.run_id) ?? [];
+      values.push(line); linesByRun.set(line.run_id, values);
+    }
+    const versions = new Map<string, TaxRun[]>();
+    for (const run of data.runs) {
+      const key = run.period_start + ":" + run.period_end;
+      const values = versions.get(key) ?? [];
+      values.push(run); versions.set(key, values);
+    }
+    const beforeByLine = new Map<string, TaxLine>();
+    for (const period of versions.values()) {
+      period.sort((left, right) => left.version - right.version);
+      for (let index = 1; index < period.length; index++) {
+        const previous = period[index - 1], current = period[index];
+        for (const line of linesByRun.get(current.id) ?? []) {
+          const before = lineByRunStaff.get(previous.id + ":" + line.staff_id);
+          if (before && taxLineChangedFields(before, line).length) beforeByLine.set(line.id, before);
+        }
+      }
+    }
+    return { runById, beforeByLine };
+  }, [data.lines, data.runs]);
+  const paystubIndex = useMemo(() => {
+    const result = new Map<string, TaxDocument>();
+    for (const document of data.documents) {
+      if (document.kind !== "paystub" || !document.staff_id || !document.payroll_run_id || document.archived_at || document.owner_deleted_at) continue;
+      const key = document.payroll_run_id + ":" + document.staff_id;
+      if (!result.has(key) || result.get(key)!.created_at < document.created_at) result.set(key, document);
+    }
+    return result;
+  }, [data.documents]);
+  const eligibleIds = useMemo(() => new Set((summary ? runs : runs.filter(run => run.id === runId)).map(run => run.id)), [summary, runs, runId]);
+  const periodLines = useMemo(() => data.lines.filter(line => eligibleIds.has(line.run_id)), [data.lines, eligibleIds]);
+  const missingStaffIds = useMemo(() => new Set(periodLines.filter(line => !paystubIndex.has(line.run_id + ":" + line.staff_id)).map(line => line.staff_id)), [periodLines, paystubIndex]);
+  const changedStaffIds = useMemo(() => new Set(periodLines.filter(line => indexes.beforeByLine.has(line.id)).map(line => line.staff_id)), [periodLines, indexes]);
+  const displayLines = useMemo(() => (summary ? summarizeTaxLines(periodLines) : periodLines).filter(
+    line => (!search || (line.name + " " + (line.legal_name ?? "")).toLowerCase().includes(search.toLowerCase())) &&
+      (filter === "all" || (filter === "missing" && missingStaffIds.has(line.staff_id)) || (filter === "changed" && changedStaffIds.has(line.staff_id))),
+  ), [summary, periodLines, search, filter, missingStaffIds, changedStaffIds]);
+  const currentRun = indexes.runById.get(runId);
+  const allPeople = useMemo(() => [...new Map([
+    ...(data.people ?? []).map(person => ({ staff_id: person.id, name: person.name, legal_name: person.legal_name })),
+    ...data.lines,
+  ].map(line => [line.staff_id, { id: line.staff_id, name: line.name, legalName: line.legal_name }])).values()], [data.people, data.lines]);
+  const changed = summary ? [] : displayLines.filter(line => changedStaffIds.has(line.staff_id));
   const currentDocuments = data.documents.filter(
       (d) => !d.owner_deleted_at || isStaff,
     ),
@@ -758,7 +758,7 @@ export function TaxWorkspace({
                   </p>
                 ))}
               {changed.some(
-                (l) => !taxCurrentPaystub(data.documents, l.staff_id, l.run_id),
+                (l) => !paystubIndex.has(l.run_id + ":" + l.staff_id),
               ) && (
                 <div className="tax-alert">
                   <span>
@@ -780,112 +780,21 @@ export function TaxWorkspace({
                 <span>
                   {summary
                     ? "Read-only summary"
-                    : `${displayLines.filter((l) => taxCurrentPaystub(data.documents, l.staff_id, l.run_id)).length}/${displayLines.length} current paystubs`}
+                    : `${displayLines.filter((l) => paystubIndex.has(l.run_id + ":" + l.staff_id)).length}/${displayLines.length} current paystubs`}
                 </span>
               </div>
-              <div className="tax-table-wrap">
-                <table className="tax-payroll-table">
-                  <thead>
-                    <tr>
-                      <th>Employee / legal name</th>
-                      <th className="tax-num">Wages reported</th>
-                      <th className="tax-num">Tips reported</th>
-                      <th className="tax-num">Bonus reported</th>
-                      <th className="tax-num">Total reported</th>
-                      <th className="tax-num">Withheld by salon</th>
-                      <th className="tax-num">Check amount</th>
-                      <th>Paystub</th>
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayLines.map((line) => {
-                      const stub = taxCurrentPaystub(
-                          data.documents,
-                          line.staff_id,
-                          line.run_id,
-                        ),
-                        before = taxChangedLine(data, line);
-                      return (
-                        <TaxEmployeeRow
-                          key={line.staff_id}
-                          line={line}
-                          expanded={expanded === line.staff_id}
-                          summary={summary}
-                          stub={stub}
-                          changed={Boolean(before)}
-                          onExpand={() =>
-                            setExpanded(
-                              expanded === line.staff_id ? null : line.staff_id,
-                            )
-                          }
-                          onView={() =>
-                            stub
-                              ? setDialog({ type: "viewer", document: stub })
-                              : setDialog({ type: "upload", line })
-                          }
-                          onUpload={() =>
-                            setDialog({
-                              type: "upload",
-                              line,
-                              document: stub ?? undefined,
-                            })
-                          }
-                          onEmployee={() =>
-                            setDialog({
-                              type: "employee",
-                              staffId: line.staff_id,
-                            })
-                          }
-                        />
-                      );
-                    })}
-                  </tbody>
-                  {displayLines.length > 0 && (
-                    <tfoot>
-                      <tr>
-                        <td>Total · {displayLines.length} employees</td>
-                        {(
-                          [
-                            "reported_wage",
-                            "tip",
-                            "bonus",
-                            "reported_gross",
-                            "tax",
-                            "actual_check",
-                          ] as const
-                        ).map((key) => (
-                          <td
-                            className="tax-num"
-                            key={key}
-                            data-label={
-                              {
-                                reported_wage: "Wages reported",
-                                tip: "Tips reported",
-                                bonus: "Bonus reported",
-                                reported_gross: "Total reported",
-                                tax: "Withheld by salon",
-                                actual_check: "Check amount",
-                              }[key]
-                            }
-                          >
-                            {displayLines.every((l) => l[key] === null)
-                              ? "—"
-                              : money(
-                                  displayLines.reduce(
-                                    (sum, l) =>
-                                      sum + Math.round(Number(l[key]) * 100),
-                                    0,
-                                  ) / 100,
-                                )}
-                          </td>
-                        ))}
-                        <td colSpan={2} />
-                      </tr>
-                    </tfoot>
-                  )}
-                </table>
-              </div>
+              <TaxFiguresSheet
+                lines={displayLines}
+                changedStaffIds={changedStaffIds}
+                renderActions={line => {
+                  const stub = paystubIndex.get(line.run_id + ":" + line.staff_id);
+                  return summary ? <span className="tax-muted">Open a period</span> : <div className="tax-actions">
+                    <button type="button" disabled={pending} onClick={() => setDialog(stub ? { type: "viewer", document: stub } : { type: "upload", line })}>{stub ? "View paystub" : "Upload needed"}</button>
+                    {stub && <button type="button" disabled={pending} onClick={() => setDialog({ type: "upload", line, document: stub })}>Replace</button>}
+                  </div>;
+                }}
+                renderExpandedActions={line => <button type="button" onClick={() => setDialog({ type: "employee", staffId: line.staff_id })}>Employee documents</button>}
+              />
               <section className="tax-explanation">
                 <h2>How to read these amounts</h2>
                 <p>
@@ -1856,121 +1765,5 @@ export function TaxWorkspace({
         </TaxDialog>
       )}
     </div>
-  );
-}
-
-function TaxEmployeeRow({
-  line,
-  expanded,
-  summary,
-  stub,
-  changed,
-  onExpand,
-  onView,
-  onUpload,
-  onEmployee,
-}: {
-  line: TaxLine;
-  expanded: boolean;
-  summary: boolean;
-  stub: TaxDocument | null;
-  changed: boolean;
-  onExpand: () => void;
-  onView: () => void;
-  onUpload: () => void;
-  onEmployee: () => void;
-}) {
-  const amount = (value: number | null) =>
-    value === null ? "—" : money(value);
-  return (
-    <>
-      <tr>
-        <td className="tax-person" data-label="Employee">
-          <button onClick={onExpand} aria-expanded={expanded}>
-            {line.name}
-          </button>
-          <small>{line.legal_name || "Legal name not supplied"}</small>
-          {changed && !stub && <small>Updated amounts · review paystub</small>}
-        </td>
-        <td className="tax-num" data-label="Wages reported">
-          {money(line.reported_wage)}
-        </td>
-        <td className="tax-num" data-label="Tips reported">
-          {amount(line.tip)}
-          {line.tip !== null && (
-            <small>{line.tip_method ?? "See documents"}</small>
-          )}
-        </td>
-        <td className="tax-num" data-label="Bonus reported">
-          {amount(line.bonus)}
-          {line.bonus !== null && (
-            <small>{line.bonus_method ?? "See documents"}</small>
-          )}
-        </td>
-        <td className="tax-num" data-label="Total reported">
-          {money(line.reported_gross)}
-        </td>
-        <td className="tax-num" data-label="Withheld by salon">
-          {money(line.tax)}
-        </td>
-        <td className="tax-num" data-label="Check amount">
-          {money(line.actual_check)}
-        </td>
-        <td data-label="Paystub">
-          {summary ? (
-            <span className="tax-muted">Open a period</span>
-          ) : (
-            <div className="tax-actions">
-              <button className={stub ? "" : "tax-primary"} onClick={onView}>
-                {stub ? "✓ View paystub" : "↑ Upload needed"}
-              </button>
-              {stub && <button onClick={onUpload}>Replace</button>}
-            </div>
-          )}
-        </td>
-        <td data-label="Details">
-          <button aria-label={"Details for " + line.name} onClick={onExpand}>
-            Details
-          </button>
-        </td>
-      </tr>
-      {expanded && (
-        <tr className="tax-expanded-row">
-          <td className="tax-detail" colSpan={9}>
-            <div className="tax-detail-grid">
-              <div className="tax-mobile-breakdown">
-                <span>Wages reported</span>
-                {money(line.reported_wage)}
-              </div>
-              <div className="tax-mobile-breakdown">
-                <span>Tips reported</span>
-                {amount(line.tip)} {line.tip_method}
-              </div>
-              <div className="tax-mobile-breakdown">
-                <span>Bonus reported</span>
-                {amount(line.bonus)} {line.bonus_method}
-              </div>
-              <div>
-                <span>Cash reported · included in total</span>
-                {amount(line.cash_reported)}
-              </div>
-              <div>
-                <span>Base wage paid by check · net</span>
-                {money(line.wage_check_net)}
-              </div>
-              <div>
-                <span>Salon withholding rate</span>
-                {line.tax_rate !== null && Number.isFinite(line.tax_rate)
-                  ? String(line.tax_rate) + "%"
-                  : "Historical / multiple rates"}
-              </div>
-            </div>
-            <div className="tax-actions">
-              <button onClick={onEmployee}>Employee documents</button>
-            </div>
-          </td>
-        </tr>
-      )}
-    </>
   );
 }

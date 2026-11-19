@@ -7,6 +7,7 @@ function storage(method, key, value) {
 }
 contextBridge.exposeInMainWorld('kingposDesktop', Object.freeze({
   version: 4,
+  printing: Object.freeze({print: job => ipcRenderer.invoke('kingpos:receipt-print',{method:'print',job}),readiness: scope => ipcRenderer.invoke('kingpos:receipt-print',{method:'readiness',scope})}),
   recovery: Object.freeze({ retry: () => ipcRenderer.invoke('kingpos:retry-open') }),
   offline: Object.freeze({ prepare: (scope, assets) => ipcRenderer.invoke('kingpos:offline-prepare', {scope, assets}), lock: () => ipcRenderer.sendSync('kingpos:offline-lock') }),
   updates: Object.freeze({ state: () => ipcRenderer.invoke('kingpos:update', {method:'state'}), later: () => ipcRenderer.invoke('kingpos:update', {method:'later'}), download: () => ipcRenderer.invoke('kingpos:update', {method:'download'}), schedule: at => ipcRenderer.invoke('kingpos:update', {method:'schedule', at}), now: () => ipcRenderer.invoke('kingpos:update', {method:'now'}) }),

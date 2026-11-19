@@ -217,19 +217,104 @@ final class LocalHostedReturnTests: XCTestCase {
     }
 
     @MainActor
-    private func hostedCheckin(_ container: ReylumiAppContainer, entry: String) async throws -> ReylumiViewController {
-        for _ in 0..<250 {
+    func testWarmGiftDeliveryOpensHostedFragmentAndPreservesInstalledDrafts() async throws {
+        let (bundle, directory) = try readyBundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        XCTAssertFalse(bundle.routeExists("/gift-cards"))
+        let server = try HostedReturnServer(); try await server.start(); defer { server.stop() }
+        let container = ReylumiAppContainer(origin: try XCTUnwrap(server.origin), bundle: bundle)
+        let window = makeWindow(container); defer { window.isHidden = true; window.rootViewController = nil }
+        let local = try XCTUnwrap(container.local); local.initializeWebContentIfNeeded()
+        try await wait("window.fixtureLocal===true", in: XCTUnwrap(local.webView))
+        _ = try await local.webView.evaluateJavaScript("window.giftDraft = 'retained'; true")
+        let token = String(repeating: "a", count: 64)
+        container.openGiftCard(path: "/gift-cards#mobile=" + token, sequence: 1)
+        container.openGiftCard(path: "/gift-cards?order=" + token, sequence: 1)
+        XCTAssertNil(container.presentedViewController, "Rejecting another token kind must not consume the valid delivery sequence")
+        container.openGiftCard(path: "/gift-cards#card=" + token, sequence: 1)
+        let hosted = try await hostedGiftCard(container, token: token)
+        XCTAssertTrue(container.local === local)
+        XCTAssertEqual(local.currentPath, "/", "Do not send a gift capability to the installed router or saved route")
+        let retained = try await local.webView.evaluateJavaScript("window.giftDraft === 'retained'") as? Bool
+        XCTAssertEqual(retained, true)
+        XCTAssertFalse(try XCTUnwrap(hosted.navigationController).isNavigationBarHidden)
+        XCTAssertNotNil(hosted.navigationItem.leftBarButtonItem?.title)
+        container.openGiftCard(path: "/gift-cards#card=" + String(repeating: "b", count: 64), sequence: 1)
+        XCTAssertTrue((container.presentedViewController as? UINavigationController)?.viewControllers.first === hosted)
+    }
+
+    @MainActor
+    func testColdGiftDeliveryWaitsForWindowAndKeepsTheCapabilityHosted() async throws {
+        let (bundle, directory) = try readyBundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let server = try HostedReturnServer(); try await server.start(); defer { server.stop() }
+        let container = ReylumiAppContainer(origin: try XCTUnwrap(server.origin), bundle: bundle)
+        let token = String(repeating: "c", count: 64)
+        container.openPersonalCheckin(path: "/qr?entry=00000000-0000-4000-8000-000000000005", sequence: 1)
+        container.openGiftCard(path: "/gift-cards#card=" + token, sequence: 1)
+        XCTAssertNil(container.presentedViewController, "Queue delivery in memory until the scene can present it")
+        let window = makeWindow(container); defer { window.isHidden = true; window.rootViewController = nil }
+        _ = try await hostedGiftCard(container, token: token)
+        XCTAssertEqual(try XCTUnwrap(container.local).currentPath, "/")
+    }
+
+    @MainActor
+    func testLatestIncomingLinkWinsWhenReplacingAnotherHostedTask() async throws {
+        let (bundle, directory) = try readyBundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let server = try HostedReturnServer(); try await server.start(); defer { server.stop() }
+        let container = ReylumiAppContainer(origin: try XCTUnwrap(server.origin), bundle: bundle)
+        let window = makeWindow(container); defer { window.isHidden = true; window.rootViewController = nil }
+        let entry = "00000000-0000-4000-8000-000000000004"
+        let first = String(repeating: "a", count: 64), latest = String(repeating: "b", count: 64)
+        container.openGiftCard(path: "/gift-cards#card=" + first, sequence: 1)
+        _ = try await hostedGiftCard(container, token: first)
+        container.openPersonalCheckin(path: "/qr?entry=" + entry, sequence: 1)
+        container.openGiftCard(path: "/gift-cards#card=" + latest, sequence: 2)
+        _ = try await hostedGiftCard(container, token: latest)
+        container.openGiftCard(path: "/gift-cards#card=" + first, sequence: 3)
+        container.openPersonalCheckin(path: "/qr?entry=" + entry, sequence: 2)
+        _ = try await hostedCheckin(container, entry: entry)
+        XCTAssertEqual(try XCTUnwrap(container.local).currentPath, "/")
+    }
+
+    @MainActor
+    func testNewerMarketReturnCancelsColdQueuedGiftDelivery() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let server = try HostedReturnServer(); try await server.start(); defer { server.stop() }
+        let container = ReylumiAppContainer(origin: try XCTUnwrap(server.origin), bundle: bundle)
+        container.openGiftCard(path: "/gift-cards#card=" + String(repeating: "a", count: 64), sequence: 1)
+        container.returnToMarket(sequence: 1)
+        let hosted = try XCTUnwrap(container.children.compactMap { $0 as? ReylumiViewController }.first)
+        XCTAssertEqual(hosted.queuedStartupURL?.path, "/market")
+        XCTAssertNil(hosted.queuedStartupURL?.fragment)
+        let window = makeWindow(container); defer { window.isHidden = true; window.rootViewController = nil }
+        hosted.initializeWebContentIfNeeded()
+        let web = try XCTUnwrap(hosted.view.subviews.compactMap { $0 as? WKWebView }.first)
+        try await wait("location.pathname === '/market' && location.hash === '' && document.getElementById('route') != null", in: web, timeout: 45)
+        XCTAssertNil(container.presentedViewController, "An older queued gift must not reopen after the market return")
+    }
+
+    @MainActor
+    private func hostedGiftCard(_ container: ReylumiAppContainer, token: String) async throws -> ReylumiViewController {
+        try await hostedPublicTask(container, condition: "location.pathname === '/gift-cards' && location.search === '' && location.hash === '#card=" + token + "' && document.getElementById('route') != null")
+    }
+
+    @MainActor
+    private func hostedPublicTask(_ container: ReylumiAppContainer, condition: String) async throws -> ReylumiViewController {
+        for _ in 0..<2250 {
             if let navigation = container.presentedViewController as? UINavigationController,
-               let hosted = navigation.viewControllers.first as? ReylumiViewController {
+               !navigation.isBeingDismissed, let hosted = navigation.viewControllers.first as? ReylumiViewController {
                 hosted.initializeWebContentIfNeeded()
                 let web = try XCTUnwrap(hosted.view.subviews.compactMap { $0 as? WKWebView }.first)
-                try await wait("location.pathname === '/qr' && new URLSearchParams(location.search).get('entry') === '" + entry + "' && document.getElementById('route') != null", in: web, timeout: 45)
-                return hosted
+                if (try? await web.evaluateJavaScript(condition)) as? Bool == true { return hosted }
             }
             try await Task.sleep(nanoseconds: 20_000_000)
         }
-        XCTFail("Personal check-in disappeared instead of presenting its original hosted authority")
+        XCTFail("The latest public link did not reach its hosted destination")
         throw URLError(.timedOut)
+    }
+
+    @MainActor
+    private func hostedCheckin(_ container: ReylumiAppContainer, entry: String) async throws -> ReylumiViewController {
+        try await hostedPublicTask(container, condition: "location.pathname === '/qr' && new URLSearchParams(location.search).get('entry') === '" + entry + "' && document.getElementById('route') != null")
     }
 
     private func readyBundle() throws -> (ReylumiLocalBundle, URL) {

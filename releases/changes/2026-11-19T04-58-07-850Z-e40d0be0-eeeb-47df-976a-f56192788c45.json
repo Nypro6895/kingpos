@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "ads-reporting-transparency-implementation-20261118",
+  "status": "working",
+  "summary": "Approved ad transparency controls and private selection transport, including correction of the existing owner browser transport fixture",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "types/ad-disclosure.ts",
+    "lib/ad-disclosure-ticket.ts",
+    "lib/ad-reporting.ts",
+    "app/api/advertising/reports/route.ts",
+    "app/api/campaigns/delivery/route.ts",
+    "app/api/explore/advertising/route.ts",
+    "lib/campaign-delivery-area.ts",
+    "components/ad-disclosure-controls.tsx",
+    "components/owner-sponsored-post.tsx",
+    "components/explore-advertising.tsx",
+    "app/(app)/layout.tsx",
+    "supabase/migrations/20261119021000_owner_ad_disclosure_trace.sql",
+    "tests/ad-disclosure-ticket.test.mjs",
+    "tests/ad-reporting.test.mjs",
+    "tests/ad-disclosure-controls.test.mjs",
+    "tests/owner-ad-disclosure-trace.test.mjs",
+    "docs/ad-reporting-transparency-implementation-20261118.md",
+    "lib/platform-admin/report-context.ts",
+    "app/(app)/admin/reports/report-evidence.tsx",
+    "app/(app)/admin/reports/report-case-view.tsx",
+    "tests/owner-campaign-post-layout.browser.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "validation": [
+    {
+      "name": "Focused cryptographic, actual route/UI and SQL trace parity checks",
+      "result": "pending"
+    },
+    {
+      "name": "Coordinator intake migration, combined build and device/release QA",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ad-reporting-intake-20261119"
+  ],
+  "id": "e40d0be0-eeeb-47df-976a-f56192788c45",
+  "recordedAt": "2026-11-19T04:58:07.850Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

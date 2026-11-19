@@ -35,7 +35,7 @@ function fixture(path = '/pos/portable') {
   const module = { exports: {} }, timers = new Map();
   let timerID = 0, posts = 0, idbCalls = 0;
   const context = { module, exports: module.exports, window, location, navigator: { onLine: false }, localStorage: browser,
-    structuredClone, Event, crypto: webcrypto, Date, console,
+    structuredClone, Event, CustomEvent, crypto: webcrypto, Date, console,
     indexedDB: { open() { idbCalls++; throw Error('The native path must not fall back to IndexedDB'); } },
     fetch: async () => { posts++; throw Error('No business request is authorized by this fixture'); },
     setTimeout: fn => { timers.set(++timerID, fn); return timerID; }, clearTimeout: id => timers.delete(id),

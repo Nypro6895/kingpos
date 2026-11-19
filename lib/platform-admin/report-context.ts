@@ -6,6 +6,9 @@ import {supportRpc,type SupportConversation} from '@/lib/support-cases';
 import type {AdminReportPreview} from '@/lib/admin-report-presentation';
 import type {AdminPostSafetyCase} from '@/types/admin-post-safety';
 import type {SocialTextReportEvidence} from '@/types/social-text-reports';
+import {loadExactTextModeration,unavailableExactTextModeration} from './exact-text-moderation';
+import type {ExactTextModerationState} from '@/types/admin-exact-text-moderation';
+import type {AdminAdReportEvidence} from '@/types/ad-disclosure';
 
 export async function loadAdminReportPreviews(ids:string[]){
  const result:Record<string,AdminReportPreview>={};
@@ -22,8 +25,14 @@ export async function loadAdminReportContext(id:string){
   ['user_support','guest_support'].includes(detail.report.source)?supportRpc<SupportConversation>('get_support_conversation',{p_report_id:id}).then(value=>{conversation=value;}).catch(()=>{errors.push('The conversation and attachments could not load. Open the chat to retry.');}):Promise.resolve(),
   preview?.review?.kind==='post_report'?loadAdminPostReviewWorkspace(preview.review.origin==='automatic'?'automatic':'user',preview.review.id,undefined,{status:'all',q:preview.review.id}).then(value=>{post=value.cases.find(row=>row.id===preview.review!.id)??null;if(!post)errors.push('The linked content could not be found. Open the content review to investigate.');}).catch(()=>{errors.push('The reported content could not load. Open the content review to retry.');}):Promise.resolve(),
  ]);
+ let adContent:AdminAdReportEvidence|null=null;
+ const knownAd=detail.report.source==='advertising_report'||(conversation as SupportConversation|null)?.context?.module==='advertising_report';
+ if (['user_support','advertising_report'].includes(detail.report.source)) {
+  try {adContent=await callPlatformAdminRpc<AdminAdReportEvidence|null>('get_admin_ad_report_evidence',{p_report_id:id});}
+  catch {if(knownAd)errors.push('The verified advertising evidence could not load. Retry before reviewing this ad.');}
+ }
  let socialContent:SocialTextReportEvidence|null=null;
- if (detail.report.source==='user_support') {
+ if (detail.report.source==='user_support'&&!knownAd&&!adContent) {
   // Resolve by case ID on the authenticated admin boundary; the customer's
   // account-scoped /more/reviews URL is not a moderator evidence destination.
   try { socialContent=await callPlatformAdminRpc<SocialTextReportEvidence>('get_admin_social_report_evidence',{p_report_id:id}); }
@@ -35,5 +44,10 @@ export async function loadAdminReportContext(id:string){
    errors.push(knownSocial?'The reported text lookup could not load. Retry this case before recording a content decision.':'Additional case details could not load. Retry to verify them.');
   }
  }
- return {detail,preview,conversation:conversation as SupportConversation|null,post:post as AdminPostSafetyCase|null,socialContent,errors};
+ let exactTextModeration:ExactTextModerationState|null=null;
+ if(detail.report.social_content_report===true||socialContent!==null){
+  try {exactTextModeration=await loadExactTextModeration(id);}
+  catch {exactTextModeration=unavailableExactTextModeration();}
+ }
+ return {detail,preview,conversation:conversation as SupportConversation|null,post:post as AdminPostSafetyCase|null,adContent,socialContent,exactTextModeration,errors};
 }

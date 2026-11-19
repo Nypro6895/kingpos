@@ -141,7 +141,7 @@ export function SalonLifecycleSection({
         url: result.signedUrl,
       });
       setBackupNotice(
-        `Private export prepared. This link expires ${formatDateTime(result.expiresAt) ?? "soon"}.`,
+        `Private export prepared. Download link expires ${formatDateTime(result.downloadExpiresAt)}. Hosted export access expires ${formatDateTime(result.expiresAt)}. Save the downloaded file securely.`,
       );
     });
   }

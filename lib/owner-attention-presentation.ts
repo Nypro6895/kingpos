@@ -21,9 +21,9 @@ export function attentionChangeDetails(item: OwnerAttentionItem) {
     id: String(facts.eventId ?? item.item_key), salon_id: "", staff_id: null, source_table: "ticket", source_id: String(facts.ticketId ?? ""),
     period_start: item.business_date, period_end: item.business_date, before_values: before, after_values: after,
     actor_id: null, created_at: item.occurred_at, actor_name: String(facts.actor ?? "Unknown operator"),
-    event_action: Object.keys(before).length ? "updated" : "created",
+    event_action: facts.eventAction === "created" ? "created" : facts.eventAction === "updated" ? "updated" : Object.keys(before).length ? "updated" : "created",
   };
-  if (!Object.keys(before).length) return capturedFinancialRecordFacts(record);
+  if (item.item_key.startsWith("discount-current:") || record.event_action === "created") return capturedFinancialRecordFacts(record);
   const description = describeFinancialInputChange(record);
   return [...description.details, ...description.groups.flatMap(group => group.details.map(detail => ({ ...detail, label: `${group.title} · ${detail.label}` })))];
 }
@@ -31,7 +31,7 @@ export function attentionChangeDetails(item: OwnerAttentionItem) {
 export function attentionPresentation(item: OwnerAttentionItem) {
   const facts = item.facts ?? {}, before = asObject(facts.before), after = asObject(facts.after);
   const ticket = item.kind === "discount" || item.kind === "ticket_change";
-  const edited = ticket && (facts.eventAction === "updated" || (facts.eventAction !== "created" && Object.keys(before).length > 0));
+  const edited = ticket && !item.item_key.startsWith("discount-current:") && (facts.eventAction === "updated" || (facts.eventAction !== "created" && Object.keys(before).length > 0));
   const rawChanges = edited ? attentionChangeDetails(item).filter(row => row.before !== row.after) : [];
   const changes = rawChanges.filter(row => !(row.label === "Ticket payments" && rawChanges.some(other=>other.label.startsWith("Ticket payment changes ·"))));
   if (edited && [before,after].every(values=>["service_total","discount_amount","tax_rate","tip_amount"].every(key=>values[key] !== null && values[key] !== undefined))) {
@@ -42,9 +42,11 @@ export function attentionPresentation(item: OwnerAttentionItem) {
   const rawNumber = String(after.ticket_number ?? before.ticket_number ?? item.label.match(/\bT\d+\b/)?.[0] ?? "Unknown");
   const title = ticket ? `${edited ? changes.some(row=>/discount/i.test(row.label)) ? "Discount edited" : "Ticket edited" : "Discount"} · Ticket ${rawNumber.replace(/^T0+(?=\d)/,"T")}` : item.label;
   const lines = asRows(after.lines);
+  const discountAmount = after.discount_amount;
+  const hasDiscountAmount = (typeof discountAmount === "number" || typeof discountAmount === "string" && discountAmount.trim() !== "") && Number.isFinite(Number(discountAmount));
   return { ticket, edited, title, changes, after, created: facts.eventAction === "created",
     actor: String(facts.actor || "Unknown operator"), source: String(facts.source || "Unknown"), customer: String(facts.customerName || after.customer_name || "Not recorded"),
-    primary: !ticket ? item.detail : edited ? changes[0] ? changeText(changes[0]) + (changes.length>1 ? ` · +${changes.length-1} changes` : "") : "Earlier values not recorded" : `Discount: −${attentionMoney(after.discount_amount)}`,
+    primary: !ticket ? item.detail : edited ? changes[0] ? changeText(changes[0]) + (changes.length>1 ? ` · +${changes.length-1} changes` : "") : "Earlier values not recorded" : hasDiscountAmount ? `Discount: −${attentionMoney(after.discount_amount)}` : item.detail || "Earlier values not recorded",
     service: lines[0] ? `${String(lines[0].service_name ?? "Service")} · ${attentionMoney(lines[0].service_total)} · Staff: ${String(lines[0].staff_name ?? "Unassigned")}${lines.length>1 ? ` · +${lines.length-1} services` : ""}` : "Services not recorded",
   };
 }

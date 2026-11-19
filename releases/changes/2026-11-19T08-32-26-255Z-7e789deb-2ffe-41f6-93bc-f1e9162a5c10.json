@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "tax-delivered-file-integrity-20261119",
+  "status": "working",
+  "summary": "Preserve delivered Tax document bytes and identity with exact-key transaction fencing, ordinary new-version uploads and leased business-record retention; defensive implementation and ordinary functional acceptance only.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261119061000_tax_delivered_file_integrity.sql",
+    "tests/tax-delivered-file-integrity.integration.test.mjs",
+    "docs/tax-delivered-file-integrity-20261119.md"
+  ],
+  "source": {
+    "commit": "f3de8f291aedcfbb5b87de5fc46f1aa7431c0c42"
+  },
+  "dependencies": [
+    "tax-recipient-storage-custody-20261119"
+  ],
+  "validation": [
+    {
+      "name": "Independent proposal reviews and READ COMMITTED isolation amendment",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-coordination-20261119/prep/tax-file-integrity-guard-proposal-r2/20261119061000_tax_delivered_file_integrity.sql"
+    },
+    {
+      "name": "Ordinary full-schema upload/versioning/recipient/retention-COPY/account-lifecycle acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Advanced pre-issued upload-token runtime experiment",
+      "result": "pending",
+      "evidence": "Not retried after automatic review; remains unverified"
+    }
+  ],
+  "id": "7e789deb-2ffe-41f6-93bc-f1e9162a5c10",
+  "recordedAt": "2026-11-19T08:32:26.255Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -39,7 +39,18 @@ export function ownerLocalHref(value: string): string | null {
 export function ownerLocalReadName(path: string): OwnerLocalReadName {
   return path === "/pos/check-in" ? "owner.check-in" : path === "/pos/ticket" ? "owner.tickets" : path === "/pos/book" ? "owner.bookings" : path === "/pos/report" ? "owner.reports" : "owner.workspace";
 }
+/** Calendar's explicit defaults produce the same DTO. Other filters and
+ * duplicate query parameters retain their original server interpretation. */
+export function ownerLocalReadArgsFromRecord(name: string, args: Record<string, unknown>): Record<string, unknown> {
+  if (name !== "owner.bookings" || typeof args.query !== "string") return args;
+  const query = new URLSearchParams(args.query);
+  for (const [key, value] of [["tab", "calendar"], ["view", "list"], ["range", "day"]]) {
+    if (query.getAll(key).length === 1 && query.get(key) === value) query.delete(key);
+  }
+  query.sort();
+  return { ...args, query: query.toString() };
+}
 export function ownerLocalReadArgs(href: string): Record<string, unknown> {
   const normalized = ownerLocalHref(href); if (!normalized) throw new Error("Unsupported workspace page");
-  return { query: new URL(normalized, "https://reylumi.com").searchParams.toString() };
+  return ownerLocalReadArgsFromRecord(ownerLocalReadName(normalized.split("?")[0]), { query: new URL(normalized, "https://reylumi.com").searchParams.toString() });
 }

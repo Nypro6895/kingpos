@@ -18,7 +18,14 @@
     const requestedEpoch = epoch;
     const receiptKey = input.action === 'operations.save' && input.operation?.kind === 'receipt' ? input.operation.payload?.localDraftKey : undefined;
     const reply = await handler.postMessage({ ...input, ...(typeof receiptKey === 'string' ? { writerToken: writers.get(receiptKey) } : {}), version: 1, nonce, path: location.pathname + location.search + location.hash });
-    if (!reply || reply.__portableError) throw failure(reply?.__portableError);
+    // No submitted receipt is checkpoint 0. Validate the action's wire type;
+    // truthiness would turn a valid cold draft recovery into a storage failure.
+    const validReply = input.action === 'operations.checkpoint'
+      ? typeof reply === 'number' && Number.isFinite(reply) && reply >= 0
+      : input.action === 'operations.list'
+        ? Array.isArray(reply)
+        : reply !== null && typeof reply === 'object' && !Array.isArray(reply);
+    if (!validReply || reply?.__portableError) throw failure(reply?.__portableError);
     if (requestedEpoch !== epoch && input.action !== 'mode.get' && input.action !== 'mode.set') {
       if (input.action === 'storage.lock') return reply;
       // A late acquire must not overwrite a new document's token map. Release

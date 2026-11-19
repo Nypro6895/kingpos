@@ -12,6 +12,34 @@
     };
   }
   window.print = () => send({action: 'print'});
+  const receiptJobs = new Map();
+  window.__reylumiReceiptPrintResult = result => {
+    const entry = receiptJobs.get(result?.jobId);
+    if (!entry || !['presented', 'submitted', 'cancelled', 'failed'].includes(result.status)) return;
+    receiptJobs.delete(result.jobId); clearTimeout(entry.timer); entry.resolve(result);
+  };
+  Object.defineProperty(window, '__reylumiReceiptPrint', {value: Object.freeze({version: 1,
+    print: job => new Promise((resolve, reject) => {
+      if (!job || job.version !== 1 || typeof job.jobId !== 'string' || typeof job.html !== 'string'
+        || new TextEncoder().encode(job.html).length > 1024 * 1024 || receiptJobs.has(job.jobId)) {
+        reject(new Error('Invalid receipt print job.')); return;
+      }
+      const timer = setTimeout(() => { receiptJobs.delete(job.jobId); reject(new Error('Receipt printing did not respond. Try again.')); }, 60000);
+      receiptJobs.set(job.jobId, {resolve, timer}); send({action: 'print-receipt', job});
+    })
+  })});
+  if (/\sReylumiAndroidPOS\//.test(navigator.userAgent)) {
+    // A document transition runs native admission before revealing another private page.
+    document.addEventListener('click', event => {
+      const anchor = event.target.closest?.('a[href]');
+      if (!anchor || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || anchor.target || anchor.download) return;
+      const target = new URL(anchor.href, location.href);
+      if (target.origin === location.origin && /^\/pos\/portable(?:\/(?:check-in|book|ticket|today|report))?$/.test(target.pathname)
+        && !target.search && target.href !== location.href) {
+        event.preventDefault(); event.stopImmediatePropagation(); location.assign(target.href);
+      }
+    }, true);
+  }
   window.__reylumiAndroidDownload = async (url, filename) => {
     try {
       const target = new URL(url, location.href);
@@ -45,16 +73,22 @@
       popover.querySelector('summary')?.click();
       return true;
     }
-    if (dialog instanceof HTMLDialogElement) {
+    // Custom sheets opt in on their own element and run their authored close/guard.
+    if (!dialog.dispatchEvent(new Event('reylumi:native-overlay-dismiss', {cancelable: true}))) return true;
+    // Gift content can have its own role=dialog inside the native top-layer dialog.
+    const nativeDialog = dialog.closest('dialog[open]');
+    if (nativeDialog instanceof HTMLDialogElement) {
       // Synthetic Escape key events do not run the browser's native cancel action.
       // Preserve the dialog's pending/dirty guards before performing that action.
-      if (dialog.dispatchEvent(new Event('cancel', {cancelable: true}))) dialog.close();
+      if (nativeDialog.dispatchEvent(new Event('cancel', {cancelable: true}))) nativeDialog.close();
       return true;
     }
     const close = [...dialog.querySelectorAll('button')].find(button => visible(button) &&
       /^(close|close (?:account switcher|dialog|modal|menu|settings|panel|history details|reschedule|cancellation|booking|preview)|×|✕|x|đóng)$/i.test((button.getAttribute('aria-label') || button.innerText).trim()));
-    if (close) close.click();
-    else document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', code: 'Escape', bubbles: true, cancelable: true}));
+    if (close) { close.click(); return true; }
+    // Legacy custom dialogs may own document Escape handlers and dirty guards.
+    // Consume Back even when they refuse it: true means handled/blocked, not closed.
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', code: 'Escape', bubbles: true, cancelable: true}));
     return true;
   };
 })();

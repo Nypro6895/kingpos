@@ -11,9 +11,14 @@ import { mapDirectionsUrl } from "@/lib/location/map-links";
 import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { SalonAddressLink } from "@/components/salon-address-link";
 import { compressImageCanvas } from "@/lib/image-upload-client";
+import { runPublicImageUploadBatch } from "@/lib/public-image-upload-client";
+import { clearPublicPostReceipt, readPublicPostReceipt, writePublicPostReceipt } from "@/lib/public-post-receipt";
+import { PublicPhotoProcessingPermission, usePublicPhotoProcessingPermission } from "@/components/public-photo-processing-permission";
+import { PUBLIC_PHOTO_PROCESSING_DECLINE_NOTICE } from "@/lib/public-photo-processing-consent";
 import { useSalonProfilePages } from "@/lib/use-salon-profile-pages";
 import { PublicationPanel } from "./publication-panel";
 import { ContentViewer } from "@/components/content-viewer";
+import { useSalonFollowState } from "@/components/use-salon-follow-state";
 import { ActionFeedback } from "@/components/action-feedback";
 import { useFormStatus } from "react-dom";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
@@ -52,6 +57,7 @@ import { InspirationAvailability } from "@/components/inspiration-availability";
 import {
   createSalonProfileReviewReplyAction,
   createSalonProfileSocialPostAction,
+  deleteSalonProfileMediaAction,
   getSalonProfileMediaUploadSessionAction,
   setSalonProfilePublicationAction,
   toggleSalonFollowAction,
@@ -104,6 +110,7 @@ import {
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -192,6 +199,42 @@ function isProfileExperience(value: unknown): value is ProfileExperience {
 
 type AuthPromptIntent = "follow" | "save";
 type ComposerType = "auto" | "look" | "opening" | "update";
+
+type SalonPostRequest = Parameters<typeof createSalonProfileSocialPostAction>[0] & { requestId: string };
+type SalonPostReceipt = { input: SalonPostRequest; requestId: string };
+function salonPostReceiptScope(viewerId: string, salonId: string) { return `salon:${viewerId}:${salonId}`; }
+function readSalonPostReceipt(viewerId: string, salonId: string): SalonPostReceipt | null {
+  const receipt = readPublicPostReceipt<SalonPostRequest>(salonPostReceiptScope(viewerId, salonId));
+  const optionalText = receipt && [receipt.input.mood, receipt.input.serviceId, receipt.input.staffId, receipt.input.startsAt, receipt.input.title];
+  const optionalNumbers = receipt && [receipt.input.durationMinutes, receipt.input.startingPrice];
+  if (receipt && (receipt.input.salonId !== salonId || receipt.input.requestId !== receipt.requestId ||
+    !(receipt.input.caption === null || typeof receipt.input.caption === "string") ||
+    !(receipt.input.imagePath === null || typeof receipt.input.imagePath === "string") ||
+    !optionalText?.every(value => value == null || typeof value === "string") ||
+    !optionalNumbers?.every(value => value == null || typeof value === "number" && Number.isFinite(value)) ||
+    !(receipt.input.bookingCtaEnabled === undefined || typeof receipt.input.bookingCtaEnabled === "boolean") ||
+    !(receipt.input.additionalServiceIds === undefined || Array.isArray(receipt.input.additionalServiceIds) && receipt.input.additionalServiceIds.every(value => typeof value === "string")) ||
+    ![undefined, "auto", "look", "opening", "update"].includes(receipt.input.contentType))) {
+    throw new Error("The saved post confirmation could not be read. Keep this browser session and contact Support before posting it again.");
+  }
+  return receipt;
+}
+function salonPostLocalTime(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "";
+}
+type PendingSalonPost = {
+  authorUserId: string;
+  caption: string;
+  error?: string;
+  phase: MediaUploadPhase | "unknown";
+  previewUrl: string | null;
+  progress: number;
+  requestId: string;
+  salonId: string;
+  title: string;
+};
 type SalonProfileUploadableKind = Extract<
   SalonProfileMediaKind,
   "cover" | "logo" | "look" | "update"
@@ -704,6 +747,8 @@ async function processAndUploadImage(input: {
   kind: SalonProfileUploadableKind;
   onProgress: (value: number) => void;
   onPhase?: (phase: MediaUploadPhase) => void;
+  onReserved?: (path: string) => void;
+  salonId?: string;
 }) {
   if (!acceptedMimeTypes.has(input.file.type)) {
     throw new Error("Use a JPEG, PNG, or WebP image.");
@@ -718,7 +763,10 @@ async function processAndUploadImage(input: {
   const session = await getSalonProfileMediaUploadSessionAction(
     input.intent,
     input.kind,
+    undefined,
+    input.salonId,
   );
+  input.onReserved?.(session.objectPath ?? session.path);
 
   input.onPhase?.("uploading");
   await uploadToSupabase({
@@ -734,7 +782,7 @@ async function processAndUploadImage(input: {
     supabaseUrl: session.supabaseUrl,
   });
 
-  return session.path;
+  return session.objectPath ?? session.path;
 }
 
 function EmptyState({
@@ -1573,42 +1621,94 @@ function PostSuggestionField({ label, placeholder, options, value, onChange, all
   </div>;
 }
 
+function PendingSalonPostCard({ pending, onResume }: {
+  pending: PendingSalonPost;
+  onResume: () => void;
+}) {
+  const unknown = pending.phase === "unknown";
+  const label = unknown ? "Post confirmation interrupted" : pending.phase === "preparing" ? "Preparing your photo…"
+    : pending.phase === "uploading" ? "Uploading your photo…" : pending.previewUrl ? "Checking your photo and finishing your post…" : "Finishing your post…";
+  return <article className="overflow-hidden rounded-2xl border border-brand-orange/30 bg-white p-4" data-salon-post-request={pending.requestId}>
+    <div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-zinc-950"><WorkspaceText text={label} /></p>
+      <p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Only you can see this preview. It is not a published post." /></p></div>
+      <button className="shrink-0 rounded-lg border border-zinc-200 px-3 py-2 text-xs font-semibold" type="button" onClick={onResume}><WorkspaceText text={unknown ? "Check & retry" : "View progress"} /></button></div>
+    {pending.previewUrl ? <div className="mt-3 overflow-hidden rounded-xl bg-zinc-50">{/* eslint-disable-next-line @next/next/no-img-element */}
+      <img alt="" className="max-h-64 w-full object-contain" src={pending.previewUrl} /></div> : null}
+    {unknown && !pending.previewUrl ? <p className="mt-3 rounded-xl bg-zinc-50 p-3 text-xs text-zinc-600"><WorkspaceText text="A saved submission is waiting for confirmation. Its photo preview is not stored in this browser receipt." /></p> : null}
+    {pending.title ? <p className="mt-3 font-semibold text-zinc-900">{pending.title}</p> : null}
+    {pending.caption ? <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-700">{pending.caption}</p> : null}
+    <div className="mt-3" aria-live="polite">{unknown ? <p className="text-sm text-amber-800"><WorkspaceText text="We could not confirm the result. Retry to check this same submission before changing or posting it again." /></p>
+      : <MediaUploadProgress phase={pending.phase as MediaUploadPhase} progress={pending.progress} />}</div>
+  </article>;
+}
+
 function ComposerModal({
   data,
   initialType,
+  initialReceipt,
+  isCurrent,
   onClose,
+  onPendingChange,
+  onPresentedChange,
   onPosted,
+  presented,
+  viewerId,
 }: {
   data: PublicSalonProfileData;
   initialType: ComposerType;
+  initialReceipt?: SalonPostReceipt | null;
+  isCurrent: () => boolean;
   onClose: () => void;
+  onPendingChange: (pending: PendingSalonPost | null, requestId: string) => void;
+  onPresentedChange: (presented: boolean) => void;
   onPosted: (result: { post: ProfileFeedItem; look: PublicSalonProfileLook | null }) => void;
+  presented: boolean;
+  viewerId: string;
 }) {
   const __vt = useWorkspaceTranslation();
 
   const captionRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const formId = useId();
-  const [caption, setCaption] = useState("");
-  const [additionalServiceIds, setAdditionalServiceIds] = useState<string[]>([]);
-  const [bookingCtaEnabled, setBookingCtaEnabled] = useState(true);
-  const [contentType, setContentType] = useState<ComposerType>(initialType);
-  const [durationMinutes, setDurationMinutes] = useState("");
+  const restored = initialReceipt?.input;
+  const receiptScope = salonPostReceiptScope(viewerId, data.profile.salonId);
+  const [caption, setCaption] = useState(restored?.caption ?? "");
+  const [additionalServiceIds, setAdditionalServiceIds] = useState<string[]>(restored?.additionalServiceIds ?? []);
+  const [bookingCtaEnabled, setBookingCtaEnabled] = useState(restored?.bookingCtaEnabled ?? true);
+  const [contentType, setContentType] = useState<ComposerType>(restored?.contentType ?? initialType);
+  const [durationMinutes, setDurationMinutes] = useState(restored?.durationMinutes == null ? "" : String(restored.durationMinutes));
   const [file, setFile] = useState<File | null>(null);
-  const [mood, setMood] = useState("");
+  const [stagedImagePath, setStagedImagePath] = useState<string | null>(restored?.imagePath ?? null);
+  const [mediaVersion, setMediaVersion] = useState(0);
+  const [mood, setMood] = useState(restored?.mood ?? "");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [serviceId, setServiceId] = useState("");
-  const [staffId, setStaffId] = useState("");
-  const [startsAt, setStartsAt] = useState("");
-  const [startingPrice, setStartingPrice] = useState("");
-  const [title, setTitle] = useState("");
+  const [serviceId, setServiceId] = useState(restored?.serviceId ?? "");
+  const [staffId, setStaffId] = useState(restored?.staffId ?? "");
+  const [startsAt, setStartsAt] = useState(salonPostLocalTime(restored?.startsAt));
+  const [startingPrice, setStartingPrice] = useState(restored?.startingPrice == null ? "" : String(restored.startingPrice));
+  const [title, setTitle] = useState(restored?.title ?? "");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [uncertain, setUncertain] = useState(Boolean(initialReceipt));
+  const hasPhoto = Boolean(file || stagedImagePath);
+  const photoPermission = usePublicPhotoProcessingPermission(JSON.stringify([receiptScope, mediaVersion, contentType]));
   const [mediaPhase, setMediaPhase] = useState<MediaUploadPhase>("preparing");
+  const submitBusy = useRef(false);
+  const attempt = useRef<{
+    file: File | null;
+    imagePath: string | null;
+    mediaVersion: number;
+    request: SalonPostRequest | null;
+    requestId: string;
+    signature: string;
+    unknown: boolean;
+  } | null>(initialReceipt ? { file: null, imagePath: restored?.imagePath ?? null, mediaVersion: 0,
+    request: initialReceipt.input, requestId: initialReceipt.requestId, signature: "", unknown: true } : null);
   const isDirty = Boolean(
     caption.trim() ||
       file ||
+      stagedImagePath ||
       title.trim() ||
       serviceId ||
       additionalServiceIds.length > 0 ||
@@ -1618,6 +1718,7 @@ function ComposerModal({
       durationMinutes ||
       startingPrice,
   );
+  useTransientOverlay(requestClose, presented);
 
   useEffect(() => {
     captionRef.current?.focus({ preventScroll: true });
@@ -1656,6 +1757,9 @@ function ComposerModal({
     }
 
     setFile(nextFile);
+    photoPermission.reset();
+    setStagedImagePath(null);
+    setMediaVersion((value) => value + 1);
     setPreviewUrl(URL.createObjectURL(nextFile));
   }
 
@@ -1672,47 +1776,89 @@ function ComposerModal({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitBusy.current || !isCurrent() || !viewerId) return;
     setError("");
 
     const resolvedType =
-      contentType === "auto" ? (file ? "look" : "update") : contentType;
+      contentType === "auto" ? (file || stagedImagePath ? "look" : "update") : contentType;
 
     if (resolvedType === "opening" && !caption.trim()) {
       setError("Write a short opening message before sharing.");
       return;
     }
 
-    if (!caption.trim() && !file && resolvedType !== "opening") {
+    if (!caption.trim() && !file && !stagedImagePath && resolvedType !== "opening") {
       setError("Write a caption or choose an image before posting.");
       return;
     }
 
-    if (resolvedType === "look" && !file) {
+    if (resolvedType === "look" && !file && !stagedImagePath) {
       setError("Choose an image for a look post.");
       return;
     }
+    const photoProcessingConsent = hasPhoto ? photoPermission.consent : undefined;
+    // A frozen unknown request must reach the server's completed-receipt lookup
+    // unchanged, including legacy requests that never carried this permission.
+    if (!attempt.current?.unknown && hasPhoto && !photoProcessingConsent) {
+      setError(PUBLIC_PHOTO_PROCESSING_DECLINE_NOTICE);
+      return;
+    }
 
+    const signature = JSON.stringify({ additionalServiceIds, bookingCtaEnabled, caption, contentType: resolvedType,
+      durationMinutes, mood, serviceId, staffId, startsAt, startingPrice, title,
+      ...(photoProcessingConsent ? { photoProcessingConsent } : {}) });
+    const previous = attempt.current;
+    if (!previous?.unknown && (!previous || previous.signature !== signature || previous.mediaVersion !== mediaVersion)) {
+      if (previous?.imagePath && previous.mediaVersion !== mediaVersion) void deleteSalonProfileMediaAction(previous.imagePath, data.profile.salonId).catch(() => {});
+      attempt.current = { file, imagePath: previous?.mediaVersion === mediaVersion ? previous.imagePath : stagedImagePath, mediaVersion, request: null,
+        requestId: crypto.randomUUID(), signature, unknown: false };
+    }
+    const current = attempt.current!;
+    const unknownBefore = current.unknown;
+    const draftPreview: PendingSalonPost = { authorUserId: viewerId, caption, phase: "preparing", previewUrl,
+      progress: 0, requestId: current.requestId, salonId: data.profile.salonId, title };
+    function updatePending(phase: PendingSalonPost["phase"], value = 0) {
+      if (!isCurrent()) return;
+      setMediaPhase(phase === "unknown" ? "confirming" : phase);
+      setProgress(value);
+      onPendingChange({ ...draftPreview, phase, progress: value }, current.requestId);
+    }
+    submitBusy.current = true;
     setSubmitting(true);
     setProgress(0);
     setMediaPhase("preparing");
+    onPendingChange(draftPreview, current.requestId);
+    onPresentedChange(false);
+    let requestSent = false;
 
     try {
-      const imagePath = file
-        ? await processAndUploadImage({
-            file,
-            intent: "content",
-            kind: resolvedType === "look" ? "look" : "update",
-            onProgress: setProgress,
-            onPhase: setMediaPhase,
-          })
-        : null;
-      setMediaPhase("saving");
-      const result = await createSalonProfileSocialPostAction({
+      if (!current.request && file && !current.imagePath) {
+        const [imagePath] = await runPublicImageUploadBatch({ items: [file], concurrency: 2, isCurrent,
+          upload: async (selectedFile) => {
+            let reserved: string | null = null;
+            try {
+              return await processAndUploadImage({ file: selectedFile, intent: "content", kind: resolvedType === "look" ? "look" : "update",
+                salonId: data.profile.salonId, onReserved: (path) => { reserved = path; },
+                onProgress: (value) => updatePending(value >= 100 ? "confirming" : "uploading", value),
+                onPhase: (phase) => updatePending(phase), });
+            } catch (uploadError) {
+              if (reserved) await deleteSalonProfileMediaAction(reserved, data.profile.salonId).catch(() => {});
+              throw uploadError;
+            }
+          },
+          cleanup: (path) => deleteSalonProfileMediaAction(path, data.profile.salonId).catch(() => {}),
+        });
+        current.imagePath = imagePath;
+        setStagedImagePath(imagePath);
+      }
+      if (!isCurrent()) return;
+      current.request ??= {
         additionalServiceIds,
         bookingCtaEnabled,
         caption,
         contentType: resolvedType,
-        imagePath,
+        imagePath: current.imagePath,
+        requestId: current.requestId,
         durationMinutes: durationMinutes ? Number(durationMinutes) : null,
         mood: mood || null,
         salonId: data.profile.salonId,
@@ -1721,27 +1867,56 @@ function ComposerModal({
         startsAt: startsAt ? new Date(startsAt).toISOString() : null,
         startingPrice: startingPrice ? Number(startingPrice) : null,
         title,
-      });
+        ...(current.imagePath && photoProcessingConsent ? { photoProcessingConsent } : {}),
+      };
+      writePublicPostReceipt(receiptScope, { requestId: current.requestId, input: current.request });
+      updatePending(current.imagePath ? "confirming" : "saving", current.imagePath ? 100 : 0);
+      requestSent = true;
+      const result = await createSalonProfileSocialPostAction(current.request);
+      if (!isCurrent()) return;
 
       if (result.error !== null) {
+        const rejected = "outcome" in result && result.outcome === "rejected";
+        current.unknown = !rejected;
+        setUncertain(!rejected);
         setError(result.error);
+        if (rejected) {
+          try { clearPublicPostReceipt(receiptScope, current.requestId); } catch { /* A known rejection remains safe to edit; no publication occurred. */ }
+          current.request = null;
+          onPendingChange(null, current.requestId);
+        } else updatePending("unknown");
+        onPresentedChange(true);
         return;
       }
 
+      current.unknown = false;
+      setUncertain(false);
+      try { clearPublicPostReceipt(receiptScope, current.requestId); } catch { /* Replay remains idempotent if the receipt could not be cleared. */ }
+      onPendingChange(null, current.requestId);
       window.dispatchEvent(new CustomEvent("reylumi:post-published"));
       onPosted(result);
       onClose();
     } catch (submitError) {
+      if (!isCurrent()) return;
+      current.unknown = requestSent || unknownBefore;
+      setUncertain(current.unknown);
+      if (current.unknown) updatePending("unknown");
+      else onPendingChange(null, current.requestId);
       setError(
         submitError instanceof Error ? submitError.message : "Post failed.",
       );
+      onPresentedChange(true);
     } finally {
+      submitBusy.current = false;
       setSubmitting(false);
     }
   }
 
   function requestClose() {
-    if (submitting) return;
+    if (submitting || uncertain) {
+      onPresentedChange(false);
+      return;
+    }
     if (
       isDirty &&
       !submitting &&
@@ -1750,15 +1925,19 @@ function ComposerModal({
       return;
     }
 
+    const current = attempt.current;
+    if (current?.imagePath && !current.unknown) void deleteSalonProfileMediaAction(current.imagePath, data.profile.salonId).catch(() => {});
     onClose();
   }
 
-  const primaryLabel = "Post";
+  const primaryLabel = uncertain ? "Check & retry" : "Post";
   const pendingLabel = contentType === "opening" ? "Sharing" : "Posting";
   const suggestedService = hashtagSuggestionsForServices(caption, data.services);
   const onlineStaff = data.staff.filter((member) => member.onlineBookingEnabled);
   const fieldClass = "min-h-11 w-full min-w-0 rounded-xl border border-zinc-200 bg-white px-3 text-base outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/10";
   const serviceOptions = data.services.map((service) => ({ id: service.id, label: service.name }));
+
+  if (!presented) return null;
 
   return (
     <Modal
@@ -1767,11 +1946,11 @@ function ComposerModal({
         <div className="grid gap-2 sm:flex sm:items-center sm:justify-between sm:gap-3">
           <div className="min-w-0 flex-1 text-xs leading-5 text-zinc-500 sm:text-sm">
             {submitting && file ? <MediaUploadProgress phase={mediaPhase} progress={progress} /> :
-              <p role={submitting ? "status" : undefined}><WorkspaceText text={submitting ? `${pendingLabel}...` : "Share with your salon’s customers."} /></p>}
+              <p role={submitting || uncertain ? "status" : undefined}><WorkspaceText text={submitting ? `${pendingLabel}...` : uncertain ? "Retry checks the same post. Keep this draft unchanged until the result is confirmed." : "Share with your salon’s customers."} /></p>}
           </div>
           <button
             className="min-h-12 w-full shrink-0 rounded-xl bg-brand-orange px-8 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:bg-brand-orange/50 sm:w-auto"
-            disabled={submitting}
+            disabled={submitting || (!uncertain && hasPhoto && !photoPermission.accepted)}
             form={formId}
             type="submit"
           >
@@ -1779,12 +1958,14 @@ function ComposerModal({
           </button>
         </div>
       }
-      initialFocusRef={captionRef}
+      initialFocusRef={uncertain ? undefined : captionRef}
       onClose={requestClose}
       panelClassName="sm:max-w-[46rem]"
       title={__vt(contentType === "opening" ? "Share opening" : "Create post")}
     >
       <form className="grid gap-4 p-4 sm:p-5" id={formId} onSubmit={submit}>
+        {uncertain ? <p role="status" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900"><WorkspaceText text="The result is not confirmed. This draft is locked so retry checks the same post without creating a duplicate." /></p> : null}
+        <fieldset className="contents" disabled={submitting || uncertain}>
         <div className="flex items-center gap-3">
           <Avatar
             logoUrl={data.profile.logoImageUrl}
@@ -1814,8 +1995,9 @@ function ComposerModal({
         {previewUrl ? <div className="relative overflow-hidden rounded-2xl bg-zinc-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img alt={__vt("Selected post preview")} className="max-h-64 w-full object-contain" src={previewUrl} />
-          <button aria-label={__vt("Remove selected image")} className="absolute right-2 top-2 rounded-full bg-white/95 px-3 py-2 text-xs font-medium shadow" type="button" onClick={() => { setFile(null); setPreviewUrl(null); }}><WorkspaceText text="Remove" /></button>
+          <button aria-label={__vt("Remove selected image")} className="absolute right-2 top-2 rounded-full bg-white/95 px-3 py-2 text-xs font-medium shadow" type="button" onClick={() => { photoPermission.reset(); setFile(null); setPreviewUrl(null); setStagedImagePath(null); setMediaVersion((value) => value + 1); }}><WorkspaceText text="Remove" /></button>
         </div> : null}
+        {stagedImagePath && !previewUrl ? <div className="rounded-xl bg-zinc-50 p-3 text-sm text-zinc-600"><WorkspaceText text="Your uploaded photo is kept for this submission. Its preview is unavailable after reloading." />{!uncertain ? <button className="ml-2 underline" type="button" onClick={() => { photoPermission.reset(); setStagedImagePath(null); setMediaVersion((value) => value + 1); }}><WorkspaceText text="Remove" /></button> : null}</div> : null}
         <div className="flex flex-wrap items-center justify-between gap-2 border-y border-zinc-100 py-3">
           <button className="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-brand-orange hover:bg-brand-orange-soft" type="button" onClick={() => fileInputRef.current?.click()}><PostPhotoIcon /><WorkspaceText text={file ? "Change photo" : "Add photo"} /></button>
           <div aria-label={__vt("Post type")} className="flex flex-wrap gap-1">
@@ -1845,6 +2027,8 @@ function ComposerModal({
             <PostSuggestionField allowCustom label={__vt("Mood")} placeholder={__vt("e.g. Soft & clean")} options={["Soft & clean", "Summer bright", "Rich & modern", "Special moment"].map((label) => ({ id: label, label }))} value={mood} onChange={setMood} />
           </div>
         </section>
+        {hasPhoto && !uncertain ? <PublicPhotoProcessingPermission accepted={photoPermission.accepted} disabled={submitting} onChange={photoPermission.setAccepted} /> : null}
+        </fieldset>
         {error ? (
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
             <WorkspaceText text={error} />
@@ -3301,7 +3485,49 @@ export function SalonProfileView({
     useState<PublicSalonProfileStaff | null>(null);
   useTransientOverlay(() => setDetailStaff(null), Boolean(detailStaff));
   const [composerType, setComposerType] = useState<ComposerType | null>(null);
-  useTransientOverlay(() => setComposerType(null), Boolean(composerType));
+  const [composerPresented, setComposerPresented] = useState(false);
+  const [pendingPost, setPendingPost] = useState<PendingSalonPost | null>(null);
+  const [restoredPostReceipt, setRestoredPostReceipt] = useState<{ scope: string; receipt: SalonPostReceipt } | null>(null);
+  const postScope = `${capabilities.currentUserId ?? "guest"}:${profile.salonId}`;
+  const activePostScope = useRef(postScope);
+  useLayoutEffect(() => { activePostScope.current = postScope; }, [postScope]);
+  useEffect(() => {
+    if (!capabilities.currentUserId) return;
+    try {
+      const saved = readSalonPostReceipt(capabilities.currentUserId, profile.salonId);
+      if (!saved) return;
+      queueMicrotask(() => {
+        if (activePostScope.current !== postScope) return;
+        setRestoredPostReceipt({ scope: postScope, receipt: saved });
+        setComposerType(saved.input.contentType ?? "auto");
+        setComposerPresented(false);
+        setPendingPost({ authorUserId: capabilities.currentUserId!, salonId: profile.salonId,
+          requestId: saved.requestId, phase: "unknown", progress: 0, previewUrl: null,
+          caption: saved.input.caption ?? "", title: saved.input.title ?? "" });
+      });
+    } catch (receiptError) {
+      queueMicrotask(() => { if (activePostScope.current === postScope) setStatusMessage(receiptError instanceof Error ? receiptError.message : "A saved post confirmation needs attention before posting again."); });
+    }
+  }, [capabilities.currentUserId, postScope, profile.salonId]);
+  function openComposer(type: ComposerType) {
+    try {
+      const saved = capabilities.currentUserId ? readSalonPostReceipt(capabilities.currentUserId, profile.salonId) : null;
+      if (saved) {
+        setRestoredPostReceipt({ scope: postScope, receipt: saved });
+        setComposerType(saved.input.contentType ?? "auto");
+        setComposerPresented(true);
+        return;
+      }
+    } catch (receiptError) {
+      setStatusMessage(receiptError instanceof Error ? receiptError.message : "A saved post confirmation needs attention before posting again.");
+      return;
+    }
+    if (!composerType) setComposerType(type);
+    setComposerPresented(true);
+  }
+  const visiblePendingPost = pendingPost && capabilities.canCreateContent && pendingPost.authorUserId === capabilities.currentUserId
+    && pendingPost.salonId === profile.salonId ? pendingPost : null;
+  const pendingPostCard = visiblePendingPost ? <PendingSalonPostCard pending={visiblePendingPost} onResume={() => setComposerPresented(true)} /> : null;
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
   useTransientOverlay(() => setProfileEditorOpen(false), profileEditorOpen);
   const [publicationOpen, setPublicationOpen] = useState(false);
@@ -3424,7 +3650,8 @@ export function SalonProfileView({
     return () => { cancelAnimationFrame(frame); window.removeEventListener("hashchange", scrollToAnchor); };
   }, [selectedTab]);
 
-  const [isFollowing, setFollowing] = useState(profile.isFollowing);
+  const followState = useSalonFollowState(profile.salonId, capabilities.currentUserId, profile.isFollowing);
+  const isFollowing = followState.following;
   const [, setFollowerCount] = useState(profile.followerCount);
   const [statusMessage, setStatusMessage] = useState("");
   const [authPromptIntent, setAuthPromptIntent] =
@@ -3871,7 +4098,7 @@ export function SalonProfileView({
         return;
       }
 
-      setFollowing(result.active);
+      followState.commit(result.active);
       setFollowerCount((current) =>
         Math.max(0, current + (result.active ? 1 : -1)),
       );
@@ -3915,15 +4142,16 @@ export function SalonProfileView({
         return item?.type === "feed" ? renderPostActions(item.item) : item?.type === "beauty" ? <PostActions
           target={beautyPostCommentTarget(item.post, profile.salonId)} viewerId={capabilities.currentUserId}
           onChanged={refresh} onOpen={() => openGalleryItem(item)}/> : null;
-      }} rewards={rewards} data={data} preferences={preferences} posts={feedItems} canBook={capabilities.canBook} onPost={openTimelinePost} onGallery={() => changeTab("gallery")} onServices={() => changeTab("services")} onTeam={() => changeTab("team")} onBook={openBooking} onStaff={setDetailStaff} onReviews={() => changeTab("experiences")} renderPostActions={renderPostActions} composer={capabilities.isOwnSalon && capabilities.canCreateContent ? <div className="grid gap-2"><ComposerCard logoUrl={profile.logoImageUrl} name={profile.name} onOpen={setComposerType}/>{capabilities.canManageContent ? <button type="button" className="justify-self-end text-xs font-medium text-zinc-500 hover:text-brand-orange" onClick={() => setContentManagerOpen(true)}><WorkspaceText text="Manage posts" /></button> : null}</div> : null}/>;
+      }} rewards={rewards} data={data} preferences={preferences} posts={feedItems} canBook={capabilities.canBook} onPost={openTimelinePost} onGallery={() => changeTab("gallery")} onServices={() => changeTab("services")} onTeam={() => changeTab("team")} onBook={openBooking} onStaff={setDetailStaff} onReviews={() => changeTab("experiences")} renderPostActions={renderPostActions} composer={capabilities.isOwnSalon && capabilities.canCreateContent ? <div className="grid gap-2">{pendingPostCard}<ComposerCard logoUrl={profile.logoImageUrl} name={profile.name} onOpen={openComposer}/>{capabilities.canManageContent ? <button type="button" className="justify-self-end text-xs font-medium text-zinc-500 hover:text-brand-orange" onClick={() => setContentManagerOpen(true)}><WorkspaceText text="Manage posts" /></button> : null}</div> : null}/>;
     }
     return (
       <div className="mx-auto grid w-full max-w-4xl gap-3">
+        {pendingPostCard}
         {capabilities.canCreateContent ? (
           <ComposerCard
             logoUrl={profile.logoImageUrl}
             name={profile.name}
-            onOpen={setComposerType}
+            onOpen={openComposer}
           />
         ) : manageData && !capabilities.canEditProfile ? (
           <section className="border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 rounded-none border-0 shadow-none">
@@ -4358,7 +4586,7 @@ export function SalonProfileView({
           verified={<SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/>}
           trust={<SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} className="text-zinc-600"/>}
           canBook={canShowBook} onBook={() => openBooking({title:"Book appointment"})}
-          canFollow={canShowFollow} following={isFollowing} followPending={isPending} onFollow={toggleFollow}
+          canFollow={canShowFollow} following={isFollowing} followPending={isPending || followState.loading} onFollow={toggleFollow}
           onHours={() => setHoursInfoOpen(true)} canShare={preferences.allow_sharing} onShare={() => { void shareSalon(); }}
           claimHref={!capabilities.isOwnSalon && !capabilities.isStaffSalon ? `/claim/${profile.salonId}` : undefined}
           onReport={() => setSalonReportOpen(true)}
@@ -4385,7 +4613,7 @@ export function SalonProfileView({
               </div>
             </div>
             <div className="min-w-0 px-2 py-1">
-              <div className="flex min-w-0 items-center gap-1.5"><h2 className="min-w-0 flex-1 break-words text-xl font-semibold leading-6"><SalonName name={profile.name} salonId={profile.salonId}/></h2><SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/>{canShowFollow ? <button type="button" aria-pressed={isFollowing} disabled={isPending} onClick={toggleFollow} className="inline-flex min-h-11 items-center gap-1.5 shrink-0 rounded-lg px-1 text-[11px] font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange disabled:opacity-50"><span aria-hidden="true">{isFollowing ? "✓" : "+"}</span><WorkspaceText text={isFollowing ? "Following" : "Follow salon"} /></button> : null}</div>
+              <div className="flex min-w-0 items-center gap-1.5"><h2 className="min-w-0 flex-1 break-words text-xl font-semibold leading-6"><SalonName name={profile.name} salonId={profile.salonId}/></h2><SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/>{canShowFollow ? <button type="button" aria-pressed={isFollowing} disabled={isPending || followState.loading} onClick={toggleFollow} className="inline-flex min-h-11 items-center gap-1.5 shrink-0 rounded-lg px-1 text-[11px] font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange disabled:opacity-50"><span aria-hidden="true">{isFollowing ? "✓" : "+"}</span><WorkspaceText text={isFollowing ? "Following" : "Follow salon"} /></button> : null}</div>
 
               <p className="truncate text-[11px] leading-5 text-zinc-500"><WorkspaceText text={salonPopularPrice(data.reputationSummary)??"Salon"} />{profile.city?` · ${profile.city}${profile.state?`, ${profile.state}`:""}`:""}</p>
               <SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/>
@@ -4420,7 +4648,7 @@ export function SalonProfileView({
           </div>
         </section>
         )}
-        {error || notice || statusMessage ? <section className="grid gap-3">
+        {error || notice || statusMessage || followState.error ? <section className="grid gap-3">
         {error ? (
           <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             <WorkspaceText text={error} />
@@ -4431,9 +4659,9 @@ export function SalonProfileView({
             <WorkspaceText text={notice} />
           </p>
         ) : null}
-        {statusMessage ? (
+        {statusMessage || followState.error ? (
           <p className="rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
-            <WorkspaceText text={statusMessage} />
+            <WorkspaceText text={statusMessage || followState.error} />
           </p>
         ) : null}
         </section> : null}
@@ -4529,10 +4757,24 @@ export function SalonProfileView({
 
       {composerType ? (
         <ComposerModal
+          key={`${postScope}:${restoredPostReceipt?.scope === postScope ? restoredPostReceipt.receipt.requestId : "draft"}`}
           data={data}
           initialType={composerType}
-          onClose={() => setComposerType(null)}
+          initialReceipt={restoredPostReceipt?.scope === postScope ? restoredPostReceipt.receipt : null}
+          isCurrent={() => activePostScope.current === postScope}
+          onClose={() => { setComposerType(null); setComposerPresented(false); setRestoredPostReceipt(null); }}
+          onPendingChange={(pending, requestId) => {
+            if (activePostScope.current !== postScope) return;
+            if (pending) {
+              setPendingPost(pending);
+              setSelectedTab("discover");
+            } else setPendingPost((current) => current?.requestId === requestId ? null : current);
+          }}
+          onPresentedChange={(presented) => { if (activePostScope.current === postScope) setComposerPresented(presented); }}
+          presented={composerPresented}
+          viewerId={capabilities.currentUserId ?? ""}
           onPosted={({ post, look }) => {
+            if (activePostScope.current !== postScope) return;
             setPublishedPosts((current) => [post, ...current.filter((item) => item.id !== post.id)]);
             if (look) setPublishedLooks((current) => [look, ...current.filter((item) => item.id !== look.id)]);
             setSelectedTab("discover");

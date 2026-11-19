@@ -91,7 +91,7 @@ export const ACCOUNT_DELETION_RETENTION_POLICY: Record<
     category: "EXPORT_ARCHIVES",
     exportableByOwner: true,
     summary:
-      "Private account exports expire after seven days and are removed when the account is erased.",
+      "New exports allow new authenticated access for seven days; newly issued download links last up to fifteen minutes. New files enter scheduled cleanup with retries after expiry. Earlier files and previously issued bearer links require a separate retention and revocation review. Account erasure also removes hosted personal exports; downloaded copies remain with their recipient.",
     treatment: "retain_minimal",
   },
   RECOVERY_METADATA: {

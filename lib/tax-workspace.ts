@@ -42,6 +42,16 @@ export async function loadTaxWorkspace(
   if (error) throw new Error(error.message);
   return data as TaxWorkspaceData;
 }
+export async function loadTaxReport(
+  salonId: string,
+): Promise<Pick<TaxWorkspaceData, "salon" | "runs" | "lines">> {
+  const { client } = await taxWorkspaceClient();
+  const { data, error } = await client.rpc("tax_report_data", {
+    p_salon: salonId,
+  });
+  if (error) throw new Error(error.message);
+  return data as Pick<TaxWorkspaceData, "salon" | "runs" | "lines">;
+}
 export type TaxBusinessSummary = {
   id: string;
   name: string;

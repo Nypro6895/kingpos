@@ -76,7 +76,7 @@ export default async function RootLayout({
         <OwnerQueueRuntime scope={isSalonManageContext(context)&&context.currentSalon&&context.user?`owner:${context.currentSalon.id}:${context.user.id}`:null}/>
         <CampaignPluginProvider key={experience.scope} scope={experience.scope} installed={false}>
           {isOwner ? <Suspense fallback={null}><OptionalCampaignWallet context={context} scope={experience.scope} /></Suspense> : null}
-          <ExploreAccountActionsProvider authenticated={Boolean(context.user)}><ExploreAdvertising audience={!context.user ? "guest" : context.workspaceType === "salon" ? context.salonMode === "staff" ? "staff" : "owner" : "personal"}><SalonSwitcher context={context}><StartupReady />{children}</SalonSwitcher></ExploreAdvertising><QuickBooking /></ExploreAccountActionsProvider>
+          <ExploreAccountActionsProvider authenticated={Boolean(context.user)}><ExploreAdvertising viewerId={context.user?.id ?? null} audience={!context.user ? "guest" : context.workspaceType === "salon" ? context.salonMode === "staff" ? "staff" : "owner" : "personal"}><SalonSwitcher context={context}><StartupReady />{children}</SalonSwitcher></ExploreAdvertising><QuickBooking /></ExploreAccountActionsProvider>
         </CampaignPluginProvider></WorkspaceLanguageProvider></SalonLanguagePreferences>
     </ExperienceScopeProvider>
   );

@@ -17,10 +17,9 @@ export function campaignDeliveryRequest(location:string|undefined,latitude?:numb
  const search=cleanExploreQueryText(query);
  const label=text(location);if(label.length>160||/[\x00-\x1f]/.test(label))return null;
  const gps=point(latitude,longitude);if(!label&&!gps)return null;
- const params=new URLSearchParams();if(label)params.set('location',label);if(search)params.set('query',search);
  const key=JSON.stringify([label,gps?.latitude??null,gps?.longitude??null,search]);
- // Exact GPS coordinates stay in a private POST body, never a URL/access-log key.
- return gps?{key,url:'/api/campaigns/delivery',body:JSON.stringify({kind:'select',location:label,...gps,...(search?{query:search}:{})})}:{key,url:`/api/campaigns/delivery?${params}`,body:undefined};
+ // Selected location, query and exact GPS stay in a private body, never URL/referrer keys.
+ return {key,url:'/api/campaigns/delivery',body:JSON.stringify({kind:'select',location:label,...(gps??{}),...(search?{query:search}:{})})};
 }
 
 function selection(label:string):Selection|null{
@@ -37,14 +36,14 @@ function selection(label:string):Selection|null{
 }
 
 /** Never infer a ZIP from a city, nearest salon, or centroid. GPS enrichment must agree with the selected area. */
-export async function resolveCampaignDeliveryArea(input:{location?:string;latitude?:number|null;longitude?:number|null},options:{lookup:(field:'city'|'state'|'country'|'postal_code',value:string)=>Promise<CampaignPlace[]>;reverse:(point:Point)=>Promise<GpsArea|null>}):Promise<CampaignDeliveryArea|null>{
+export async function resolveCampaignDeliveryArea(input:{location?:string;latitude?:number|null;longitude?:number|null},options:{lookup:(field:'city'|'state'|'country'|'postal_code',value:string)=>Promise<CampaignPlace[]>;reverse:(point:Point)=>Promise<GpsArea|null>;onResolution?:(source:'gps'|'lookup')=>void}):Promise<CampaignDeliveryArea|null>{
  const label=text(input.location);if(label.length>160||/[\x00-\x1f]/.test(label))return null;
  const selected=label?selection(label):null;if(label&&!selected)return null;
  const gps=point(input.latitude,input.longitude);
  if(gps&&(!selected||!['country','state','neighborhood'].includes(selected.level))){
   const resolved=await options.reverse(gps).catch(()=>null);
   if(resolved){const area:CampaignDeliveryArea={country:country(resolved.country),state:state(resolved.state,resolved.country),city:text(resolved.city),zipcode:zip(text(resolved.postalCode)),neighborhood:''};
-   if(area.country&&area.state&&(!selected||(!selected.country||same(selected.country,area.country))&&(!selected.state||same(selected.state,area.state))&&(!selected.city||same(selected.city,area.city))&&(!selected.zipcode||same(selected.zipcode,area.zipcode))))return {...area,neighborhood:selected?.neighborhood??''};
+   if(area.country&&area.state&&(!selected||(!selected.country||same(selected.country,area.country))&&(!selected.state||same(selected.state,area.state))&&(!selected.city||same(selected.city,area.city))&&(!selected.zipcode||same(selected.zipcode,area.zipcode)))){options.onResolution?.('gps');return {...area,neighborhood:selected?.neighborhood??''};}
   }
  }
  if(!selected)return null;
@@ -55,5 +54,6 @@ export async function resolveCampaignDeliveryArea(input:{location?:string;latitu
  const unique=new Map(places.map(p=>[JSON.stringify([p.country,selected.level==='country'?'':p.state,['country','state','zipcode'].includes(selected.level)?'':p.city,selected.zipcode]),p]));
  if(unique.size!==1)return null;
  const place=[...unique.values()][0];if(!place.country)return null;
+ options.onResolution?.('lookup');
  return {country:place.country,state:selected.level==='country'?'':place.state,city:['country','state'].includes(selected.level)?'':selected.level==='zipcode'&&new Set(places.map(p=>p.city)).size>1?'':place.city,zipcode:selected.zipcode,neighborhood:selected.neighborhood};
 }

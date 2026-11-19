@@ -43,7 +43,7 @@ export function TicketFilters({date,query,onQueryChange,title,actions}:{title?:s
   const select=(value:string)=>{
     close();
     const params=new URLSearchParams(window.location.search);
-    params.set("date",value);
+    params.set("date",value); params.delete("ticketId");
     params.delete("staff");
     if(query)params.set("q",query);else params.delete("q");
     startTransition(()=>{

@@ -12,6 +12,7 @@ import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 import { countBookedAppointments } from "@/lib/booking-count";
 import { bookingPhoneDisplay } from "@/lib/booking-phone-display";
 import { bookingHintCalendarDates, bookingHintStaff, generateBookingSlotHints } from "@/lib/booking-slot-hints";
+import { buildTicketListHref } from "@/lib/pos-ticket-navigation";
 import { defaultBookingStart } from "@/lib/booking-time-policy";
 import { portableBookingTime as localDateTimeToUtcIso } from "@/lib/portable-booking-time";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
@@ -4641,7 +4642,7 @@ function AppointmentTableRow({
           {booking.posTicket ? (
             <a
               className="booking-row-action-button"
-              href={`/pos-tickets/${booking.posTicket.id}`}
+              href={buildTicketListHref({ ticketId: booking.posTicket.id })}
             >
               <WorkspaceText text="Open ticket" />
             </a>
@@ -5159,7 +5160,7 @@ function DetailDrawer({
             {booking.posTicket ? (
               <a
                 className="inline-flex min-h-10 items-center rounded-md bg-[#f26f3d] px-3 text-sm font-semibold text-white"
-                href={`/pos-tickets/${booking.posTicket.id}`}
+                href={buildTicketListHref({ ticketId: booking.posTicket.id })}
                 onClick={onClose}
               >
                 <WorkspaceText text="Open POS ticket" />
@@ -7203,6 +7204,41 @@ function OwnerAgenda({bookings, filters, range, timezone, canManage, onOpen}: {
   </div>;
 }
 
+/** Date-specific reads keep the schedule controls visible without borrowing rows. */
+export function BookingWorkspacePending({ href, today, navigate, error, retry }: {
+  href: string; today?: string; navigate: (href: string) => void; error?: string; retry: () => void;
+}) {
+  const url = new URL(href, "https://reylumi.com"), params = url.searchParams;
+  const validDate = (value: string | undefined | null) => Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T12:00:00Z`)) && new Date(`${value}T12:00:00Z`).toISOString().slice(0, 10) === value);
+  const acceptedToday = validDate(today) ? today! : undefined;
+  const date = validDate(params.get("date")) ? params.get("date")! : acceptedToday;
+  const tomorrow = acceptedToday ? new Date(Date.parse(`${acceptedToday}T12:00:00Z`) + 86_400_000).toISOString().slice(0, 10) : undefined;
+  const rawTab = params.get("tab");
+  const tab = params.get("section") === "availability" || rawTab === "availability" ? "availability" : rawTab === "booking-page" || rawTab === "booking_page" ? "booking-page" : rawTab === "settings" ? "settings" : "calendar";
+  const range = params.get("range") === "all" ? "all" : params.get("range") === "next7" ? "next7" : "day";
+  const dayView = range === "day" && params.get("view") !== "week";
+  const go = (patch: Record<string, string | null>) => navigate(buildUrl(url.pathname, params, patch));
+  const goDay = (value: string | undefined) => { if (value) go({ date: value, range: null, view: "day", tab: "calendar", bookingId: null }); };
+  const heading = tab === "calendar" ? date ? new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${date}T12:00:00Z`)) : "Bookings" : tab === "availability" ? "Availability" : tab === "booking-page" ? "Booking page" : "Booking settings";
+  return <main className="booking-surface booking-owner-root" data-booking-surface="owner" data-testid="booking-owner-pending" aria-busy={!error}>
+    <section className="booking-owner-header owner-schedule-header">
+      <div className="flex min-w-0 items-center gap-3">
+        <nav className="owner-schedule-tabs" style={{ flex: "1 1 auto", minWidth: 0 }} aria-label="Booking schedule">
+          <button type="button" disabled={!acceptedToday} aria-current={acceptedToday && tab === "calendar" && date === acceptedToday && dayView ? "page" : undefined} onClick={() => goDay(acceptedToday)}><CalendarIcon /><span><WorkspaceText text="Today" /></span></button>
+          <button type="button" disabled={!tomorrow} aria-current={tomorrow && tab === "calendar" && date === tomorrow && dayView ? "page" : undefined} onClick={() => goDay(tomorrow)}><ChevronIcon direction="right" /><span><WorkspaceText text="Next day" /></span></button>
+          <details data-dismissible-popover className="owner-schedule-menu"><summary aria-current={tab === "calendar" && (!dayView || date !== acceptedToday && date !== tomorrow) ? "page" : undefined}><CalendarIcon /><span><WorkspaceText text="Calendar" /></span></summary><div className="owner-schedule-popover">{date ? <SchedulePicker date={date} today={acceptedToday} range={range} status={params.get("status") ?? ""} onChange={value => go({ date: value.date, range: value.range === "day" ? null : value.range, status: value.status || null, view: "list", tab: "calendar", bookingId: null })} /> : <p role="status"><WorkspaceText text="Loading schedule…" /></p>}</div></details>
+          <details data-dismissible-popover className="owner-schedule-menu"><summary aria-current={tab !== "calendar" ? "page" : undefined}><SettingsIcon /><span><WorkspaceText text="Settings" /></span></summary><div className="owner-schedule-popover owner-settings-menu">{[["calendar", "Appointments"], ["booking-page", "Booking page"], ["availability", "Availability"], ["settings", "Booking rules"]].map(([value, label]) => <a key={value} href={buildUrl(url.pathname, params, { section: null, tab: value })}><WorkspaceText text={label} /></a>)}</div></details>
+        </nav>
+        <ContextualSupport />
+      </div>
+      <div className="owner-schedule-date"><h1><WorkspaceText text={heading} /></h1></div>
+    </section>
+    <section className="booking-owner-content">
+      {error ? <div role="alert"><p>{error}</p><button type="button" className="min-h-11 px-4 text-brand-teal" onClick={retry}><WorkspaceText text="Try again" /></button></div> : <><p role="status" className="text-sm text-text-secondary"><WorkspaceText text="Loading schedule…" /></p><div aria-hidden="true" className="mt-4 grid gap-3">{[0, 1, 2].map(key => <div key={key} className="h-20 rounded-xl bg-surface-muted" />)}</div></>}
+    </section>
+  </main>;
+}
+
 export function BookingWorkspaceClient({
   bookings,
   canManageBookings,
@@ -7317,7 +7353,7 @@ export function BookingWorkspaceClient({
 <nav style={{ flex: "1 1 auto", minWidth: 0 }} className="owner-schedule-tabs" aria-label={__vt("Booking schedule")}>
           <button type="button" aria-current={filters.tab==='calendar' && filters.date===today && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(today)}><CalendarIcon/><span><WorkspaceText text="Today" /></span></button>
           <button type="button" aria-current={filters.tab==='calendar' && filters.date===tomorrow && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(tomorrow)}><ChevronIcon direction="right"/><span><WorkspaceText text="Next day" /></span></button>
-          <details data-dismissible-popover className="owner-schedule-menu"><summary><CalendarIcon/><span><WorkspaceText text="Calendar" /></span></summary><div className="owner-schedule-popover">
+          <details data-dismissible-popover className="owner-schedule-menu"><summary aria-current={filters.tab==='calendar' && (filters.dateRange!=='day' || filters.view==='week' || filters.date!==today && filters.date!==tomorrow)?"page":undefined}><CalendarIcon/><span><WorkspaceText text="Calendar" /></span></summary><div className="owner-schedule-popover">
             <SchedulePicker today={today} loadCounts={loadMonthCounts} key={filters.date} date={filters.date} range={filters.dateRange} status={filters.status ?? ""} onChange={value => {
               setTimeline(false);
               router.push(buildUrl(pathname, searchParams, { date:value.date, range:value.range === "day" ? null : value.range, status:value.status || null, view:"list", tab:"calendar", bookingId:null }), {scroll:false});

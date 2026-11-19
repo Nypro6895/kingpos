@@ -80,7 +80,7 @@ test('current route comes first with component-exact query arguments and dedupli
   assert.equal(first('owner', '/reports?date=2026-10-20').name, 'owner.reports');
   assert.deepEqual(first('owner', '/payroll?tab=analytics&month=2026-10&overviewStaff=Alice').args, { month: '2026-10', tab: 'analytics' });
   assert.deepEqual(first('owner', '/customers?q=Sam&page=2').args, { page: '2', q: 'Sam' });
-  assert.deepEqual(first('owner', '/staff?filter=active&q=Sam&error=notice').args, { error: 'notice', filter: 'active', q: 'Sam' });
+  assert.deepEqual(first('owner', '/staff?filter=active&q=Sam&error=notice').args, {});
   assert.deepEqual(first('staff', '/staff/my-work?tab=payroll&payPeriodStart=2026-10-01&error=notice').args, { tab: 'payroll', payPeriodStart: '2026-10-01', staffId: staff });
   assert.deepEqual(first('staff', '/staff/appointments?view=week&date=2026-10-20').args, { date: '2026-10-20', view: 'week', staffId: staff });
   assert.deepEqual(first('customer', '/more/favorite-shop?q=Sam').args, { q: 'Sam', filter: 'shop' });

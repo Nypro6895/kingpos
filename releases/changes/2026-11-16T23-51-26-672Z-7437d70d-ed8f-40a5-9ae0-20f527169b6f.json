@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "retained-storage-ownership-20261116",
+  "status": "working",
+  "summary": "Fix confirmed Storage same-path COPY ownership retention so the existing strict account-erasure checkpoints can preserve business files and remove the departing Auth identity",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261116222000_retained_storage_ownership.sql"
+  ],
+  "source": {
+    "commit": "b8580c8"
+  },
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116"
+  ],
+  "validation": [
+    {
+      "name": "Actual Storage COPY, unchanged bytes, ownership checkpoint, unauthorized private read and Auth erasure",
+      "result": "pending"
+    }
+  ],
+  "id": "7437d70d-ed8f-40a5-9ae0-20f527169b6f",
+  "recordedAt": "2026-11-16T23:51:26.672Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

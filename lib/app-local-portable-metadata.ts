@@ -1,10 +1,12 @@
 import type { AppLocalContext } from "./app-local-host";
 import type { PortablePosCapability } from "./pos-portable-capabilities";
+import type { ReceiptBrand } from "@/types/receipt-print";
 import type { getPortablePosDeskData, getPortableCheckInData, getPortableBookData, getPortableTicketData, getPortableReportData } from "@/app/pos/portable/actions";
 
 export type AppLocalPortableDescriptor = {
   scope: string; keyId: string; salonId: string; salonName: string; salonLogoUrl: string | null; timeZone: string;
   capabilities: PortablePosCapability[]; touchKeyboardEnabled: boolean; preparedAt: number; offlineEnabled: boolean; devicePrepared: boolean;
+  receiptBrand?: ReceiptBrand;
 };
 export type AppLocalPortableContext = AppLocalContext & { portable: AppLocalPortableDescriptor };
 export const APP_LOCAL_PORTABLE_ROUTES = ["/pos/portable", "/pos/portable/check-in", "/pos/portable/book", "/pos/portable/ticket", "/pos/portable/today", "/pos/portable/report"] as const;

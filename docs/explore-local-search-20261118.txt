@@ -1,0 +1,109 @@
+LOCAL-FIRST EXPLORE SEARCH — IMPLEMENTATION HANDOFF
+Owner scope: local area, English service/name/place keywords, complete salon
+profiles and public post activity; preserve bounded search; DO NOT DEPLOY.
+
+Source: C:\Reylumi-worktrees\local-search-quality-20261118
+Base: 23e66abd5a197d66fd9d2e9fbb358b160af06307 (recorded clean release).
+The production alias read timed out. This implementation must be integrated
+against the then-current exact production source before a future release.
+
+Behavior
+- An explicit manual/typed area wins GPS. Canonical valid salon coordinates
+  establish geographic eligibility; missing/stale pins never invent distances.
+  Existing bounded Census/owner geocoding and coordinate authority are retained.
+  Recognized US services work before or after a verified area (dip powder
+  Chicago / Chicago dip powder), using the same single bounded entity lookup.
+- Relevance: local area, then evidence appropriate to name/service/style intent,
+  then profile completeness plus a capped actual-public-post boost and newest
+  post tie-break. The initial activity cap is five posts, up to ten extra points.
+  Imported reference introductions do not count as salon activity.
+- Whole-word service evidence prevents gel matching inside Angel/Gelato. English service
+  stems handle singular/plural; specific US services retain required keywords.
+  Exact/quoted public brands still override tentative service/place parsing.
+- No-hit checks use indexed producers rather than repeated whole-table probes.
+  Typo-name probes use conservative edit signatures and compact-name prefixes,
+  followed by the unchanged trigram/score proof. Unsupported probes retain the
+  original visible index predicate. Generic typos can still inspect a regional
+  cohort; the candidate/page limit is not a universal bound on index work.
+- Style/post matches require evidence from one current public post, with
+  moderation/block/owner/source proof. One salon per result. Outside-area actual matches remain labelled
+  Suggestions; generic category-only filler does not become a keyword match.
+  Current-post proof uses the unique content-key lookup before the remaining
+  checks. This prevents a historical/current self-join from rescanning all of a
+  salon's posts for every historical row when statistics are stale.
+- Service keywords use the whole active salon catalogue, including descriptions.
+  Several catalogue items can jointly satisfy the words: Gel pedicure plus
+  Regular manicure can match gel manicure. This is keyword discovery, not proof
+  of one exact bookable menu item. The first eight displayed service names are
+  not used as a filter, because doing so would lose valid later services.
+- New relevance sessions use indexed evidence lanes ordered before LIMIT;
+  merge/queue64, normal search page12, API maximum20 and stable viewer-bound
+  keyset cursors. Full local batches avoid unnecessary broader-area probes.
+  Old v3 sessions retain their shipped continuation path.
+  New Closest/newest sessions use the indexed lanes; ready canonical Trust/Bookable
+  retains its existing scorer/order. Geographic quality probes use cells and
+  exact distance before each bounded merge, rather than sorting every point.
+- Each live-metadata request uses a visible window of at most36 salons; initial
+  and continuation sections keep separate bounded observers. IntersectionObserver
+  avoids measuring every card on scroll. Updates/withdrawal tombstones survive
+  same-session page append; identity reset clears and suspends the old session.
+  Offscreen card rendering can be skipped by browsers supporting content-visibility.
+- One database-timeout retry remains capped and now has cancellable350ms
+  backoff. New cancelled requests cannot start subsequent enrichment RPCs.
+- Operational metrics distinguish first page, continuation and bounded refresh,
+  along with the actual ranking/sort path, without logging search text or GPS.
+
+Verification and limits
+- See artifacts/local-search-quality-20261118/build-validation-final.json for the
+  production build/TypeScript and source hashes, routing-validation.json for
+  parser/coordinate checks, and regression reports for actual test counts.
+- The final coherent local gate records153tests:152passed,0failed,1existing
+  optional-container skip, with82source hashes stable throughout the run.
+- browser.json uses actual local application code with synthetic API responses.
+  It covers mobile/desktop,600 cards/50 pages, stale-query cancellation and input
+  responsiveness. It is separate from SQL load, hosted HTTP and physical iOS QA.
+- The later browser-unique-media.json run uses the verified local production
+  build:600cards and600distinct image URLs per viewport, six existing public
+  WebP fixtures, input27ms mobile/24ms desktop and no JavaScript errors. See
+  browser-production-receipt.json for the served-build proof and exact scope.
+- Native request measurements use isolated PostgreSQL17 at127.0.0.1:55441,
+  synthetic100k/500k/1m salons and organic/reference posts, not production load.
+  The exact baseline/current SQL is measured; source fixture bulk preparation,
+  migration/backfill and index construction are excluded from request latency
+  and reported separately. First/next pages, errors/timeouts, scan plans and
+  storage are distinct. SQL workers do not establish online-user capacity.
+- Native baseline/quality matrices and nested plans are under
+  work/explore-local-quality-evidence; final scoped copies belong with the
+  immutable completion receipt. Older cancelled setup files are diagnostics,
+  not performance evidence. Successful-only p95 must be read with timeout counts.
+- Large fixtures were initially prepared with the recorded3a675d19 schema.
+  Finala843 indexed predicates were applied as explicit compatible function/index
+  overlays: row/state/clock contents remained unchanged and catalog/ACLs matched
+  a fresh complete final schema. Original setup identity is retained separately
+  from the effective query identity. Resumed1m setup is not a measured fresh
+  final-migration wall time; inspect the per-stage receipts before extrapolating.
+- The preparation contention gate checks BOTH canonical history-table writer
+  locks and the canonical revision row. This proves sampled lock access only.
+  Full profile-update controls exceeded2s on both the minimal corrected baseline
+  fixture and an idle staged prototype. That existing synthetic-fixture cost is
+  retained in evidence; it does not establish a hosted writer failure or prove
+  full application write throughput. Small full-trigger post-write pressure is
+  a separate test. Future integration must verify the real schema/resources.
+- No hosted schema/data changes, provider calls, publication or native upload.
+
+Future integration
+- Apply only the frozen patch onto a fresh production baseline; preserve the
+  existing geocoding, Explore/privacy/read-model and unrelated shipped changes.
+- The schema preparation must keep the new path OFF and release its short DDL
+  locks before filling the private projection. Backfill uses separate bounded
+  transactions, with dirty-generation reconciliation before activation.
+  Planner statistics are collected before activation and cached across retries.
+  Never wrap all backfill calls in one transaction or a server-side DO loop.
+  Measure disk headroom and concurrent writes; do not raise request timeouts.
+- Foreground operator: scripts/backfill-explore-local-quality.mjs reads status
+  by default. --apply runs resumable batches (default50, maximum100 per RPC),
+  with a pause and finite foreground budget. --activate requires --apply and
+  only attempts the server's guarded activation after complete reconciliation.
+  It uses the existing service configuration; this task never runs it hosted.
+- Recheck explicit-sort workloads, selected-card lifetime enrichment, concurrent
+  writes and actual hosted resources as separate release acceptance gates.

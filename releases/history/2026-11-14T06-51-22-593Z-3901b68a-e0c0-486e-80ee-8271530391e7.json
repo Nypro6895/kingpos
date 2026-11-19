@@ -1,0 +1,68 @@
+{
+  "kind": "release",
+  "summary": "Verified coordinated 19-group web release; Windows download/feed evidence attached separately.",
+  "changes": [
+    "539b61c6-340f-447f-97e2-a2f6cf157969",
+    "9e0407d7-5f2a-44a4-8ea5-56b3ea1922ca",
+    "36c1d90e-c16a-47dc-a252-50deded05fe9",
+    "ce989450-b3b0-424f-9f98-f5d60e6c043d",
+    "b4bbc6f8-5c6a-4a00-b823-05e0e726f126",
+    "b554dae9-e351-4e9a-98a8-e6d6ed261e6b",
+    "78e53ce4-788e-4ccd-a3f8-326de1888443",
+    "d72d2016-b14d-4e1e-913c-ef47191ce67e",
+    "70d413f3-3619-4aed-ac27-dd71c729a439",
+    "7edf308a-25b3-43d4-85c6-2c0a81dd7a43",
+    "d38cb460-71b6-49b4-a8f9-a7bda810145b",
+    "cf1485e1-cc40-4ba7-9334-3e52c40de5d6",
+    "ea259265-a16c-42df-8c6a-d842973e82c7",
+    "0b7f4af3-59b3-48bd-b929-5b217c3d002f",
+    "a60b519b-783a-4fa2-b6ba-142c5402f678",
+    "295feea8-ea14-4922-8fce-73ab47e0df59",
+    "1235ecfb-890e-4397-a4d1-29b9ee1bfb64",
+    "c248e25e-5861-4f37-96d4-4815dd8e51de",
+    "d5eedb9a-8aa6-4a34-ac19-f6e404182fbf",
+    "e6f21bbf-a62b-48af-9dbb-e7bdc5fd5220"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_F5yYNDU4nXW2epT5pozciBmPfHhv",
+      "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+      "sourceSha256": "731b418d697e34bde56da98550cb7fc2b955bc30d6e2d442fe60b697f285ee42",
+      "overlaySha256": "f73b27bdaa8bda7558cedad08d0f0f01539b4921f304a49df0c64720dcc08d28",
+      "evidence": "C:/Reylumi/artifacts/release-review-20261114/live-source-verified.json; C:/Reylumi/artifacts/release-review-20261114/live-http.json; C:/Reylumi/artifacts/release-review-20261114/web-promotion.json; C:/Reylumi/artifacts/release-review-20261114/sql-review/production-verification.json; C:/Reylumi/artifacts/release-review-20261114/public-chromium-smoke/assessment.json; C:/Reylumi/artifacts/release-review-20261114/windows-live-verified.json"
+    }
+  },
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged."
+  ],
+  "windowsEvidence": "C:/Reylumi/artifacts/release-review-20261114/windows-live-verified.json",
+  "androidEvidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\device-availability.json",
+  "source": {
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "immutableRef": "release/complete-20261114-source",
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final"
+  },
+  "databaseEvidence": "C:/Reylumi/artifacts/release-review-20261114/sql-review/production-verification.json",
+  "sourceVerification": {
+    "format": "individual source files (CLI 65)",
+    "archivePresent": false,
+    "files": 4327,
+    "allFileContentAddressedHashesMatched": true,
+    "inheritedFromVerifiedBaseline": 4140,
+    "downloadedOverlaySha256Verified": 187
+  },
+  "nativeDistribution": {
+    "status": "pending",
+    "workflowRun": 43567533278,
+    "sourceCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "evidence": "iPhone signing/upload/Apple availability recorded separately only after actual verification"
+  },
+  "id": "3901b68a-e0c0-486e-80ee-8271530391e7",
+  "recordedAt": "2026-11-14T06:51:22.593Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114"
+}

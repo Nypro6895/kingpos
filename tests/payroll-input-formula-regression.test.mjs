@@ -10,7 +10,7 @@ function engine(source){
  const ast=ts.createSourceFile('payroll.ts',source,ts.ScriptTarget.Latest,true);
  const code=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='calculateDailyPayroll').getText(ast);
  const js=ts.transpileModule(code+'\nexport {calculateDailyPayroll};',{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- const exports={};new Function('exports','roundMoney','numberValue','serializeSetting','calculateTaxCompanyReporting',js)(exports,v=>Math.round((v+Number.EPSILON)*100)/100,v=>Number.isFinite(Number(v))?Number(v):0,v=>v,tax.exports.calculateTaxCompanyReporting);
+ const exports={};new Function('exports','roundMoney','numberValue','serializeSetting','calculateTaxCompanyReporting','calculatePayrollTaxSnapshot','payrollTaxReportedAmounts',js)(exports,v=>Math.round((v+Number.EPSILON)*100)/100,v=>Number.isFinite(Number(v))?Number(v):0,v=>v,tax.exports.calculateTaxCompanyReporting,tax.exports.calculatePayrollTaxSnapshot,tax.exports.payrollTaxReportedAmounts);
  return exports.calculateDailyPayroll;
 }
 // Compare this release with the captured live source, which already contains
@@ -19,12 +19,19 @@ const before=engine(execFileSync('git',['show','274a3ab4300956a458c564ad6beab44f
 const after=engine(fs.readFileSync('lib/payroll.ts','utf8'));
 const defaults={pay_type:'commission',commission_rate:60,check_rate:50,tax_rate:0,cash_to_tax_company:false,apply_tax_to_fixed_pay:false,tax_tips:false,tip_payout_method:'cash',bonus_payout_method:'check'};
 const input=(setting={},gross=1000,tip=100)=>({businessDate:'2026-10-29',correctionDelta:0,earning:{grossSales:gross,tipAmount:tip},fixedDailyAmount:80,accountId:'account',payrollRunId:'run',salonId:'salon',staffId:'staff',setting:{...defaults,...setting}});
-function financial(result){return Object.fromEntries(Object.entries(result).filter(([key])=>!['dailyTotal','setting'].includes(key)));}
+function financial(result){return Object.fromEntries(Object.entries(result).filter(([key])=>!['dailyTotal','setting','reportingSnapshot'].includes(key)).map(([key,value])=>[key,value===0?0:value]));}
 for(const [name,setting] of [
  ['commission with cash tips',{}],['tax on check portion',{tax_rate:10}],['tax including cash',{tax_rate:10,cash_to_tax_company:true}],
  ['taxed tips by check',{tax_rate:15,tax_tips:true,tip_payout_method:'check'}],['fixed pay exempt',{pay_type:'fixed',tax_rate:10}],
  ['fixed pay taxable',{pay_type:'fixed',tax_rate:10,apply_tax_to_fixed_pay:true}],['all check',{check_rate:100,tip_payout_method:'check'}],['all cash',{check_rate:0}],
 ])test(`existing calculation preserved: ${name}`,()=>assert.deepEqual(financial(after(input(setting))),financial(before(input(setting)))));
+
+test('legacy negative earnings and correction half-cent tax rounding remain unchanged',()=>{
+ for(const gross of [-1000,-0.01,-0.05,0.01,0.05,1.03])for(const tip of [-1.05,-0.05,0,0.05])for(const rate of [0,7.5,10,20,50])for(const cash of [false,true]){
+  const value=input({tax_rate:rate,cash_to_tax_company:cash,tax_tips:true},gross,tip);
+  assert.deepEqual(financial(after(value)),financial(before(value)),JSON.stringify({gross,tip,rate,cash}));
+ }
+});
 
 for(const [name,setting,expected] of [
  ['untaxed wage Cash remains intact',{tax_rate:10},{baseCash:300,baseCheck:270,cash:400,check:270,tax:30}],

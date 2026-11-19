@@ -33,6 +33,10 @@ struct NavigationPolicy {
     func needsHostedTaskControls(_ url: URL) -> Bool {
         guard isInternal(url), !isExcluded(url) else { return false }
         let path = url.path.lowercased()
+        if let fragment = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedFragment,
+           let publicURL = URL(string: "https://reylumi.com/gift-cards#" + fragment),
+           Self.giftCardPath(publicURL) != nil,
+           path == "/gift-cards", url.query == nil { return true }
         if path == "/qr", let entry = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "entry" })?.value,
            UUID(uuidString: entry) != nil { return true }
         // Authentication and public support pages already link back to Explore
@@ -98,5 +102,24 @@ struct NavigationPolicy {
               parts[0].isEmpty, parts[1] == "check-in",
               let id = UUID(uuidString: String(parts[2])), parts[2].count == 36 else { return nil }
         return "/qr?entry=" + id.uuidString.lowercased()
+    }
+
+    /// A delivery link only opens the existing website. The customer still
+    /// signs in and explicitly claims the card; mobile/payment links stay web-only.
+    static func giftCardPath(_ url: URL) -> String? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              components.user == nil, components.password == nil, components.port == nil,
+              components.query == nil else { return nil }
+        let universal = components.scheme == "https" && components.host?.lowercased() == "reylumi.com"
+            && components.percentEncodedPath == "/gift-cards"
+        let explicitOpen = components.scheme == "reylumi" && components.host == "gift-cards"
+            && components.percentEncodedPath.isEmpty
+        guard universal || explicitOpen, let fragment = components.percentEncodedFragment,
+              fragment.hasPrefix("card=") else { return nil }
+        let token = fragment.dropFirst(5)
+        // gift_card_secret is SHA-256 encoded as lowercase hex. Never decode
+        // query syntax, extra fragments or percent escapes into this capability.
+        guard token.utf8.count == 64, token.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }) else { return nil }
+        return "/gift-cards#" + fragment
     }
 }

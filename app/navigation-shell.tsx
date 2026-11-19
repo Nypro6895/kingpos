@@ -940,7 +940,6 @@ function CustomerContextSheet({
         if (workspace.id === currentWorkspaceId) {
           closeAndFocus();
           router.push(action.href);
-          router.refresh();
           return;
         }
         navigateToWorkspace(workspace.id, action.href);
@@ -959,7 +958,6 @@ function CustomerContextSheet({
         if (workspace.id === currentWorkspaceId) {
           closeAndFocus();
           router.push(action.href);
-          router.refresh();
           return;
         }
         navigateToWorkspace(workspace.id);
@@ -969,9 +967,11 @@ function CustomerContextSheet({
     );
   };
 
+  // The containing mobile shell owns visibility: Staff keeps its header until
+  // xl, so hiding this drawer at lg strands the visible iPad landscape trigger.
   return (
     <div
-      className="fixed inset-0 z-[80] bg-zinc-950/25 backdrop-blur-[2px] lg:hidden"
+      className="fixed inset-0 z-[80] bg-zinc-950/25 backdrop-blur-[2px]"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           closeAndFocus();
@@ -1536,7 +1536,6 @@ function CustomerDesktopWorkspaceSwitcher({
         setError(null);
         if (workspace.id === currentWorkspaceId) {
           router.push(action.href);
-          router.refresh();
           setOpen(false);
           return;
         }
@@ -1555,7 +1554,6 @@ function CustomerDesktopWorkspaceSwitcher({
         setError(null);
         if (workspace.id === currentWorkspaceId) {
           router.push(action.href);
-          router.refresh();
           setOpen(false);
           return;
         }
@@ -2154,7 +2152,7 @@ function CustomerDesktopHeader({
             ? "flex items-center justify-end gap-4"
             : compactStaffHeader
               ? "flex items-center justify-between gap-4"
-              : "grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5"
+              : "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-5"
         }
       >
         {exploreHeader ? <ExploreHeaderSearchSlot /> : null}
@@ -2258,6 +2256,8 @@ function CustomerDesktopHeader({
           >
             <Icon name="message" />
           </Link>
+          {!staffWorkspace ? <Link aria-label={__vt("All settings")} className={customerDesktopSoftButtonClass()} href="/settings" data-personal-header-settings><Icon name="gear" /></Link>
+          : (
           <Link
             aria-label={__vt(
               staffWorkspace ? "Open Staff Profile" : "All settings",
@@ -2289,6 +2289,7 @@ function CustomerDesktopHeader({
               </span>
             </span>
           </Link>
+          )}
         </div>
       </div>
     </header>

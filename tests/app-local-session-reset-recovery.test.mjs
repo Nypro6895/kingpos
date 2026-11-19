@@ -26,7 +26,7 @@ function fixture() {
     appLocalContextFailureReason:()=> 'reset', classifyAppLocalContextFailure:value=>value.status??'reset',
     alignDeviceGeneration:()=>{}, clearExperienceSnapshots:async()=>{}, clearExperienceState:()=>{},
     resetAppLocalResources:()=>calls.push('clear-resources'), setAppLocalCommandScope:()=>calls.push('clear-commands'),
-    setAdmissions:()=>calls.push('clear-admission'), setHelpPresentation:()=>{}, setVisited:()=>{}, setSwitchingWorkspace:()=>{},
+    setAdmissions:()=>calls.push('clear-admission'), setHelpPresentation:()=>{}, setHelpReturn:value=>calls.push(['help-return',value]), setVisited:()=>{}, setSwitchingWorkspace:()=>{},
     setError:value=>calls.push(['error',value]),
     verify:options=>{assert.deepEqual(Object.keys(state.admitted.current),[]);calls.push(['verify',options.fresh]);},
     setTimeout:fn=>{timers.push(fn);return timers.length;},
@@ -64,5 +64,5 @@ test('watchdog defers to in-flight authority checks and ignores navigation',()=>
   }
 });
 test('logout and unauthenticated reset never automatically recover',()=>{
-  for(const reason of ['logout','unauthenticated']){const f=fixture();f.emit(reason,{status:401});assert.equal(f.reads(),0);assert.equal(f.timers.length,0);}
+  for(const reason of ['logout','unauthenticated']){const f=fixture();f.emit(reason,{status:401});assert.equal(f.reads(),0);assert.equal(f.timers.length,0);assert.ok(f.calls.some(c=>c[0]==='help-return'&&c[1]===null));}
 });

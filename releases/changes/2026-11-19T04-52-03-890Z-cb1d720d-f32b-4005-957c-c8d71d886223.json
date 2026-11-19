@@ -1,0 +1,49 @@
+{
+  "kind": "change",
+  "changeId": "rights-image-evidence-backend-20261118",
+  "status": "needs-integration",
+  "summary": "Default-off pinned private evidence, separate immutable origin-removal decision, exact Storage checkpoints and closed-case 30-day purge; actual isolated acceptance passed",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119010000_rights_image_evidence.sql",
+    "types/rights-evidence.ts",
+    "tests/rights-image-evidence.integration.test.mjs",
+    "docs/rights-image-evidence-backend-20261118.md"
+  ],
+  "source": {
+    "snapshot": "artifacts/rights-image-evidence-20261118/frozen",
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "public-post-media-deletion-20261118",
+    "admin-exact-text-moderation-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Full isolated Supabase/PostgreSQL/Auth/Storage/PostgREST and actual worker/access injection",
+      "result": "passed",
+      "evidence": "artifacts/rights-image-evidence-20261118/acceptance/rights-image-evidence-acceptance.json"
+    },
+    {
+      "name": "8/8 node tests zero skips, real user/report/risk concurrency, exact SHA/absence and ordinary hold/account Auth finalization",
+      "result": "passed",
+      "evidence": "artifacts/rights-image-evidence-20261118/acceptance/rights-image-evidence-acceptance.json"
+    },
+    {
+      "name": "Scoped ESLint and owned file whitespace",
+      "result": "passed"
+    },
+    {
+      "name": "Combined build/release, actual policy/operator activation, legacy/shared/special handling and hosted device/CDN rehearsal",
+      "result": "pending"
+    }
+  ],
+  "id": "cb1d720d-f32b-4005-957c-c8d71d886223",
+  "recordedAt": "2026-11-19T04:52:03.890Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

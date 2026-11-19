@@ -6,6 +6,11 @@ import { getPublicSalonDirectoryListing } from "@/lib/salon-directory";
 import { EMPTY_SALON_IDENTITY } from "@/lib/salon-identity";
 import "server-only";
 import { normalizeStoredImage } from "@/lib/normalize-stored-image";
+import { preparePublicPostImage, removeOwnStagedPostImage } from "@/lib/public-image-safety";
+import { verifyOpenAIPublicPostImage } from "@/lib/public-image-verifier-openai";
+import { withPublicPhotoProcessingConsent, type PublicPhotoProcessingConsent } from "@/lib/public-photo-processing-consent";
+import { publishSalonPostOnce, PostSubmissionUnknownError, type PostSubmission } from "@/lib/public-post-submission";
+import { publicImageFinalPath } from "@/lib/public-image-staging";
 import { getSalonProfileReadiness } from "@/lib/salon-publication-readiness";
 export { getSalonProfileReadiness } from "@/lib/salon-publication-readiness";
 import { cache } from "react";
@@ -1791,8 +1796,9 @@ async function assertTrustedSalonProfileMediaPath(input: {
   context: CurrentBusinessContext;
   allowedKinds: SalonProfileMediaKind[];
   path: string | null;
+  photoProcessingConsent?: PublicPhotoProcessingConsent;
 }) {
-  const normalizedPath = normalizeSalonProfileMediaPath(input.path);
+  const normalizedPath = normalizeSalonProfileMediaPath(input.path ? publicImageFinalPath(SALON_PROFILE_MEDIA_BUCKET, input.path) : null);
 
   if (!normalizedPath) {
     return null;
@@ -1817,6 +1823,18 @@ async function assertTrustedSalonProfileMediaPath(input: {
 
   if (!supabase) {
     throw new Error("This feature is temporarily unavailable. Please try again later.");
+  }
+
+  if (parsedPath.kind === "look" || parsedPath.kind === "update") {
+    if (!input.context.user) throw new Error("Sign in before posting.");
+    const checked = await preparePublicPostImage({
+      client: supabase, bucket: SALON_PROFILE_MEDIA_BUCKET, path: normalizedPath,
+      userId: input.context.user.id, salonId: salon.id, purpose: parsedPath.kind,
+      verify: withPublicPhotoProcessingConsent(input.photoProcessingConsent, verifyOpenAIPublicPostImage),
+    });
+    await markSalonProfileMediaAssetActive({ context: input.context, path: checked.path,
+      mimeType: checked.mimeType, processedBytes: checked.bytes });
+    return checked.path;
   }
 
   const { folder, name } = getStorageParent(normalizedPath);
@@ -2132,10 +2150,20 @@ export async function updateCurrentSalonProfileIdentityMedia(input: {
 }
 
 export async function deleteCurrentSalonProfileMedia(path: string) {
+  path = publicImageFinalPath(SALON_PROFILE_MEDIA_BUCKET, path);
   const context = await getCurrentBusinessContext();
 
   if (!context.user) {
     throw new Error("You must be logged in to manage salon profile media.");
+  }
+
+  const parsed = parseSalonProfileMediaPath(path);
+  if (parsed?.kind === "look" || parsed?.kind === "update") {
+    const client = await createAuthenticatedSupabaseServerClient();
+    if (!client || !context.currentSalon) throw new Error("Photo cleanup is temporarily unavailable.");
+    await removeOwnStagedPostImage(client, { bucket: SALON_PROFILE_MEDIA_BUCKET, path,
+      userId: context.user.id, salonId: context.currentSalon.id });
+    return; // Never orphan/delete a confirmed public post while clearing its private staging copy.
   }
 
   const canManageIdentity = await hasPermission(
@@ -2189,6 +2217,8 @@ export async function setCurrentSalonProfilePublication(enabled: boolean) {
 }
 
 export async function createCurrentSalonProfileLook(input: {
+  submission?: PostSubmission;
+  photoProcessingConsent?: PublicPhotoProcessingConsent;
   additionalServiceIds?: string[];
   badge: string | null;
   bookingCtaEnabled?: boolean;
@@ -2246,6 +2276,7 @@ export async function createCurrentSalonProfileLook(input: {
     allowedKinds: ["look"],
     context,
     path: input.imagePath,
+    photoProcessingConsent: input.photoProcessingConsent,
   });
 
   if (!mediaPath) {
@@ -2304,9 +2335,7 @@ export async function createCurrentSalonProfileLook(input: {
     throw new Error("Only the owner can feature their own published photo.");
   }
 
-  const { data, error } = await supabase
-    .from("salon_profile_looks")
-    .insert({
+  const insertRow = {
       author_avatar_path: author.avatarPath,
       author_display_name: author.displayName,
       author_staff_id: author.staffId,
@@ -2330,9 +2359,16 @@ export async function createCurrentSalonProfileLook(input: {
       status: input.publishNow ? "published" : "draft",
       title,
       why_love_it: optionalText(input.whyLoveIt),
-    })
-    .select(SALON_PROFILE_LOOK_SELECT)
-    .single<SalonProfileLook>();
+    };
+  const { data, error } = input.submission
+    ? { data: await publishSalonPostOnce<SalonProfileLook>({
+      client: supabase, submission: input.submission, kind: "look", row: insertRow,
+      hashtags: extractHashtags(caption), booking: {
+        additionalServiceIds: input.additionalServiceIds ?? [], bookingCtaEnabled: input.bookingCtaEnabled ?? true,
+        bookingNote: input.bookingNote, creditedStaffId: recommendedStaffId, primaryServiceId: input.serviceId,
+      },
+    }), error: null }
+    : await supabase.from("salon_profile_looks").insert(insertRow).select(SALON_PROFILE_LOOK_SELECT).single<SalonProfileLook>();
 
   if (error) {
     console.error("Supabase create salon profile look failed", {
@@ -2348,7 +2384,7 @@ export async function createCurrentSalonProfileLook(input: {
     throw new Error(error.message);
   }
 
-  try {
+  if (!input.submission) try {
     await Promise.all([
       attachSalonProfileMediaAsset({
         context,
@@ -2399,6 +2435,8 @@ export async function createCurrentSalonProfileLook(input: {
 }
 
 export async function createCurrentSalonProfileUpdate(input: {
+  submission?: PostSubmission;
+  photoProcessingConsent?: PublicPhotoProcessingConsent;
   additionalServiceIds?: string[];
   bookingCtaEnabled?: boolean;
   caption?: string | null;
@@ -2440,6 +2478,7 @@ export async function createCurrentSalonProfileUpdate(input: {
     allowedKinds: ["update"],
     context,
     path: input.imagePath ?? null,
+    photoProcessingConsent: input.photoProcessingConsent,
   });
 
   const author = postingStaff
@@ -2551,9 +2590,7 @@ export async function createCurrentSalonProfileUpdate(input: {
     throw new Error("Update title is required.");
   }
 
-  const { data, error } = await supabase
-    .from("salon_profile_updates")
-    .insert({
+  const insertRow = {
       author_avatar_path: author.avatarPath,
       author_display_name: author.displayName,
       author_staff_id: author.staffId,
@@ -2571,9 +2608,16 @@ export async function createCurrentSalonProfileUpdate(input: {
       summary,
       title,
       update_type: input.type,
-    })
-    .select(SALON_PROFILE_UPDATE_SELECT)
-    .single<SalonProfileUpdate>();
+    };
+  const { data, error } = input.submission
+    ? { data: await publishSalonPostOnce<SalonProfileUpdate>({
+      client: supabase, submission: input.submission, kind: "update", row: insertRow,
+      hashtags: extractHashtags(caption), booking: {
+        additionalServiceIds: input.additionalServiceIds ?? [], bookingCtaEnabled: input.bookingCtaEnabled ?? true,
+        bookingNote: null, creditedStaffId: selectedStaffId, primaryServiceId: input.serviceId,
+      },
+    }), error: null }
+    : await supabase.from("salon_profile_updates").insert(insertRow).select(SALON_PROFILE_UPDATE_SELECT).single<SalonProfileUpdate>();
 
   if (error) {
     console.error("Supabase create salon profile update failed", {
@@ -2589,7 +2633,7 @@ export async function createCurrentSalonProfileUpdate(input: {
     throw new Error(error.message);
   }
 
-  try {
+  if (!input.submission) try {
     await Promise.all([
       attachSalonProfileMediaAsset({
         context,
@@ -2748,6 +2792,8 @@ export async function deleteCurrentSalonProfileLook(lookId: string) {
 }
 
 export async function createCurrentSalonProfileSocialPost(input: {
+  requestId?: string;
+  photoProcessingConsent?: PublicPhotoProcessingConsent;
   additionalServiceIds?: string[];
   bookingCtaEnabled?: boolean;
   caption: string | null;
@@ -2761,6 +2807,32 @@ export async function createCurrentSalonProfileSocialPost(input: {
   startingPrice?: number | null;
   title?: string | null;
 }) {
+  if (input.requestId && !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(input.requestId)) throw new Error("Post request is not valid.");
+  const submission = input.requestId ? { requestId: input.requestId, request: { ...input } } : undefined;
+  if (submission) {
+    const context = await getCurrentBusinessContext();
+    if (!context.user || !context.currentSalon) throw new Error("Sign in to your salon before posting.");
+    const client = await createAuthenticatedSupabaseServerClient();
+    if (!client) throw new PostSubmissionUnknownError();
+    let lookup;
+    try { lookup = await client.rpc("lookup_salon_post_submission", { p_request_id: submission.requestId, p_request: submission.request }); }
+    catch { throw new PostSubmissionUnknownError(); }
+    const { data: existing, error } = lookup;
+    if (error) {
+      if (error.code === "P0001") throw new Error(error.message);
+      throw new PostSubmissionUnknownError();
+    }
+    if (existing?.row) {
+      if (existing.row.salon_id !== context.currentSalon.id || existing.row.author_user_id !== context.user.id) throw new Error("Post does not belong to this salon.");
+      if (existing.row.status !== "published" || existing.row.safety_hold !== false) throw new PostSubmissionUnknownError();
+      if (existing.kind === "look") {
+        const look = mapPublicLook({ ...existing.row, comment_count: 0, is_saved: false, save_count: 0, hashtags: extractHashtags(existing.row.caption) });
+        return { look, post: buildSalonProfileFeed({ looks: [look], updates: [], salonId: context.currentSalon.id, profileName: context.currentSalon.name })[0] };
+      }
+      const update = mapPublicUpdate({ ...existing.row, comment_count: 0, hashtags: extractHashtags(existing.row.caption) });
+      return { look: null, post: buildSalonProfileFeed({ looks: [], updates: [update], salonId: context.currentSalon.id, profileName: context.currentSalon.name })[0] };
+    }
+  }
   const caption = optionalText(input.caption);
   const hasImage = Boolean(optionalText(input.imagePath));
   const contentType =
@@ -2776,6 +2848,8 @@ export async function createCurrentSalonProfileSocialPost(input: {
 
   if (contentType === "look") {
     return createCurrentSalonProfileLook({
+      submission,
+      photoProcessingConsent: input.photoProcessingConsent,
       badge: null,
       bookingCtaEnabled: input.bookingCtaEnabled,
       bookingNote: null,
@@ -2797,6 +2871,8 @@ export async function createCurrentSalonProfileSocialPost(input: {
   }
 
   return createCurrentSalonProfileUpdate({
+    submission,
+    photoProcessingConsent: input.photoProcessingConsent,
     additionalServiceIds: input.additionalServiceIds,
     bookingCtaEnabled: input.bookingCtaEnabled,
     caption,

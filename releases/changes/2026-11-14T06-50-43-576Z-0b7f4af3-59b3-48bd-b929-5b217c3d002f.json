@@ -1,0 +1,96 @@
+{
+  "kind": "change",
+  "changeId": "gift-ticket-qa-seller-20261113",
+  "status": "ready",
+  "summary": "Coordinator integrated gift-ticket-qa-seller-20261113 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "components/app-local-ticket-detail.tsx",
+    "docs/gift-ticket-unified-20261113.md",
+    "docs/gift-ticket-qa-seller-20261113.md",
+    "lib/pos-ticket-financial-view.ts",
+    "lib/pos-ticket-receipt.ts",
+    "types/pos-ticket.ts",
+    "tests/gift-counter-sale.integration.test.mjs",
+    "tests/gift-ticket-financial-view.test.mjs",
+    "tests/gift-ticket-ui.test.mjs",
+    "tests/gift-ticket-actual-flow.test.mjs",
+    "releases/changes/2026-11-14T03-14-43-456Z-a105fa7f-1b8e-448c-9306-b93e50893e9e.json"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "51c4502a-8dd3-428c-9240-32bf5441040e",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\gift-ticket-unified-20261113\\artifacts\\gift-ticket-qa-seller\\frozen-source\\ddcc04c40ea4f6709041c69869d56c7f533b4506",
+      "commit": "ddcc04c40ea4f6709041c69869d56c7f533b4506"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-14T03:50:48.109Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [
+    "gift-ticket-unified-20261113"
+  ],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "0b7f4af3-59b3-48bd-b929-5b217c3d002f",
+  "recordedAt": "2026-11-14T06:50:43.576Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/(app)/pos-tickets/[ticketId]/page.tsx": "33f8fdae25cb5b9bde10a764839d2f109f8281541ee6d609c821ada346e5dbf8",
+    "app/pos-tickets/closed-ticket-correction-form.tsx": "5d4823c639d8337afd2b13447aa425bae407987fbbe510d5c648e405fac88ba0",
+    "app/pos-tickets/owner-live-tickets.tsx": "ac92d0f584b2d6031d3a8e50cf2674991c72e670dd17de706322f916a05ea4c0",
+    "app/pos-tickets/ticket-filters.module.css": "8938fa2c3370ea93530006632399cf52f80fb0519d7dc6f290007b456b8fd4cc",
+    "app/pos/portable/ticket/portable-ticket-client.tsx": "3c12a7bd426c3c22b07aa5b39fcd2869fdd66cf5bed69c26710755bd39a37702",
+    "components/app-local-ticket-detail.tsx": "531df030f95ca04cd573ab6cb9760a0dbbad890969ce77285e9389a31ad61b08",
+    "docs/gift-ticket-unified-20261113.md": "51dce6bc9558d836df3fa77335104ac49f1e30e3f6c50189ae7d4710cbdb130a",
+    "docs/gift-ticket-qa-seller-20261113.md": "d8660d7375dbcc26e9ab3364bfdaad0c00b9c296933b2962af3b87366102e2c2",
+    "lib/pos-ticket-financial-view.ts": "183acae116c5f72eae7e5a80bbe148a61f685e09cda65350d41fb8d8aa772533",
+    "lib/pos-ticket-receipt.ts": "60a0af2f33f3542cbd0fb352d3bab2ead0de9e0dc107f362852be0d0643f6282",
+    "types/pos-ticket.ts": "4ba3377ddca2ad85ff5b16536ddee04c15657243168aa6ee70829c70eefa9d93",
+    "tests/gift-counter-sale.integration.test.mjs": "e2a307da2c2c2632b34b47e7ba5ef06fcb082c49ba75b91fff40de61315cf244",
+    "tests/gift-ticket-financial-view.test.mjs": "e9502fa51b7bb2838a9bf46455c47c7f66c3c86c4a9fd741a2fc30061a2002d3",
+    "tests/gift-ticket-ui.test.mjs": "92f64a5368d7e44f4ab0d0967510e3a6646e9ef5829d548892060a54e4c240b5",
+    "tests/gift-ticket-actual-flow.test.mjs": "bfcdc78745097267cb7061d60bcdd839cf36ed8283ce72858c21e7c39ee3496e",
+    "releases/changes/2026-11-14T03-14-43-456Z-a105fa7f-1b8e-448c-9306-b93e50893e9e.json": "466bc56472cad69779d2a9d0238228964d47eb3ea7fcc0d6b8301d20a1e94607"
+  }
+}

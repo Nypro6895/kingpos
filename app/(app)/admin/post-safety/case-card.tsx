@@ -11,6 +11,7 @@ import {originalPostHref, reportReasonLabel, formatReviewDate} from "@/lib/post-
 import styles from "./review-workspace.module.css";
 import type {AdminPostSafetyCase} from "@/types/admin-post-safety";
 import {openAdminSupport} from "@/lib/admin-support-client";
+import {RightsEvidencePanel} from './rights-evidence-panel';
 
 const decisions: Record<string,{label:string; confirm:string; reason:string; icon:string}> = {
  request_info:{label:"Request information",confirm:"Ask the reporter to provide specific details or evidence? The content review remains pending.",reason:"Requested more information from the reporter.",icon:"check"},
@@ -36,6 +37,7 @@ function Region({title,children,links}: {title:string;children:ReactNode;links?:
 function Facts({rows}: {rows:Array<[string,ReactNode]>}){return <dl className={styles.facts}>{rows.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value??"Not available"}</dd></div>)}</dl>;}
 function Badge({children,tone="neutral"}: {children:ReactNode;tone?:string}){return <span className={`${styles.badge} ${tone==="green"?styles.badgeGreen:tone==="red"?styles.badgeRed:tone==="amber"?styles.badgeAmber:""}`}>{children}</span>;}
 function PostMedia({item,large=false}: {item:AdminPostSafetyCase;large?:boolean}){
+ if(item.reason==='minor_safety')return <p className={styles.alert}>Photo access is blocked here. Use the separate safety escalation process; ordinary evidence handling does not open or copy this photo.</p>;
  return <div className={`${styles.media} ${large?styles.largeMedia:""}`}>{!item.media.length?<p className={styles.muted}>No media attached.</p>:item.media.map(media=><div key={media.path} className={styles.mediaItem}>{!media.url?<small>Media unavailable. The file may have been removed.</small>:media.mime?.startsWith("video/")||/\.(mp4|webm|mov)(?:$|\?)/i.test(media.path)?<video controls playsInline preload="metadata" src={media.url}/>:<Image unoptimized src={media.url} width={900} height={700} alt="Reported post"/>}</div>)}</div>;
 }
 export function PostSafetyCaseCard({item,canReview,canSuspend,canContact,viewerId,onDecision,onBusyChange,onRelated}: {item:AdminPostSafetyCase;canReview:boolean;canSuspend:boolean;canContact:boolean;viewerId?:string;onDecision?:(action:string)=>void;onBusyChange?:(busy:boolean)=>void;onRelated?:(kind:string,value:string)=>void}){
@@ -62,6 +64,7 @@ export function PostSafetyCaseCard({item,canReview,canSuspend,canContact,viewerI
     <div className={styles.evidence}><div><PostMedia item={item}/><p className={styles.muted}>{item.media.length} media file{item.media.length===1?"":"s"}</p></div><div><h3 className={styles.postTitle}>{post.title||"Post without title"}</h3>{post.caption&&post.caption!==post.title?<p className={styles.caption}>{post.caption}</p>:null}<Facts rows={[["Author",item.author_name??"Account unavailable"],["Business / salon",item.salon_name??(post.salon_id?<span className={styles.technical}>{post.salon_id}</span>:"Not attached")],["Published",date(post.published_at??post.created_at)],["Source",item.source_type==="beauty_post"?"Beauty post":item.source_type==="salon_profile_look"?"Salon look":"Salon update"],["Post ID",<span key="id" className={styles.technical}>{item.source_id}</span>]]}/></div></div>
     {visibility==="deleted"?<div className={styles.alert}>Post deleted. The reported snapshot remains available; the original public link may be unavailable.</div>:visibility!=="public"?<div className={styles.alert}>The post is currently hidden or private. Its public link may be unavailable; review the evidence here.</div>:null}
    </Region>
+   <RightsEvidencePanel key={`${viewerId??'operator'}:${item.id}`} caseId={item.id} viewerId={viewerId} canReview={canReview} specialSafety={item.reason==='minor_safety'} parentBusy={busy} refreshKey={JSON.stringify([item.status,item.reviewed_at,visibility,post.deleted_at,post.safety_hold,post.visibility,post.status])}/>
    <details className={styles.help}><summary>Content visibility & account restrictions</summary>
    <Region title="Current status"><div className={styles.statusGrid}>
     <div><span>Report</span><Badge tone={pending?"amber":"neutral"}>{reportStatus[item.status]??item.status.replace(/_/g," ")}</Badge></div>

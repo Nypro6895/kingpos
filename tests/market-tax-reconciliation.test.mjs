@@ -1,3 +1,10 @@
+
+// Keep the actual scoped hook/context; only server transport is replaced.
+function completeScopedTransport(source,root=process.cwd()){
+ const names=[...fs.readFileSync(root+'/app/market/scoped-market-actions.ts','utf8').matchAll(/export async function (\w+)/g)].map(match=>match[1]);
+ return source+names.filter(name=>!new RegExp('export (?:async )?function '+name+'\\b').test(source)).map(name=>'export async function '+name+'(){throw Error("Unused scoped transport: '+name+'")}').join('');
+}
+import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {build} from 'esbuild';
@@ -104,7 +111,7 @@ test('actual card reconciliation and admin refunds preserve verified automatic t
 });
 
 test('actual CardCheckoutPanel excludes legacy flat tax from automatic inclusive/exclusive fees',async()=>{
- const out=await build({stdin:{resolveDir:root,loader:'tsx',contents:`import React from 'react';import {renderToStaticMarkup} from 'react-dom/server';import {CardCheckoutPanel} from './app/market/card-checkout-panel';export function render(billingState,automaticTax){return renderToStaticMarkup(<CardCheckoutPanel pluginId="booking-policy" pluginName="Booking Rules" billingState={billingState} hasActiveSubscription={false} ready={true} automaticTax={automaticTax} onStateChange={()=>{}}/>);}`},bundle:true,write:false,format:'cjs',platform:'node',jsx:'automatic',alias:{'@':root},plugins:[{name:'isolate-card-panel',setup(api){api.onResolve({filter:/^(next\/navigation|@stripe\/stripe-js|.*card-payment-actions)$/},args=>({path:args.path,namespace:'stub'}));api.onLoad({filter:/.*/,namespace:'stub'},()=>({contents:`export function usePathname(){return '/market'}export function useRouter(){return{refresh(){}}}export async function loadStripe(){throw Error('Not used')}export async function startCardCheckout(){throw Error('Not used')}export async function refreshCardPurchase(){throw Error('Not used')}export async function manageCardSubscription(){throw Error('Not used')}`,loader:'ts'}));}}]});
+ const out=await build({stdin:{resolveDir:root,loader:'tsx',contents:`import React from 'react';import {renderToStaticMarkup} from 'react-dom/server';import {CardCheckoutPanel} from './app/market/card-checkout-panel';export function render(billingState,automaticTax){return renderToStaticMarkup(<CardCheckoutPanel pluginId="booking-policy" pluginName="Booking Rules" billingState={billingState} hasActiveSubscription={false} ready={true} automaticTax={automaticTax} onStateChange={()=>{}}/>);}`},bundle:true,write:false,format:'cjs',platform:'node',jsx:'automatic',alias:{'@':root},plugins:[{name:'isolate-card-panel',setup(api){api.onResolve({filter:/^(next\/navigation|@stripe\/stripe-js|.*(?:card-payment-actions|scoped-market-actions))$/},args=>({path:args.path,namespace:'stub'}));api.onLoad({filter:/.*/,namespace:'stub'},()=>({contents:completeScopedTransport(`export function usePathname(){return '/market'}export function useRouter(){return{refresh(){}}}export async function loadStripe(){throw Error('Not used')}export async function startCardCheckout(){throw Error('Not used')}export async function refreshCardPurchase(){throw Error('Not used')}export async function manageCardSubscription(){throw Error('Not used')}`,root),loader:'ts'}));}}]});
  const module={exports:{}};new Function('require','module','exports',out.outputFiles[0].text)(createRequire(path.join(root,'package.json')),module,module.exports);const panel=module.exports;
  const billing={settings:{tax_bps:5000,fee_bps:1000,fixed_fee_cents:20},catalog:[{plugin_id:'booking-policy',price_cents:1000,published:true,fulfillment_ready:true}]};
  const text=html=>html.replace(/<[^>]+>/g,'').replace(/&amp;/g,'&');

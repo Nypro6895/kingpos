@@ -1,0 +1,44 @@
+# Ad information and reporting — source-aligned preview, 2026-11-18
+
+**Preview ready; product UI awaits owner approval.** Baseline `a4fe43e2da823586f52b1a5a4f309d0769b3d14d`. This phase changes only artifacts/documentation. It does not change prices, flags, billing, credit ledgers, provider configuration, ad delivery or live reports. USA/free-base/Market+ads scope remains as previously chosen; actual storefront/payment declarations are separate.
+
+The UI proposal addresses the identified ad-information/report gap in [commerce review](ios-commerce-store-next-20261118.md). [Apple §2.5.18](https://developer.apple.com/app-store/review/guidelines/#software-requirements), read again 18 November 2026, requires in-app access to information used to target an ad, reporting inappropriate/age-inappropriate ads, suitable content and usable dismissal of interruptive ads. An explanation must represent the ad's actual selection, rather than a generic “nearby” claim or a later reconstruction from changed context.
+
+## Reviewable flow
+
+[Interactive preview](../artifacts/ads-reporting-transparency-20261118/source-aligned-preview.html) · [Desktop](../artifacts/ads-reporting-transparency-20261118/desktop.png) · [Mobile](../artifacts/ads-reporting-transparency-20261118/mobile.png) · [Why this ad](../artifacts/ads-reporting-transparency-20261118/why-this-ad-desktop.png) · [Report retry](../artifacts/ads-reporting-transparency-20261118/report-retry-mobile.png) · [Receipt](../artifacts/ads-reporting-transparency-20261118/report-received-mobile.png).
+
+The artifact renders the current `SponsoredCard` and `ImageAd` markup/module CSS with synthetic props and a forced ready state for static rendering. Fonts use the application's Manrope/Arial/sans-serif fallback. Proposed controls/dialogs are artifact-only. The prototype's guest/account switch is an explanatory preview control, not proposed product chrome. It makes no real requests, report writes, impressions or clicks.
+
+- **Ad → Why this ad:** two secondary text actions, each at least 44px tall, separate from the ad destination and close control. The panel names the advertiser and shows the selection captured for that displayed ad. The synthetic GPS sample expressly says precise GPS was used, includes the user's example coordinates and resolved city, current search/service match, selection time, schedule, own viewing-limit checks and rotation. No radius filter is invented for the existing owner city/area branch. The platform example names page, device, audience, schedule, repeat/rotation and applicable placement settings.
+- **Ad → Report ad:** choose a reason, optionally add bounded details, then Send report. Both guest and authenticated paths must work; no forced sign-in or unnecessary contact details. Success shows a reference without promising removal, an advertiser reply or a response deadline.
+- **Interrupted response → Retry:** keep reason/details and the same request ID/payload. A known receipt resolves before starting another write. Close/cancel preserves the existing ad lifecycle; opening these controls must not invoke the destination, create a billable view/click, or dismiss a popup that needs to remain available underneath.
+- **All placements:** owner cards, platform feed/sidebar, forum, page top/bottom, popup and ticker use the same controls. `ImageAd` currently wraps content in a link, so controls must be siblings outside that link. Ticker and popup need explicit placement integration; adding controls only to ImageAd is insufficient.
+
+## Actual selection contract to prepare
+
+The current owner ticket contains campaign ID, visitor/viewer binding, resolved area, expiry and nonce; it does **not** attest all original GPS/search inputs. Platform selection also mixes server eligibility with client rotation/placement. A report endpoint must not pretend those old tickets prove information they never captured.
+
+| Branch | Capture at the actual selection/display boundary | Safe disclosure / boundary |
+| --- | --- | --- |
+| Owner | Original manual/search location and GPS-used flag/own coordinates when used; resolved area and matching level; routed search terms/kind/category; selection time; applicable schedule/pause/eligibility checks; this viewer's frequency/rotation decision. | Show the user's own inputs/context and actual rules. Do not replace GPS with “nearby”, invent a radius, disclose another viewer, visitor hash, token, private budget/payment data or advertiser-only calibration. |
+| Platform | Server-derived audience, requested device layout/path, matching configured page/placement and active schedule; repeat/history rule; actual client choice/previous-choice exclusion/shuffle and popup delay/scroll/duration/ticker conditions. | Separate server eligibility from client display facts. Do not claim a server-attested final placement/order if only the client selected it. Capture any future priority selector if actually used; do not invent one from the current config. |
+| Both | Canonical owner/platform campaign kind and immutable target/public creative snapshot, version/hash, selected-at and actor-bound proof. | Freeze reasons for that ad occurrence. Changing page/search/location/account later must not rewrite the old explanation. Public strings must be bounded/escaped; proof goes in a request body and never in visible UI, URLs or logs. |
+
+Relevant source: `app/api/campaigns/delivery/route.ts`, `lib/campaign-delivery-area.ts`, `lib/campaign-search-intent.ts`, `lib/owner-campaign-delivery.ts`, `app/api/explore/advertising/route.ts`, `lib/explore-advertising-rules.ts`, and current composed owner selection RPCs. Latest SQL includes eligibility, pacing/frequency and order; exact deployed/composed function verification remains required before describing the production reason set as complete.
+
+## Proposed file ownership before backend mutation
+
+**UI after visual approval:** new `components/ad-disclosure-controls.tsx`; `components/owner-sponsored-post.tsx`; `components/explore-advertising.tsx`; focused actual-renderer tests. Preserve existing content, destination, scheduling, accounting and dismissal boundaries.
+
+**Backend proposal for coordinator agreement:** new `types/ad-disclosure.ts` (bounded public selection DTO); `lib/ad-disclosure-ticket.ts` (strict actor-bound selection attestation); `lib/ad-reporting.ts` (canonical resolver/intake); `app/api/advertising/reports/route.ts`; narrow additions to the two selection routes; one additive migration assigned a coordinator-confirmed timestamp; focused pure/isolated DB acceptance. Do not mutate these product files until coordinator agrees ownership/schema seam. No new permission, provider or billing scope is requested.
+
+Existing `post_safety_action` and `PostCommentTarget` cover Beauty/Salon posts, and `social-text-reports` covers seven text/review targets. **Custom owner creatives and platform campaigns must not be cast into those IDs.** `submit_user_support_case` has authenticated actor/request dedupe and a rate limit, but its client-provided context is not proof of an eligible ad. Guest Support access is cookie-bound; reporter-visible attachments are not a store for internal private evidence. Existing admin evidence needs a canonical ad resolver rather than arbitrary context/URLs.
+
+The narrow intake must verify canonical ad kind/target and original selection proof, apply existing report-abuse/guest restrictions, bind idempotency to actor+request+unchanged payload, and create a private ad case/support link with server-created context. Guest receipt access remains cookie-bound; account/salon changes must not relabel an unresolved report. Keep reporter/contact details from advertisers and other users. Evidence/retention/appeal guards must cover the canonical source media before an intake is described as complete. No blanket auto-removal, direct Storage deletion, legacy sweep or financial reversal follows from reporting.
+
+## Evidence and next decision
+
+`artifacts/ads-reporting-transparency-20261118/validation.json` records actual renderer source hashes, eight measured controls at least 44px tall, synthetic-only rendering and zero product edits. Desktop and mobile retry/Why panels were inspected. These are local Chromium illustrations, not actual intake, hosted, Safari/native/device or App Review acceptance. The existing viewer was not opened; no production preview was substituted.
+
+Next: owner reviews the proposed controls/panels; coordinator agrees the exact backend/migration scope. Then implement and test signed/expired/forged/cross-actor identity, old-ad/new-context explanations, guest/auth retry, dedupe, reporter privacy, all placements, account switching and controls that generate no ad accounting. Source hashes and existing completed freezes must be reconciled before the combined release.

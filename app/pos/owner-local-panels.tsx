@@ -2,6 +2,7 @@
 
 import { Activity, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { OwnerLiveBookingWorkspace } from "@/app/bookings/owner-live-booking-workspace";
+import { BookingWorkspacePending } from "@/app/bookings/booking-workspace-client";
 import { OwnerLiveTickets } from "@/app/pos-tickets/owner-live-tickets";
 import { OwnerLiveReports } from "@/app/reports/owner-live-reports";
 import { PortableCheckInClient } from "@/app/pos/portable/check-in/portable-check-in-client";
@@ -32,7 +33,9 @@ export function OwnerLocalPanelBody({ data, snapshotAt, query, attendanceAction 
 }
 
 export function OwnerPanel({ href, active, scope, salonId, navigate, attendanceAction, ticketsPath }: { href: string; active: boolean; scope: string; salonId: string; navigate: Navigate; attendanceAction?: AttendanceAction; ticketsPath?: string }) {
-  const name = ownerLocalReadName(href.split("?")[0]), args = ownerLocalReadArgs(href), query = String(args.query ?? "");
+  const workspace = useOwnerLocalWorkspace();
+  const reference = workspace?.scope === scope && workspace.reference?.salonId === salonId ? workspace.reference : undefined;
+  const name = ownerLocalReadName(href.split("?")[0]), args = ownerLocalReadArgs(href), query = new URL(href, "https://reylumi.com").searchParams.toString();
   const resource = useAppLocalResource<OwnerLocalPanelData>(scope, name, args, { enabled: active });
   const current = useRef(resource);
   const lifetime = useRef({ generation: 0 });
@@ -55,7 +58,7 @@ export function OwnerPanel({ href, active, scope, salonId, navigate, attendanceA
   usePosResourceRefresh(salonId, "settings", async () => { await resource.refresh(); }, { enabled: active && name === "owner.bookings", initialReconcile: false });
   usePosResourceRefresh(salonId, "catalog", async () => { await resource.refresh(); }, { enabled: active && name === "owner.bookings", initialReconcile: false });
   return <div hidden={!active} data-owner-local-panel={href}>
-    {resource.data ? <OwnerLocalPanelBody data={resource.data} snapshotAt={resource.updatedAt} query={query} navigate={navigate} attendanceAction={attendanceAction} onAttendanceSettled={() => { void invalidateAppLocalResource(scope, name, args); }} active={active} ticketsPath={ticketsPath} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}>
+    {resource.data ? <OwnerLocalPanelBody data={resource.data} snapshotAt={resource.updatedAt} query={query} navigate={navigate} attendanceAction={attendanceAction} onAttendanceSettled={() => { void invalidateAppLocalResource(scope, name, args); }} active={active} ticketsPath={ticketsPath} /> : name === "owner.bookings" && !resource.accessDenied ? <BookingWorkspacePending href={href} today={reference ? workspace?.businessDate || reference.today : undefined} navigate={navigate} error={resource.error} retry={() => void resource.refresh()} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}>
       <h1 className="text-xl font-semibold"><WorkspaceText text={name === "owner.check-in" ? "Check In" : name === "owner.bookings" ? "Bookings" : name === "owner.tickets" ? "Tickets" : "Reports"} /></h1>
       {resource.error || typeof navigator !== "undefined" && !navigator.onLine ? <p className="mt-4 text-sm text-zinc-600"><WorkspaceText text="Connect to open this view. Your current ticket has been kept." /></p> : <LumiLoadingStatus />}
       {resource.error ? <button type="button" className="mt-3 rounded border px-4 py-2" onClick={() => void resource.refresh()}><WorkspaceText text="Try again" /></button> : null}

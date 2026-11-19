@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "openai-public-photo-verifier-20261118",
+  "status": "blocked",
+  "summary": "Implemented and isolated-tested server-only OpenAI public post photo verifier; strict validated unflagged-only gate. Activation blocked by secure destination not-approved and absent real-provider acceptance.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/public-image-verifier-openai.ts",
+    "tests/public-image-verifier-openai.test.mjs",
+    "docs/openai-public-photo-verifier-20261118.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\openai-public-photo-verifier-20261118\\frozen",
+    "sourceSha256": "c1c97f3ca70c6fcaa0f822ee70f3dc5ce09a4a13f846bfb41479f8cb6dccea7d",
+    "manifest": "artifacts/openai-public-photo-verifier-20261118/frozen-manifest.json"
+  },
+  "fileHashes": {
+    "lib/public-image-verifier-openai.ts": "76a9be68dcd28ba53e9add1c6e48a5d577b0f8ad6359f2c76cae484664b9dbc5",
+    "tests/public-image-verifier-openai.test.mjs": "9218c43e531eb298e801cd062ae6108312ab07df3c59d42baa59e3fc1b39bc06",
+    "docs/openai-public-photo-verifier-20261118.md": "a9acfbdef547408dce4da2634f104cacc081e8c6bd40c3edd920a356b5c91c85"
+  },
+  "validation": [
+    {
+      "name": "Mocked transport/input/response/deadline/security regressions",
+      "result": "passed",
+      "evidence": "artifacts/openai-public-photo-verifier-20261118/validation.json (11/11, zero skips, no actual env or provider requests)"
+    },
+    {
+      "name": "Scoped ESLint, strict TypeScript seam compatibility and independent read-only review",
+      "result": "passed",
+      "evidence": "artifacts/openai-public-photo-verifier-20261118/validation.json"
+    },
+    {
+      "name": "Secure dedicated key provisioning and real provider acceptance",
+      "result": "pending",
+      "evidence": "Local destination confirmation not-approved twice; creation/write workflow stopped. No live requests made."
+    },
+    {
+      "name": "Root-owned explicit Beauty/Salon caller wiring, privacy/operations and combined release/device acceptance",
+      "result": "pending",
+      "evidence": "Outside the adapter patch; do not activate from mocked tests."
+    }
+  ],
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116"
+  ],
+  "scopeBoundary": "Only new adapter/test/provenance doc. No env/credential reads or writes, live OpenAI requests, SDK dependency, model/config override, core/callsite/UI changes, commit/push/deploy or real image data. Exact-text Remove/Restore remains proposal-only.",
+  "remaining": "Requires approved secure dedicated-key destination/configuration, benign live provider response/access acceptance, privacy terms/project controls and notices, safety/appeal operations, combined source integration/build/release validation.",
+  "nativeAssessment": "Server-only adapter; no Swift/assets/bridge edits in this scope. Coordinator assesses the exact combined native candidate.",
+  "id": "4119187b-b00c-416a-9d5f-35271b20b4d2",
+  "recordedAt": "2026-11-18T21:24:24.163Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

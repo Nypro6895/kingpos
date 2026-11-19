@@ -6,8 +6,15 @@ export type FinancialHistoryRecordKind="created"|"draft"|"unchanged"|"change"|"e
 export type FinancialChangeGroup={title:string;details:FinancialChangeDetail[]};
 export type FinancialChangePresentation={title:string;summary:string;details:FinancialChangeDetail[];groups:FinancialChangeGroup[];incomplete:boolean};
 const labels:Record<string,string>={service_total:"Service sales",gross_sales:"Service sales",tip_amount:"Tips",tip_input:"Entered tips",discount_amount:"Customer discount",discount_value:"Discount",discount_type:"Discount type",cash_amount:"Cash",credit_card_amount:"Card",other_amount:"Other",bonus_amount:"Bonus",commission_rate:"Commission",tax_rate:"Tax",check_rate:"Check split",fixed_pay_amount:"Fixed pay",pay_type:"Pay type",effective_from:"Effective from",effective_to:"Effective to",tip_payout_method:"Tip payout",bonus_payout_method:"Bonus payout",tax_tips:"Tax on tips",tax_bonus:"Tax on bonus",apply_tax_to_fixed_pay:"Tax on fixed pay",cash_to_tax_company:"Cash reported",tax_company_enabled:"Tax company",legal_name:"Legal name",check_number:"Check number",cycle_type:"Pay cycle",biweekly_anchor_date:"Anchor date",note:"Note",notes:"Ticket note",status:"Ticket status",entered:"Report entered",work_date:"Business date",recorded_payment_total:"Ticket payments"};
+Object.assign(labels, {
+ show_check_to_tax_company: "Show check wages to Tax", show_cash_to_tax_company: "Show cash wages to Tax",
+ show_tip_to_tax_company: "Show tips to Tax", show_bonus_to_tax_company: "Show bonus to Tax",
+ tax_check: "Withhold from check wages", tax_cash: "Withhold from cash wages",
+ check_tax_rate: "Check wage withholding rate", cash_tax_rate: "Cash wage withholding rate",
+ tip_tax_rate: "Tip withholding rate", bonus_tax_rate: "Bonus withholding rate",
+});
 const monetary=new Set(["service_total","gross_sales","tip_amount","tip_input","discount_amount","cash_amount","credit_card_amount","other_amount","bonus_amount","fixed_pay_amount","recorded_payment_total"]);
-const percentages=new Set(["commission_rate","tax_rate","check_rate"]);
+const percentages=new Set(["commission_rate","tax_rate","check_rate","check_tax_rate","cash_tax_rate","tip_tax_rate","bonus_tax_rate"]);
 const names:Record<string,string>={commission:"Commission",fixed:"Fixed pay",cash:"Cash",check:"Check",card:"Card",credit_card:"Card",other:"Other",monthly:"Monthly",semi_monthly:"Twice monthly",biweekly:"Every two weeks",fixed_amount:"Fixed amount",percentage:"Percentage",open:"Open",closed:"Completed",cancelled:"Cancelled",canceled:"Cancelled",void:"Voided",voided:"Voided",refunded:"Refunded"};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isRecord=(value:unknown):value is Values=>Boolean(value)&&typeof value==="object"&&!Array.isArray(value);

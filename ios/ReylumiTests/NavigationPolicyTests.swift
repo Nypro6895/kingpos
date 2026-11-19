@@ -12,6 +12,51 @@ final class NavigationPolicyTests: XCTestCase {
             XCTAssertNil(NavigationPolicy.personalCheckinPath(URL(string: value)!), value)
         }
     }
+    func testGiftCardDeliveryLinksPreserveOnlyTheExactCardFragment() {
+        let token = String(repeating: "0123456789abcdef", count: 4)
+        for value in ["https://reylumi.com/gift-cards#card=\(token)", "reylumi://gift-cards#card=\(token)"] {
+            XCTAssertEqual(NavigationPolicy.giftCardPath(URL(string: value)!), "/gift-cards#card=\(token)")
+        }
+        for value in [
+            "http://reylumi.com/gift-cards#card=\(token)",
+            "https://www.reylumi.com/gift-cards#card=\(token)",
+            "https://reylumi.com.evil.test/gift-cards#card=\(token)",
+            "https://user@reylumi.com/gift-cards#card=\(token)",
+            "https://reylumi.com:443/gift-cards#card=\(token)",
+            "https://reylumi.com/gift-cards/#card=\(token)",
+            "https://reylumi.com/%67ift-cards#card=\(token)",
+            "https://reylumi.com/gift-cards/claim#card=\(token)",
+            "https://reylumi.com/gift-cards?order=\(token)#card=\(token)",
+            "https://reylumi.com/gift-cards?#card=\(token)",
+            "https://reylumi.com/gift-cards#mobile=\(token)",
+            "https://reylumi.com/gift-cards#card=\(token)&mobile=\(token)",
+            "https://reylumi.com/gift-cards#card=\(token)#next",
+            "https://reylumi.com/gift-cards#card=\(token)&card=\(token)",
+            "https://reylumi.com/gift-cards#%63ard=\(token)",
+            "https://reylumi.com/gift-cards#card=%30\(token.dropFirst())",
+            "https://reylumi.com/gift-cards#card=\(token.uppercased())",
+            "https://reylumi.com/gift-cards#card=\(token.dropLast())",
+            "https://reylumi.com/gift-cards#card=\(token)0",
+            "https://reylumi.com/gift-cards#card=",
+            "https://reylumi.com/gift-cards",
+            "reylumi://gift-cards/#card=\(token)",
+            "reylumi://gift-cards?order=\(token)#card=\(token)",
+            "reylumi://gift-cards#mobile=\(token)",
+            "reylumi://user@gift-cards#card=\(token)",
+            "reylumi://gift-cards:443#card=\(token)",
+            "reylumi://market#card=\(token)",
+        ] {
+            XCTAssertNil(NavigationPolicy.giftCardPath(URL(string: value)!), value)
+        }
+    }
+
+    func testGiftCardHostedTaskKeepsAnExitWithoutAdmittingMobileOrPaymentLinks() {
+        let token = String(repeating: "a", count: 64)
+        XCTAssertTrue(policy.needsHostedTaskControls(URL(string: "https://reylumi.com/gift-cards#card=\(token)")!))
+        for suffix in ["", "#mobile=\(token)", "?order=\(token)", "#card=invalid", "?next=/admin#card=\(token)"] {
+            XCTAssertFalse(policy.needsHostedTaskControls(URL(string: "https://reylumi.com/gift-cards" + suffix)!))
+        }
+    }
     func testHostedControlsAreForExplicitTasksAcrossEveryRole() {
         XCTAssertTrue(policy.needsHostedTaskControls(URL(string: "https://reylumi.com/qr?entry=00000000-0000-4000-8000-000000000001")!))
         XCTAssertFalse(policy.needsHostedTaskControls(URL(string: "https://reylumi.com/qr?entry=invalid")!))

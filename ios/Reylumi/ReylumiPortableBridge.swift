@@ -103,6 +103,19 @@ final class ReylumiPortableBridge: NSObject, WKScriptMessageHandlerWithReply {
         return (active.scope, active.expiry)
     }
     private func error(_ message: String = "Connect and unlock POS Portable before opening saved tickets.", code: String = "storage-locked") -> [String: Any] { ["__portableError": ["error": message, "code": code]] }
+    /// Printing a local slip never creates receipt/payment authority. Require
+    /// the existing admission, local-command grant and durable queue checkpoint.
+    func permitsProvisionalPrint(scope: String, operationID: String) async -> Bool {
+        guard authorized(scope) != nil, active?.offlineEnabled == true, active?.operationKinds.contains("receipt") == true,
+              (try? await offlineReady(scope: scope)) == true,
+              let rows = try? store.list(scope: scope), let operation = rows.first(where: { $0["id"] as? String == operationID }),
+              operation["kind"] as? String == "receipt", operation["state"] as? String == "pending", operation["rejected"] as? Bool != true,
+              let payload = operation["payload"] as? [String: Any], let key = payload["localDraftKey"] as? String,
+              let snapshot = payload["printSnapshot"] as? [String: Any], snapshot["version"] as? Int == 1,
+              snapshot["completion"] as? String == "submitted-on-device", snapshot["paymentState"] as? String == "awaiting-server-validation",
+              let checkpoint = try? store.checkpoint(scope: scope, key: key), checkpoint > 0 else { return false }
+        return authorized(scope) != nil
+    }
     private func offlineReady(scope: String) async throws -> Bool {
         guard let transport, let active, active.scope == scope, active.offlineEnabled, !active.resources.isEmpty else { return false }
         for name in active.resources {

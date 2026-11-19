@@ -84,6 +84,7 @@ function PeriodSelector({
     <PayrollFilterToolbar summary={<WorkspaceText text={period.label} />} periodLabel={period.label} active={period.preset === "custom"}>
       <NavigationForm
         action="/payroll/tax-company"
+        data-app-local-read-filter="payroll-tax-period"
         className="flex flex-wrap items-end gap-3"
       >
         <input name="report" type="hidden" value="1" />
@@ -160,6 +161,7 @@ function PeriodSelector({
         </summary>
         <NavigationForm
           action="/payroll/tax-company"
+          data-app-local-read-filter="payroll-tax-period"
           className="mt-3 flex flex-wrap items-end gap-3"
         >
           <input name="preset" type="hidden" value="custom" />

@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "ios-privacy-terms-implementation-20261118",
+  "status": "working",
+  "summary": "Review and improve source-supported Privacy/Terms candidate for first USA iOS submission; preserve existing routes/sections/dates and hold combined release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/legal-policies.ts",
+    "tests/legal-privacy-implementation-20261118.test.mjs",
+    "docs/ios-privacy-implementation-20261118.md"
+  ],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26"
+  },
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116"
+  ],
+  "validation": [
+    {
+      "name": "Authoritative-source review and scoped policy checks",
+      "result": "pending"
+    }
+  ],
+  "id": "c31227d7-c04b-4173-a42a-a2f96b65e56f",
+  "recordedAt": "2026-11-18T20:59:48.612Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1212,3 +1212,4 @@
 }
 
 .owner-schedule-tabs:has(.owner-schedule-menu[open]) > button[aria-current=page] {color:var(--booking-muted);border-bottom-color:transparent}
+.owner-schedule-tabs:has(.owner-schedule-menu[open]) > .owner-schedule-menu:not([open]) > summary[aria-current=page] {color:var(--booking-muted);border-bottom-color:transparent}

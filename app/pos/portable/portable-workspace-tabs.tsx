@@ -19,6 +19,7 @@ import { DeviceInputSettingsButton } from "./device-input-settings";
 import { PortableBookingNotifications } from "./portable-booking-notifications";
 import { PortableFullscreenButton } from "./portable-fullscreen-button";
 import { PosWorkspaceRealtimeRefresh } from "@/app/pos/pos-workspace-realtime-refresh";
+import "./portable-workspace-tabs.css";
 import {
   isPortablePosRoute,
   PORTABLE_POS_ROUTES,
@@ -200,7 +201,7 @@ export function PortableWorkspaceTabs({
         ignoredSources={PORTABLE_IGNORED_REFRESH_SOURCES}
         salonId={salonId}
       /> : null}
-      <div className="mx-auto flex min-h-[60px] w-full items-center gap-3">
+      <div className="portable-workspace-header-row mx-auto flex min-h-[60px] w-full items-center gap-3">
         <div className="hidden min-w-0 max-w-72 shrink-0 items-center gap-3 border-r border-zinc-200 pr-5 xl:flex">
           <SalonBrand
             salonLogoUrl={salonLogoUrl}
@@ -246,7 +247,7 @@ export function PortableWorkspaceTabs({
           })}
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center gap-1">
+        <div className="portable-workspace-header-actions ml-auto flex shrink-0 items-center gap-1">
         {items.some(item => item.id === "book") ? <PortableBookingNotifications key={workspace?.scope ?? salonId} salonId={salonId} timezone={salonTimezone} canConfirm={canConfirmBookings} /> : null}
         {workspace?.offlineEnabled ? <PortableSyncIndicator scope={workspace.scope} visible={isPortablePosRoute((optimisticHref ?? pathname).split(/[?#]/, 1)[0], PORTABLE_POS_ROUTES.pos)} /> : null}
         <DesktopTools />

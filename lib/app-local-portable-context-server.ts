@@ -7,6 +7,7 @@ import { getExperienceOfflinePath, isExperienceOfflineGrant } from "./experience
 import { APP_LOCAL_PORTABLE_ROUTES, type AppLocalPortableContext } from "./app-local-portable-metadata";
 import type { PortablePosCapability } from "./pos-portable-capabilities";
 import { runReadWithDeadline } from "./bounded-get";
+import { loadPortableReceiptBrand } from "./receipt-brand-server";
 
 function fail(status: number, message: string): never { throw Object.assign(new Error(message), { status }); }
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -35,8 +36,9 @@ export async function readAppLocalPortableContext(path: string, generation: stri
   const session = await requireAppLocalPortableScope(grant.scope);
   if (session.salon_id !== grant.salonId || session.key_id !== grant.workspaceId) fail(409, "The POS device changed. Open it again.");
   const store = await cookies(), now = Date.now();
+  const receiptBrand = await loadPortableReceiptBrand(session);
   return { schemaVersion: 1, context: { scope: grant.scope, viewerId: grant.viewerId, workspaceId: grant.workspaceId, salonId: grant.salonId, permissionRevision: grant.grantRevision, authenticated: false },
     grant, grantStatus: 200, display: { name: session.salon_name, language: "en", role: "portable" }, onlineValidatedAt: now,
     portable: { scope: grant.scope, keyId: session.key_id, salonId: session.salon_id, salonName: session.salon_name, salonLogoUrl: session.salon_logo_url, timeZone: session.salon_timezone,
-      capabilities: session.capabilities, touchKeyboardEnabled: session.touch_keyboard_enabled !== false, preparedAt: now, offlineEnabled: grant.localCommands === true, devicePrepared: Boolean(store.get("kingpos-workspace-device")?.value) } };
+      capabilities: session.capabilities, touchKeyboardEnabled: session.touch_keyboard_enabled !== false, preparedAt: now, offlineEnabled: grant.localCommands === true, devicePrepared: Boolean(store.get("kingpos-workspace-device")?.value), receiptBrand } };
 }

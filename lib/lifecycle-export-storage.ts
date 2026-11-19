@@ -3,6 +3,7 @@ import "server-only";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import { randomUUID } from "crypto";
+import { lifecycleExportServiceClient } from "./lifecycle-export-expiry";
 
 export const LIFECYCLE_EXPORT_BUCKET = "lifecycle-exports";
 export const LIFECYCLE_EXPORT_SIGNED_URL_SECONDS = 15 * 60;
@@ -32,6 +33,7 @@ export type LifecycleExportRecord = {
 export type StoredLifecycleExport = {
   contentType: string;
   expiresAt: string;
+  downloadExpiresAt: string;
   filename: string;
   manifest: Record<string, unknown>;
   record: LifecycleExportRecord;
@@ -47,7 +49,7 @@ function safeExportFilename(value: string) {
     .replace(/[^a-zA-Z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  return cleaned || "lifecycle-export.json";
+  return cleaned.replace(/^[^A-Za-z0-9]+/, "").slice(0, 200) || "lifecycle-export.json";
 }
 
 function signedUrlErrorMessage(error: { message?: string } | null) {
@@ -150,9 +152,30 @@ export async function createStoredLifecycleExport(input: {
     throw new Error(updateError.message);
   }
 
-  const signedUrlResult = await supabase.storage
+  const storedExpiry = storedRecord?.expires_at ?? record.expires_at;
+  const issuedAt = Date.now();
+  const downloadSeconds = Math.min(
+    LIFECYCLE_EXPORT_SIGNED_URL_SECONDS,
+    Math.floor((Date.parse(storedExpiry) - issuedAt) / 1000),
+  );
+  if (!Number.isFinite(downloadSeconds) || downloadSeconds < 1) {
+    throw new Error("The export has expired. Prepare a new export.");
+  }
+  const finalRecord = storedRecord ?? record;
+  if (
+    finalRecord.requested_by_user_id !== user.id ||
+    finalRecord.id !== exportId ||
+    finalRecord.storage_bucket !== LIFECYCLE_EXPORT_BUCKET ||
+    finalRecord.storage_path !== storagePath ||
+    finalRecord.status !== "stored"
+  ) {
+    throw new Error("The export download could not be authorized.");
+  }
+  // Authenticated Storage policies forbid direct signing and signed uploads.
+  // The service signer is used only after requester-bound metadata checks.
+  const signedUrlResult = await lifecycleExportServiceClient().storage
     .from(LIFECYCLE_EXPORT_BUCKET)
-    .createSignedUrl(storagePath, LIFECYCLE_EXPORT_SIGNED_URL_SECONDS);
+    .createSignedUrl(storagePath, downloadSeconds);
 
   if (signedUrlResult.error || !signedUrlResult.data?.signedUrl) {
     throw new Error(signedUrlErrorMessage(signedUrlResult.error));
@@ -160,7 +183,8 @@ export async function createStoredLifecycleExport(input: {
 
   return {
     contentType: "application/json",
-    expiresAt,
+    expiresAt: storedExpiry,
+    downloadExpiresAt: new Date(issuedAt + downloadSeconds * 1000).toISOString(),
     filename,
     manifest: input.manifest,
     record: storedRecord ?? record,

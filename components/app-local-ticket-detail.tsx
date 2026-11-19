@@ -10,6 +10,7 @@ import {ticketFinancialView} from "@/lib/pos-ticket-financial-view";
 import {TicketPaymentSummary} from "@/components/ticket-payment-summary";
 import {getTicketTimeline} from "@/lib/pos-ticket-timeline";
 import {buildTicketReceipt} from "@/lib/pos-ticket-receipt";
+import {ReceiptPrintActions} from "@/components/receipt-print-actions";
 import type {PosTicketStaffOption} from "@/lib/pos-tickets";
 import type {PosTicketDiscountType,PosTicketStatus,PosTicketTipType} from "@/types/pos-ticket";
 import type {PosPaymentMethod} from "@/types/pos-payment";
@@ -970,6 +971,7 @@ export function AppLocalTicketDetail({data,error,returnTo}:{data:AppLocalTicketD
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Receipt Preview" /></h2>
+          <ReceiptPrintActions receipt={receipt} receiptId={ticket.id} context={{ scope: `salon:${data.salon.id}`, timezone: businessTimezone, brand: { salonName: data.salon.name, phone: data.salon.phone, address: [data.salon.address_line1, data.salon.address_line2, data.salon.city, data.salon.state, data.salon.postal_code].filter(Boolean).join(", ") } }} />
           <span className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700">
             {receipt.header.receipt_status}
           </span>

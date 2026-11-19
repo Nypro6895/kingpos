@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "public-photo-processing-consent-ui-20261118",
+  "status": "working",
+  "summary": "Approved consent UI scope plus two existing Beauty fixtures loading the actual permission hook/notice; preserve original assertions and old evidence",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/beauty/beauty-profile-client.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/public-photo-processing-permission.tsx",
+    "tests/beauty-pending-publication.test.mjs",
+    "tests/salon-public-image-submission.test.mjs",
+    "tests/public-photo-processing-permission-ui.test.mjs",
+    "docs/public-photo-processing-consent-ui-20261118.md",
+    "tests/beauty-library-entry.test.mjs",
+    "tests/beauty-timeline-publish-race.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "40b1b6e7909f6e50e3372dbf873b814ab4eb1f66"
+  },
+  "validation": [
+    {
+      "name": "Focused actual composer and controlled permission UI acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Coordinator combined build and native/hosted QA",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "public-photo-processing-consent-20261118"
+  ],
+  "id": "4598cced-1b02-4207-a8c4-d17ce2ba6b83",
+  "recordedAt": "2026-11-19T03:45:14.128Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

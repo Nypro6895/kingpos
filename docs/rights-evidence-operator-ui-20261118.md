@@ -1,0 +1,35 @@
+# Approved rights evidence operator UI
+
+Implemented from the owner-approved revision 2 illustration in `artifacts/rights-evidence-runtime-20261118/operator-preview/revision-2/`. This is a source candidate with focused local acceptance. Policy activation, case assignment, hosted operation, Apple review and device acceptance are separate gates.
+
+## Behavior and authority
+
+The existing post case has one collapsed **Evidence & removal** panel. Current assigned-case authority comes from `get_admin_rights_case_evidence`; the browser receives opaque approved object/evidence IDs and projected state, without Storage paths, object pins or private URLs. Server parsing rejects malformed/cross-case state and strips unexpected upstream fields. Existing evidence/history remains visible when its original source or private copy is gone; a historical capture record is not a current private-read grant.
+
+New capture requires a reason and a separate, initially unchecked ordinary-rights triage confirmation. The server action also requires literal `ordinaryConfirmed: true`; it sends `p_remove_origin=false`. A committed role/source/safety transition or photo change resets fresh triage. Unknown or special safety is never inferred to be ordinary just because a report has a different reason.
+
+Original removal is a separate reasoned request using the current opaque version and a request UUID. Shared uses, missing capture, account deletion, policy/safety restrictions and unavailable state cannot produce a usable new removal action. A request receipt is described as requested, never as confirmed origin absence. No shared cover, saved/history/Market use, other case or live post is detached automatically. Legal hold is read-only, with review date and instruction to consult its owner-approved reason; there is no hold-editing API or control here. The ordinary retention copy correctly says 30 days after explicit Support-case closure, not resolution. Closing Support does not hide a post or request media removal.
+
+Private view is loaded only when clicked through the same-origin protected evidence endpoint. That endpoint performs current case/role/policy authorization and full-byte verification. Unavailable reads show a bounded message and remove the image, without falling back to a public Storage URL. No reusable signed evidence URL is created. The panel's metadata never substitutes for that per-request grant.
+
+## Durable unknown-result recovery
+
+`lib/rights-evidence-intent.ts` stores the pending intent **before** dispatch and reads it back. It is scoped to actual actor ID, case ID and the frozen selected object. The envelope contains kind, request UUID, opaque version where needed, reason and the original affirmative capture declaration. It contains no image bytes or automatically collected media paths, signed links, credentials or provider payloads. User-entered reason text is kept verbatim within its 2,000-character bound.
+
+Receipts are tab-scoped session storage, at most four pending cases and 16 KiB per envelope, with a fixed 30-minute TTL that retries never extend. Expiry is enforced and removed when inspected; browser suspension does not establish exact-time physical deletion. A fifth pending case does not evict another valid receipt. Unavailable/quota/invalid storage blocks dispatch and preserves the visible reason. After reload or A → B → A, only the original actor/case recovers the exact request. No request auto-submits, and recovered ordinary confirmation is only for that already-decided frozen intent, never a fresh photo.
+
+Unknown results keep fields and selected object locked. Refresh does not rebuild the payload. Confirmed failures keep the reason, clear only their matching actor/case/request receipt and require a fresh status read before a new request. Success also compares the exact receipt before clearing. A synchronous layout cleanup invalidates old authority before microtasks; a late A result cannot overwrite B's draft or clear A's unconfirmed receipt without A seeing the result. Existing SQL receipts, case/object uniqueness, current version and permanent source fences remain the final authority after expiry or a new session.
+
+## Preserved flows and safety limit
+
+Existing post decisions, review note, Save/Cancel, support conversation, assignment, author/reporter restrictions and history remain in their original controls. The new panel does not call those actions or refresh/reset their local drafts after capture/removal requests.
+
+For a **known `minor_safety` case**, both existing server loaders skip Storage URL signing and the shared post-media renderer shows the separate-safety placeholder, including its expanded-media view. Text, context and existing decisions remain available. The new evidence lane also blocks special risk learned from the case query. This is a narrow safeguard: legacy public moderation previews on another, differently classified case are not all gated by this change. No broad clearance mechanism for unassigned ordinary moderation or specialized illegal-material workflow is claimed.
+
+## Acceptance
+
+`node --test tests/rights-evidence-operator-actions.test.mjs tests/rights-evidence-operator-ui.browser.test.mjs` passed **19 Node records, zero skips**: seven server/parser/recovery checks and eleven actual-component browser scenarios plus their parent harness. Coverage includes literal triage; source/case DTO coherence; initial capture without removal; origin identity and receipt replay; bounded errors; both known-minor signing paths; storage size/count/TTL/compare-clear; real browser reload for capture and removal with identical payload; actor isolation; committed permission/safety roundtrip; storage failure before action; stale refresh/new UUID; layout-unmount microtask fencing; unchanged existing review note; separate removal status; failed private view; and blocked shared/special flows.
+
+The browser bundles the actual `PostSafetyCaseCard`, panel and CSS. Server actions and unrelated operational boundaries are mocked, requests are intercepted, and all content is synthetic. Screenshots in `artifacts/rights-evidence-operator-ui-20261118/` include `verified-390.png`, `verified-1100.png`, `mobile-shared-blocked.png` and `mobile-capture-pending.png`; 44px controls and no panel overflow were checked and visually reviewed. These are Chromium viewport results, not hosted Next Server Action/RLS, Safari, native iOS or physical-device acceptance.
+
+Scoped ESLint and repository-configured syntactic/semantic TypeScript checks are recorded with the handoff. The coordinator owns the final assembled Next build. The existing runtime twelve-file snapshot remains unchanged. Dependencies are the separately frozen runtime, rights-image evidence backend and case-enumeration query lane; their actual isolated SQL/Storage results are separate evidence. No environment file, real customer data, provider request, policy enablement, role grant, hold change, commit, push or deployment was performed here. The optional Live Preview viewer was not running; it was not launched or replaced with a production page.

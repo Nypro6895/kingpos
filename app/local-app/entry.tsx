@@ -163,6 +163,7 @@ function App() {
   const [path, setPath] = useState(() => appLocalPath(location.pathname === "/index.html" ? "/help" : location.pathname + location.search));
   const [admissions, setAdmissions] = useState<Partial<Record<AuthorityFamily, Admission>>>({}), [error, setError] = useState<false | AppLocalContextFailure>(false), [visited, setVisited] = useState<string[]>([]);
   const [helpPresentation, setHelpPresentation] = useState<Admission | null>(null);
+  const [helpReturn, setHelpReturn] = useState<{ path: string; viewerId: string; generation?: string } | null>(null);
   const current = useRef(path), admitted = useRef(admissions), contextEpoch = useRef(0), request = useRef<ContextCheck | null>(null);
   const scrollPositions = useRef(new Map<string, number>());
   const recoveryAttempts = useRef(new Set<string>());
@@ -235,7 +236,7 @@ function App() {
         for (const [, admission] of denied) if (admission) resetAppLocalResources(admission.value.context.scope);
         admitted.current = Object.fromEntries(Object.entries(admitted.current).filter(([key]) => !denied.some(([deniedKey]) => deniedKey === key)));
         setAdmissions(admitted.current); setAppLocalCommandScope(undefined);
-        setHelpPresentation(null);
+        setHelpPresentation(null); setHelpReturn(null);
       }
       return reject(appLocalPageAdmissionReason(value, current.current, { generation, online: navigator.onLine }) ?? "generation");
     }
@@ -256,6 +257,7 @@ function App() {
     const identityChanged = all.some(item => item && (item.value.context.viewerId !== value.context.viewerId || item.generation !== generation));
     const authorityChanged = previous && (previous.value.context.scope !== value.context.scope || previous.value.context.permissionRevision !== value.context.permissionRevision || previous.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision);
     if (identityChanged || authorityChanged) { recordExperienceTrace("cache.reset", { source: "app-local", reason: identityChanged ? "identity" : previous?.value.context.scope !== value.context.scope ? "scope" : "grant", changed: true }); resetAppLocalResources(); clearExperienceState(); setVisited([]); admitted.current = {}; }
+    if (identityChanged || !value.context.authenticated) setHelpReturn(null);
     const restoreRole = requested && fresh && handoffPath.current === requestedPath && roleReturn.current?.viewerId === value.context.viewerId && roleReturn.current?.generation === generation;
     reconcileAppLocalRoleResources(value, generation, restoreRole);
     if (!value.offline && (restoreRole || !workspaceGesture.current && !handoffPath.current)) roleReturn.current = null;
@@ -365,10 +367,16 @@ function App() {
     if (isHelp(destination)) {
       if (!isHelp(previous)) {
         const outgoing = admitted.current[authorityFamily(previous)];
-        setHelpPresentation(!isPublic(previous) && usable(outgoing) && outgoing.value.context.authenticated
+        // This route is a navigation hint only. An expired display lease must
+        // not send Staff to Personal; the destination still checks admission.
+        const returnable = !isPublic(previous) && outgoing?.value.context.authenticated && outgoing.value.context.viewerId
+          && (ownerPaths.has(previous.split("?")[0]) || getAppLocalPage(previous))
+          && authorityFamily(previous) !== "portable" && authorityFamily(previous) !== "display";
+        setHelpReturn(returnable ? { path: previous, viewerId: outgoing.value.context.viewerId!, generation: outgoing.generation } : null);
+        setHelpPresentation(!isPublic(previous) && usable(outgoing, previous) && outgoing.value.context.authenticated
           && authorityFamily(previous) !== "portable" && authorityFamily(previous) !== "display" ? outgoing : null);
       }
-    } else setHelpPresentation(null);
+    } else { setHelpPresentation(null); setHelpReturn(null); }
     if (previous !== destination) { finishNativeResetPending(); contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); workspaceResolution.current = null; workspaceRecovery.current = null; workspaceGesture.current = null; recoveryAttempts.current.clear(); setError(false); }
     current.current = destination;
     readPriorityScheduler.setActiveRoute(destination);
@@ -393,6 +401,7 @@ function App() {
     // Acknowledge the expiry presentation at either Guest control. The next
     // public page still obtains its own ordinary context admission.
     setSignInReturnPath(null);
+    setHelpReturn(null);
     setGuestContinuation(previous => previous + 1);
     navigate("/explore");
   }, [navigate]);
@@ -406,7 +415,7 @@ function App() {
     clearAppLocalRoleResources(); resetAppLocalResources(); setAppLocalCommandScope(undefined);
     // Authority withdrawal and the route switch must commit before paint.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]);
+    admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setHelpReturn(null); setVisited([]);
     setSignInReturnPath(returnPath);
     navigate("/explore", true);
   }, [error, path, navigate]);
@@ -484,7 +493,7 @@ function App() {
       const contextReason = detail?.reason === "logout" ? "logout" : appLocalContextFailureReason({ status: detail?.status, contextReason: "reset" });
       recordExperienceTrace("cache.reset", { source: "app-local", trigger: "reset", reason: detail?.reason === "context" ? "grant" : detail?.reason === "resource" ? "resource" : "reset", contextReason, status: detail?.status });
       if (detail?.reason !== "context") { contextEpoch.current++; request.current?.controller.abort(); workspaceResolution.current?.controller.abort(); workspaceResolution.current = null; workspaceRecovery.current = null; workspaceGesture.current = null; pageRecovery.current = null; handoffPath.current = null; setSwitchingWorkspace(false); }
-      alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(detail?.reason === "context" || pendingNativeReset ? false : classifyAppLocalContextFailure({ status: detail?.status, contextReason }));
+      alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setHelpReturn(null); setVisited([]); setError(detail?.reason === "context" || pendingNativeReset ? false : classifyAppLocalContextFailure({ status: detail?.status, contextReason }));
       if (pendingNativeReset) {
         const pending: NativeResetPending = { generation: host!.generation, scopeEpoch: host!.scopeEpoch, path: current.current, contextEpoch: contextEpoch.current };
         nativeResetPending.current = pending;
@@ -695,7 +704,7 @@ function App() {
   const owner = ownerContext?.grant?.kind === "owner" || Boolean(ownerContext && !ownerContext.offline && ownerContext.access?.ownerWorkspace);
   const windows=new Map<string,string>();for(const href of [...visited,path])if(!isPublic(href)&&getAppLocalPage(href))windows.set(pageKey(href),href);
   const ownerVisited=ownerPaths.has(path.split("?")[0])||visited.some(href=>ownerPaths.has(href.split("?")[0]));
-  return <AppLocalNavigationProvider value={{ path, navigate, refresh: refreshNavigation }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path} checkContext={checkSession} onContinueAsGuest={continueAsGuest} guestContinuation={guestContinuation} signInReturnPath={signInReturnPath}>
+  return <AppLocalNavigationProvider value={{ path, navigate, refresh: refreshNavigation }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} helpReturnPath={helpReturn?.generation === window.__reylumiAppLocalContext?.generation ? helpReturn?.path : null} path={path} checkContext={checkSession} onContinueAsGuest={continueAsGuest} guestContinuation={guestContinuation} signInReturnPath={signInReturnPath}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
       {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error} data-context-failure={error || undefined}>{error && (error !== "sign-in" || ["portable", "display"].includes(authorityFamily(path))) ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{contextFailureMessages[error]}</p><button disabled={error === "sign-in" && openingSignIn} className="mt-4 rounded border px-4 py-2" onClick={() => { if (error === "sign-in") { void openSignIn(); return; } recoveryAttempts.current.clear(); if (workspaceRecovery.current) window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); else void verify({ fresh: true }); }}>{error === "sign-in" ? "Sign in" : "Try again"}</button>{error === "sign-in" ? <button type="button" className="ml-3 mt-4 rounded border px-4 py-2" onClick={continueAsGuest}>Continue as guest</button> : null}{error === "sign-in" && signInError ? <p role="alert" className="mt-3">Sign-in could not be opened. Check your connection and try again.</p> : null}</> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}

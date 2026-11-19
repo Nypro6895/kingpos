@@ -327,7 +327,7 @@ function StaffRow({ busy, onPendingChange, canManageStaff, dirty, editing, onTog
         onChange={(event) => onUpdate({ [key]: event.target.value })} type={type} value={String(row[key] ?? "")} />
     </label>
   );
-  const buttonClass = "inline-flex min-h-11 items-center justify-center rounded px-3 text-xs font-semibold text-zinc-700 hover:bg-zinc-100";
+  const buttonClass = "inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded px-3 text-xs font-semibold text-zinc-700 hover:bg-zinc-100";
   const alerts = [status.booking, status.payroll].filter((item) => item.label);
   async function save(formData: FormData) {
     setSaving(true);
@@ -363,7 +363,7 @@ function StaffRow({ busy, onPendingChange, canManageStaff, dirty, editing, onTog
         {row.isActive && row.posEnabled ? <Badge><WorkspaceText text="POS" /></Badge> : null}
       </div></td>
       <td className={classNames("col-span-2 row-start-2 md:table-cell md:px-3 md:py-2", !alerts.length && "hidden")}><div className="flex flex-wrap gap-1">{alerts.map((alert) => <StatusBadgeLink key={alert.label} status={alert} />)}</div></td>
-      <td className="col-start-2 row-start-1 md:px-3 md:py-2">{canManageStaff ? <div className="flex justify-end gap-1">
+      <td className="col-start-2 row-start-1 md:px-3 md:py-2">{canManageStaff ? <div className="flex flex-col items-end justify-end gap-1 lg:flex-row">
         {profileHref ? <Link className={buttonClass} href={profileHref}><WorkspaceText text="Staff profile" /></Link> : null}
         <button aria-expanded={editing} aria-controls={`staff-edit-${row.id}`} className={buttonClass} disabled={busy || saving} onClick={onToggleEditing} type="button"><WorkspaceText text="Edit" /></button>
       </div> : null}</td>
@@ -452,7 +452,7 @@ function StaffTable({
             <th className="w-[16%] px-4 py-3" scope="col">
               <WorkspaceText text="Status" />
             </th>
-            <th className="w-[8%] px-4 py-3" scope="col">
+            <th className="w-[8%] min-w-[8rem] px-4 py-3" scope="col">
               <WorkspaceText text="Edit" />
             </th>
           </tr>
