@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "ios-test-network-isolation-20261119",
+  "status": "ready",
+  "summary": "Isolate native XCTest network and preserve actual startup, installed-bundle behavior and the exact four-script contract;276 tests pass under supported simulator configuration",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/LaunchAppearanceTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/TestNetworkIsolation.swift",
+    "docs/ios-xctest-network-isolation.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\ios-test-network-isolation-r1\\frozen-source-72b62fd",
+    "commit": "72b62fd6c13754be3745a7c1830b54370e904b06"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Independent all36 original Swift/273-method egress audit and frozen successor review",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/ios-test-egress-review-r1/frozen-egress-review-72b62fd.json"
+    },
+    {
+      "name": "Complete20-app/37-test unsigned simulator target compile, official XcodeGen resources verified",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/ios-test-network-isolation-r1/mac-evidence-72-r1/evidence/compile-result-r2.json"
+    },
+    {
+      "name": "Actual30 scoped tests including owned-resource positive control and direct-API denial, no skips",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/ios-test-network-isolation-r1/mac-evidence-72-r1/evidence/scoped-xcresult-summary.json"
+    },
+    {
+      "name": "Supported ad-hoc simulator own application/Keychain entitlements and focused5-case gate",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/ios-test-network-isolation-r1/mac-evidence-72-r1/supported-simulator-contract-r1/KeychainGate-result.json"
+    },
+    {
+      "name": "Full276 cases dynamically discovered and started/passed exactly once across16 isolated hosts;0 failures/skips/extras/duplicates",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/ios-test-network-isolation-r1/mac-evidence-72-r1/supported-simulator-contract-r1/result.json"
+    },
+    {
+      "name": "Frozen authored inputs and369 runtime resources unchanged;3 own sims shut down;0 owned runners",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/ios-test-network-isolation-r1/mac-evidence-72-r1/evidence/post-run-source-runtime-proof.json"
+    }
+  ],
+  "acceptanceLimitations": [
+    "Test source72b62fd uses an exact copy of the frozen2d6 runtime bundle as an explicitly authorized equivalence fixture; it is not a newly prepared final distribution package.",
+    "Initial unsigned/single-host full run was stopped after invalid-environment failures and stuck cleanup; raw logs and incomplete xcresult remain separate diagnostics, never a pass receipt.",
+    "Simulator results do not establish physical iPhone/iPad acceptance, production/provider behavior, distribution signing, archive/upload/TestFlight or App Store availability.",
+    "No product runtime, navigation/security policy, permission, production entitlement, dependency, signing ownership or provider/environment setting changed."
+  ],
+  "occurredAt": "2026-11-19T18:55:30.707Z",
+  "id": "fac71670-fa6b-4b87-85e9-781a98bb8a89",
+  "recordedAt": "2026-11-19T18:56:57.394Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-test-network-isolation-20261119-r1",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/ReylumiTests/AppViewportTests.swift": "92d7bafa84701835d7a74fbbd05cf20cf7a4cb6462fe077484a235f63548768e",
+    "ios/ReylumiTests/LaunchAppearanceTests.swift": "29724f4249d57f95a0867f5505d1e809b35c897e7e1616324b76ed3a8a23c38d",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "d0fb70aca3dd268252f09fa164f91cd3dde5a45cd24aa267a1861684dc9d9004",
+    "ios/ReylumiTests/TestNetworkIsolation.swift": "0bc2d1cbff0d64ae5eae73b2bddf4224bd61ebdf6e9c9090359df227ef93f420",
+    "docs/ios-xctest-network-isolation.md": "1395c2598b88314cca5cd7026beb2b8b0d3b35879469f726d679163eb1479c4f"
+  }
+}
