@@ -1,0 +1,29 @@
+{
+  "kind": "release",
+  "summary": "Record verified pre-MFA iOS QA1.0.1(101) upload; tester availability and final coordinated release remain pending",
+  "changes": [],
+  "targets": {
+    "ios": {
+      "status": "uploaded",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "101",
+      "commit": "13735562e3b93d295738348b68b9646ed0c46680",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\testflight-run-44616485355-verified-r1\\FINAL-HANDOFF.json"
+    }
+  },
+  "source": {
+    "commit": "13735562e3b93d295738348b68b9646ed0c46680",
+    "workflowRunId": 44616485355
+  },
+  "notes": [
+    "276/276 tests across16 simulator hosts, actual archive Info and source/resource pins verified.",
+    "Apple VALID and internal READY_FOR_BETA_TESTING; existing tester-group availability is not established.",
+    "No READY change events are resolved by this uploaded-only receipt; no tester/group/invitation or App Store writes.",
+    "This QA binary precedes local MFA source820babb and is not the final Store candidate.",
+    "Production web, database migrations and public Windows feed remain outside this receipt."
+  ],
+  "id": "5a611080-9d0a-4fd8-b758-5d6f99f1e06b",
+  "recordedAt": "2026-11-19T22:01:21.449Z",
+  "worktree": "C:\\Reylumi-worktrees\\mfa-access-enforcement-20261119-r1"
+}

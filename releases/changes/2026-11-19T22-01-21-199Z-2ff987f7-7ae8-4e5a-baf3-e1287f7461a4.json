@@ -1,0 +1,125 @@
+{
+  "kind": "change",
+  "changeId": "mfa-access-enforcement-20261119",
+  "status": "needs-integration",
+  "summary": "Complete local MFA assurance and pending sign-in continuation fixes; expanded integration and coordinated release remain unverified",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/api/auth/callback/route.ts",
+    "app/(app)/api/auth/login/route.ts",
+    "app/(app)/api/auth/mfa/challenge/route.ts",
+    "app/(app)/api/auth/mfa/verify/route.ts",
+    "app/(app)/login/page.tsx",
+    "app/login/login-form.tsx",
+    "app/settings/login-security/actions.ts",
+    "components/session-expiry-prompt.tsx",
+    "docs/mfa-access-enforcement-20261119.md",
+    "lib/auth-return-fragment.ts",
+    "lib/auth-routing.ts",
+    "lib/mfa-resume-client.ts",
+    "lib/supabase/mfa-assurance.ts",
+    "lib/supabase/mfa-challenge.ts",
+    "lib/supabase/mfa-session.ts",
+    "lib/supabase/refresh-session.ts",
+    "lib/supabase/server.ts",
+    "supabase/migrations/20261119221000_mfa_access_enforcement.sql",
+    "tests/login-security-contract.test.mjs",
+    "tests/mfa-access-enforcement.full-schema.test.mjs",
+    "tests/mfa-auth-continuation.test.mjs",
+    "tests/security-request-origin.test.mjs",
+    "tests/security-session-validation.test.mjs",
+    "tests/session-policy-runtime.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\mfa-root-freeze-r1\\frozen-source",
+    "commit": "820babbc7d04a9fc12c396fefb2ca0c7213f22b0",
+    "baseCommit": "13735562e3b93d295738348b68b9646ed0c46680",
+    "sourceManifestSha256": "0aa7196749b0709b4f97e11da428eaf4a3a75b8e116017954c0ce02b30174084"
+  },
+  "fileHashes": {
+    "app/(app)/api/auth/callback/route.ts": "b6ed221dcd68ddf6febbb204971f4538ff6663df1bad5040117ad5bbdb55769e",
+    "app/(app)/api/auth/login/route.ts": "4537249992fcabb2c51cd7f3ad36f09cd50bcdb9c2d64831504f9f2ff1d50101",
+    "app/(app)/api/auth/mfa/challenge/route.ts": "e35fcb98fd3bf20d4a7f2e7f460785ff309283be55d407eed688695e5eeda688",
+    "app/(app)/api/auth/mfa/verify/route.ts": "f468cbc8f9e8ed3b2dde3b7ea01d0d213dcfd35cda53e9f19f114dd7db7335b8",
+    "app/(app)/login/page.tsx": "bd52ea3aa446063f40cba39456a60935771a6aeef78b529a966d6bdf8e272729",
+    "app/login/login-form.tsx": "0d783dbae684d1df65e85924b53a7dce92bd3b1807e7f69a03c2f3ff80682ddd",
+    "app/settings/login-security/actions.ts": "0d501c1ca38225c534e3fb3a5aecb11433fe702d4f5f65a539c0dc955faffebf",
+    "components/session-expiry-prompt.tsx": "b73f9086049037bdcb143d3068f853e027ea3ce530e777b7644bff364ac21fc6",
+    "docs/mfa-access-enforcement-20261119.md": "3f279c28ec4dfaf4bbc3789ef211aa23372e1cf1c61ac26d2d25716ab9d2eb4d",
+    "lib/auth-return-fragment.ts": "6154468de233c1e1902f965b0a22de416d3c6493aa2796189fc84379c57ce1c0",
+    "lib/auth-routing.ts": "77d17a5f428c46d2553ed526009b3ca5f4135d66915906a39fe3ce80e0155456",
+    "lib/mfa-resume-client.ts": "35cf64e154d8d7c6f6ec3b087174494b7a75c545416e3fafb3d26eb09b609f31",
+    "lib/supabase/mfa-assurance.ts": "ca7970eaaa3f47f0afbdeaf10d4286c94aab650ca24e2efb614ff763c400f9a0",
+    "lib/supabase/mfa-challenge.ts": "4d06695a6788979e272a6d98f6493a96781f0b6a05391138c9459fbaaf31283a",
+    "lib/supabase/mfa-session.ts": "d391a542767f22c64260110ad1124a437850f8c08aed40743c1065c29da27497",
+    "lib/supabase/refresh-session.ts": "29ca401514e9e8fab23d024a11f182c7e5b4a94fd82d50b758562aee80578ce1",
+    "lib/supabase/server.ts": "7652a3dc9376d808cd30b306f94755eadf35669c25f3aab687014642af88ad5a",
+    "supabase/migrations/20261119221000_mfa_access_enforcement.sql": "2601b8fd2c91889686895fcbaeb73f0d557bd205f674b38c6f735a4c27896cf2",
+    "tests/login-security-contract.test.mjs": "60e419ad3d04045ede08c49ca7a31537071820a0e5a06a8c8d1e3146a779223c",
+    "tests/mfa-access-enforcement.full-schema.test.mjs": "cbf0f7af4d8b115717ad07154c38e25aef2d43ee66ebbcf38009ef39d7d142f1",
+    "tests/mfa-auth-continuation.test.mjs": "3f3e6bbbc93f5209fb62d62d555c3a7c26bdd7884a3a99be644ac0e958189b07",
+    "tests/security-request-origin.test.mjs": "276ef5ad4e67c92567caf4e1db072ce07d3c27283945691880a44fc333bd1e62",
+    "tests/security-session-validation.test.mjs": "c27cd350501b034bc8b0cbade95a47d3acb50d9ff5d5bc06b770cdac385b396b",
+    "tests/session-policy-runtime.test.mjs": "4436433a8b58ccd920bfd6c2b6d93e69a0e00b4827143be4a3dca7ac63206148"
+  },
+  "dependencies": [
+    "security-hardening-20261119",
+    "session-denial-account-erasure-20261119"
+  ],
+  "validation": [
+    {
+      "name": "101 mocked SDK/route/client/auth regressions; zero failed or skipped",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\mfa-access-enforcement-r1\\safe-source-checks-r3.json"
+    },
+    {
+      "name": "ESLint21 files/zero warnings, Next312 pages/offline assets and TypeScript3126 files",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\mfa-access-enforcement-r1\\safe-source-checks-r3.json"
+    },
+    {
+      "name": "Root24-file frozen source/staged blob and inherited baseline review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\mfa-root-freeze-r1\\source-commit-receipt.json"
+    },
+    {
+      "name": "Historical13-check owned SQL454/provider fixture; independent passive review only",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\mfa-access-provider-independent-review-r1\\review.json"
+    },
+    {
+      "name": "Offline26 draft static review only; disabled artifact, not execution",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\mfa-production-plan26-offline-r1\\root-static-review.json"
+    },
+    {
+      "name": "Expanded real-provider appguard/private-access integration unavailable after automatic safety block",
+      "result": "pending",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\production-security-qa-plan-r1\\PLAN.md"
+    },
+    {
+      "name": "Exact26 upgrade/full454 regression and final production hosting acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Final native rebuild/Apple availability and physical iPhone/iPad/Android upgrade acceptance",
+      "result": "pending"
+    }
+  ],
+  "notes": [
+    "Local implementation completed; this event is NOT ready and must not be automatically published.",
+    "No retry, alternative provider bridge or credential QA server after possible-cybersecurity-risk safety block.",
+    "TestFlight101 source1373556 predates this MFA fix; its upload does not establish final Store readiness.",
+    "Same-worker duplicate-send coalescing is not globally exactly-once SMS.",
+    "Unavailable auth preserves cookies without a forced auth reset; no blanket durable retention promise for unsaved drafts across navigation or reload.",
+    "No production schema/data/publication, remote source push or tester invitation performed by this local handoff."
+  ],
+  "id": "2ff987f7-7ae8-4e5a-baf3-e1287f7461a4",
+  "recordedAt": "2026-11-19T22:01:21.199Z",
+  "worktree": "C:\\Reylumi-worktrees\\mfa-access-enforcement-20261119-r1",
+  "supersedesEvents": []
+}
