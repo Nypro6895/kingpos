@@ -1,0 +1,116 @@
+{
+  "kind": "change",
+  "changeId": "session-denial-account-erasure-20261119",
+  "status": "ready",
+  "summary": "Coordinator final-source integration of session-denial erasure; local implementation only, no provider/device/Store publication claim",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119203000_session_denial_account_erasure.sql",
+    "tests/session-denial-account-erasure.full-schema.test.mjs",
+    "docs/session-denial-account-erasure-20261119.md",
+    "releases/changes/2026-11-19T20-10-47-887Z-ea60f7c6-dc90-4112-a8c6-e797e57d9c4b.json"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\security-fk-ready-drafts-r1\\frozen-da9b",
+    "commit": "da9b7ada7a26a24a5fc01e755a439dc61650d21c",
+    "baseCommit": "dfb18cb05ecfbfa2b8f825c88f600658c1806d9e",
+    "originalImplementationCommit": null,
+    "scope": "local-authored-implementation-and-source-integration-only"
+  },
+  "validation": [
+    {
+      "name": "Frozen final authored subset exactly matches final da9b Git blobs; original scope and journal bytes preserved",
+      "result": "passed",
+      "evidence": "{\"path\":\"C:\\\\Reylumi-worktrees\\\\ios-store-privacy-20261116\\\\artifacts\\\\combined-release-20261119-next\\\\security-fk-ready-drafts-r1\\\\frozen-source-manifest.json\",\"sha256\":\"116e8a88402e062e2193ee19112e4b553554265a6e948dfc9e98409c4d70f1e1\"}"
+    },
+    {
+      "name": "Root clean integration and bounded final source/runtime equivalence",
+      "result": "passed",
+      "evidence": "{\"path\":\"C:\\\\Reylumi-worktrees\\\\ios-store-privacy-20261116\\\\artifacts\\\\combined-release-20261119-next\\\\session-denial-final-integration-r1\\\\integration-receipt.json\",\"sha256\":\"e9f768f9e60d2f55a45212e480470c0b79df212a63a0401a2ddbbcd8506c5495\"}"
+    },
+    {
+      "name": "Isolated real Auth452-to453 upgrade:12checks, exact private ACLs and inherited452, scoped actual hard delete; owned fixture cleanup",
+      "result": "passed",
+      "evidence": "[{\"path\":\"C:\\\\Reylumi-worktrees\\\\ios-store-privacy-20261116\\\\artifacts\\\\combined-release-20261119-next\\\\session-denial-erasure-r1\\\\run-r1\\\\session-denial-erasure-acceptance.json\",\"sha256\":\"4e6088a25a9f1ba6ab71e86c12893c474ea997658137feae5317f7502fdc0089\"},{\"path\":\"C:\\\\Reylumi-worktrees\\\\ios-store-privacy-20261116\\\\artifacts\\\\combined-release-20261119-next\\\\session-denial-erasure-r1\\\\run-r1\\\\session-denial-erasure-fixture.json\",\"sha256\":\"aa11e156f576e611a0a3d6b68a9967ac88be74627b7de6d91404a0939bfb2665\"},{\"path\":\"C:\\\\Reylumi-worktrees\\\\ios-store-privacy-20261116\\\\artifacts\\\\combined-release-20261119-next\\\\session-denial-erasure-independent-review-r1\\\\review.json\",\"sha256\":\"98bfebd93b9160ada52558fab9e5d2e1946164e3b2d4815776d7c06d6f3aae81\"}]"
+    },
+    {
+      "name": "Final453-source exact25-migration guarded wrapper and successful negative/positive isolated rehearsal",
+      "result": "passed",
+      "evidence": "{\"path\":\"C:\\\\Reylumi-worktrees\\\\ios-store-privacy-20261116\\\\artifacts\\\\combined-release-20261119-next\\\\final-local-ready-recording-r4\\\\actual-local-rehearsal-evidence.json\",\"sha256\":\"788fa52fe84a1847c271527883d7b5f0924925026d9f62cc0e22fb846de3edcc\"}"
+    },
+    {
+      "name": "Actual Security native ad-hoc-signed simulator test build and276/276exactly-once isolated acceptance, with all369resources/92native-test-helper inputs equal final da9b rebind",
+      "result": "passed",
+      "evidence": "{\"path\":\"C:\\\\Reylumi-worktrees\\\\ios-store-privacy-20261116\\\\artifacts\\\\combined-release-20261119-next\\\\security-fk-ready-drafts-r2\\\\native-validation-rebind-review.json\",\"sha256\":\"fb95435c74897ef62e271c851354b20d60a9aabe166db20cb6e66a23e4eec23c\"}"
+    },
+    {
+      "name": "Ordinary full453 Tax/privacy15groups with real local AuthSID, original financial/retention controls,8owned cleanup; independent453rawhash and fixture adaptation review",
+      "result": "passed",
+      "evidence": "{\"path\":\"C:\\\\Reylumi-worktrees\\\\ios-store-privacy-20261116\\\\artifacts\\\\combined-release-20261119-next\\\\full453-ordinary-independent-review-r1\\\\review.json\",\"sha256\":\"acc44bf934f4310bbb5dfedda725d046fd4082ccf668bda41664b0a4831827c1\"}"
+    }
+  ],
+  "dependencies": [
+    "security-hardening-20261119"
+  ],
+  "supersedesEvents": [],
+  "originalCompletionEvent": "c5031df3-197a-4206-ade5-687154a93a91",
+  "originalCompletionEventFile": "releases/changes/2026-11-19T20-15-47-228Z-c5031df3-197a-4206-ade5-687154a93a91.json",
+  "originalHistoricalValidation": [
+    {
+      "name": "Owned real Auth/PostgREST/Storage 452-to-453 upgrade, scoped actual hard-delete and revocation retention",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\session-denial-erasure-r1\\run-r1\\session-denial-erasure-acceptance.json",
+      "result": "passed"
+    },
+    {
+      "name": "All inherited452 migration hashes and private ACLs preserved; only four owned containers removed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\session-denial-erasure-r1\\run-r1\\session-denial-erasure-fixture.json",
+      "result": "passed"
+    },
+    {
+      "name": "JavaScript syntax",
+      "evidence": "node --check tests/session-denial-account-erasure.full-schema.test.mjs",
+      "result": "passed"
+    },
+    {
+      "name": "Combined-source final453 migration wrapper/rehearsal, production baseline and provider hook/session acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Signed native/physical upgrade and Store publication",
+      "result": "pending"
+    }
+  ],
+  "scopeBoundaries": {
+    "localImplementationOnly": true,
+    "productionCandidateEnvironmentBuild": false,
+    "productionDdlOrProviderConfigurationAcceptance": false,
+    "physicalDeviceAcceptance": false,
+    "signedArchiveUpload": false,
+    "testFlightOrStorePublication": false,
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "externalGatesRemainPending": true
+  },
+  "pendingReleaseGatesOutsideLocalSourceReady": [
+    "Fresh actual Production candidate build, baseline guard and deployed-byte verification",
+    "Final effective production hook/session inventory/provider acceptance",
+    "Signed native/physical old-cache upgrade and Store distribution acceptance"
+  ],
+  "draftOnly": false,
+  "recordableNow": true,
+  "coordinatorRecordBatchId": "7f4233f0-4f2c-4eee-8e85-b304d870acbc",
+  "coordinatorSlot": 2,
+  "id": "ec9c9fcc-e873-48be-ae0d-7922c0638f46",
+  "recordedAt": "2026-11-19T21:00:04.992Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "supabase/migrations/20261119203000_session_denial_account_erasure.sql": "e45f10ef38ec433d12995cd8b97837d7fc565c2aa89169e43eedfaf5f2d06e2c",
+    "tests/session-denial-account-erasure.full-schema.test.mjs": "fb8a730b091b10ec72bfc893014472a470552054ed56dd86d3209167d10ec51b",
+    "docs/session-denial-account-erasure-20261119.md": "00814f5226e31f46cfc86a15a4993f4964f5f86b78bda586ab1d5bdb815689dd",
+    "releases/changes/2026-11-19T20-10-47-887Z-ea60f7c6-dc90-4112-a8c6-e797e57d9c4b.json": "993dd198d4105d7a611e3e5c94f995d95756449151881e2436bbf25f4e48c84a"
+  }
+}
