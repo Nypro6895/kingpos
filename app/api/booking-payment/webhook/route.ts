@@ -1,9 +1,12 @@
 import { marketServiceClient } from "@/lib/market-payments";
 import { syncBookingDeposit, verifyDepositWebhook } from "@/lib/booking-deposit";
+import { readBoundedRequestText, requestBodyFailure } from "@/lib/request-body";
 
 export async function POST(request: Request) {
-  const payload = await request.text();
-  if (payload.length > 262144 || !verifyDepositWebhook(payload, request.headers.get("stripe-signature") ?? "")) return Response.json({ error: "Invalid signature" }, { status: 400 });
+  let payload: string;
+  try { payload = await readBoundedRequestText(request, 262144); }
+  catch (error) { return requestBodyFailure(error); }
+  if (!verifyDepositWebhook(payload, request.headers.get("stripe-signature") ?? "")) return Response.json({ error: "Invalid signature" }, { status: 400 });
   try {
     const event = JSON.parse(payload), object = event.data?.object;
     if (!/^acct_[a-zA-Z0-9]+$/.test(event.account ?? "")) return Response.json({ error: "Connected account required" }, { status: 400 });

@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { NextRequest } from "next/server";
 import { getCurrentBusinessContext, isOwnerMembership } from "@/lib/current-context";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const headers = { "Cache-Control": "private, no-store" };
   const fail = (error: string, status: number) => Response.json({ error }, { status, headers });
-  if (request.headers.get("origin") && request.headers.get("origin") !== request.nextUrl.origin) return fail("Invalid origin", 403);
+  if (!isSameOriginMutation(request)) return fail("Invalid origin", 403);
   if (!request.headers.get("content-type")?.startsWith("application/json")) return fail("JSON required", 400);
   try {
     const raw = await request.text();

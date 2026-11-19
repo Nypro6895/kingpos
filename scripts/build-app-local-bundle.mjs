@@ -99,10 +99,20 @@ for (const asset of ref.APP_LOCAL_REFERENCE_ASSETS) {
 }
 async function copyPublicAssets(directory){for(const entry of await fs.readdir(directory,{withFileTypes:true})){const absolute=path.join(directory,entry.name);if(entry.isDirectory())await copyPublicAssets(absolute);else if(/\.(?:png|jpg|jpeg|svg|webp|avif|woff2?)$/i.test(entry.name)){const relative=path.relative(path.join(root,'public'),absolute);const destination=path.join(output,relative);await fs.mkdir(path.dirname(destination),{recursive:true});await fs.copyFile(absolute,destination);}}}
 await copyPublicAssets(path.join(root,'public'));
-// The existing map view loads this same-origin script lazily. Install the exact
-// pinned dependency so its first use never downloads executable code.
-await fs.mkdir(path.join(output,'api/vendor'),{recursive:true});
-await fs.copyFile(require.resolve('maplibre-gl/dist/maplibre-gl.js'),path.join(output,'api/vendor/maplibre-gl'));
+// Use the exact URL exported to the client, including its normal .js MIME
+// suffix. A signed bundle must never download a missing executable resource.
+const mapAssetMetadata = await build({ absWorkingDir: root, entryPoints: ['lib/maplibre-assets.ts'], bundle: true, write: false, format: 'cjs', platform: 'node' });
+const mapAssetModule = { exports: {} }; new Function('module','exports',mapAssetMetadata.outputFiles[0].text)(mapAssetModule,mapAssetModule.exports);
+const mapAsset = mapAssetModule.exports;
+const mapVersion = require('maplibre-gl/package.json').version;
+if(mapAsset.MAPLIBRE_ASSET_VERSION !== mapVersion || mapAsset.MAPLIBRE_SCRIPT_URL !== `/api/vendor/maplibre-gl/${mapVersion}.js`) throw Error('Installed map asset version does not match the client loader');
+const legacyMapAsset = path.join(output,'api/vendor/maplibre-gl');
+const legacyMapInfo = await fs.lstat(legacyMapAsset).catch(error=>{if(error.code!=='ENOENT')throw error;return null;});
+// This known generated extensionless file predates the versioned directory.
+// Remove only that file, never a caller-selected or recursive directory.
+if(legacyMapInfo?.isFile()) await fs.unlink(legacyMapAsset);
+await fs.mkdir(legacyMapAsset,{recursive:true});
+await fs.copyFile(require.resolve('maplibre-gl/dist/maplibre-gl.js'),path.join(output,mapAsset.MAPLIBRE_SCRIPT_URL.slice(1)));
 await fs.mkdir(path.join(output,'brand'),{recursive:true}); await fs.copyFile(path.join(root,'public/brand/reylumi-favicon.png'),path.join(output,'brand/reylumi-favicon.png'));
 await fs.mkdir(path.join(output,'fonts'),{recursive:true}); for(const font of ['Geist','Manrope']) await fs.copyFile(path.join(root,`app/fonts/${font}.woff2`),path.join(output,`fonts/${font}.woff2`));
 const routes = ['/help','/help/:slug','/legal','/terms','/privacy','/community','/business-terms', '/pos','/pos/check-in','/pos/book','/pos/ticket','/pos/report'];

@@ -585,14 +585,11 @@ async function findOrCreateDeskCustomer(input: {
       }
     }
 
-    const escaped = lookup.replaceAll("%", "\\%").replaceAll("_", "\\_");
     const { data, error } = await supabase
-      .from("customers")
-      .select("id, name, phone, email")
-      .eq("location_id", salon.id)
-      .eq("status", "active")
-      .or(`phone.eq.${escaped},email.eq.${escaped},name.ilike.${escaped}`)
-      .limit(1)
+      .rpc("find_pos_desk_customer_exact", {
+        p_salon_id: salon.id,
+        p_lookup: lookup,
+      })
       .maybeSingle<PosDeskCustomer>();
 
     if (error) {

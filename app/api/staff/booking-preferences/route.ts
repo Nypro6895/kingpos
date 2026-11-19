@@ -1,8 +1,9 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin) {
+  if (!isSameOriginMutation(request)) {
     return Response.json({ ok: false, error: "Invalid request origin." }, { status: 403 });
   }
   const started = performance.now();

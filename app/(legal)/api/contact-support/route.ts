@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import {acknowledgeSupportRequest} from "@/lib/support-email-access";
 import {guestSupportToken} from "@/lib/guest-support";
 import { NextResponse } from "next/server";
@@ -5,8 +6,7 @@ import { supportNetworkHash, supportServiceClient } from "@/lib/support-server";
 import { validateSupportContact } from "@/lib/support-rules";
 
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return NextResponse.json({ error: "Submit the form from this website." }, { status: 403 });
+  if (!isSameOriginMutation(request)) return NextResponse.json({ error: "Submit the form from this website." }, { status: 403 });
   let input: Record<string, unknown>;
   try {
     const reader = request.body?.getReader();

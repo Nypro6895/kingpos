@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { readAppLocalOwnerResource } from "@/lib/app-local-owner-resources-server";
@@ -33,7 +34,7 @@ async function readPage(request: Request, timing: ReadRequestTiming) {
   try {
     let name: string, scope: string, args: unknown;
     if (request.method === "POST") {
-      if (request.headers.get("origin") !== new URL(request.url).origin || !request.headers.get("content-type")?.startsWith("application/json")) return json({ error:"Invalid page origin" }, {status:403,headers:responseHeaders});
+      if (!isSameOriginMutation(request) || !request.headers.get("content-type")?.startsWith("application/json")) return json({ error:"Invalid page origin" }, {status:403,headers:responseHeaders});
       if (Number(request.headers.get("content-length")??0)>131072) return json({error:"Page filters are too large"},{status:413,headers:responseHeaders});
       const reader=request.body?.getReader();if(!reader)throw new SyntaxError("Missing read filters");
       let length=0;const chunks:Uint8Array[]=[];
@@ -81,4 +82,4 @@ async function readPage(request: Request, timing: ReadRequestTiming) {
 }
 export async function GET(request:Request){const timing=createReadRequestTiming(undefined,newReadRequestId(request.headers));return runWithReadContext(() => readPage(request,timing),timing);}
 /** Large search windows are still named read-only resources; POST is only a transport. */
-export async function POST(request:Request){const timing=createReadRequestTiming(undefined,newReadRequestId(request.headers));return runWithReadContext(() => readPage(request,timing),timing);}
+export async function POST(request:Request){if(!isSameOriginMutation(request))return Response.json({error:"Invalid page origin"},{status:403,headers:{"Cache-Control":"private, no-store"}});const timing=createReadRequestTiming(undefined,newReadRequestId(request.headers));return runWithReadContext(() => readPage(request,timing),timing);}

@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { isSignupPhoneAvailable } from "@/lib/signup-phone-availability";
 import { DUPLICATE_SIGNUP_PHONE_MESSAGE } from "@/lib/signup-phone-policy";
 import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
@@ -65,6 +66,7 @@ function signupSuccessResponse(request: Request, redirectTo: string) {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Invalid request origin. Reload the page and try again." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const supabase = createSupabaseServerClient();
   const formData = await request.formData();
   const email = readString(formData, "email").toLowerCase();

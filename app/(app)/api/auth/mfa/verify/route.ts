@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { REMEMBER_LOGIN_SECONDS, writeLoginPolicy } from "@/lib/supabase/session-policy";
 import {
   ACCOUNT_LOGIN_SESSION_COOKIE,
@@ -36,6 +37,7 @@ function errorResponse(message: string, status = 400) {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Invalid request origin. Reload the page and try again." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const formData = await request.formData();
   const factorId = readString(formData, "factor_id");
   const challengeId = readString(formData, "challenge_id");

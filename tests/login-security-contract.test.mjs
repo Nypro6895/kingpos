@@ -40,7 +40,7 @@ const supabaseConfig = read("supabase/config.toml");
 test("All Settings loads the security panel while retaining its dedicated route", () => {
   assert.ok(existsSync("app/(app)/settings/login-security/page.tsx"));
   assert.match(settingsPage, /SettingsHubClient/);
-  assert.match(read("app/settings/settings-hub-client.tsx"), /id:"login-security".*DeferredPersonalSection kind="security"/);
+  assert.match(read("app/settings/settings-hub-client.tsx"), /id:\s*"login-security"[\s\S]*?DeferredPersonalSection kind="security"/);
   assert.match(read("app/settings/deferred-personal-section.tsx"), /LoginSecurityPanel/);
   assert.match(loginSecurityPage, /loadLoginSecurityOverview/);
   assert.match(loginSecurityPage, /redirect\("\/login\?next=\/settings\/login-security"\)/);
@@ -157,7 +157,7 @@ test("Login and logout routes wire app-owned session tracking", () => {
   assert.match(serverAuth, /PENDING_MFA_ACCESS_TOKEN_COOKIE/);
   assert.match(serverAuth, /clearPendingMfaSessionCookieWriter/);
   assert.match(serverAuth, /ACCOUNT_LOGIN_SESSION_COOKIE/);
-  assert.match(serverAuth, /revoked_at/);
+  assert.match(serverAuth, /check_account_login_session/);
   assert.doesNotMatch(serverAuth, /readSessionFromCookieValue/);
 });
 

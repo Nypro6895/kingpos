@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import { getAppNotificationScopeForContext } from "@/lib/workspace-pending";
 import { loadNotificationPage } from "@/lib/notification-center";
@@ -51,7 +52,7 @@ export async function GET(request: Request) {
   }
 }
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin)
+  if (!isSameOriginMutation(request))
     return Response.json(
       { error: "Invalid origin." },
       { status: 403, headers },

@@ -42,9 +42,7 @@ type SupabaseConfig = {
   supabaseUrl: string;
 };
 
-type AccountLoginSessionStatusRow = {
-  revoked_at: string | null;
-};
+type VerifiedAccountSession = { allowed: boolean; session_id?: string; registered?: boolean };
 
 const authUserReadKey = Symbol("read-auth-user");
 const accountStatusReadKey = Symbol("read-account-status");
@@ -446,35 +444,11 @@ async function isAccessTokenAllowedForAppSession(
   return sessionAllowed;
 }
 
-function isAccountLoginSecuritySchemaMissing(error: {
-  code?: string | null;
-  message?: string | null;
-} | null | undefined) {
-  const message = error?.message ?? "";
-
-  return (
-    error?.code === "42P01" ||
-    error?.code === "42703" ||
-    error?.code === "PGRST202" ||
-    (error?.code === "PGRST205" && /account_login_sessions/i.test(message))
-  );
-}
-
-async function isAppLoginSessionCookieAllowed(
+async function readVerifiedAccountSession(
   config: SupabaseConfig,
   accessToken: string,
   authUserId: string,
-  throwOnUnavailable = false,
-  throwOnRejected = false,
 ) {
-  const loginSessionId = (await cookies()).get(
-    ACCOUNT_LOGIN_SESSION_COOKIE,
-  )?.value;
-
-  if (!isAccountLoginSessionId(loginSessionId)) {
-    return true;
-  }
-
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
       persistSession: false,
@@ -488,42 +462,77 @@ async function isAppLoginSessionCookieAllowed(
       },
     },
   });
-  const { data, error } = await memoizeReadValidation(
+  return memoizeReadValidation(
     loginSessionReadKey,
-    authReadAuthority(config, accessToken, authUserId, loginSessionId),
-    () => measureAuthRead("auth_session", async () => await supabase
-      .from("account_login_sessions")
-      .select("revoked_at")
-      .eq("id", loginSessionId)
-      .eq("auth_user_id", authUserId)
-      .maybeSingle<AccountLoginSessionStatusRow>()),
+    authReadAuthority(config, accessToken, authUserId),
+    () => measureAuthRead("auth_session", async () => await supabase.rpc("reylumi_account_session_state", {}, { get: true })),
   );
+}
 
+async function isAppLoginSessionCookieAllowed(
+  config: SupabaseConfig,
+  accessToken: string,
+  authUserId: string,
+  throwOnUnavailable = false,
+  throwOnRejected = false,
+) {
+  // Identity comes from the JWT verified by Supabase/PostgREST, never from the
+  // optional device cookie. Removing or swapping that cookie grants nothing.
+  const { data, error } = await readVerifiedAccountSession(config, accessToken, authUserId);
   if (error) {
-    if (isAccountLoginSecuritySchemaMissing(error)) {
-      return true;
+    if (error.code === "PT401" || isConfirmedAuthRejection(error)) {
+      if (throwOnRejected) throw new AuthRejectionError(401);
+      return false;
     }
+    // Missing migration/schema is unavailable, never permissive legacy access.
     if (throwOnUnavailable) throw new AuthAvailabilityError("Session status");
-
     console.error("Unable to verify app login session", {
       code: error.code,
-      details: error.details,
-      hint: error.hint,
-      message: error.message,
     });
     return false;
   }
+  const state = data as VerifiedAccountSession | null;
+  const allowed = state?.allowed === true && isAccountLoginSessionId(state.session_id);
+  if (!allowed && throwOnRejected) throw new AuthRejectionError(401);
+  return allowed;
+}
 
-  if (data?.revoked_at && throwOnRejected) throw new AuthRejectionError(401);
-  return data?.revoked_at ? false : true;
+export async function getCurrentAppLoginSessionId() {
+  const config = getSupabaseConfig();
+  const accessToken = await getAccessTokenFromRequest();
+  if (!config || !accessToken) return null;
+  const client = createSupabaseServerClient();
+  if (!client) return null;
+  const { data: identity, error: identityError } = await readAuthUser(client, accessToken, config);
+  if (identityError || !identity.user) {
+    assertAuthAvailable(identityError, identityError?.status, "Authentication");
+    return null;
+  }
+  const { data, error } = await readVerifiedAccountSession(config, accessToken, identity.user.id);
+  if (error) {
+    if (error.code === "PT401" || isConfirmedAuthRejection(error)) return null;
+    throw new AuthAvailabilityError("Session status");
+  }
+  const state = data as VerifiedAccountSession | null;
+  if (state?.allowed !== true || !isAccountLoginSessionId(state.session_id)) return null;
+  if (state.registered === true) return state.session_id;
+  // New callback/native sessions may not yet have display metadata. Enrollment
+  // is an explicit, idempotent write; it is never retried as a safe page read.
+  const scoped = createUserScopedSupabaseServerClient(accessToken);
+  if (!scoped) return null;
+  const enrolled = await scoped.rpc("check_account_login_session").abortSignal(AbortSignal.timeout(10_000));
+  if (enrolled.error) {
+    if (enrolled.error.code === "PT401" || isConfirmedAuthRejection(enrolled.error)) return null;
+    throw new AuthAvailabilityError("Session status");
+  }
+  const registered = enrolled.data as VerifiedAccountSession | null;
+  return registered?.allowed === true && isAccountLoginSessionId(registered.session_id) ? registered.session_id : null;
 }
 
 export async function getAccessTokenFromRequest() {
   const authorization = (await headers()).get("authorization");
-  const bearerPrefix = "Bearer ";
-
-  if (authorization?.startsWith(bearerPrefix)) {
-    return authorization.slice(bearerPrefix.length);
+  if (authorization !== null) {
+    return authorization.match(/^Bearer\s+(\S+)$/i)?.[1] ?? null;
   }
 
   const cookieStore = await cookies();
@@ -534,13 +543,13 @@ export async function getAccessTokenFromRequest() {
 
 export async function getSupabaseSessionTokensFromRequest(): Promise<SupabaseSessionTokens | null> {
   const authorization = (await headers()).get("authorization");
-  const bearerPrefix = "Bearer ";
-  const bearerToken = authorization?.startsWith(bearerPrefix)
-    ? authorization.slice(bearerPrefix.length)
-    : null;
+  const bearerToken = authorization?.match(/^Bearer\s+(\S+)$/i)?.[1] ?? null;
   const cookieStore = await cookies();
   const directAccessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
   const directRefreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
+  // A caller asserting a Bearer identity cannot borrow another browser
+  // identity's refresh token for password/MFA/session-management operations.
+  if (authorization !== null && (!bearerToken || bearerToken !== directAccessToken)) return null;
   const accessToken = bearerToken || directAccessToken;
 
   if (accessToken && directRefreshToken) {
@@ -609,6 +618,10 @@ export async function getSupabaseAuthUser(options: { throwOnUnavailable?: boolea
     return null;
   }
 
+  const config = getSupabaseConfig();
+  if (!config || !await isAppLoginSessionCookieAllowed(config, accessToken, data.user.id, options.throwOnUnavailable !== false)) {
+    return null;
+  }
   return data.user;
 }
 

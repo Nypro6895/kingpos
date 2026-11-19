@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { getCurrentPlatformAdminContext } from "@/lib/platform-admin/auth";
@@ -5,7 +6,7 @@ import { getAccessTokenFromRequest } from "@/lib/supabase/server";
 import { ADMIN_SESSION_COOKIE, sessionCookieOptions, touchAdminSession } from "@/lib/supabase/session-policy";
 
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin) {
+  if (!isSameOriginMutation(request)) {
     return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
   }
   const token = await getAccessTokenFromRequest();

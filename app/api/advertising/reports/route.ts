@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { cookies } from "next/headers";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import { assertAbuseRequest } from "@/lib/abuse-server";
@@ -5,7 +6,7 @@ import { advertisingClient } from "@/lib/explore-advertising";
 import { AD_REPORT_COOKIE, AD_REPORT_HEADERS, parseAdReportSubmission, reportActor, submitAdReport } from "@/lib/ad-reporting";
 
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin) return Response.json({ ok: false, outcome: "rejected", error: "A same-origin request is required." }, { status: 403, headers: AD_REPORT_HEADERS });
+  if (!isSameOriginMutation(request)) return Response.json({ ok: false, outcome: "rejected", error: "A same-origin request is required." }, { status: 403, headers: AD_REPORT_HEADERS });
   let input;
   try {
     if (request.headers.get("content-type")?.split(";",1)[0].trim().toLowerCase() !== "application/json") throw new Error("JSON required");

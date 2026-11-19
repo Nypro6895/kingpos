@@ -7,6 +7,8 @@
     "build": "next build --webpack && node scripts/build-offline-assets.mjs",
     "start": "next start",
     "lint": "eslint",
+    "security:audit": "node scripts/security-audit.mjs",
+    "security:test": "node scripts/security-checks.mjs",
     "db:validate-account-salon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-account-salon-foundation.ps1",
     "test:account-salon-lifecycle": "node --test tests/salon-lifecycle-rules.test.mjs tests/account-salon-lifecycle-contract.test.mjs tests/account-deletion-flow-contract.test.mjs tests/account-lifecycle-phase3-contract.test.mjs",
     "test:account-salon-baseline-static": "node scripts/verify-account-salon-baseline-static.mjs",
@@ -25,13 +27,13 @@
     "@supabase/supabase-js": "^2.108.2",
     "botid": "^1.5.11",
     "jsqr": "^1.4.0",
-    "maplibre-gl": "^5.24.0",
-    "next": "16.2.9",
+    "maplibre-gl": "5.24.1",
+    "next": "16.4.6",
     "nodemailer": "^10.5.0",
     "pdf-lib": "^1.17.1",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "sharp": "^0.34.5"
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
@@ -43,7 +45,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "esbuild": "^0.28.2",
     "eslint": "^9",
-    "eslint-config-next": "16.2.9",
+    "eslint-config-next": "16.4.6",
     "playwright-core": "^1.61.1",
     "tailwindcss": "^4",
     "typescript": "^5"

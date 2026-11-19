@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { dailyClosingRequest, validateClosingRequest, type ClosingRequest } from "@/lib/daily-closing-server";
 
 export const maxDuration = 30;
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   if (request.headers.get("x-reylumi-auth-unavailable") === "1") return response({ok: false, outcomeUnknown: false}, 503);
-  if (request.headers.get("origin") !== new URL(request.url).origin || !request.headers.get("content-type")?.startsWith("application/json")) return response({ok: false, error: "Invalid request origin.", outcomeUnknown: false}, 403);
+  if (!isSameOriginMutation(request) || !request.headers.get("content-type")?.startsWith("application/json")) return response({ok: false, error: "Invalid request origin.", outcomeUnknown: false}, 403);
   let input: ClosingRequest;
   try { input = await request.json(); } catch { return response({ok: false, error: "Invalid request.", outcomeUnknown: false}, 400); }
   return execute(input, true);

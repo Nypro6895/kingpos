@@ -1,8 +1,9 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin) return Response.json({ok: false, message: "Invalid request origin."}, {status: 403});
+  if (!isSameOriginMutation(request)) return Response.json({ok: false, message: "Invalid request origin."}, {status: 403});
   try {
     const input = await request.json();
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.bookingId ?? "") || !["unexcused", "excused"].includes(input.kind) || typeof input.reason !== "string" || input.reason.length > 1000 || (input.kind === "excused" && !input.reason.trim())) return Response.json({ok: false, message: "Choose a no-show type and add a reason when required."}, {status: 400});

@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { randomInt, randomUUID } from "node:crypto";
 import { createSecurityChallengeImage, SECURITY_CHALLENGE_ALPHABET } from "@/lib/security-challenge-image";
 import { getSafetyContext } from "@/lib/abuse-context";
@@ -27,8 +28,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return Response.json({ error: "Reload this page before continuing." }, { status: 403, ...options });
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Reload this page before continuing." }, { status: 403, ...options });
   try {
     const input = await request.json();
     if (typeof input.id !== "string" || !/^[a-f0-9-]{36}$/i.test(input.id) || typeof input.answer !== "string" || !/^[a-z0-9]{6}$/i.test(input.answer.trim())) return Response.json({ error: "Enter the six characters shown in the image." }, { status: 400, ...options });

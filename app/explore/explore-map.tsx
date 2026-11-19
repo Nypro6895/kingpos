@@ -15,6 +15,7 @@ import { hasValidCoordinates } from "@/lib/location/distance";
 import type { Coordinates } from "@/types/location";
 import type { ExploreMapSalon } from "@/types/explore";
 import { mapDirectionsUrl } from "@/lib/location/map-links";
+import { MAPLIBRE_SCRIPT_URL } from "@/lib/maplibre-assets";
 import { WorkspaceText } from "@/components/workspace-language";
 
 type ExploreMapProps = {
@@ -76,7 +77,7 @@ function loadMapLibre() {
   mapLibrePromise = new Promise<MapLibreApi>((resolve, reject) => {
     const script = document.createElement("script");
     script.async = true;
-    script.src = "/api/vendor/maplibre-gl";
+    script.src = MAPLIBRE_SCRIPT_URL;
     script.onload = () => {
       if (window.maplibregl) {
         resolve(window.maplibregl);

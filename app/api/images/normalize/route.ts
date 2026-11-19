@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { IMAGE_POLICY } from "@/lib/image-policy";
 import { normalizeImage } from "@/lib/normalize-image";
 import { getSupabaseAuthUser } from "@/lib/supabase/server";
@@ -6,8 +7,7 @@ const headers = { "Cache-Control": "private, no-store" };
 const failure = (status: number) => Response.json({ error: "Image could not be processed." }, { status, headers });
 
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  if ((origin && origin !== new URL(request.url).origin) || request.headers.get("sec-fetch-site") === "cross-site") return failure(403);
+  if (!isSameOriginMutation(request)) return failure(403);
   try {
     if (!await getSupabaseAuthUser()) return failure(401);
   } catch { return failure(503); }

@@ -19,7 +19,9 @@ function session({ status = "active", revoked = false, queryError = false, delet
         maybeSingle: () => new Promise(resolve => pending.set(table, resolve)) };
       return query;
     },
-    rpc: async () => ({ data: deleted, error: null }),
+    rpc: async name => name === "reylumi_account_session_state"
+      ? new Promise(resolve => pending.set("account_login_sessions", resolve))
+      : ({ data: deleted, error: null }),
   };
   const dependencies = {
     "@/lib/users/user-select": {USER_SELECT:"*"},
@@ -41,7 +43,7 @@ function session({ status = "active", revoked = false, queryError = false, delet
   } });
   return { pending, run: exports.createAuthenticatedSupabaseServerClient, release() {
     pending.get("users")?.({ data: status ? { status } : null, error: queryError ? { code: "unavailable" } : null });
-    pending.get("account_login_sessions")?.({ data: { revoked_at: revoked ? "2026-01-01" : null }, error: null });
+    pending.get("account_login_sessions")?.({ data: { allowed: !revoked, session_id: "session" }, error: null });
   } };
 }
 

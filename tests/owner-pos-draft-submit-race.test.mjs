@@ -24,13 +24,13 @@ for (const branch of ['queue', 'reward', 'gift']) {
     assert.equal(h.snapshot().savedTickets[0].value.id, h.cartB.id);
     assert.equal(h.queued.length, branch === 'queue' ? 1 : 0);
     assert.equal(h.actions.length, branch === 'reward' ? 1 : 0);
-    assert.equal(h.takeoverSaved(), true, 'Saved tickets still opens normally after Submit settles');
+    assert.equal(await h.takeoverSaved(), true, 'Saved tickets still opens normally after Submit settles');
     assert.equal(h.snapshot().activeCart.id, h.cartB.id);
     assert.equal(h.snapshot().savedTickets.length, 0);
   });
 
   test(`${branch}: an already-open saved-ticket confirmation cannot replace a pending cart`, async () => {
-    const h = createPosDraftSubmitHarness({ branch });
+    const h = createPosDraftSubmitHarness({ branch, savedTicketMode: 'local' });
     assert.equal(h.openSaved(), true); assert.equal(h.selectSaved(), true);
     const earlierTakeover = h.captureTakeoverHandler();
     // A controlled invocation exercises a previously rendered handler; a real
@@ -64,11 +64,12 @@ for (const branch of ['queue', 'reward', 'gift']) {
     h.submit(); await h.flush(); h.releaseFailure(); await h.flush();
     assert.equal(h.snapshot().activeCart.id, h.cartA.id);
     assert.equal(h.snapshot().busy, false);
-    assert.equal(h.snapshot().error, 'Fixture submission failed');
+    assert.equal(h.snapshot().error, 'Fixture submission failed Your entries have been kept.');
     assert.equal(h.queued.length, 0);
-    assert.equal(h.takeoverSaved(), true);
+    assert.equal(await h.takeoverSaved(), true);
     assert.equal(h.snapshot().activeCart.id, h.cartB.id);
-    assert.equal(h.snapshot().savedTickets.length, 0);
+    assert.equal(h.snapshot().savedTickets.length, 1, 'the shared opener preserves the failed working cart before opening saved B');
+    assert.equal(h.snapshot().savedTickets[0].value.id, h.cartA.id);
   });
 }
 

@@ -1,3 +1,4 @@
+import { effectiveRequestOrigin, isSameOriginMutation } from "@/lib/request-origin";
 import { runWithReadContext } from "@/lib/read-context-scope";
 import { getCurrentBusinessContext, projectSelectedWorkspaceRead } from "@/lib/current-context";
 import { cookies } from "next/headers";
@@ -30,6 +31,7 @@ import { createAppLocalCommandTrace, type AppLocalCommandTrace } from "@/lib/app
 import type { AppLocalCommandFailureCode } from "@/lib/app-local-command-trace-protocol";
 
 export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return Response.json({ ok: false, error: "Please open the form again." }, { status: 403, headers: { "Cache-Control": "private, no-store" } });
   const trace = createAppLocalCommandTrace(request.headers);
   return trace.run(async () => {
     try { return trace.finish(await command(request, trace)); }
@@ -45,8 +47,8 @@ async function command(request: Request, trace: AppLocalCommandTrace) {
     if (classified) trace.failure(classified, phase);
     return Response.json({ ok: false, error }, { status, headers: responseHeaders });
   };
-  const origin = new URL(request.url).origin;
-  if (request.headers.get("origin") !== origin || !request.headers.get("content-type")?.startsWith("application/json")) return failure(403, "Please open the form again.");
+  const origin = effectiveRequestOrigin(request);
+  if (!isSameOriginMutation(request) || !request.headers.get("content-type")?.startsWith("application/json")) return failure(403, "Please open the form again.");
   if ((await trace.measure("auth", () => headers())).get("x-reylumi-auth-unavailable") === "1") return failure(503, "Please reconnect and try again.", trace.proxyUnavailable ? "proxy_refresh_unavailable" : "auth_unavailable", trace.proxyUnavailable ? "proxy_refresh" : "auth");
   try {
     if (Number(request.headers.get("content-length") ?? 0) > 262144) return failure(413, "Open the online page to attach a larger file.");

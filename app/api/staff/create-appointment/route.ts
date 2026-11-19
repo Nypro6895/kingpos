@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
   return Response.json(error ? {message: error.message} : data, {status: error ? 403 : 200, headers: {"Cache-Control": "no-store"}});
 }
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin) return Response.json({message: "Invalid request origin."}, {status: 403});
+  if (!isSameOriginMutation(request)) return Response.json({message: "Invalid request origin."}, {status: 403});
   try {
     const input = await request.json();
     if (!uuid.test(input.salonId ?? "")) return Response.json({message: "Invalid salon."}, {status: 400});
