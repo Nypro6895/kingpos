@@ -5,8 +5,9 @@ import WebKit
 
 final class LaunchAppearanceTests: XCTestCase {
     @MainActor
-    func testWhiteCanvasBeforeNetworkResponseEvenInDarkMode() throws {
-        let controller = ReylumiViewController()
+    func testWhiteCanvasBeforeNetworkResponseEvenInDarkMode() async throws {
+        let fixture = try StartupLoopbackFixture(); defer { fixture.stop() }; try await fixture.start()
+        let controller = ReylumiViewController(origin: fixture.origin)
         controller.loadViewIfNeeded()
         XCTAssertFalse(controller.view.subviews.contains { $0 is WKWebView })
         controller.initializeWebContentIfNeeded()
@@ -31,8 +32,9 @@ final class LaunchAppearanceTests: XCTestCase {
     }
 
     @MainActor
-    func testErrorStopsLoadingAndRetryRestoresIt() throws {
-        let controller = ReylumiViewController()
+    func testErrorStopsLoadingAndRetryRestoresIt() async throws {
+        let fixture = try StartupLoopbackFixture(); defer { fixture.stop() }; try await fixture.start()
+        let controller = ReylumiViewController(origin: fixture.origin)
         controller.loadViewIfNeeded()
         controller.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
@@ -87,12 +89,13 @@ final class LaunchAppearanceTests: XCTestCase {
     }
 
     @MainActor
-    func testExplicitStartupAndReturnIntentsSurviveBrandedLoading() throws {
-        let home = ReylumiViewController()
+    func testExplicitStartupAndReturnIntentsSurviveBrandedLoading() async throws {
+        let fixture = try StartupLoopbackFixture(); defer { fixture.stop() }; try await fixture.start()
+        let home = ReylumiViewController(origin: fixture.origin)
         home.loadViewIfNeeded()
-        XCTAssertEqual(home.queuedStartupURL, URL(string: "https://reylumi.com"))
-        let initial = URL(string: "https://reylumi.com/book/fixture?service=one")!
-        let controller = ReylumiViewController(initialURL: initial)
+        XCTAssertEqual(home.queuedStartupURL, fixture.origin)
+        let initial = URL(string: "/book/fixture?service=one", relativeTo: fixture.origin)!.absoluteURL
+        let controller = ReylumiViewController(origin: fixture.origin, initialURL: initial)
         controller.loadViewIfNeeded()
         XCTAssertEqual(controller.queuedStartupURL, initial)
         controller.returnToMarket(sequence: 1)
@@ -110,7 +113,8 @@ final class LaunchAppearanceTests: XCTestCase {
 
     @MainActor
     func testDisplayedShellStartsWebKitThroughFramesAndSurvivesEarlyBackground() async throws {
-        let controller = ReylumiViewController()
+        let fixture = try StartupLoopbackFixture(); defer { fixture.stop() }; try await fixture.start()
+        let controller = ReylumiViewController(origin: fixture.origin)
         controller.loadViewIfNeeded()
         NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
         XCTAssertFalse(controller.view.subviews.contains { $0 is WKWebView }, "A detached controller must not initialize WebKit on foreground")

@@ -1,0 +1,31 @@
+{
+  "channels": [
+    "ios"
+  ],
+  "status": "working",
+  "summary": "Isolate native XCTest browser and transport fixtures from production network while preserving startup and installed-bundle behavior",
+  "source": {
+    "commit": "2d6e967d05ff432814fea7355b1d3bfd30aa904b"
+  },
+  "dependencies": [],
+  "changeId": "ios-test-network-isolation-20261119",
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Actual source network capability audit and isolated fixture validation"
+    }
+  ],
+  "files": [
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/LaunchAppearanceTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/TestNetworkIsolation.swift",
+    "docs/ios-xctest-network-isolation.md"
+  ],
+  "kind": "change",
+  "id": "b2b1295a-96e4-4272-9d5a-9f5825a752d2",
+  "recordedAt": "2026-11-19T18:32:12.561Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-test-network-isolation-20261119-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

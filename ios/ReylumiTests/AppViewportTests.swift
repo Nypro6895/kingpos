@@ -5,8 +5,9 @@ import WebKit
 
 final class AppViewportTests: XCTestCase {
     @MainActor
-    func testNativePageZoomAndKeyboardLayout() throws {
-        let controller = ReylumiViewController()
+    func testNativePageZoomAndKeyboardLayout() async throws {
+        let fixture = try StartupLoopbackFixture(); defer { fixture.stop() }; try await fixture.start()
+        let controller = ReylumiViewController(origin: fixture.origin)
         controller.loadViewIfNeeded()
         controller.initializeWebContentIfNeeded()
         let webView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
@@ -33,6 +34,7 @@ final class AppViewportTests: XCTestCase {
         let expectedScripts = [
             "AppViewport": "styles.dataset.reylumiAppViewport = ''",
             "NativeBridge": "Object.defineProperty(window, '__reylumiNativePayments', {value: 1})",
+            "ReceiptPrintBridge": "Object.defineProperty(window, '__reylumiReceiptPrint'",
             "PortableDeviceBridge": "const handler = window.webkit?.messageHandlers?.portableDevice;"
         ]
         XCTAssertEqual(scripts.count, expectedScripts.count)
@@ -47,7 +49,8 @@ final class AppViewportTests: XCTestCase {
 
     @MainActor
     func testBundledViewportInWebKit() async throws {
-        let controller = ReylumiViewController()
+        let fixture = try StartupLoopbackFixture(); defer { fixture.stop() }; try await fixture.start()
+        let controller = ReylumiViewController(origin: fixture.origin)
         controller.loadViewIfNeeded()
         controller.initializeWebContentIfNeeded()
         let configuredView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
@@ -71,7 +74,7 @@ final class AppViewportTests: XCTestCase {
             <!doctype html><html><head><meta name="viewport" content="width=980">
             <style>body{margin:0}input{font-size:12px}#amount{font-size:36px}</style>
             </head><body><input id="email" type="email"><input id="amount" type="number"></body></html>
-            """, baseURL: URL(string: "https://reylumi.com"))
+            """, baseURL: fixture.origin)
         await fulfillment(of: [loaded], timeout: 30)
         if !navigation.finished {
             print("REYLUMI_VIEWPORT_DIAGNOSTIC key=\(window.isKeyWindow) scene=\(String(describing: window.windowScene?.activationState)) loading=\(webView.isLoading) failure=\(String(describing: navigation.failure)) terminated=\(navigation.terminated)")

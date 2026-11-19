@@ -94,7 +94,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testInstalledScrollRootDoesNotBounceAndRetainsVerticalAndNestedScrolling() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let controller = offlineController(bundle: bundle)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
         try await wait("window.fixtureLocal === true", in: web)
@@ -128,7 +128,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testInstalledJavaScriptConfirmDeliversBothUserChoicesInsteadOfImplicitCancel() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help"), probe = LocalConfirmationProbe()
+        let controller = offlineController(bundle: bundle), probe = LocalConfirmationProbe()
         controller.confirmationPresenterForTesting = { message, reply in probe.message = message; probe.reply = reply }
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
@@ -145,7 +145,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testNativeBackForwardRestoresActualHistoryWithoutReplacingTheDraftDocument() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let controller = offlineController(bundle: bundle)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
         try await wait("window.fixtureLocal === true", in: web)
@@ -199,7 +199,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testProgrammaticLocalNavigationRetainsSameDocumentAndUnsentInput() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let controller = offlineController(bundle: bundle)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
         try await wait("window.fixtureLocal === true", in: web)
@@ -211,7 +211,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testProgrammaticHostedCheckoutAndSignInKeepTheirOriginalNativeBoundary() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let controller = offlineController(bundle: bundle)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         var external: URL?, online: String?
         controller.onOpenExternal = { external = $0 }; controller.onOpenOnline = { online = $0 }
@@ -277,6 +277,8 @@ final class LocalAppWebViewTests: XCTestCase {
         let http = AppLocalUnavailableHTTP(), defaults = UserDefaults(suiteName: "reylumi.tests.actual-help." + UUID().uuidString)!
         let transport = ReylumiLocalAppTransport(origin: URL(string: "https://reylumi.com")!, manifest: bundle.manifest, client: http, defaults: defaults, cookies: { [] })
         let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help", transport: transport)
+        let fence = InstalledBundleNetworkFence(); defer { fence.close() }; try await fence.prepare()
+        try fence.install(on: controller)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(controller.webView)
@@ -292,6 +294,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testActualInstalledPOSInitializerRetainsMoneyAndOutboxAcrossColdWebView() async throws {
         let bundle = try ReylumiLocalBundle.installed(), http = InstalledPOSFixtureHTTP()
+        let fence = InstalledBundleNetworkFence(); defer { fence.close() }; try await fence.prepare()
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("reylumi-pos-init-" + UUID().uuidString, isDirectory: true)
         defer { try? FileManager.default.removeItem(at: directory) }
         let origin = URL(string: "https://reylumi.com")!, viewer = await http.viewer, salon = await http.salon
@@ -308,15 +311,16 @@ final class LocalAppWebViewTests: XCTestCase {
         Object.defineProperty(crypto,'randomUUID',{value:undefined,configurable:true,writable:true});
         window.__posUUIDAbsentBeforeEntry=typeof crypto.randomUUID==='undefined';
         """
-        func makeController() -> ReylumiLocalAppViewController {
+        func makeController() throws -> ReylumiLocalAppViewController {
             let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: defaults, cookies: { [] })
             let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/pos", transport: transport)
             controller.configureWebViewForTesting = { configuration in
                 configuration.userContentController.addUserScript(WKUserScript(source: isolation, injectionTime: .atDocumentStart, forMainFrameOnly: true))
             }
+            try fence.install(on: controller)
             return controller
         }
-        var controller: ReylumiLocalAppViewController? = makeController()
+        var controller: ReylumiLocalAppViewController? = try makeController()
         let window = makeWindow(controller!); defer { window.isHidden = true; window.rootViewController = nil }
         controller!.initializeWebContentIfNeeded()
         var web: WKWebView? = try XCTUnwrap(controller?.webView)
@@ -344,7 +348,7 @@ final class LocalAppWebViewTests: XCTestCase {
         window.rootViewController = nil; web?.stopLoading(); web?.removeFromSuperview(); web = nil; controller = nil
         for _ in 0..<100 { if old == nil { break }; try await Task.sleep(nanoseconds: 20_000_000) }
         XCTAssertNil(old, "Cold initialization must construct a new WebView")
-        let cold = makeController(); window.rootViewController = cold; cold.initializeWebContentIfNeeded()
+        let cold = try makeController(); window.rootViewController = cold; cold.initializeWebContentIfNeeded()
         let restored = try XCTUnwrap(cold.webView); try await wait(ready, in: restored)
         let expectedID = String(decoding: try JSONSerialization.data(withJSONObject: [cartID]), as: UTF8.self)
         let durable = try await evaluateAsync("""
@@ -374,7 +378,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testNativeResetUpdatesBridgeEpochAndRejectsOldEnvelope() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let controller = offlineController(bundle: bundle)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(controller.webView)
@@ -389,7 +393,7 @@ final class LocalAppWebViewTests: XCTestCase {
     func testCustomOriginHasCryptographicRandomAndDurableStrictIndexedDBBeforeOutboxUse() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
         let name = "reylumi-local-storage-test-" + UUID().uuidString
-        var controller: ReylumiLocalAppViewController? = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        var controller: ReylumiLocalAppViewController? = offlineController(bundle: bundle)
         let window = makeWindow(controller!)
         defer { window.isHidden = true; window.rootViewController = nil }
         controller?.initializeWebContentIfNeeded()
@@ -414,7 +418,7 @@ final class LocalAppWebViewTests: XCTestCase {
         window.rootViewController = nil; web?.stopLoading(); web?.removeFromSuperview(); web = nil; controller = nil
         for _ in 0..<100 { if old == nil { break }; try await Task.sleep(nanoseconds: 20_000_000) }
         XCTAssertNil(old, "Destroy the original WebView before testing persistence")
-        let cold = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let cold = offlineController(bundle: bundle)
         window.rootViewController = cold; cold.initializeWebContentIfNeeded()
         let restored = try XCTUnwrap(cold.webView)
         try await wait("window.fixtureLocal === true", in: restored)
@@ -433,7 +437,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testCustomOriginSupportsActualOfflineStaffDigestPBKDF2AndRSAEncryption() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let controller = offlineController(bundle: bundle)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(controller.webView)
@@ -458,7 +462,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testCustomOriginHasActualExclusiveWebLocksForOriginalPOSWriterGuard() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let controller = offlineController(bundle: bundle)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(controller.webView)
@@ -482,7 +486,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testOriginalLocalPhotoProcessingCanLoadItsTemporaryBlobImage() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let controller = offlineController(bundle: bundle)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(controller.webView)
@@ -502,7 +506,7 @@ final class LocalAppWebViewTests: XCTestCase {
     @MainActor
     func testExistingMapProviderCanUseItsLocalBlobWorkerWithoutRemoteScripts() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(mapEnabled: true); defer { try? FileManager.default.removeItem(at: directory) }
-        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let controller = offlineController(bundle: bundle)
         let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
         controller.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(controller.webView)
@@ -525,6 +529,13 @@ final class LocalAppWebViewTests: XCTestCase {
             container.loadViewIfNeeded()
             XCTAssertTrue(container.children.contains { $0 is ReylumiViewController })
         }
+    }
+    // Tiny HTML fixtures still receive foreground notifications. Retain the
+    // original production-origin policy, but never create its real HTTP client.
+    @MainActor
+    private func offlineController(bundle: ReylumiLocalBundle) -> ReylumiLocalAppViewController {
+        let transport = ReylumiLocalAppTransport(origin: URL(string: "https://reylumi.com")!, manifest: bundle.manifest, client: AppLocalUnavailableHTTP(), defaults: UserDefaults(suiteName: "reylumi.tests.offline-controller." + UUID().uuidString)!, cookies: { [] })
+        return ReylumiLocalAppViewController(bundle: bundle, startPath: "/help", transport: transport)
     }
     @MainActor
     private func evaluateAsync(_ source: String, in web: WKWebView) async throws -> Any? {
