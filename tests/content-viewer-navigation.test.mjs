@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import postcss from 'postcss';
 import tailwind from '@tailwindcss/postcss';
@@ -11,6 +12,9 @@ const executablePath = process.env.TEST_BROWSER_PATH || 'C:/Program Files/Google
 test('post viewers keep all mobile navigation targets and final actions reachable, including the shipped iOS viewport rules', {
   skip: !existsSync(executablePath), timeout: 120000,
 }, async () => {
+  const artifactRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../artifacts/content-viewer-navigation');
+  mkdirSync(artifactRoot, { recursive: true });
+  const evidenceDirectory = mkdtempSync(path.join(artifactRoot, 'run-'));
   const fixture = `
 import React,{Activity,useState} from 'react';import{createRoot}from'react-dom/client';
 import{ContentViewer}from'@/components/content-viewer';
@@ -55,7 +59,7 @@ return <><main style={{height:1800}}><button id='open' onClick={()=>setOpen(true
         assert.equal(await page.evaluate(()=>window.posted),true);
         const submit=await viewer.locator('#submit').boundingBox();
         assert.ok(submit.y>=0&&submit.y+submit.height<=(navBox?.y??height)+1,'Final comment action stays above the bar');
-        if(width===390&&height===844){mkdirSync('C:/Reylumi-worktrees/overlay-navigation-audit-20261102/artifacts/overlay-navigation/qa/viewer-layout',{recursive:true});await page.screenshot({path:`C:/Reylumi-worktrees/overlay-navigation-audit-20261102/artifacts/overlay-navigation/qa/viewer-layout/${native?'ios':'web'}-post.png`});}
+        if(width===390&&height===844){await page.screenshot({path:path.join(evidenceDirectory,`${native?'ios':'web'}-post.png`)});}
         if(mobile){await nav.getByRole('button',{name:'More',exact:true}).click();await viewer.waitFor({state:'hidden'});assert.equal(await page.locator('output').innerText(),'More');}
         else {await page.keyboard.press('Escape');await viewer.waitFor({state:'hidden'});}
         assert.equal(await page.evaluate(()=>document.body.style.overflow),'');
@@ -82,6 +86,6 @@ return <><main style={{height:1800}}><button id='open' onClick={()=>setOpen(true
       assert.equal(full.height,844,'Full-screen task backdrops cover the bar completely');
       assert.deepEqual(errors,[]);await page.close();
     }
-    writeFileSync('C:/Reylumi-worktrees/overlay-navigation-audit-20261102/artifacts/overlay-navigation/qa/viewer-layout/measurements.json',JSON.stringify(evidence,null,2));
+    writeFileSync(path.join(evidenceDirectory,'measurements.json'),JSON.stringify(evidence,null,2));
   }finally{await browser.close();}
 });
