@@ -61,6 +61,18 @@ codesign --verify --deep --strict "$ROOT/build/Reylumi.xcarchive/Products/Applic
 xcodebuild -exportArchive -archivePath "$ROOT/build/Reylumi.xcarchive" -exportPath "$ROOT/build/export" -exportOptionsPlist "$SIGNING/ExportOptions.plist" 2>&1 | tee build/testflight-export.log
 unzip -q "$ROOT/build/export/Reylumi.ipa" -d "$SIGNING/export-check"
 node ../scripts/ios/local-bundle-release.mjs verify "$SIGNING/export-check/Payload/Reylumi.app/LocalAppBundle"
+# Inventory only measured archive/export bundle declarations. Errors stop before upload;
+# this is not Xcode's generated Privacy Report or an App Store privacy attestation.
+# Resolve only these already-created own parent roots (macOS /var may be an OS alias).
+# Append fixed bundle leaves afterward; the collector still rejects bundle symlinks.
+PRIVACY_BUILD_ROOT=$(cd "$ROOT/build" && pwd -P)
+PRIVACY_SIGNING_ROOT=$(cd "$SIGNING" && pwd -P)
+python3 scripts/collect-archive-privacy.py \
+  --archive "$PRIVACY_BUILD_ROOT/Reylumi.xcarchive" \
+  --exported-app "$PRIVACY_SIGNING_ROOT/export-check/Payload/Reylumi.app" \
+  --source-commit "$(git rev-parse HEAD)" \
+  --output "$ROOT/build/archive-privacy-inventory.json" \
+  --receipt "$ROOT/build/archive-privacy-inventory-receipt.json"
 cd "$SIGNING"
 xcrun altool --upload-app --type ios --file "$ROOT/build/export/Reylumi.ipa" --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" 2>&1 | tee "$ROOT/build/testflight-upload.log"
 cd "$ROOT"

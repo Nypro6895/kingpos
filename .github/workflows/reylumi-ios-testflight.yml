@@ -65,4 +65,6 @@ jobs:
             ios/build/testflight-receipt.json
             ios/build/testflight-processing.json
             ios/build/release-version-preflight.json
+            ios/build/archive-privacy-inventory.json
+            ios/build/archive-privacy-inventory-receipt.json
           retention-days: 7
