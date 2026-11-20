@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "account-verification-keyboard-layout-20261119",
+  "status": "ready",
+  "summary": "Fix verification dialogs above footer and iOS keyboard viewport; preserve OTP gates, drafts and Activity/navigation cleanup. Local validation only; coordinated release pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/account/account-profile-editor.tsx",
+    "tests/account-verification-dialog-layer.test.mjs",
+    "releases/account-verification-viewport-20261119.txt"
+  ],
+  "source": {
+    "baseCommit": "9859afb",
+    "snapshot": "C:\\Reylumi-worktrees\\account-verification-viewport-20261119\\artifacts\\account-verification-viewport-20261119\\frozen",
+    "commit": "c4f8984dd06273dbfe1c80ca27bb767e44df3b36"
+  },
+  "dependencies": [
+    "phone-verification-dialog-layer-20261114"
+  ],
+  "validation": [
+    {
+      "name": "28/28 scoped UI, lifecycle, phone authorization and signed SMS-hook tests",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\account-verification-viewport-20261119\\artifacts\\account-verification-viewport-20261119\\all-tests-final.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\account-verification-viewport-20261119\\artifacts\\account-verification-viewport-20261119\\eslint.log"
+    },
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\account-verification-viewport-20261119\\artifacts\\account-verification-viewport-20261119\\typecheck-final.log"
+    },
+    {
+      "name": "Whitespace and independent source review",
+      "result": "passed",
+      "evidence": "git diff --check and final_review agent found no material issues"
+    }
+  ],
+  "limitations": [
+    "No deployment, production build, native upload, Safari/WKWebView or physical iPhone acceptance.",
+    "Keyboard geometry is an isolated Chromium simulation; no actual SMS was sent."
+  ],
+  "id": "5330e061-c276-4835-9517-6235616d91ea",
+  "recordedAt": "2026-11-20T00:58:26.806Z",
+  "worktree": "C:\\Reylumi-worktrees\\account-verification-viewport-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/account/account-profile-editor.tsx": "9aba55b296e364a5f17c3ea63edccc2f5872b28d32b787e04b57625144c3af72",
+    "tests/account-verification-dialog-layer.test.mjs": "4552b4e324920fbccffaacf9744b9a4ee9564d1edfe54230ba86ab860bb70bbf",
+    "releases/account-verification-viewport-20261119.txt": "5a3b54a8516a19778fe78aa3df3a9d6278dc3428c32850886394ebcba0523705"
+  }
+}

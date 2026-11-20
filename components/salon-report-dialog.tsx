@@ -2,6 +2,7 @@
 import { SalonName } from "@/components/salon-member-badge";
 
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type RefObject } from "react";
@@ -16,6 +17,7 @@ export function SalonReportDialog({ salon, onClose, returnFocusRef }: { salon: S
   const host = useOverlayPortalHost();
   const titleId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
+  useOverlayViewport(dialog, Boolean(host), "panel");
   useNativeDialogNavigation(dialog);
   const requestId = useRef<string | null>(null);
   const submitting = useRef(false);

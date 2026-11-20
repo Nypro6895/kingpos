@@ -2,6 +2,7 @@
 import { SalonName } from "@/components/salon-member-badge";
 
 import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { compressImageCanvas } from "@/lib/image-upload-client";
 import { BeautyComposerDialog } from "./beauty-composer-dialog";
 import { ContentViewer } from "@/components/content-viewer";
@@ -942,6 +943,7 @@ export function BeautyProfileClient({
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const composerDialogRef = useRef<HTMLDivElement | null>(null);
   const profileEditorDialogRef = useRef<HTMLFormElement | null>(null);
+  const profileEditorLayerRef = useRef<HTMLDivElement | null>(null);
   const profileEditButtonRef = useRef<HTMLButtonElement | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -975,6 +977,7 @@ export function BeautyProfileClient({
     return () => window.removeEventListener(POST_CHANGED_EVENT, changed);
   }, [commentViewer.userId]);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  useOverlayViewport(profileEditorLayerRef, profileEditorOpen);
   useTransientOverlay(() => setProfileEditorOpen(false), profileEditorOpen);
   const [profileDraftBio, setProfileDraftBio] = useState(initialProfile.bio ?? "");
   const [profileDraftVisibility, setProfileDraftVisibility] =
@@ -2236,7 +2239,7 @@ export function BeautyProfileClient({
       </div>
 
       {profileEditorOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-0 py-0 backdrop-blur-sm sm:items-center sm:px-6 sm:py-6">
+        <div ref={profileEditorLayerRef} className="beauty-profile-editor-layer fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-0 py-0 backdrop-blur-sm sm:items-center sm:px-6 sm:py-6">
           <button
             aria-label="Close Beauty profile editor"
             className="absolute inset-0 cursor-default"
@@ -2247,7 +2250,7 @@ export function BeautyProfileClient({
             aria-describedby="beauty-profile-editor-description"
             aria-labelledby="beauty-profile-editor-title"
             aria-modal="true"
-            className="settings-style relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl"
+            className="beauty-profile-editor settings-style relative flex max-h-[min(100dvh,100%)] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[min(90vh,100%)] sm:max-w-xl sm:rounded-2xl"
             onSubmit={saveBeautyProfile}
             ref={profileEditorDialogRef}
             role="dialog"

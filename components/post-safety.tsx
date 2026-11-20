@@ -4,6 +4,7 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import Link from "next/link";
 import { createContext, useContext, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { loadHiddenPostIdentitiesAction, postModerationAction } from "@/app/post-moderation/actions";
 import type { PostCommentTarget } from "@/types/post-comments";
 import type { PostChange } from "@/types/post-actions";
@@ -101,6 +102,8 @@ export function PostSafetyDialog({ target, mode, initialCaption, viewerId, onClo
   const [submitted, setSubmitted] = useState(false);
   const [supportHref,setSupportHref]=useState<string|null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
+  useOverlayViewport(layerRef, true);
   const submitting = useRef(false);
   const sourceType = target.sourceType, sourceId = target.sourceId;
   useEffect(() => {
@@ -169,8 +172,8 @@ export function PostSafetyDialog({ target, mode, initialCaption, viewerId, onClo
     finally { submitting.current = false; setBusy(false); }
   }
   const title = { block: "Block user", report: "Report", edit: "Edit post", archive: "Archive post", delete: "Delete post" }[mode];
-  return createPortal(<div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-3" onClick={event => { if (event.target === event.currentTarget && !busy) closeDialog(); }}>
-    <div ref={ref} role="dialog" aria-modal="true" aria-label={__vt(title)} className="max-h-[90dvh] w-full max-w-lg overflow-auto rounded-2xl bg-white shadow-xl">
+  return createPortal(<div ref={layerRef} className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-3" onClick={event => { if (event.target === event.currentTarget && !busy) closeDialog(); }}>
+    <div ref={ref} role="dialog" aria-modal="true" aria-label={__vt(title)} className="max-h-[min(90dvh,100%)] w-full max-w-lg overflow-auto overscroll-contain rounded-2xl bg-white shadow-xl">
       <div className="flex items-center justify-between border-b p-4"><h2 className="text-lg font-semibold"><WorkspaceText text={title} /></h2><button aria-label={__vt("Close")} disabled={busy} onClick={closeDialog} className="grid size-10 place-items-center rounded-full bg-zinc-100 text-2xl">×</button></div>
       <div className="grid gap-3 p-4">
         {mode === "report" ? submitted ? <div role="status" className="grid gap-3 py-4 text-center"><p className="font-semibold"><WorkspaceText text="Thank you. Your report has been received." /></p>{viewerId?<><p className="text-sm"><WorkspaceText text="We will notify you when the review is complete or more information is needed." /></p><Link className="text-sm underline" href={supportHref??"/support"}><WorkspaceText text="View report & conversation" /></Link></>:<><p className="text-sm"><WorkspaceText text="This report was submitted without an account, so we cannot send you inbox updates. Contact support if you need a follow-up." /></p><Link className="text-sm underline" href="/contact-support"><WorkspaceText text="Contact support" /></Link></>}</div> : <><p className="font-semibold"><WorkspaceText text={reason ? "Are you sure?" : "Why are you reporting this post?"} /></p>{reason ? <><p>{REPORT_REASONS.find(item => item[0] === reason)?.[1]}</p><button disabled={busy} className="text-left text-sm underline" onClick={() => setReason("")}><WorkspaceText text="Choose another reason" /></button></> : <><p className="text-sm text-zinc-500"><WorkspaceText text="If someone is in immediate danger, contact local emergency services." /></p>{REPORT_REASONS.map(([value, label]) => <button key={value} className="flex min-h-12 items-center justify-between rounded-lg p-3 text-left hover:bg-zinc-100" onClick={() => setReason(value)}><WorkspaceText text={label} /><span aria-hidden="true">›</span></button>)}</>}</> : null}

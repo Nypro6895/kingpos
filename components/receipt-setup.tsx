@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { WorkspaceText as T } from "@/components/workspace-language";
 import { useNativeDialogNavigation, useTransientOverlay } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { dialogOutsideClick, dialogOutsidePointerDown } from "@/lib/dialog-outside-dismiss";
 import { DEFAULT_RECEIPT_PREFERENCES, readReceiptPreferences, saveReceiptPreferences } from "@/lib/receipt-device-preferences";
 import { receiptPrintDocument, receiptPrintJob } from "@/lib/receipt-print-document";
@@ -20,6 +21,7 @@ export function receiptSetupSample(salonName: string): PrintableReceipt {
 }
 function ReceiptSetupDialog({ context, onClose }: { context: ReceiptContext; onClose(): void }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  useOverlayViewport(dialog, true, "panel");
   const [initial] = useState(() => { try { return { preferences: readReceiptPreferences(context.scope), error: "" }; } catch { return { preferences: { ...DEFAULT_RECEIPT_PREFERENCES }, error: "Receipt preferences could not be read on this device. Please try again." }; } });
   const [draft, setDraft] = useState<ReceiptDevicePreferences>(initial.preferences), [error, setError] = useState(initial.error), [busy, setBusy] = useState(false), [preview, setPreview] = useState<string | null>(null), [status, setStatus] = useState("");
   const guard = useReceiptPresentationGuard(context.scope, () => { setPreview(null); onClose(); });

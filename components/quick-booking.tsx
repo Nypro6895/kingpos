@@ -1,5 +1,6 @@
 "use client";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
@@ -37,6 +38,7 @@ export function QuickBooking() {
   const activeHref = useRef<string | null>(null);
   const warmContext = useRef<{ href: string; started: number; controller: AbortController; promise: Promise<PublicBookingPageData> } | null>(null);
   const [href, setHref] = useState<string | null>(null);
+  useOverlayViewport(dialog, Boolean(href), "panel");
   useTransientOverlay(() => { activeHref.current = null; setHref(null); }, Boolean(href));
   const [data, setData] = useState<PublicBookingPageData | null>(null);
   const [Wizard, setWizard] = useState<BookingComponent | null>(null);

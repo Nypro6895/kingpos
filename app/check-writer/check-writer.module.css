@@ -195,6 +195,9 @@
   max-height: 90dvh;
   overflow: auto;
 }
+.unlockDialog > .form {
+  max-height: min(90dvh, 100%);
+}
 .printFrame {
   position: fixed;
   left: -10000px;

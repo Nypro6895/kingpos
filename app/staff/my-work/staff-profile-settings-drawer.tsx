@@ -5,9 +5,10 @@ import Link from "next/link";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-editor";
 import { useCloseOnNavigation, useOverlayPortalHost } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Staff } from "@/types/staff";
 
 export function StaffProfileSettingsDrawer({
@@ -26,6 +27,8 @@ export function StaffProfileSettingsDrawer({
   const router = useRouter();
   const [open, setOpen] = useState(true);
   const portalHost = useOverlayPortalHost();
+  const layer = useRef<HTMLDivElement>(null);
+  useOverlayViewport(layer, open && Boolean(portalHost));
   useCloseOnNavigation(() => setOpen(false), open);
 
   function close() {
@@ -38,7 +41,7 @@ export function StaffProfileSettingsDrawer({
   }
 
   return createPortal(
-    <div className="settings-style"><div className="fixed inset-0 z-[90]">
+    <div className="settings-style"><div ref={layer} className="fixed inset-0 z-[90]">
       <button
         aria-label={__vt("Close Staff Profile settings")}
         className="absolute inset-0 bg-zinc-950/30"
@@ -47,7 +50,7 @@ export function StaffProfileSettingsDrawer({
       />
       <aside
         aria-modal="true"
-        className="absolute right-0 top-0 flex h-dvh w-full max-w-2xl flex-col overflow-hidden bg-white pt-[env(safe-area-inset-top)] shadow-xl"
+        className="absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white pt-[env(safe-area-inset-top)] shadow-xl"
         role="dialog"
       >
         <header className="flex shrink-0 items-start justify-between gap-4 border-b border-zinc-200 px-4 py-4 sm:px-6 sm:py-5">

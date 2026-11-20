@@ -1,5 +1,6 @@
 "use client";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { SettingsDialogLayer } from "@/app/settings/settings-dialog-layer";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -196,8 +197,9 @@ function QuickDialogShell({
   const __vt = useWorkspaceTranslation();
 
   return (
+    <SettingsDialogLayer onClose={onClose} zIndex={140}>
     <div
-      className="fixed inset-0 z-[140] grid place-items-end bg-zinc-950/35 px-0 sm:place-items-center sm:px-4"
+      className="absolute inset-0 grid place-items-end bg-zinc-950/35 px-0 sm:place-items-center sm:px-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -207,8 +209,9 @@ function QuickDialogShell({
       <section
         aria-label={__vt(title)}
         aria-modal="true"
-        className="max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl outline-none sm:max-w-lg sm:rounded-xl sm:p-5"
+        className="min-h-0 max-h-[min(92dvh,100%)] w-full overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-4 shadow-2xl outline-none sm:max-w-lg sm:rounded-xl sm:p-5"
         role="dialog"
+        tabIndex={-1}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <h3 className="text-lg font-semibold text-zinc-950"><WorkspaceText text={title} /></h3>
@@ -223,6 +226,7 @@ function QuickDialogShell({
         {children}
       </section>
     </div>
+    </SettingsDialogLayer>
   );
 }
 

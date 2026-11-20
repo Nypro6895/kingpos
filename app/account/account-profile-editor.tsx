@@ -1,5 +1,7 @@
 "use client";
 import { useOverlayPortalHost, useTransientOverlay } from "@/components/overlay-dismissal";
+import { useDialogViewport } from "@/components/use-dialog-viewport";
+import { useSettingsDialogActions } from "@/app/settings/settings-dialog-layer";
 
 import {
   WorkspaceText,
@@ -361,6 +363,7 @@ function VerificationDialogLayer({ children, onClose, returnFocusRef, canDismiss
 }) {
   const host = useOverlayPortalHost();
   const layerRef = useRef<HTMLDivElement>(null);
+  useDialogViewport(layerRef, Boolean(host));
   const dismiss = useEffectEvent(() => {
     if (canDismiss) onClose();
   });
@@ -373,6 +376,30 @@ function VerificationDialogLayer({ children, onClose, returnFocusRef, canDismiss
     const openedAt = window.location.href;
     layer.hidden = false;
     dialog?.focus({ preventScroll: true });
+    const viewport = window.visualViewport;
+    let focusFrame = 0;
+    const revealFocusedField = () => {
+      cancelAnimationFrame(focusFrame);
+      focusFrame = requestAnimationFrame(() => {
+        const field = document.activeElement;
+        if (!(field instanceof HTMLElement) || !layer.contains(field) || !field.matches("input,textarea,select")) return;
+        const visibleTop = viewport?.offsetTop ?? 0;
+        const visibleBottom = visibleTop + (viewport?.height ?? window.innerHeight);
+        // Scroll only the modal's panel, keeping the profile draft's page in place.
+        for (let panel = field.parentElement; panel && panel !== layer; panel = panel.parentElement) {
+          if (!/(auto|scroll)/.test(getComputedStyle(panel).overflowY) || panel.scrollHeight <= panel.clientHeight) continue;
+          const bounds = panel.getBoundingClientRect(), target = field.getBoundingClientRect();
+          const top = Math.max(visibleTop, bounds.top) + 12;
+          const bottom = Math.min(visibleBottom, bounds.bottom) - 12;
+          const delta = target.bottom > bottom ? target.bottom - bottom : target.top < top ? target.top - top : 0;
+          if (delta) panel.scrollTop += delta;
+        }
+      });
+    };
+    layer.addEventListener("focusin", revealFocusedField);
+    viewport?.addEventListener("resize", revealFocusedField);
+    viewport?.addEventListener("scroll", revealFocusedField);
+    window.addEventListener("resize", revealFocusedField);
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -402,6 +429,11 @@ function VerificationDialogLayer({ children, onClose, returnFocusRef, canDismiss
       // Hide the body portal immediately; route cleanup only closes visibility.
       const restoreFocus = layer.contains(document.activeElement) || document.activeElement === document.body;
       layer.hidden = true;
+      cancelAnimationFrame(focusFrame);
+      layer.removeEventListener("focusin", revealFocusedField);
+      viewport?.removeEventListener("resize", revealFocusedField);
+      viewport?.removeEventListener("scroll", revealFocusedField);
+      window.removeEventListener("resize", revealFocusedField);
       document.removeEventListener("keydown", onKeyDown);
       if (restoreFocus && window.location.href === openedAt && opener?.isConnected && opener.getClientRects().length) {
         opener.focus({ preventScroll: true });
@@ -437,7 +469,7 @@ function PhoneVerificationDialog({
 
   return (
     <VerificationDialogLayer onClose={onClose} returnFocusRef={returnFocusRef} canDismiss={!successMessage}>
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-3 py-4 backdrop-blur-sm sm:items-center sm:px-6">
+    <div className="absolute inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-3 py-4 backdrop-blur-sm sm:items-center sm:px-6">
       <button
         aria-label={__vt("Close phone verification")}
         className="absolute inset-0 cursor-default"
@@ -448,7 +480,7 @@ function PhoneVerificationDialog({
       <div
         aria-labelledby="phone-verification-title"
         aria-modal="true"
-        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-[0_24px_80px_rgba(23,19,22,0.22)] outline-none sm:p-6"
+        className="relative min-h-0 max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-[0_24px_80px_rgba(23,19,22,0.22)] outline-none sm:p-6"
         role="dialog"
         tabIndex={-1}
       >
@@ -586,6 +618,7 @@ export function AccountProfileEditor({
   phoneVerified = false,
 }: AccountProfileEditorProps) {
   const __vt = useWorkspaceTranslation();
+  const dialogActions = useSettingsDialogActions();
 
   const router = useRouter();
   const verificationTriggerRef = useRef<HTMLElement | null>(null);
@@ -1318,7 +1351,7 @@ export function AccountProfileEditor({
                 </div>
               ) : null}
               <div
-                className={`${avatarOnly ? "static" : `${styles.actions} sticky bottom-0 z-20`} border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur`}
+                className={`${avatarOnly || dialogActions ? "static" : `${styles.actions} sticky bottom-0 z-20`} border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur`}
               >
                 <div className="flex items-center justify-end gap-2">
                   <button
@@ -1397,12 +1430,13 @@ export function AccountProfileEditor({
           <VerificationDialogLayer onClose={() => setEmailVerificationOpen(false)} returnFocusRef={verificationTriggerRef} canDismiss={!emailBusy}>
           <div
             className="settings-security-dialog"
+            style={{ position: "absolute" }}
             role="dialog"
             aria-modal="true"
             aria-label={__vt("Verify phone change")}
             tabIndex={-1}
           >
-            <section className="grid min-w-0 gap-4">
+            <section className="grid min-h-0 min-w-0 gap-4 overscroll-contain" style={{ maxHeight: "100%" }}>
               <h3>
                 <WorkspaceText text="Verify phone change" />
               </h3>

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { readForum, writeForum } from "./actions";
 import type { ForumAudit, ForumContext, ForumInput, ForumMessage, ForumReply, ForumReport, ForumRestriction, ForumSection, ForumTopic } from "@/types/forum";
 import s from "./forum.module.css";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { ForumQuickCompose } from "./quick-compose";
 import { ForumDiscoveryCard } from "./discovery-card";
 import { ForumAvatar, ForumIcon } from "./forum-avatar";
@@ -73,6 +74,8 @@ export default function Forum({ initialContext, initialTopics, avatarUrl }: { in
   const navigation = useRef(0);
   const dialog = useRef<HTMLDialogElement>(null);
   const composeDialog = useRef<HTMLDialogElement>(null);
+  useOverlayViewport(dialog, Boolean(moderation), "panel");
+  useOverlayViewport(composeDialog, editing !== undefined, "panel");
   const firstLoad = useRef(true);
   const draftLoaded = useRef(false);
   const menu = useRef<HTMLDetailsElement>(null);

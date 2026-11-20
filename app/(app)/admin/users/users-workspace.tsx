@@ -1,5 +1,6 @@
 "use client";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { AdminIcon } from "../_components/admin-icon";
 import { FeedbackSearchForm, SearchSubmitButton } from "@/components/feedback-search-form";
 import Link from "next/link";
@@ -37,6 +38,7 @@ export function UsersWorkspace({users,context,query,initialUserId,initialTab='pr
  const [revision,setRevision]=useState(0);const [dirty,setDirty]=useState(false);const [mobile,setMobile]=useState(false);
  const drawerRef=useRef<HTMLElement>(null);const opener=useRef<HTMLElement|null>(null);const allRef=useRef<HTMLInputElement>(null);
  const can=(p:typeof P[keyof typeof P])=>context.permissions.includes(p);const open=!!current||!!mode;
+ useOverlayViewport(drawerRef, open && mobile);
  const visibleIds=users.items.map(u=>u.id);const eligible=visibleIds.filter(id=>id!==context.userId);
  const chosen=selected.filter(id=>eligible.includes(id));const all=eligible.length>0&&eligible.every(id=>chosen.includes(id));
  useEffect(()=>{if(allRef.current)allRef.current.indeterminate=chosen.length>0&&!all;},[chosen.length,all]);

@@ -1,4 +1,5 @@
 "use client";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionDialog } from "@/app/action-dialog";
@@ -64,6 +65,7 @@ export function QuickWorkspacePanel({
   const [query, setQuery] = useState("");
   const [, startTransition] = useTransition();
   const panelRef = useRef<HTMLElement | null>(null);
+  useOverlayViewport(panelRef, isOpen);
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   const normalizedQuery = normalizeSearchText(query);
@@ -261,7 +263,7 @@ export function QuickWorkspacePanel({
           </div>
         </div>
 
-        <div className="grid min-w-0 flex-1 content-start gap-4 overflow-y-auto overflow-x-hidden px-3 py-4">
+        <div className="grid min-h-0 min-w-0 flex-1 content-start gap-4 overflow-y-auto overflow-x-hidden px-3 py-4">
           {currentWorkspace ? (
             <CurrentWorkspaceCard
               currentWorkspace={currentWorkspace}

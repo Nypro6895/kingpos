@@ -75,7 +75,7 @@
 .tabs { display:flex; border-bottom:1px solid var(--user-line); gap:4px; padding:0 14px; flex-shrink:0; }
 .tabs button { flex:1; padding:10px 4px; border-bottom:2px solid transparent; color:var(--user-muted); font-size:11px; }
 .tabs .activeTab { color:var(--user-ink); border-bottom-color:var(--admin-link); font-weight:600; }
-.drawerBody { padding:0 14px 14px; overflow-y:auto; scrollbar-width:thin; }
+.drawerBody { padding:0 14px 14px; min-height:0; flex:1; overflow-y:auto; scrollbar-width:thin; }
 .section { padding:12px 0; border-bottom:1px solid var(--user-line); }
 .section:last-child { border-bottom:0; }
 .section h3,.caseEditor h3 { font-size:12px; font-weight:650; margin:0 0 10px; }
@@ -87,6 +87,7 @@
 .operationForm label { display:grid; gap:4px; color:var(--user-muted); font-size:10px; font-weight:500; }
 .operationForm label > small { font-weight:400; }
 .formFooter { display:flex; justify-content:flex-end; align-items:center; gap:6px; padding-top:6px; position:sticky; bottom:-14px; background:#fff; padding-bottom:4px; z-index:2; }
+.drawer[data-overlay-keyboard="true"] .formFooter { position:static; }
 .confirmation { padding:10px; background:#fff7ef; border:1px solid #ffddbd; border-radius:4px; margin-top:8px; }
 .confirmation p { margin:0 0 8px; }
 .notice { font-size:10px; line-height:1.5; color:var(--user-muted); margin-top:8px; }

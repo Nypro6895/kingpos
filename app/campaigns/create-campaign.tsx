@@ -1,5 +1,6 @@
 "use client";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { useScopedMarketActions } from "@/app/market/scoped-market-client";
 import {
   WorkspaceText,
@@ -27,6 +28,7 @@ export function CreateCampaign({
 
   const dialog = useRef<HTMLDialogElement>(null);
   useNativeDialogNavigation(dialog);
+  useOverlayViewport(dialog, true, "panel");
   const opener = useRef<HTMLElement | null>(null);
   const [id] = useState(() => crypto.randomUUID());
   const [image, setImage] = useState<File | null>(null);

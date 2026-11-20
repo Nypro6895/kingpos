@@ -13,7 +13,17 @@ export function AdminConversationChat({ conversation, onRefresh, onDraftChange }
  const scroll=useRef<HTMLDivElement>(null), file=useRef<HTMLInputElement>(null), sending=useRef(false), nearBottom=useRef(true);
  const ended=["resolved","closed"].includes(conversation.status), canReply=conversation.can_reply!==false;
  useEffect(()=>{onDraftChange(!!body.trim()||!!pending||uploading);},[body,pending,uploading,onDraftChange]);
- useEffect(()=>{if(nearBottom.current&&scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;},[conversation.messages.length,conversation.attachments.length,pending]);
+ useEffect(()=>{
+  const body=scroll.current?.closest<HTMLElement>('.admin-support-chat-body');
+  const track=()=>{if(body?.closest('[data-overlay-keyboard="true"]'))nearBottom.current=body.scrollHeight-body.scrollTop-body.clientHeight<80;};
+  body?.addEventListener('scroll',track,{passive:true});return()=>body?.removeEventListener('scroll',track);
+ },[]);
+ useEffect(()=>{
+  if(!nearBottom.current||!scroll.current)return;
+  scroll.current.scrollTop=scroll.current.scrollHeight;
+  const body=scroll.current.closest<HTMLElement>('.admin-support-chat-body');
+  if(body?.closest('[data-overlay-keyboard="true"]'))body.scrollTop=body.scrollHeight;
+ },[conversation.messages.length,conversation.attachments.length,pending]);
  async function send(retry?:Pending){
   if(sending.current||!canReply)return;
   const message=retry??{id:crypto.randomUUID(),body:body.trim(),failed:false};

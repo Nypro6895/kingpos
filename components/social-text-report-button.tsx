@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { reportSocialText } from "@/app/post-moderation/text-report-actions";
 import { useCloseOnNavigation, useNativeDialogNavigation, useOverlayPortalHost } from "@/components/overlay-dismissal";
 import { WorkspaceText } from "@/components/workspace-language";
@@ -14,6 +15,7 @@ export function SocialTextReportButton({ target }: { target: SocialTextReportTar
   const dialog = useRef<HTMLDialogElement>(null), opener = useRef<HTMLButtonElement>(null);
   const requestId = useRef<string | null>(null), submitting = useRef(false);
   const host = useOverlayPortalHost();
+  useOverlayViewport(dialog, open && Boolean(host), "panel");
   useNativeDialogNavigation(dialog);
   useCloseOnNavigation(() => setOpen(false));
   useEffect(() => {

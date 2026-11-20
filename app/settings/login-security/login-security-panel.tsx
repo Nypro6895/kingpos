@@ -1,5 +1,6 @@
 "use client";
 import {SettingsChildPage,useSettingsChildNavigation} from "@/app/settings/settings-child-pages";
+import { SettingsDialogLayer } from "@/app/settings/settings-dialog-layer";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
@@ -800,7 +801,7 @@ export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSe
           <div>
             {!hasVerifiedTotp?<div className="settings-security-row"><div><WorkspaceText text="Authenticator app"/></div><button className={primaryButtonClassName} disabled={isBusy} onClick={beginTotpEnrollment} type="button"><WorkspaceText text={pendingKey==="mfa-begin"?"Starting...":"Set up"}/></button></div>:null}
             {!hasVerifiedPhoneMfa?<div className="settings-security-row"><div><WorkspaceText text="Phone SMS"/>{overview.account.phone?<p className="text-xs text-zinc-500">{maskPhone(overview.account.phone)}</p>:null}</div><button className={primaryButtonClassName} disabled={isBusy} onClick={beginPhoneMfaEnrollment} type="button"><WorkspaceText text={pendingKey==="mfa-phone-begin"?"Sending...":"Send"}/></button></div>:null}
-            {phoneProfileOpen?<div className="settings-security-dialog" role="dialog" aria-modal="true" aria-label={__vt("Add phone")}><section><div className="flex items-center justify-between gap-3"><h3><WorkspaceText text="Add phone"/></h3><button type="button" className={secondaryButtonClassName} onClick={()=>setPhoneProfileOpen(false)}><WorkspaceText text="Close"/></button></div>{contactEditor||<a href="/settings?section=personal-profile"><WorkspaceText text="Open Profile"/></a>}<button className={secondaryButtonClassName} type="button" onClick={()=>{setPhoneProfileOpen(false);void onSaved?.();}}><WorkspaceText text="Done"/></button></section></div>:null}
+            {phoneProfileOpen?<SettingsDialogLayer onClose={()=>setPhoneProfileOpen(false)}><div className="settings-security-dialog" style={{position:"absolute"}} role="dialog" aria-modal="true" aria-label={__vt("Add phone")} tabIndex={-1}><section className="min-h-0 overscroll-contain" style={{maxHeight:"min(85dvh,100%)"}}><div className="flex items-center justify-between gap-3"><h3><WorkspaceText text="Add phone"/></h3><button type="button" className={secondaryButtonClassName} onClick={()=>setPhoneProfileOpen(false)}><WorkspaceText text="Close"/></button></div>{contactEditor||<a href="/settings?section=personal-profile"><WorkspaceText text="Open Profile"/></a>}<button className={secondaryButtonClassName} type="button" onClick={()=>{setPhoneProfileOpen(false);void onSaved?.();}}><WorkspaceText text="Done"/></button></section></div></SettingsDialogLayer>:null}
             {totpEnrollment ? (
               <form
                 className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 lg:col-span-2 rounded-none border-y shadow-none"

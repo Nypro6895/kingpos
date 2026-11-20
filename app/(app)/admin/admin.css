@@ -667,6 +667,8 @@
 .admin-support-chat > header { padding:10px 12px;gap:4px;flex-shrink:0; }
 .admin-support-chat > header strong { margin-right:auto;font-size:14px; }
 .admin-support-chat-body { display:flex;flex:1;padding:0;overflow:hidden; }
+.admin-support-chat[data-overlay-keyboard="true"] .admin-support-chat-body { overflow-y:auto; }
+.admin-support-chat[data-overlay-keyboard="true"] .admin-messenger { flex:none;width:100%; }
 .admin-support-chat-body > [role=alert],.admin-support-chat-body > [role=status] { padding:16px; }
 .admin-messenger { display:flex;flex-direction:column;flex:1;min-height:0;min-width:0; }
 .admin-chat-context { padding:10px 14px;background:#f7fafb;border-bottom:1px solid var(--admin-border); }

@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "layout-interaction-keyboard-hardening-20261119",
+  "status": "working",
+  "summary": "Repair audited interaction blockers and opt affected dialog families into scoped keyboard viewport sizing with normal-layout and lifecycle regressions.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/_components/admin-conversation-chat.tsx",
+    "app/(app)/admin/_components/admin-support-hub.tsx",
+    "app/(app)/admin/admin.css",
+    "app/(app)/admin/users/users-workspace.tsx",
+    "app/(app)/admin/users/users.module.css",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/forum.tsx",
+    "app/account/account-profile-editor.module.css",
+    "app/account/account-profile-editor.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/campaigns/create-campaign.tsx",
+    "app/check-writer/check-writer.module.css",
+    "app/check-writer/check-writer.tsx",
+    "app/my-place/place-ui.tsx",
+    "app/pos/compact-checkout-adjustments.module.css",
+    "app/pos/compact-checkout-adjustments.tsx",
+    "app/pos/custom-service-dialog.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/quick-workspace-panel.tsx",
+    "app/service-relay/desk-relay.tsx",
+    "app/service-relay/service-relay.module.css",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/login-security/login-security-quick-editor.tsx",
+    "app/settings/personal-public-profile-panel.tsx",
+    "app/settings/settings-hub.css",
+    "app/staff/appointments/staff-appointments.css",
+    "app/staff/appointments/staff-create-appointment.tsx",
+    "app/staff/my-work/staff-profile-settings-drawer.tsx",
+    "app/staff/staff-public-profile-editor.tsx",
+    "app/tax/tax-workspace.css",
+    "app/tax/tax-workspace.tsx",
+    "components/gift-card/customer-gift-dialog.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/gift-modal-layer.tsx",
+    "components/owner-campaign.module.css",
+    "components/post-safety.tsx",
+    "components/quick-booking.tsx",
+    "components/receipt-print.css",
+    "components/receipt-setup.tsx",
+    "components/salon-report-dialog.tsx",
+    "components/social-text-report-button.tsx",
+    "components/use-overlay-viewport.ts",
+    "tests/overlay-viewport-runtime.test.mjs"
+  ],
+  "source": {
+    "commit": "e394a0533970c3cab72dd56d084ed8385756eaad"
+  },
+  "dependencies": [
+    "account-verification-keyboard-layout-20261119"
+  ],
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Audited24 grouped families baseline; scoped before/after and regressions"
+    }
+  ],
+  "id": "2c0a3845-7278-48a5-b26a-b49751143890",
+  "recordedAt": "2026-11-20T01:22:57.967Z",
+  "worktree": "C:\\Reylumi-worktrees\\layout-interaction-hardening-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

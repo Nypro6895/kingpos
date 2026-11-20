@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useWorkspaceTranslation } from "@/components/workspace-language";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import type { checkWriterState } from "@/lib/check-writer-server";
 import {
   DEFAULT_STUBS,
@@ -191,6 +192,8 @@ export function CheckWriter({
     outputLatch = useRef(false),
     lastRun = useRef<string | undefined>(undefined),
     currentTab = useRef("payroll");
+  const unlockLayer = useRef<HTMLDivElement>(null);
+  useOverlayViewport(unlockLayer, unlockOpen);
   const invalidateView = useCallback(() => {
     generation.current++;
   }, []);
@@ -1223,7 +1226,8 @@ export function CheckWriter({
       )}
       {unlockOpen && (
         <div
-          className={styles.dialog}
+          ref={unlockLayer}
+          className={`${styles.dialog} ${styles.unlockDialog}`}
           role="dialog"
           aria-modal="true"
           aria-label={t("Unlock Check Writer")}

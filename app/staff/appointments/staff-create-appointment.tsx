@@ -1,5 +1,6 @@
 "use client";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import "./staff-appointments.css";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,6 +29,8 @@ function StaffCreateForm({salonId, date}: {salonId: string; date: string}) {
   const __vt = useWorkspaceTranslation();
 
   const router = useRouter(), dialog = useRef<HTMLDialogElement>(null), inFlight = useRef(false);
+  const [open, setOpen] = useState(false);
+  useOverlayViewport(dialog, open, "panel");
   useNativeDialogNavigation(dialog);
   const [enabled,setEnabled]=useState(true), [catalog,setCatalog]=useState<Catalog|null>(null), [busy,setBusy]=useState(false), [error,setError]=useState("");
   const [staffId,setStaffId]=useState(""), [serviceIds,setServiceIds]=useState<string[]>([]), [key,setKey]=useState("");
@@ -51,9 +54,9 @@ function StaffCreateForm({salonId, date}: {salonId: string; date: string}) {
   return <><button type="button" aria-label={__vt("Create appointment")} className="staff-create-trigger" onClick={()=>{
     setError("");setSuccess("");setKey(crypto.randomUUID());setServiceIds([]);
     if(catalog)setStaffId(catalog.staffId);
-    dialog.current?.showModal();void loadCatalog();
+    dialog.current?.showModal();setOpen(true);void loadCatalog();
   }}><span aria-hidden="true">＋</span> <WorkspaceText text="New" /></button>
-    <dialog ref={dialog} className="staff-create-dialog" aria-label={__vt("Create appointment")} onCancel={event=>{if(inFlight.current)event.preventDefault();}}>
+    <dialog ref={dialog} className="staff-create-dialog" aria-label={__vt("Create appointment")} onClose={()=>setOpen(false)} onCancel={event=>{if(inFlight.current)event.preventDefault();}}>
       <header><h2><WorkspaceText text="New appointment" /></h2><button type="button" disabled={busy} aria-label={__vt("Close create appointment")} onClick={()=>dialog.current?.close()}>×</button></header>
       {error?<p role="alert"><WorkspaceText text={error} /></p>:null}
       {success?<div><p role="status">{success}</p><button type="button" onClick={()=>dialog.current?.close()}><WorkspaceText text="Done" /></button></div>:<form key={key} onSubmit={async event=>{

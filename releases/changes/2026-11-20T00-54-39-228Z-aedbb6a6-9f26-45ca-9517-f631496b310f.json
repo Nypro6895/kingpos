@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "account-verification-keyboard-layout-20261119",
+  "status": "working",
+  "summary": "Repair phone and email verification layout above footer and keyboard; extend existing portal fix with visual viewport sizing.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/account/account-profile-editor.tsx",
+    "tests/account-verification-dialog-layer.test.mjs"
+  ],
+  "source": {
+    "commit": "9859afb"
+  },
+  "dependencies": [
+    "phone-verification-dialog-layer-20261114"
+  ],
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Screenshot reproduction and keyboard layout regression"
+    }
+  ],
+  "id": "aedbb6a6-9f26-45ca-9517-f631496b310f",
+  "recordedAt": "2026-11-20T00:54:39.228Z",
+  "worktree": "C:\\Reylumi-worktrees\\account-verification-viewport-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

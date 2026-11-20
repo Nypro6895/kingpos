@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import type { CurrentWorkspaceOption } from "@/lib/current-context";
 import type {
   TaxDocument,
@@ -85,6 +86,8 @@ function TaxDialog({
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLElement>(null);
+  const backdrop = useRef<HTMLDivElement>(null);
+  useOverlayViewport(backdrop, true);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
@@ -117,7 +120,7 @@ function TaxDialog({
     };
   }, [onClose]);
   return (
-    <div className="tax-dialog-backdrop">
+    <div ref={backdrop} className="tax-dialog-backdrop">
       <section
         className={`tax-dialog ${wide ? "tax-dialog-wide" : ""}`}
         role="dialog"

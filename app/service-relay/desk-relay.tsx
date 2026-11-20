@@ -10,6 +10,7 @@ import {
 import type { GiftReply } from "@/types/gift-card";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
 import {
   loadServiceRelay,
@@ -54,6 +55,7 @@ export function DeskRelay({
   const [selected, setSelected] = useState<string | null>(null);
   const loading = useRef(false);
   const dialog = useRef<HTMLDialogElement>(null);
+  useOverlayViewport(dialog, open);
   useNativeDialogNavigation(dialog);
   useEffect(() => {
     if (open && dialog.current && !dialog.current.open)

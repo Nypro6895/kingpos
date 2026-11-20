@@ -1,6 +1,7 @@
 "use client";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -10,6 +11,8 @@ export function CustomServiceDialog({ onCancel, onDone, showKeyboard = true }: {
   const [name, setName] = useState("");
   const [shift, setShift] = useState(true);
   const input = useRef<HTMLInputElement>(null);
+  const layer = useRef<HTMLDivElement>(null);
+  useOverlayViewport(layer, true);
   const keyClass = "min-h-11 min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white text-base font-medium shadow-sm transition hover:bg-orange-50 active:scale-95 focus-visible:outline-2 focus-visible:outline-orange-500";
   function type(text: string) {
     const start = input.current?.selectionStart ?? name.length;
@@ -19,8 +22,8 @@ export function CustomServiceDialog({ onCancel, onDone, showKeyboard = true }: {
     const caret = text === "Backspace" ? Math.max(0, start === end ? start - 1 : start) : Math.min(100, start + text.length);
     requestAnimationFrame(() => { input.current?.focus(); input.current?.setSelectionRange(caret, caret); });
   }
-  return createPortal(<div className="fixed inset-0 z-[95] grid place-items-center bg-black/40 p-4" onClick={event => { if (event.target === event.currentTarget) onCancel(); }}>
-    <section role="dialog" aria-modal="true" aria-label={__vt("Custom service")} className="w-full max-w-2xl rounded-2xl bg-zinc-50 p-5 shadow-2xl" onKeyDown={event => { if (event.key === "Escape") onCancel(); if (event.key === "Enter" && name.trim()) onDone(name.trim()); }}>
+  return createPortal(<div ref={layer} className="fixed inset-0 z-[95] flex items-center justify-center bg-black/40 p-4" onClick={event => { if (event.target === event.currentTarget) onCancel(); }}>
+    <section role="dialog" aria-modal="true" aria-label={__vt("Custom service")} className="min-h-0 max-h-full w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl bg-zinc-50 p-5 shadow-2xl" onKeyDown={event => { if (event.key === "Escape") onCancel(); if (event.key === "Enter" && name.trim()) onDone(name.trim()); }}>
       <h2 className="text-lg font-semibold"><WorkspaceText text="Custom service" /></h2>
       <label className="mt-4 block text-sm font-medium" htmlFor="pos-custom-service-name"><WorkspaceText text="Service name" /></label>
       <input ref={input} id="pos-custom-service-name" autoFocus autoComplete="off" inputMode={showKeyboard ? "none" : "text"} maxLength={100} value={name} onChange={event => setName(event.target.value)} className="mb-4 mt-2 h-14 w-full rounded-xl border border-zinc-300 bg-white px-4 text-lg outline-orange-500" placeholder={__vt("Enter service name")} />

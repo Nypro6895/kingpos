@@ -9,6 +9,7 @@ import { loadPersonalPublicProfileSettings } from "./personal-public-profile-act
 import { InlineForm, Select, inputClass, buttonClass } from "./direct-settings-ui";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
 import type { KingUser } from "@/types/user";
+import { SettingsDialogLayer } from "./settings-dialog-layer";
 export function PersonalPublicProfilePanel({user,createdAtLabel}:{user:KingUser;createdAtLabel:string}) {
   const __vt = useWorkspaceTranslation();
 
@@ -40,5 +41,5 @@ export function PersonalPublicProfilePanel({user,createdAtLabel}:{user:KingUser;
     {profile.coverMediaPath?<label className="flex items-center gap-2 text-sm"><input type="checkbox" name="remove_cover"/><WorkspaceText text="Remove saved cover image" /></label>:null}
     <label className="grid gap-1 text-sm"><WorkspaceText text="Bio" /><textarea aria-label={__vt("Bio")} name="bio" className={inputClass} rows={3} maxLength={500} defaultValue={profile.bio||""}/></label>
     <Select name="visibility" label={__vt("Public profile visibility")} value={profile.visibility} options={[["public","Public"],["self","Only me"]]}/>
-  </InlineForm>{avatarOpen?<div className="settings-security-dialog" role="dialog" aria-modal="true" aria-label={__vt("Change avatar")}><section><button className={buttonClass} type="button" onClick={()=>setAvatarOpen(false)}><WorkspaceText text="Close"/></button><AccountProfileEditor user={{...user,avatar_url:profile.avatarUrl}} createdAtLabel={createdAtLabel} embedded avatarOnly onSaved={()=>{setAvatarOpen(false);void reload().catch(()=>setError("Could not reload your profile."));}}/></section></div>:null}</div>;
+  </InlineForm>{avatarOpen?<SettingsDialogLayer onClose={()=>setAvatarOpen(false)}><div className="settings-security-dialog" style={{position:"absolute"}} role="dialog" aria-modal="true" aria-label={__vt("Change avatar")} tabIndex={-1}><section className="min-h-0 overscroll-contain" style={{maxHeight:"min(85dvh,100%)"}}><button className={buttonClass} type="button" onClick={()=>setAvatarOpen(false)}><WorkspaceText text="Close"/></button><AccountProfileEditor user={{...user,avatar_url:profile.avatarUrl}} createdAtLabel={createdAtLabel} embedded avatarOnly onSaved={()=>{setAvatarOpen(false);void reload().catch(()=>setError("Could not reload your profile."));}}/></section></div></SettingsDialogLayer>:null}</div>;
 }

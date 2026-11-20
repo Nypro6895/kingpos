@@ -2,6 +2,7 @@
 import { dialogOutsideClick, dialogOutsidePointerDown } from "@/lib/dialog-outside-dismiss";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useId, useRef, useState } from "react";
@@ -32,6 +33,7 @@ function AdjustmentDialog({ mode, onClose, ...props }: Props & { mode: Adjustmen
   const __vt = useWorkspaceTranslation();
 
   const dialog = useRef<HTMLDialogElement>(null);
+  useOverlayViewport(dialog, true, "panel");
   useNativeDialogNavigation(dialog);
   const input = useRef<HTMLInputElement>(null);
   const titleId = useId();
