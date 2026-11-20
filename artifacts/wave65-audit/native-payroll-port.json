@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-29T04:53:14.118Z",
+  "file": "lib/app-local-owner-payroll-view.tsx",
+  "before": "c8878c6ea1430e19438412ea0b33aaca9f38e9b5764a838cc34e117c411796fa",
+  "after": "cefa9d81afff2f397aedef343d165aaa78af402cba9f30e9e785944c374e7c3b",
+  "renderHelpers": [
+    {
+      "name": "TaxTab",
+      "action": "Match completed web implementation"
+    },
+    {
+      "name": "StaffIncomeTab",
+      "action": "Match completed web implementation"
+    },
+    {
+      "name": "Tabs",
+      "action": "Remove obsolete renderer"
+    },
+    {
+      "name": "PeriodSelector",
+      "action": "Remove obsolete renderer"
+    },
+    {
+      "name": "PayrollPeriodNavigation",
+      "action": "Remove obsolete renderer"
+    },
+    {
+      "name": "monthInputFromPeriod",
+      "action": "Remove obsolete renderer"
+    },
+    {
+      "name": "CompactPayoutLabel",
+      "action": "Remove obsolete renderer"
+    },
+    {
+      "name": "taxLineRateLabel",
+      "action": "Remove obsolete renderer"
+    }
+  ],
+  "wrapperProof": "Actual64 native wrapper byte-equal after only Tabs replacement and old period navigation to shared rail. DTO/host/auth/scope/actions remain unchanged."
+}

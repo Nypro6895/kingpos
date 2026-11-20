@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "beauty-quick-qr-native-read-adapter-20261030",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Pin existing authenticated loadPersonalQr read for bundled Beauty Quick QR; original viewer/account checks unchanged;336 actions and zero missing bundle adapters",
+  "files": [
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\qr-read-adapter-source"
+  },
+  "dependencies": [
+    "beauty-shortcut-home-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Production Safari16 bundle336 explicit actions/zero missing/activation with existing public configuration",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/local-bundle.log"
+    },
+    {
+      "name": "Original action verifies authenticated viewer and uses canonical personal_qr_workspace; no arbitrary action or new write",
+      "result": "passed",
+      "evidence": "app/qr/actions.ts#loadPersonalQr"
+    }
+  ],
+  "id": "3fa27627-e468-4d69-96c5-b369038fb1cf",
+  "recordedAt": "2026-10-30T06:42:31.108Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-command-policy.json": "f9cdb6bcc759cec9dfc1563583695adf11e15051551b3dd0ee92b722f4ba7f1b",
+    "lib/app-local-commands-server.generated.ts": "39d90a12386fa313d0c825464529a681fbb226ae7a5f45cb9c44050d30d0136c"
+  }
+}

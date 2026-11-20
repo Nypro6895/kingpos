@@ -1,4 +1,6 @@
 "use client";
+import { WorkspaceText } from "@/components/workspace-language";
+
 
 import { useFormStatus } from "react-dom";
 
@@ -28,7 +30,7 @@ export function ReviewActionButton({
       disabled={pending}
       type="submit"
     >
-      {pending ? pendingLabel : idleLabel}
+      <WorkspaceText text={pending ? pendingLabel : idleLabel} />
     </button>
   );
 }

@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "today-native-admission-20261019",
+  "status": "working",
+  "summary": "Investigate and repair Today-only false permission mismatch on native progressive reads and actionable recovery, preserving actual workspace denials.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/today/today-progressive-client.tsx",
+    "lib/today-dashboard-sections.ts",
+    "tests/owner-today-progressive-ui.test.mjs",
+    "tests/today-dashboard-progressive.test.mjs",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "commit": "7d9ff2a5fbf51be1b065950b4aaf5ac39e49759f",
+    "snapshot": "C:/Users/giuse/kingpos/work/today-native-admission-20261019"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Reproduce Today-only permission ordering and audit real native recovery provider",
+      "result": "pending"
+    }
+  ],
+  "baseline": {
+    "webDeploymentId": "dpl_8zvbNL9LePEukw2jUYGd56KYtjFj",
+    "nativeCommit": "7ac8ced3d36ba724ebcdac8bccf06ce74a3e3972",
+    "nativeVersion": "1.0.0",
+    "nativeBuild": "42"
+  },
+  "id": "0123dcc0-55cd-4e4e-ba75-a8390abc66de",
+  "recordedAt": "2026-10-20T01:22:29.507Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\today-native-admission-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

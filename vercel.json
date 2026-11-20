@@ -1,5 +1,26 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "codex/ios-session-role-stability-20261019": false,
+      "codex/reylumi-ios-webview": false
+    }
+  },
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "npm run build"
+  "regions": ["pdx1"],
+  "buildCommand": "npm run build",
+  "crons": [
+    {
+      "path": "/api/security/cleanup",
+      "schedule": "17 9 * * *"
+    },
+    {
+      "path": "/api/payments/reconcile",
+      "schedule": "41 8 * * *"
+    },
+    {
+      "path": "/api/account/erase-due",
+      "schedule": "23 9 * * *"
+    }
+  ]
 }

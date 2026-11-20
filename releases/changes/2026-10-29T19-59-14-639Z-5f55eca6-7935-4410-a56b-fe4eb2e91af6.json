@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "pos-picker-20261029",
+  "status": "needs-integration",
+  "summary": "Two-column readable Services/Staff pickers, separate custom name entry, full-screen phone pickers above eight choices",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos.css"
+  ],
+  "source": {
+    "snapshot": "artifacts/pos-picker/frozen"
+  },
+  "validation": [
+    {
+      "name": "ESLint and git diff --check",
+      "result": "passed"
+    },
+    {
+      "name": "Chromium CSS fixture: 390x844, 5 services, 30 services, 30 staff; no truncation/overflow; scroll reaches end; full-screen long lists",
+      "result": "passed",
+      "evidence": "artifacts/pos-picker/verify-layout.cjs"
+    },
+    {
+      "name": "Existing owner runtime suite",
+      "result": "failed",
+      "evidence": "Fixture bundling blocked by missing modules and CSS output configuration in isolated baseline; no runtime assertions executed"
+    },
+    {
+      "name": "Authenticated application, integrated build and physical iPhone",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "5f55eca6-7935-4410-a56b-fe4eb2e91af6",
+  "recordedAt": "2026-10-29T19:59:14.639Z",
+  "worktree": "C:\\Reylumi-worktrees\\pos-picker-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

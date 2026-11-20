@@ -1,0 +1,43 @@
+{
+  "kind": "release",
+  "summary": "Publish final main-POS-only sync-status followup, preserving the12 earlier verified web/TestFlight69 changes; new native exact source pipeline in progress",
+  "changes": [
+    "4c5e1651-5a06-44dc-ab48-959d2bf3cff2"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_2y9eNg7nYiVU5pSx1zBLZ5PM7EvE",
+      "baselineDeploymentId": "dpl_8BiU47gGHzC16dZR7tpKXtupmWMY",
+      "sourceSha256": "910687df7f57a69abcefa142f7ffe0b356b555e3fa69ddf8ffb24ca15ec01d6e",
+      "overlaySha256": "b1513d3b1702d9e2ef4d3dbb56df829ed299d49321a9d7ef9c71338936165349",
+      "evidence": "artifacts/release-20261029-status/web-live-source-verified.json"
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "commit": "abd50d9b653b1f75013f9937436324fc08a4b24a",
+      "evidence": "Exact-source native pipeline40948549666 in progress"
+    }
+  },
+  "preservedRelease": "cf7b3391-cb83-4468-a120-5cb7b4c4ece6",
+  "deferred": [
+    {
+      "changeId": "market-publishers-20261029",
+      "reason": "Underlying independent Developer Market platform not present in production; required older chain remains needs-integration with commerce/provider acceptance pending. Never overlay publisher-only files."
+    },
+    {
+      "changeId": "payroll-compact-income-20261029",
+      "reason": "Owner explicitly requires history audit and logic agreement before implementation/publication; display-only portions already shipped."
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "reason": "Disabled-compatible code already live; sales activation/financial keys/provider readiness not part of this release."
+    }
+  ],
+  "physicalAcceptance": false,
+  "id": "868c7e22-ae56-4203-8ecc-3c1c02bfabb0",
+  "recordedAt": "2026-10-29T20:29:33.991Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029"
+}

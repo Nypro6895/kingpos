@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "forum-starter-content-v2-20261103",
+  "status": "needs-integration",
+  "summary": "Rewrote all 15 starter topics / 30 replies: nail-tech concerns, salon life, operations and verified Reylumi tasks. 12 Vietnamese / 3 English. Apply both pending migrations atomically; nothing posted live.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/seeds/forum-starter-content.json",
+    "supabase/migrations/20261103200000_forum_starter_content_rewrite.sql",
+    "tests/forum-starter-content.test.mjs",
+    "docs/forum-starter-content-rewrite-20261103.md",
+    "docs/forum-starter-content-handoff-20261103.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\forum-brand-compact-20261103\\artifacts\\forum-content-v2\\frozen",
+    "commit": "3a4a5a089d84127f3e4fefc9aec93c7eaf605f39"
+  },
+  "dependencies": [
+    "forum-starter-content-20261103"
+  ],
+  "validation": [
+    {
+      "name": "17 PostgreSQL and content checks",
+      "result": "passed",
+      "evidence": "artifacts/forum-content-v2/tests.txt"
+    },
+    {
+      "name": "11 browser checks with revised content",
+      "result": "passed",
+      "evidence": "artifacts/forum-content-v2/browser/result.json"
+    },
+    {
+      "name": "Production apply and authenticated live verification",
+      "result": "pending",
+      "evidence": "docs/forum-starter-content-rewrite-20261103.md"
+    }
+  ],
+  "id": "79201ff1-188d-45e5-ac44-b5b20b5f6f47",
+  "recordedAt": "2026-11-03T19:12:31.184Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-brand-compact-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

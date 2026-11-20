@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "ios-privacy-terms-implementation-20261118",
+  "status": "needs-integration",
+  "summary": "Implemented and locally verified source-supported Privacy/Terms candidate; routes, section IDs and dates preserved; awaiting combined integration and final legal/runtime publication facts.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/legal-policies.ts",
+    "tests/legal-privacy-implementation-20261118.test.mjs",
+    "docs/ios-privacy-implementation-20261118.md"
+  ],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-privacy-implementation-20261118\\frozen",
+    "sourceSha256": "9b08636437b9d00617b4285c338c6caf63e0b31fa98eac18c32606338a00e87a",
+    "manifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-privacy-implementation-20261118\\frozen-manifest.json"
+  },
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116"
+  ],
+  "validation": [
+    {
+      "name": "Policy/renderer and export signer/expiry regression suite (20 passed, zero skipped)",
+      "result": "passed",
+      "evidence": "node --test tests/legal-privacy-implementation-20261118.test.mjs tests/lifecycle-export-download.test.mjs tests/lifecycle-export-expiry.integration.test.mjs"
+    },
+    {
+      "name": "Scoped ESLint and CRLF-aware whitespace",
+      "result": "passed",
+      "evidence": "lib/legal-policies.ts; tests/legal-privacy-implementation-20261118.test.mjs; docs/ios-privacy-implementation-20261118.md"
+    },
+    {
+      "name": "Provider/runtime/retention/privacy choices and publication review",
+      "result": "pending",
+      "evidence": "docs/ios-privacy-implementation-20261118.md"
+    },
+    {
+      "name": "Combined production build, hosted integration, final iOS/privacy labels/device acceptance",
+      "result": "pending",
+      "evidence": "Coordinator-owned combined release gates; no partial push."
+    }
+  ],
+  "id": "7b5fd65d-aa08-490b-b4e2-bb36b243fc92",
+  "recordedAt": "2026-11-18T21:10:00.934Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "recovery-app-copy-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Rebuild installed Personal Settings recovery explanation on latest uploaded native source, with hosted recovery/server authority unchanged; TestFlight only. Original handoff a8d3f31e-8327-45d0-8e29-07e5a36920cf. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/login-security/login-security-quick-editor.tsx"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "recovery-completion-20261111"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "447de83e-9f86-4a27-9b9a-e4aead5ff904",
+  "recordedAt": "2026-11-12T02:07:00.227Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/settings/login-security/login-security-panel.tsx": "6256c81fa5b8660ed90c8bc02a4e1bc4eef59ff31b4fc53c60c44b7ae63b45ba",
+    "app/settings/login-security/login-security-quick-editor.tsx": "1ba13a0a6702b4b49bb3db6778ec8377a8a14b8a481c7e9f360557f4ef768032"
+  }
+}

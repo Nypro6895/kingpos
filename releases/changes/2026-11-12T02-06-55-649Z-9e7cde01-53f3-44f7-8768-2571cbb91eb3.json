@@ -1,0 +1,91 @@
+{
+  "kind": "change",
+  "changeId": "phone-checkin-drafts-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Implemented approved compact staff keypad/listing and shared editable POS/phone held drafts through Done until final cashier Submit. Original handoff 2c62f8a4-3e52-4985-bd94-8d6a83b2ea1f. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/scan/staff-scan-client.tsx",
+    "app/staff/scan/scan.module.css",
+    "app/service-relay/desk-relay.tsx",
+    "app/service-relay/actions.ts",
+    "app/service-relay/service-relay.module.css",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/pos/portable/actions.ts",
+    "app/(app)/pos/portable/page.tsx",
+    "lib/vietnamese-staff-scan.json",
+    "types/service-relay.ts",
+    "types/staff-scan.ts",
+    "tests/staff-scan-ui.test.mjs",
+    "tests/staff-scan.integration.test.mjs",
+    "tests/staff-scan-pos-ui.test.mjs",
+    "app/staff/scan/scan-ticket-editor.tsx",
+    "app/service-relay/staff-relay.tsx",
+    "supabase/migrations/20261111060000_phone_checkin_editable_drafts.sql",
+    "tests/phone-checkin-full-schema.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "9e7cde01-53f3-44f7-8768-2571cbb91eb3",
+  "recordedAt": "2026-11-12T02:06:55.649Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/staff/scan/staff-scan-client.tsx": "da1a351ff40411fca5c7dc22f7a4e5356b248bbf86fe8ab6dca116ecb77a67df",
+    "app/staff/scan/scan.module.css": "60a18cee52d9838a62022242e4d50d4762bae7b700be2c4118ef2c8354d562c9",
+    "app/service-relay/desk-relay.tsx": "772c8f7a590e2a1bb8237af0256bfa7b5c43260a62cf6d0b8e443d9d2c718f9b",
+    "app/service-relay/actions.ts": "77b565d50d0b9e51120f01eecf77826b4c47a02505098066c4f9a9bdb4c596a3",
+    "app/service-relay/service-relay.module.css": "58c9215105a79767bf37596a1f36e6c514ffbad3669cf1ea25f20283834c8d87",
+    "app/pos/portable/portable-draft-controls.tsx": "ef3643aa631bd902d0a5e76f3f5bb2a0bbc8a68c19181bcacb97e7e34f29a6df",
+    "app/pos/owner-pos-client.tsx": "795a403c77a0a9cef350f5005228c990a72482d59a3a8372ea8c22f0c3a04894",
+    "app/pos/pos-desk-client.tsx": "d7eb3878dae2fb9384e31aa48fc076a02c34e6acb45f726cb9200a70b7507112",
+    "app/pos/portable/actions.ts": "385c3ac993992c9dd66e2cf9e70ab7968873b3f4ff36bd7c3ad3552cfd523674",
+    "app/(app)/pos/portable/page.tsx": "95279c434335eb6cefbcd3849805e5d27e16fd1fa0eae1ea9e0c16b91900539e",
+    "lib/vietnamese-staff-scan.json": "6194d664de823626f69fbfd4fd6e95e7a2d8f3287b7ac31472f36dcd1c9ad151",
+    "types/service-relay.ts": "41a05593f0ccc499d013526e0dc81637db33c4d37c51906212d29a156d9b0b90",
+    "types/staff-scan.ts": "4324a0a785609611bcb29a60768cb4577328dcdaa687eb7e48007edf2de1fbc4",
+    "tests/staff-scan-ui.test.mjs": "635221f60abb31f0665949fa414d8438b8641ea5b6879f4dac9c0e0dc92431c7",
+    "tests/staff-scan.integration.test.mjs": "51bd10f40e3186a04b2d10c5ebe2362c4fb890b338c281b18914b69399e94235",
+    "tests/staff-scan-pos-ui.test.mjs": "aaed00b55fa1ec4849920bb914a1d907e4ce6aed2d5e8e81c8424963b50c8c84",
+    "app/staff/scan/scan-ticket-editor.tsx": "fe562c2ada81894277ecc751b48ac03e4d460faa6c4ed72b766501a0c23ed9d9",
+    "app/service-relay/staff-relay.tsx": "4cc7eedda023d212d8a2cddbee425408856c05bdd017637dc9951235bf799a99",
+    "supabase/migrations/20261111060000_phone_checkin_editable_drafts.sql": "6eedadb13acf7ca9049ba6c0e5c97b695bf65d828c4c664717dfe38613c1df38",
+    "tests/phone-checkin-full-schema.integration.test.mjs": "fee854e36716b89bb7407768bf2070ddc9dfa005af92741d7e8cb3ef1c949ce0"
+  }
+}

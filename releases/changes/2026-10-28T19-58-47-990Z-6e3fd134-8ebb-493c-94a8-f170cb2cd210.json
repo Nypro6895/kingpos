@@ -1,0 +1,30 @@
+{
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "validation": [
+    {
+      "name": "Released55 booking141-before diagnostics map 3 prior Personal readers at Settings re-entry; UI showed Owner group",
+      "result": "passed"
+    },
+    {
+      "name": "Nested Activity browser reproduction with draft retention, per-section effect activation and fresh reveal",
+      "result": "pending"
+    }
+  ],
+  "status": "working",
+  "summary": "Reproduce and pause effects of inactive retained Settings sections. Released55 trace reactivated Personal public-profile, blocked-user and connections readers while Owner Settings group was opened; preserve drafts and fresh server authorization on actual section reveal.",
+  "kind": "change",
+  "changeId": "iphone-settings-inactive-effects-20261028",
+  "files": [
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/setting-content.tsx",
+    "tests/settings-retained-activity.test.mjs"
+  ],
+  "id": "6e3fd134-8ebb-493c-94a8-f170cb2cd210",
+  "recordedAt": "2026-10-28T19:58:47.990Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,27 @@
+{
+  "kind": "change",
+  "changeId": "gift-native-pos-fixture-20261030",
+  "status": "working",
+  "summary": "Extend installed-POS network isolation fixture to accept only exact scoped synthetic Reward quote DTO; retain original command/no-financial-replay assertions. Previous run41110055760 failed before upload, new source needs native XCTest.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/LocalAppWebViewTests.swift"
+  ],
+  "dependencies": [
+    "gift-entry-links-20261030"
+  ],
+  "validation": [
+    {
+      "name": "Actual native238-case validation on updated fixture",
+      "result": "pending",
+      "evidence": "artifacts/gift-sale-integration-20261030/native-job-progress.log"
+    }
+  ],
+  "id": "183702f5-df97-408d-983b-afade4726846",
+  "recordedAt": "2026-10-30T19:04:49.152Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

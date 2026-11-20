@@ -1,0 +1,78 @@
+Layout interaction and keyboard repair - 2026-11-19
+
+Scope
+- Fix all24 grouped affected families from the read-only layout audit.
+- Ordinary blockers: Settings Change avatar, Add phone actions, Custom service
+  on short landscape screens, Forum post-actions containment.
+- Keyboard families: Settings/password, Campaign/Admin, POS/Staff/receipt/
+  Check Writer/Tax/Service Relay, Gift, quick workspace, social reports,
+  My Place, Beauty, Forum dialogs and QuickBooking.
+
+Approach
+- components/use-overlay-viewport.ts is opt-in per active affected overlay.
+  Ordinary layout is retained when the visual viewport is not reduced; pinch
+  zoom and an already-resized layout viewport do not receive another inset.
+- Each overlay owns its listeners, coalesced animation frame, styles and cleanup.
+  Focus reveal scrolls only modal panels, with explicit nested sticky-edge
+  ownership and two bounded measurements when scrolling activates a footer.
+- Existing use-dialog-viewport, shared navigation/keyboard tracker, and existing
+  account phone/email verification layer are preserved.
+- Settings portals escape clipping and preserve nested verification focus,
+  busy refusal, parent drafts and navigation/Activity cleanup. Account actions
+  become static only inside that dialog context.
+- Forum containment is suspended only on the card whose action menu is open.
+- Financial handlers, amounts, request identities, permissions, publication,
+  booking/payment and provider behavior were not changed by these layout edits.
+
+Source and integration
+- Worktree: C:/Reylumi-worktrees/layout-interaction-hardening-20261119
+- Base: e394a0533970c3cab72dd56d084ed8385756eaad, an audited local candidate.
+- Depends on account-verification-keyboard-layout-20261119 (and its portal fix).
+- Frozen scoped files/patch and verification are in
+  artifacts/layout-hardening-20261119/. Integrate only that scoped patch onto
+  the then-current verified production/native baselines; do not ship this
+  entire older candidate checkout wholesale.
+
+Validation
+- Combined selected regression run:123 records,120 passed and3 configuration
+  skips. All3 skipped records were then activated and passed in the additional
+  11/11 run. Do not add the overlapping runs as distinct test totals.
+- New actual-component suites cover normal/narrow/landscape/tablet geometry;
+  visual height360 with pan0/60 and height220; input/action center hit tests;
+  draft retention; normal-layout restoration; guarded cancel/submit; nested
+  OTP/email Tab/Escape/busy behavior; Activity/navigation/unmount cleanup.
+- The final Settings/core/account layer recheck passed31/31 after the typed
+  closure fix. Shared helper lifecycle tests include StrictMode and repeated
+  Activity cycles, no visualViewport, pinch and resized-layout controls.
+- Full Next production build including TypeScript passed with fixture public
+  configuration, background dispatch disabled, and a read-only network guard.
+  Isolated build-only tsconfig/next-env output references were restored.
+- Installed-client compile verification passed:target safari16,403 pinned
+  actions,1073 input modules,0 unsupported actions,assetsWritten:false.
+- Scoped ESLint:0 errors;4 warnings reproduced from the baseline. Mixed CRLF
+  whitespace was checked with core.whitespace=cr-at-eol; no broad EOL rewrite.
+- Final validated source hashes match; independent source review found no
+  material regression in the helper, Settings portals or nested ownership.
+
+Evidence
+- artifacts/layout-hardening-20261119/combined-tests.log
+- artifacts/layout-hardening-20261119/activated-optional-tests.log
+- artifacts/layout-hardening-20261119/settings-final-recheck.log
+- artifacts/layout-hardening-20261119/build-final.log
+- artifacts/layout-hardening-20261119/native-bundle-final.log
+- artifacts/layout-hardening-20261119/eslint.log
+- artifacts/layout-hardening-20261119/validation-source-final-hashes.json
+- artifacts/settings-admin-overlay-layout/
+- artifacts/financial-overlay-viewport-20261119/
+- artifacts/social-booking-layout-20261119/
+- The original audit/baseline evidence remains in the prior
+  account-verification-viewport-20261119 worktree at source e394a05.
+
+Release boundary
+- Implementation and local validation only; queued for coordinated release.
+- No production deployment, native archive/upload or installed bundle activation.
+- No real SMS, booking, payment, report, account or provider mutations were run.
+- Chromium viewport/keyboard simulation and safari16 compilation are not
+  physical-device or Safari/WKWebView runtime acceptance. A native client
+  bundle update must be assessed/built from the latest uploaded source during
+  authorized publication; actual iPhone/iPad acceptance remains pending.

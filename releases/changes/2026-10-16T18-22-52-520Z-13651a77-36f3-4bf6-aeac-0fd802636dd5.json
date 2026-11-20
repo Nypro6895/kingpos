@@ -1,0 +1,68 @@
+{
+  "kind": "change",
+  "changeId": "app-local-role-renderers-20261016",
+  "status": "ready",
+  "summary": "Register actual customer/staff/Market/Settings local client views with server-authorized props and explicit transport metadata. Integrated with the complete validated application source.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-resources-server.ts",
+    "lib/app-local-platform-types.ts",
+    "components/app-local-customer-views.tsx",
+    "tests/app-local-page-registry-ui.test.mjs",
+    "tests/app-local-platform-resources.test.mjs",
+    "components/app-local-social-views.tsx",
+    "app/local-app/customer-social-actions.ts",
+    "lib/app-local-page-paths.json",
+    "components/app-local-more.tsx",
+    "components/app-local-support.tsx"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\integrated-frozen-r3",
+    "commit": "260e26849b807f841046edef634246aeec49ff84"
+  },
+  "validation": [
+    {
+      "name": "173 isolated integration behavior/authority/offline tests, zero failures/skips",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/final-validation.json"
+    },
+    {
+      "name": "Assembled production Next build and 411 offline web assets",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/next-production-final.log"
+    },
+    {
+      "name": "81 actual iOS XCTest cases and unsigned archive at exact source",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/38945864401"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016",
+    "app-local-role-policy-20261016"
+  ],
+  "supersedesEvents": [
+    "1fbea026-b1a9-4bb4-8f4e-6f0002c9208e"
+  ],
+  "integratedFromEvent": "1fbea026-b1a9-4bb4-8f4e-6f0002c9208e",
+  "id": "13651a77-36f3-4bf6-aeac-0fd802636dd5",
+  "recordedAt": "2026-10-16T18:22:52.520Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "fileHashes": {
+    "lib/app-local-page-registry.tsx": "a58a26f53ba3e380d7fc4665f68dc55ea9f05d4d3a31b3a4723f9d1baf63b0f4",
+    "lib/app-local-platform-resources-server.ts": "71b488726da5b839caa53be9c9be97fe3e4169440f003707fd38f8f2ed512288",
+    "lib/app-local-platform-types.ts": "d553307d549964f22e92c6734bd6d03725687f74efd9917937dd6a1e6567e288",
+    "components/app-local-customer-views.tsx": "be368655295251173b9db19b302d99f1dcb8d53af8b78603218f3037663d6b7b",
+    "tests/app-local-page-registry-ui.test.mjs": "98a61526a431f521053267d2edcc478767239ce0b2f5ebddfe773c0fff502921",
+    "tests/app-local-platform-resources.test.mjs": "654cdc0e14e1867adc7793f51968ac038f4be848952f03f3ad3df6384c676570",
+    "components/app-local-social-views.tsx": "a425351b49b76ed2b4f2e016725d77a2ad4bf8d9a23d5e43e5923ac350c0b53f",
+    "app/local-app/customer-social-actions.ts": "c6d9dfdc1989511aede47bec38adcf21d3a7537a9a5bacc0194d2dcc0a733469",
+    "lib/app-local-page-paths.json": "f18acd17379cca3b7a72279671785d779053964ea0784433ae6c4855206a1837",
+    "components/app-local-more.tsx": "a71f632e3a472ecd8990f4b9e96909d38997e70e616fb73e292f9e2a85730e78",
+    "components/app-local-support.tsx": "a0e849e3805a548a41f2e36d2cbe93b2a49e8004837f1c2e94a9144ac3839f3a"
+  }
+}

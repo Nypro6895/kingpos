@@ -1,0 +1,91 @@
+{
+  "kind": "change",
+  "changeId": "combined-pos-payroll-release-20261028",
+  "status": "ready",
+  "summary": "Frozen coordinated POS/Payroll source on exact liveJB/uploaded64; pending publication/native/device evidence",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-windows-compact-menu.tsx",
+    "app/pos/owner-windows-compact-menu.css",
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/payroll-disclosure.tsx",
+    "app/payroll/payroll-period-rail.tsx",
+    "app/payroll/payroll-tabs.tsx",
+    "app/payroll/staff-income-card.tsx",
+    "lib/payroll-period-rail.ts",
+    "lib/staff-payroll-display.ts",
+    "tests/payroll-staff-scroll-display.test.mjs",
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-dashboard.module.css",
+    "lib/app-local-owner-payroll-view.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028\\artifacts\\wave65-audit\\frozen-v2"
+  },
+  "supersedesEvents": [],
+  "integratesEvents": [],
+  "dependencies": [
+    "pos-ios-tablet-layout-20261028",
+    "pos-ios-custom-service-20261028",
+    "payroll-staff-scroll-ui-20261029",
+    "payroll-charts-20261028"
+  ],
+  "validation": [
+    {
+      "name": "19 Payroll Node tests,12 shared UI and12 native Payroll-view fixture observations",
+      "result": "passed"
+    },
+    {
+      "name": "13 actual workspace/portal observations;3 compact Windows portal checks;9 checkout/name/captured receipt observations",
+      "result": "passed"
+    },
+    {
+      "name": "Windows1440/820 actual64 fixture screenshot equality",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped lint/TypeScript and final production build459assets",
+      "result": "passed",
+      "evidence": "artifacts/wave65-audit/build-owner-approved-complete.log"
+    }
+  ],
+  "limitations": [
+    "Rebuilt native archive, Apple availability and exact-installed physical acceptance remain pending; local source-ready is not those outcomes.",
+    "Only inert fixtures and captured fake receipts; no production financial/social/data writes.",
+    "Native Payroll integration preserves actual64 wrapper/DTO/actions; two pre-existing unused-symbol lint warnings retained."
+  ],
+  "id": "6d329072-e5c1-446e-82de-d1e0b556f846",
+  "recordedAt": "2026-10-29T04:59:40.827Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-notebook-menu.tsx": "f8c09a52909eec628140e6d4541da3b731265bb89df75852c86b502e45af540c",
+    "app/pos/owner-notebook-menu.css": "f1b0e26bc4fde50ff46d2d79125f00c0073ff719df72621d1e27c7b6cfe0d8b4",
+    "app/pos/owner-pos-tabs.tsx": "85b325d28e153661e71f3c6e7b8531d5bb9ee9ed9768515ca4cbb1672b134fae",
+    "app/pos/owner-pos-client.tsx": "a9088df365d9dfe541a24d15ce2a69df3937fee55c0d859977eebcde3ef08aea",
+    "app/pos/owner-workspace-frame.tsx": "5753f0a3c62c6b553827654f004f79d72b5ad479ecba13de5f8b461a240d3243",
+    "app/pos/owner-windows-compact-menu.tsx": "3e3e10ba85b60b473ee44e3ea20bf20e4cf817a21c5fd55ffd4d0530856a4337",
+    "app/pos/owner-windows-compact-menu.css": "7ba7afa499e34af9ee0995763f7377d7136cf6360def03b451f611dd6971a44c",
+    "app/(app)/payroll/page.tsx": "55a39e22ba09288b50145879b1d5edd81de99f596fe34b0b58489d9b7e8a5bca",
+    "app/payroll/payroll-mobile.module.css": "9395d0b3e9a4a7258de9b2f448a502441b620eb0be467ca5b348a03e52c8bd12",
+    "app/payroll/payroll-disclosure.tsx": "641089a2d7c00f7be69d73f0bd405ca4fc0c0db48ad4ca0ab489ce3015d15e47",
+    "app/payroll/payroll-period-rail.tsx": "531a84606cb1553ec4bdac401bd1b530a0d49c1dadd5dc74ca05d036acdecdc7",
+    "app/payroll/payroll-tabs.tsx": "0bffc84f5321f4aa84a313e8922c35370efc5e7c5e515669a18a8ec4ccc4dddb",
+    "app/payroll/staff-income-card.tsx": "dd034ecbc4883281d56ec11d127d871145d3ed6b394d19eb5440ab19463d9337",
+    "lib/payroll-period-rail.ts": "219dce362b0fa898a37239af95a86a7705c0062faab12da3b6b006587eae9ccc",
+    "lib/staff-payroll-display.ts": "3d7ed4065d640669be1ee581137d488e55e9ddbbb9fd5e44788bef308eeca95f",
+    "tests/payroll-staff-scroll-display.test.mjs": "dc0b599e1aab3f1595809b7433b28ca1836cb64038fe3d77cff205d2a53efaf0",
+    "app/payroll/payroll-dashboard.tsx": "052753aae0741d415d1d52ad5d758cb07b114d484635bdb54fcbee173c11de15",
+    "app/payroll/payroll-dashboard.module.css": "076404b633d0f08ff59cf12100cf7996ca46bd306548cd5026490828b03315b4",
+    "lib/app-local-owner-payroll-view.tsx": "cefa9d81afff2f397aedef343d165aaa78af402cba9f30e9e785944c374e7c3b"
+  }
+}

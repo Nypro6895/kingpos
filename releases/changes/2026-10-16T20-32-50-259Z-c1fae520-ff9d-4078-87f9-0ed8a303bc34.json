@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "owner-pos-menu-startup-recovery-20261016",
+  "status": "working",
+  "summary": "Repair installed owner POS navigation across all five tabs, separate sync tap target, and make checkpoint-gated cart startup bounded and recoverable without clearing saved work.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "lib/owner-cart-startup.ts",
+    "tests/owner-pos-recovery-ui.test.mjs"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Focused actual-entry/navigation and cart-recovery browser regressions",
+      "result": "pending"
+    }
+  ],
+  "id": "c1fae520-ff9d-4078-87f9-0ed8a303bc34",
+  "recordedAt": "2026-10-16T20:32:50.259Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,14 @@
+.page{min-width:0;width:100%;padding:20px 24px 28px;color:#293b30}
+.page h1{margin:0;font-size:22px;font-weight:550;line-height:1.25}
+.page p{font-size:12px;color:#6b766e;margin:10px 0 18px}
+.filters{display:flex;gap:10px;margin-bottom:18px}
+.filters span{height:36px;width:115px;background:#eef2ef;border-radius:4px}
+.filters span:nth-child(2){width:260px}
+.filters span:last-child{margin-left:auto;width:220px}
+.grid{border:1px solid #dce5df;max-width:100%;overflow:hidden}
+.grid>div{display:grid;grid-template-columns:minmax(70px,1.6fr) repeat(3,minmax(0,1fr));gap:24px;padding:13px 12px;border-bottom:1px solid #e7ece8}
+.grid>div:first-child{background:#f1f5f2}
+.grid>div:last-child{border:0}
+.grid span{display:block;max-width:140px;height:12px;background:#eef2ef;border-radius:2px}
+.grid span:not(:first-child){margin-left:auto;width:70%;max-width:100px}
+@media(max-width:650px){.page{padding:17px 12px 24px}.filters{flex-wrap:wrap}.filters span{height:44px;width:75px}.filters span:nth-child(2){flex:1;width:auto}.filters span:last-child{margin:0;width:100%}.grid>div{gap:12px}}

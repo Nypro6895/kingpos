@@ -1,0 +1,4 @@
+.name{display:inline-flex;align-items:center;vertical-align:bottom;max-width:100%;min-width:0}
+.text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.mark{display:inline-flex;flex-shrink:0;color:#1684e8;margin-inline-start:.25em;vertical-align:-.12em}
+@media print{.name{display:inline;max-width:none}.text{overflow:visible;text-overflow:clip;white-space:normal}.mark{display:none!important}}

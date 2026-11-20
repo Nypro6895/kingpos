@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-29T09:46:22.335Z",
+  "source": "d20058a06c0c71a04830346b0ad444657bca2acd",
+  "inheritedValidatedSource": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+  "delta": "Five scoped paths repair two reproduced live/physical66 regressions and header viewport fit; no canonical data/security/payment changes",
+  "finalProductionBuild": {
+    "passed": true,
+    "offlineAssets": 465,
+    "evidence": "artifacts/wave67-header-ticket/build.log"
+  },
+  "posRuntimeScenarios": 5,
+  "posLintPassed": true,
+  "imageNormalizeRuntimeTests": 2,
+  "inheritedChecks": {
+    "settingsInitial": {
+      "passed": 22,
+      "failed": 2,
+      "fixtureDtoGap": true
+    },
+    "settingsFixtureConfirmation": {
+      "passed": 2,
+      "failed": 0
+    },
+    "checkwriterCommentInitial": {
+      "passed": 28,
+      "failed": 1,
+      "fixtureExportGap": true
+    },
+    "checkwriterMarketConfirmation": {
+      "passed": 2,
+      "failed": 0
+    },
+    "sqlPglite": 17,
+    "sqlPostgres": 18,
+    "uiProposalsScenarios": 24,
+    "reportsSvgScenarios": 48,
+    "servicesScenarios": 12,
+    "searchScenarios": 24,
+    "payrollDisplayScenarios": 8,
+    "posRuntimeScenarios": 5
+  },
+  "evidenceBase": "artifacts/wave66/",
+  "limitations": [
+    "Candidate raw HTTP is Vercel protection only; authenticated Vercel CLI read checks Help200 and original app-local read401.",
+    "Physical newbuild acceptance follows exact Apple/group verification; old65 evidence not relabeled.",
+    "CheckWriter production SQL/key/sales activation deferred; code defaults disabled."
+  ],
+  "patchBrowserChecks": {
+    "passed": 14,
+    "causalBeforeAfter": true,
+    "evidence": "artifacts/wave67-header-ticket/browser-checks.json"
+  },
+  "patchTypecheckPassed": true,
+  "patchLintPassed": true,
+  "remoteProductionBuild": {
+    "passed": true,
+    "evidence": "artifacts/wave67-header-ticket/web-build.log"
+  }
+}

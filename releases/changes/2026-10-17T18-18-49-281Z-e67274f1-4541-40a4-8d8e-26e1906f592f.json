@@ -1,0 +1,135 @@
+{
+  "kind": "change",
+  "changeId": "ad-media-performance-20261017",
+  "status": "needs-integration",
+  "summary": "Completed local image normalization for admin/customer advertising and Beauty/Salon photos; nonmodal popup; bounded reserve/render/confirm delivery; preserved wallet/credit admission. Not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/explore-advertising.tsx",
+    "components/explore-advertising.module.css",
+    "components/owner-sponsored-post.tsx",
+    "app/(app)/admin/advertising/actions.ts",
+    "app/(app)/admin/advertising/campaign-form.tsx",
+    "app/campaigns/creative-actions.ts",
+    "app/api/explore/advertising/route.ts",
+    "app/api/campaigns/delivery/route.ts",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-profile-studio.tsx",
+    "lib/image-policy.ts",
+    "lib/normalize-image.ts",
+    "lib/normalize-stored-image.ts",
+    "lib/public-image-download.ts",
+    "lib/campaign-image-storage.ts",
+    "lib/image-upload-client.ts",
+    "lib/advertising-client.ts",
+    "lib/beauty.ts",
+    "lib/salon-profile.ts",
+    "types/explore-advertising.ts",
+    "supabase/migrations/202610170001_advertising_display_reservations.sql",
+    "tests/ad-image-normalization.test.mjs",
+    "tests/ad-display-reservations.integration.test.mjs",
+    "tests/ad-client-timeouts.test.mjs",
+    "tests/ad-experience-runtime.test.mjs",
+    "tests/owner-ad-asset-delivery.test.mjs",
+    "tests/explore-advertising-runtime.test.mjs",
+    "tests/explore-advertising-admin.test.mjs",
+    "scripts/normalize-campaign-images.mjs",
+    "docs/ad-media-performance-20261017.md"
+  ],
+  "source": {
+    "snapshot": "artifacts/ad-media-performance-20261017/snapshot",
+    "sourceSha256": "0da889370bef8924f313366021ceffc10d8a5c8d8ad878fb24a1c8dd8229a816",
+    "overlaySha256": "7a82ce26eec50227a1c80b5cd000164a79bfb553da1a2da169721e2835674dc0",
+    "patch": "artifacts/ad-media-performance-20261017/task-overlay.patch"
+  },
+  "fileHashes": {
+    "components/explore-advertising.tsx": "e2db164bbe511e790849e7292aa76cfb40e33e3d77a18afe40e4e7f15d48b3d2",
+    "components/explore-advertising.module.css": "d16279a7135314805df59eb93fe3837f9efda75d72a3ad815d766c7e2ee5d3c7",
+    "components/owner-sponsored-post.tsx": "850c005e2848dc05cf4eee6b0da345011c63536267dde6eb4c3ff020af4fdce5",
+    "app/(app)/admin/advertising/actions.ts": "62e29fae3b971deef0483e50307a99d631b8158630716f28cb809ade0f6b8e89",
+    "app/(app)/admin/advertising/campaign-form.tsx": "eceae0806b2d0d966a92d47bbc0d9e3cfe5a299e33243957bd19346cad04191b",
+    "app/campaigns/creative-actions.ts": "aa6dab4f4574c5c8586d92a627ace353f3e41bc08f492d5b09ed9fe57af2ce98",
+    "app/api/explore/advertising/route.ts": "55314bda8c4f8f0a4ae164c51c4225c42fd3aa462ce1b27ac0f16e47d68e4899",
+    "app/api/campaigns/delivery/route.ts": "809b7aa1557651977f399bf1bd8df9b1cd36cd6d3eb4edb477c6ac426198f90f",
+    "app/beauty/beauty-profile-client.tsx": "37c72eb7fb7ce38ca38dbf20b7fc5e696d61ad1915a770e4d19312f962e75756",
+    "app/salon-profile/salon-profile-view.tsx": "40b1d5effe3e895290d28b2a2e27127c221528974f9efbd22b9dcec62d0ee50b",
+    "app/salon-profile/salon-profile-studio.tsx": "ad8011206524e093330434db168f04ed9560decbe0359c8f91d56dbf8832264f",
+    "lib/image-policy.ts": "733139d189c0ce129c3942137d52064b2166b0e4da892e6d8f69f348808737ec",
+    "lib/normalize-image.ts": "6e351d1a7057f8cdc4a81189cdb91c270d2a2eb143539c3d57d5ed861686ef7c",
+    "lib/normalize-stored-image.ts": "fdb27a4fd41bfa87b40e3d05f4839fd77b75d15a89127a7da2a00317235e3533",
+    "lib/public-image-download.ts": "d5714e225de8e8c0d647a942d4e1f591b77e4d206ef2cf4f0e9502d6c586f376",
+    "lib/campaign-image-storage.ts": "7e628ce05fdff8b7282d4de6c6baea786a34237930cdef515fc86c5e18cd05b0",
+    "lib/image-upload-client.ts": "bc18ca57afad7200b3040626eb737f32dfbdf38f698c9627236d801802f1b0d7",
+    "lib/advertising-client.ts": "e55a1e476673ebdfa18e774691c5934d7843668695ac49bbd4334a4153c436a6",
+    "lib/beauty.ts": "6ecf73d74b2a621c4c98f527a0ba501b53470087b76072861bf1f8a953bea1f6",
+    "lib/salon-profile.ts": "ca3ea4abf3466621304f0e75ee104f0ff07a1a7392c82c270e7a661b25d473fb",
+    "types/explore-advertising.ts": "f689a3586b8cc7ef6aba91908768816ec3c686e1cce2967890a7f89fab43276c",
+    "supabase/migrations/202610170001_advertising_display_reservations.sql": "c1f775e5e1662e1984de769b23cd9c2b7951ef6aaa8c310036fca285ebf150a6",
+    "tests/ad-image-normalization.test.mjs": "7f81847993450d7ed89ebc4e3f27b523aec681a99559c60d2b1a586adb709be6",
+    "tests/ad-display-reservations.integration.test.mjs": "034543355dd9a782f2a0489bff6bf079f12c05ba499fc414693c8fcfa63e3d01",
+    "tests/ad-client-timeouts.test.mjs": "161e8b406d6f1e0f7caca99b29bf859ad4ff06c8f45f2f75f675841bd27d15ed",
+    "tests/ad-experience-runtime.test.mjs": "3ba6e21c269573b24f59036bd000ba3b5ca56edb436ad75b3a7a4f29570f847c",
+    "tests/owner-ad-asset-delivery.test.mjs": "0de4c48491b7822fd1a7992e76cad95aa9beed477d1ebeaff3996e159abffa41",
+    "tests/explore-advertising-runtime.test.mjs": "0e3972648203b0fd8db61db67fe3b0b4fdce5fdaaca81600e5f175e145f0670c",
+    "tests/explore-advertising-admin.test.mjs": "4f8d6fc14f7bcc3a6511dc93a57863f91af75b9a56aa23d134bc46d314f90ae8",
+    "scripts/normalize-campaign-images.mjs": "8005f8bb69bfe93f33a16410e587199cde189c67e7f35c24308cb7264ecdb9e6",
+    "docs/ad-media-performance-20261017.md": "719bdec6282e033e1b1d48f75bfb7beb801350539109f0fbf4b18967c56b8462"
+  },
+  "validation": [
+    {
+      "name": "advertising, image, Chrome/WebKit, accounting and credit regression suite",
+      "result": "passed",
+      "evidence": "artifacts/ad-media-performance-20261017/focused-verification.log (48 passed, 0 failed, 0 skipped)"
+    },
+    {
+      "name": "production build; isolated copy with documented memory-only build settings",
+      "result": "passed",
+      "evidence": "artifacts/ad-media-performance-20261017/final-build.log; exit 0; 21 implementation files hash-match frozen task source"
+    },
+    {
+      "name": "changed implementation ESLint",
+      "result": "passed",
+      "evidence": "artifacts/ad-media-performance-20261017/lint.log; exit 0"
+    },
+    {
+      "name": "workspace TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/ad-media-performance-20261017/typecheck.log; exit 0"
+    },
+    {
+      "name": "reservation migration and private asset fail-closed checks",
+      "result": "passed",
+      "evidence": "artifacts/ad-media-performance-20261017/asset-and-reservation-tests.log (3 passed)"
+    },
+    {
+      "name": "wider pre-existing Beauty/Salon publication contract checks",
+      "result": "failed",
+      "evidence": "artifacts/ad-media-performance-20261017/verification.log, artifacts/ad-media-performance-20261017/final-verification.log, artifacts/ad-media-performance-20261017/baseline-contract.log; absent More post actions already fails on before-source; unchanged salon-profile/actions.ts calls revalidatePath"
+    }
+  ],
+  "dependencies": [],
+  "releasePrerequisites": [
+    "Integrate this overlay with exact current production source; preserve unrelated changes",
+    "Apply and verify 202610170001_advertising_display_reservations.sql before releasing new client",
+    "Review the two pre-existing broader contract failures",
+    "Real iPhone smoke test at release; no native source/bridge changes required"
+  ],
+  "productionMutations": false,
+  "nativeAssessment": {
+    "binaryRequired": false,
+    "evidence": "Shared web UI verified on Chrome and mobile WebKit; no Swift, bundled bridge, native configuration or permissions changed; real iPhone not tested"
+  },
+  "existingImages": {
+    "modified": false,
+    "maintenanceScript": "scripts/normalize-campaign-images.mjs",
+    "mode": "preview by default; no production run"
+  },
+  "id": "e67274f1-4541-40a4-8d8e-26e1906f592f",
+  "recordedAt": "2026-10-17T18:18:49.281Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

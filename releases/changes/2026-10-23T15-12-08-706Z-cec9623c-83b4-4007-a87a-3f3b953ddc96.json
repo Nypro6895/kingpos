@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "owner-bottom-reports-20261023",
+  "status": "ready",
+  "summary": "Integrate Owner bottom Reports navigation into exact current live source; include native bundled NavigationShell. Desktop and other roles preserve original notification behavior.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pending-release-20261023\\frozen-source",
+    "baselineDeploymentId": "dpl_Fhgc3cDW4WN8DiSXC3cBPZDtFq5J"
+  },
+  "validation": [
+    {
+      "name": "11 navigation and notification regressions on assembled source",
+      "result": "passed",
+      "evidence": "node scripts/test.mjs absolute source tests; 11/11 passed"
+    },
+    {
+      "name": "Scoped ESLint on assembled navigation-shell",
+      "result": "passed",
+      "evidence": "npx eslint app/navigation-shell.tsx; exit 0"
+    },
+    {
+      "name": "Exact baseline integration and native import review",
+      "result": "passed",
+      "evidence": "Three-way merge against original task before; app-local shell imports NavigationShell. Hosted full build and native CI remain release gates."
+    }
+  ],
+  "supersedesEvents": [
+    "12a61f23-0bf8-47df-87b9-64b36f8759c7"
+  ],
+  "id": "cec9623c-83b4-4007-a87a-3f3b953ddc96",
+  "recordedAt": "2026-10-23T15:12:08.706Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/navigation-shell.tsx": "adc7c520ac848b12a9d86e4d48b634f573bdc4ba9b950c3dbf6f4986cbf952ed"
+  }
+}

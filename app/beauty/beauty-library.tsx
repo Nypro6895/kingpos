@@ -21,7 +21,7 @@ export function BeautyLibrary({ posts }: { posts: BeautyTimelinePost[] }) {
     </div>
     {[...groups].map(([month, entries]) => <section key={month} className="mb-5" aria-label={month}>
       <h3 className="mb-2 text-sm font-semibold">{month}</h3>
-      <div className="beauty-library">{entries.flatMap(post => post.media.filter(media => media.url).map(media => <Link key={media.id} href={`/explore/beauty/${post.profileId}/posts/${post.id}`} aria-label={`Open ${post.type === "before_after" ? "Before & After" : "Beauty moment"} from ${month}`}>
+      <div className="beauty-library">{entries.flatMap(post => post.media.filter(media => media.url).map(media => <Link key={media.id} href={`/explore/beauty/${post.profileId}/posts/${post.id}?from=library`} aria-label={`Open ${post.type === "before_after" ? "Before & After" : "Beauty moment"} from ${month}`}>
         <Image src={media.url!} width={320} height={320} sizes="(min-width: 1024px) 300px, 33vw" loading="lazy" alt={post.caption ?? "Beauty photo"} />
         {post.type === "before_after" ? <span>Before &amp; After</span> : null}
       </Link>))}</div>

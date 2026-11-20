@@ -20,6 +20,7 @@ export type PosTicketReceiptItem = {
 export type PosTicketReceiptTotals = {
   subtotal: number;
   discount: number;
+  reward?: number;
   tax: number;
   tip: number;
   grand_total: number;

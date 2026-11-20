@@ -8,6 +8,9 @@ import type { StaffWorkdayStatus } from "@/types/staff-workday";
 export type PosDeskTurnType = "large" | "small";
 
 export type PosDeskTurnSummary = {
+  pendingTurns?: number;
+  pendingSmallTurns?: number;
+  holdingTurns?: number;
   largeTurns: number;
   queueTurns: number;
   receiptLargeTurns: number;
@@ -19,6 +22,7 @@ export type PosDeskStaff = Pick<
   Staff,
   "id" | "display_name" | "job_title" | "is_active"
 > & {
+  service_status?: "working" | "ready";
   avatar_url: string | null;
   check_in_at?: string | null;
   check_in_sequence?: number | null;
@@ -34,7 +38,7 @@ export type PosDeskCustomer = Pick<
 export type PosDeskService = Pick<
   Service,
   "id" | "name" | "category" | "base_price"
-> & { duration_minutes?: number };
+> & { duration_minutes?: number; booking_parent_service_id?: string | null };
 
 export type PosDeskSubmitLine = {
   amountInput: string;
@@ -46,6 +50,9 @@ export type PosDeskSubmitLine = {
 };
 
 export type PosDeskSubmitInput = {
+  requestId?: string;
+  rewardSettlementId?: string;
+  rewardQuote?: string | null;
   sourceBookingId?: string | null;
   sourceBookingUpdatedAt?: string | null;
   customerId?: string | null;
@@ -183,6 +190,7 @@ export type PosLiveDraftReceiptLine = {
 };
 
 export type PosLiveDraftView = {
+  settled_receipt?: {ticketNumber?:string;giftPurchaseCents:number;giftPaidCents:number};
   completed_at: string | null;
   customer: PosLiveDraftCustomer | null;
   customer_handoff_started_at: string | null;

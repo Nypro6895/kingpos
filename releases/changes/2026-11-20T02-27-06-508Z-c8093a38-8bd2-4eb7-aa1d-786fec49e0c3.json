@@ -1,0 +1,85 @@
+{
+  "kind": "change",
+  "changeId": "combined-followup-integration-20261120",
+  "status": "working",
+  "summary": "Integrate two newly completed account/layout UI patches onto preserved combined MFA source; retain all backend, database, device and Store gates.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/_components/admin-conversation-chat.tsx",
+    "app/(app)/admin/_components/admin-support-hub.tsx",
+    "app/(app)/admin/admin.css",
+    "app/(app)/admin/users/users-workspace.tsx",
+    "app/(app)/admin/users/users.module.css",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/forum.tsx",
+    "app/account/account-profile-editor.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/beauty/beauty-profile.css",
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/campaigns/create-campaign.tsx",
+    "app/check-writer/check-writer.module.css",
+    "app/check-writer/check-writer.tsx",
+    "app/my-place/place-ui.tsx",
+    "app/pos/compact-checkout-adjustments.tsx",
+    "app/pos/custom-service-dialog.tsx",
+    "app/quick-workspace-panel.tsx",
+    "app/service-relay/desk-relay.tsx",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/login-security/login-security-quick-editor.tsx",
+    "app/settings/personal-public-profile-panel.tsx",
+    "app/settings/settings-dialog-layer.tsx",
+    "app/staff/appointments/staff-create-appointment.tsx",
+    "app/staff/my-work/staff-profile-settings-drawer.tsx",
+    "app/tax/tax-workspace.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/gift-modal-layer.tsx",
+    "components/post-safety.tsx",
+    "components/quick-booking.tsx",
+    "components/receipt-setup.tsx",
+    "components/salon-report-dialog.tsx",
+    "components/social-text-report-button.tsx",
+    "components/use-overlay-viewport.ts",
+    "releases/account-verification-viewport-20261119.txt",
+    "releases/layout-interaction-keyboard-hardening-20261119.txt",
+    "tests/account-verification-dialog-layer.test.mjs",
+    "tests/financial-overlay-viewport.test.mjs",
+    "tests/fixtures/financial-overlay-viewport-fixture.tsx",
+    "tests/fixtures/social-booking-layout.mjs",
+    "tests/overlay-viewport-runtime.test.mjs",
+    "tests/settings-admin-overlay-layout.test.mjs",
+    "tests/shared-overlay-keyboard.test.mjs",
+    "tests/social-booking-layout.test.mjs",
+    "tests/staff-create-appointment-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "1222adada569195c944cd1f421377cb88762d37a"
+  },
+  "dependencies": [
+    "mfa-access-enforcement-20261119",
+    "account-verification-keyboard-layout-20261119",
+    "layout-interaction-keyboard-hardening-20261119"
+  ],
+  "validation": [
+    {
+      "name": "Exact frozen snapshot and authored Git source hashes for46 entries/45 unique paths",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\root\\late-patches\\verified-patches.json"
+    },
+    {
+      "name": "Merged source and preservation checks",
+      "result": "pending"
+    },
+    {
+      "name": "New full build and applicable device acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "c8093a38-8bd2-4eb7-aa1d-786fec49e0c3",
+  "recordedAt": "2026-11-20T02:27:06.508Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-followup-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "today-staff-checkin-20261101",
+  "status": "ready",
+  "summary": "Integrated authorized queued change with daily Reports on current baseline: Today Staff Working card opens /pos/check-in; isolated one-line patch awaits combined release",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/today-dashboard.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\reports-overview-20261102\\artifacts\\release\\frozen"
+  },
+  "validation": [
+    {
+      "name": "Daily overview and owner-report access regressions",
+      "result": "passed",
+      "evidence": "25 tests; artifacts/release/regression.txt"
+    },
+    {
+      "name": "Responsive actual component fixture",
+      "result": "passed",
+      "evidence": "320/390/430/768/1280; staff filter, Ticket link and Daily Report link; artifacts/release/report-browser-results.json"
+    },
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release/typecheck.txt"
+    },
+    {
+      "name": "Installed Safari16 bundle compilation",
+      "result": "passed",
+      "evidence": "artifacts/release/bundle-check.txt"
+    }
+  ],
+  "id": "4966244e-a5bc-4fd1-b618-2b6e4189ff64",
+  "recordedAt": "2026-11-02T12:47:26.163Z",
+  "worktree": "C:\\Reylumi-worktrees\\reports-overview-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/today-dashboard.ts": "55c6e9b48425e38f98c1ae6470d205d2f83bdb93fc9f2ede3b0d5dc4c432c20a"
+  }
+}

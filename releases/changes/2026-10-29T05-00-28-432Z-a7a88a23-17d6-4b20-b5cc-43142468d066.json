@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "combined-pos-payroll-release-20261028",
+  "status": "needs-integration",
+  "summary": "Exact19-file frontend source finite checks pass; combined release/native verification still pending. No distribution or physical acceptance claimed.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-windows-compact-menu.tsx",
+    "app/pos/owner-windows-compact-menu.css",
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/payroll-disclosure.tsx",
+    "app/payroll/payroll-period-rail.tsx",
+    "app/payroll/payroll-tabs.tsx",
+    "app/payroll/staff-income-card.tsx",
+    "lib/payroll-period-rail.ts",
+    "lib/staff-payroll-display.ts",
+    "tests/payroll-staff-scroll-display.test.mjs",
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-dashboard.module.css",
+    "lib/app-local-owner-payroll-view.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028\\artifacts\\wave65-audit\\frozen-v2"
+  },
+  "validation": [
+    {
+      "name": "19 Payroll Node tests;24 web/native Payroll fixture observations;13 portal,3 Windows guard,9 checkout/captured-receipt observations; desktop pixel equality",
+      "result": "passed"
+    },
+    {
+      "name": "Final full build459assets, TypeScript and scoped lint",
+      "result": "passed"
+    },
+    {
+      "name": "Native rebuild235tests/archive/provenance/Apple/groups plus actual live and exact-installed smoke",
+      "result": "pending"
+    }
+  ],
+  "componentSourceReadyEvents": [
+    "c75b5d1c-6351-423c-af0a-1b059d8aaafe",
+    "8057e995-936c-461d-8aac-b4247c4ad4c4",
+    "8182e0be-10eb-4f74-8c89-b6f1e339c958",
+    "80fe26a1-e95f-4872-84c3-5b3fcbec9a24",
+    "7f15a87b-0c6b-4af7-b440-27826312afb9",
+    "655b3535-ddf8-4bde-a828-bbe5bfef9103",
+    "6d329072-e5c1-446e-82de-d1e0b556f846"
+  ],
+  "notes": "Prior source-ready records contain local checks only and explicit pending native distribution limitations. No pending check was changed to passed; no journal guard altered. Aggregate kept needs-integration until combined pipeline verification.",
+  "id": "a7a88a23-17d6-4b20-b5cc-43142468d066",
+  "recordedAt": "2026-10-29T05:00:28.432Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

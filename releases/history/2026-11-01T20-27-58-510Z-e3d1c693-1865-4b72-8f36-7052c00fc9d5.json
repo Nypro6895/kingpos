@@ -1,0 +1,41 @@
+{
+  "kind": "release",
+  "summary": "Published Today Statistics, staff/day ticket filtering and scoped web scroll containment from exact live baseline; verified existing image runtime fix; iOS update is tracked separately until Apple/group verification.",
+  "changes": [
+    "316e166d-c0f5-46c0-a838-57de7b3c57ac",
+    "69001912-9131-49db-bcaa-431ad28fed95",
+    "67aa578d-ef9b-409a-9037-fccf764da156",
+    "bb4a86b4-048c-45f6-bfae-4114981ee123",
+    "33a98581-bf20-4b07-8367-ffd5fc818ede"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_BQkiX3GLWa2YhsAMZ4UXzKi5Hdnb",
+      "baselineDeploymentId": "dpl_Dkt56igv5fjsTWHpiJFEcqfRRLki",
+      "sourceSha256": "c34e50261ae2d0d9167cebdb784cabeeb2901d579d27f253640bd4ccae8a980f",
+      "overlaySha256": "4ddf62b2e46e343a66e1a9a9ac7b9a7ab56037eb49072ca0773d93cc4e94b999",
+      "commit": "42b48f0bdd75b0c93a698c5391481eb9d23d2fec",
+      "evidence": "releases/evidence/combined-today-20261101",
+      "checks": [
+        "Production build",
+        "Exact remote source hashes",
+        "Public/protected routes",
+        "Actual authenticated Owner mobile chart and staff-filter QA"
+      ]
+    }
+  },
+  "pendingQueue": {
+    "events": 111,
+    "decisions": "releases/evidence/combined-today-20261101/pending-decisions-summary.json",
+    "note": "Historical overlap preserves newer shipped source; independent platforms, unfinished work and provider/device gates remain queued."
+  },
+  "rollback": {
+    "deploymentId": "dpl_Dkt56igv5fjsTWHpiJFEcqfRRLki",
+    "requiresCurrentAliasGuard": true
+  },
+  "id": "e3d1c693-1865-4b72-8f36-7052c00fc9d5",
+  "recordedAt": "2026-11-01T20:27:58.510Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101"
+}

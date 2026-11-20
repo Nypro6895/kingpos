@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "combined-pos-payroll-release-20261028",
+  "status": "working",
+  "summary": "Coordinate completed POS phone/tablet navigation and authorized custom Services with Payroll staff rails/charts on uploaded64/liveJB; exclude unapproved top controls and separate Market",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-windows-compact-menu.tsx",
+    "app/pos/owner-windows-compact-menu.css",
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/payroll-disclosure.tsx",
+    "app/payroll/payroll-period-rail.tsx",
+    "app/payroll/payroll-tabs.tsx",
+    "app/payroll/staff-income-card.tsx",
+    "lib/payroll-period-rail.ts",
+    "lib/staff-payroll-display.ts",
+    "tests/payroll-staff-scroll-display.test.mjs",
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-dashboard.module.css"
+  ],
+  "source": {
+    "commit": "509985dec00091f285c28b7dcb079460da104249"
+  },
+  "dependencies": [
+    "pos-ios-tablet-layout-20261028",
+    "pos-ios-custom-service-20261028",
+    "payroll-staff-scroll-ui-20261029",
+    "payroll-charts-20261028"
+  ],
+  "validation": [
+    {
+      "name": "Final assembled source, current alias/native baseline and live/physical checks",
+      "result": "pending"
+    }
+  ],
+  "id": "8378e179-fc2d-4eea-a37b-5d0c7db75053",
+  "recordedAt": "2026-10-29T04:50:41.765Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

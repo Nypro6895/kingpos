@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "role-handoff-recovery-20261017",
+  "status": "working",
+  "summary": "Repair installed role handoff and notification workspace recovery while preserving existing UI and authorization",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-shell-workspace-navigation.ts",
+    "lib/app-local-command-client.ts",
+    "app/local-app/entry.tsx",
+    "components/app-local-shell.tsx",
+    "app/notifications/actions.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift"
+  ],
+  "source": {
+    "commit": "f3f0a06d5acd07c9e15a7f804a55d3faa4f320af"
+  },
+  "validation": [
+    {
+      "name": "Role handoff regression and native validation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "49fed58e-3a3f-497a-a0d0-4ff62c57cea8",
+  "recordedAt": "2026-10-17T16:52:39.299Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-recovery\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

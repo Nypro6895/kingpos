@@ -30,11 +30,7 @@ export function isDeletedUserLike(
     | null
     | undefined,
 ) {
-  return (
-    !user ||
-    user.status === "deleted" ||
-    (!user.email && user.display_name === "Deleted user")
-  );
+  return Boolean(user && user.status === "deleted");
 }
 
 export function getDeletedUserDisplayLabel(
@@ -53,7 +49,7 @@ export function getHistoricalUserDisplayName(
     return getDeletedUserDisplayLabel(context);
   }
 
-  if (fallbackName === "Deleted user") {
+  if (fallbackName === "Deleted user" && !input.user) {
     return getDeletedUserDisplayLabel(context);
   }
 
@@ -63,9 +59,9 @@ export function getHistoricalUserDisplayName(
     .trim();
 
   return (
+    (input.user?.display_name?.trim() === "Deleted user" ? null : input.user?.display_name?.trim()) ||
     fullName ||
-    input.user?.display_name?.trim() ||
-    fallbackName ||
-    getDeletedUserDisplayLabel(context)
+    (fallbackName === "Deleted user" ? null : fallbackName) ||
+    ({ customer: "Reylumi customer", generic: "Reylumi user", owner: "Salon owner", review: "Reylumi customer", staff: "Staff member" } as const)[context]
   );
 }

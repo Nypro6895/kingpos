@@ -1,0 +1,49 @@
+{
+  "kind": "release",
+  "summary": "Combined eligible web,Windows hosted and iOS release completed;held scopes explicitly recorded",
+  "changes": [
+    "e43cafd4-f56f-4feb-af53-a593b7188308",
+    "24b1d8e5-8db7-4aa8-b2d6-bfeba65af10c"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_AFsaE3G65kP9w5mHLJHnAVQUvKw9",
+      "baselineDeploymentId": "dpl_82omCD98ajxqjLMWRPtjyv2qRZV7",
+      "sourceSha256": "16bb818133303b96b5b11aa37a18c3cc81dd4d89c19f9d40f10b797aba12b6a3",
+      "overlaySha256": "e0e5e2c9d308278e5a22bfa5a4e96b3ca8d6200f8bda4db2a072489c78769c81",
+      "evidence": "artifacts/release-20261030/web-live-source-verified.json; artifacts/release-20261030/portable-live-qa.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "74",
+      "commit": "9f2244340a0d47737021ac40abea738fed4e2f6c",
+      "evidence": "artifacts/release-20261030/native-verified.json; artifacts/release-20261030/availability-verified.json; artifacts/release-20261030/physical74-verified.json"
+    }
+  },
+  "windows": {
+    "version": "0.7.3",
+    "newInstaller": false,
+    "delivery": "hosted-web-update",
+    "sourceUnchangedFiles": 23,
+    "actualApplicationRefreshVerified": true,
+    "downloadChecksumVerified": true
+  },
+  "separateReceipts": {
+    "web": "ec69561f-8a8f-48ed-9978-3ba37af8895b",
+    "ios": "1e07b128-b31d-4e33-9f65-36c3a9989349"
+  },
+  "held": {
+    "Market": "Owner excluded",
+    "GiftReward": "Financial-contract gate113bdae4-2292-42f3-a9b2-c7c6bba1b668",
+    "UniversalLinks": "Provisioning gate512c7264-78f2-4bfd-b925-26e5feb8dbb3",
+    "physicalSignedBinary": "Read-only TestFlight Safari warm/cold smoke passed;full Camera not performed",
+    "legacyPending": "See backlog-source-review.json;no blanket historical publication"
+  },
+  "id": "4158f69b-d8be-47a8-9046-adc5d7bbeb32",
+  "recordedAt": "2026-10-30T08:08:50.167Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030"
+}

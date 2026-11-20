@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "social-abuse-relaxed-20261028",
+  "status": "abandoned",
+  "channels": [
+    "web"
+  ],
+  "summary": "Withdraw obsolete early relaxed-social proposal220c:owner-approved replacement social-monitor-only was integrated as49859059 and verified/published in receipt9adc36dd. Current baseline retains advisory server and20261029021000 migration;never replay old202610280030 migration or repeat WAF mutation.",
+  "files": [],
+  "replacedProposal": "220c0bc8-a5da-4c23-a9b0-6f337009c61e",
+  "replacementReady": "49859059-3208-47ac-a15c-f334bb2700c8",
+  "priorReleaseReceipt": "9adc36dd-2d40-4bba-bad9-b46cbb041828",
+  "validation": [
+    {
+      "name": "Read exact owner security chat approval and replacement revision/release receipt;current advisory server and replacement migration present",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/historical-social-resolution.json"
+    }
+  ],
+  "id": "5b833d04-4d06-4bf5-9f4d-441544e51efc",
+  "recordedAt": "2026-10-30T07:44:38.102Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

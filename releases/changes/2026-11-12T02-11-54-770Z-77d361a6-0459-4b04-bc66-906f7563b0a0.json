@@ -1,0 +1,19 @@
+{
+  "kind": "change",
+  "changeId": "after97-scoped-native-upload-20261111",
+  "status": "working",
+  "summary": "Integrate scoped Market native creative action with private upload staging using unchanged image-only 5 MB limits, service-role authority, RLS and single-claim replay protection.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261112021000_after97_scoped_creative_upload.sql",
+    "tests/after97-scoped-upload.integration.test.mjs"
+  ],
+  "id": "77d361a6-0459-4b04-bc66-906f7563b0a0",
+  "recordedAt": "2026-11-12T02:11:54.770Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

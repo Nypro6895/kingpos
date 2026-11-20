@@ -1,5 +1,1 @@
-{
-  "origin": "http://localhost:3107",
-  "channel": "test",
-  "updates": false
-}
+{"origin":"https://reylumi.com","channel":"online","updates":false,"unsignedUpdates":false}

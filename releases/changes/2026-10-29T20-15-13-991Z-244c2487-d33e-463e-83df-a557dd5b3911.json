@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "settings-inline-rows-20261029",
+  "status": "ready",
+  "summary": "Settings full-bleed phone background and horizontal subject/value rows; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/settings-hub.css",
+    "app/settings/settings-controls.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "7d418b18-0d6c-4806-ab76-3ef3ec59bef4"
+  },
+  "dependencies": [
+    "settings-grouped-style-20261028"
+  ],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "244c2487-d33e-463e-83df-a557dd5b3911",
+  "recordedAt": "2026-10-29T20:15:13.991Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/settings-hub.css": "84e3f458afc058da34fe2640c07789211951fd1dc7f03954c220645121d1200b",
+    "app/settings/settings-controls.css": "3a76361630bc8a7f8c9305ad47c75c510ca71dce59c89c14f132ea7e9fd01621"
+  }
+}

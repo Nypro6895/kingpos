@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "payroll-tax-allocation-20261112",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Split gross wages before tax; tax only enabled wage cash; deduct bonus tax from its payment channel. Staff/Owner show final payouts including net extras; Owner includes bonus and Staff explains pre-tax extras. Tax-company projection retained per owner instruction. Original handoff 12c183dc-e722-4241-98f5-67a6b3f4b955. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/payroll.ts",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/(app)/payroll/page.tsx",
+    "tests/payroll-live-dashboard.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "staff-pay-tip-bonus-20261111"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "4258aacc-d654-4e95-82bc-2816068768bc",
+  "recordedAt": "2026-11-12T02:07:29.815Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "lib/payroll.ts": "29ab2a4cef9671bc3293c648c11d579dff0fd90008f14316d7e2dda6cba5861c",
+    "app/staff/my-work/staff-pay-analysis.tsx": "5df934d5a0a82f15b4bff2472cd7cc979aa077ef3dc58a198bab8311fa9bc1e5",
+    "app/(app)/payroll/page.tsx": "27ec8bcce980f3b7f4c9efee7ba26f93a30d165b8a21f953dbf136decfdf098a",
+    "tests/payroll-live-dashboard.test.mjs": "69242368efa9e41f8263a8aade7f68dc0b7920c2e0d3bb19a6a6f8cdc2c4dc34"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "booking-drawer-slot-hints279",
+  "status": "ready",
+  "summary": "Physical59 falsely offered tomorrow09:15/10:00 from today calendar, omitting the actual next-day09:30 booking;13:00 positive control succeeded. Restrict suggestions to loaded unfiltered dates, active effective service assignments, staff-specific working hours, breaks, time off, custom duration and cleanup. Replace Real available claim with bilingual scoped suggestions and final-server-validation guidance. Server booking/payment authority unchanged. Local handoff only; physical fix acceptance pending integrated release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/bookings/booking-workspace-client.tsx",
+    "lib/booking-slot-hints.ts",
+    "lib/vietnamese-workspace-copy.json",
+    "tests/booking-slot-hints.test.mjs"
+  ],
+  "source": {
+    "commit": "0e13d35",
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\booking279-selected-frozen"
+  },
+  "validation": [
+    {
+      "name": "Nine regressions including exact uploaded59 counterexample, filtered/missing date, overlap positive control, hours/eligibility/breaks/durations and retained booking modal",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/iphone-next-server-20261028/artifacts/booking279-combined-final.log"
+    },
+    {
+      "name": "Fresh TypeScript noEmit and diff whitespace check",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/iphone-next-server-20261028/artifacts/booking279-types-final3.log"
+    }
+  ],
+  "releasePrerequisites": [
+    "Port scoped patch hunks on newest combined source; do not overwrite entire booking client or translation map",
+    "Production/native build and real iPhone retest of corrected suggestions and booking create",
+    "No new publish by this worker after active pipeline; coordinate with combined-release owner"
+  ],
+  "id": "7da52a78-c463-414c-b5f9-a97b56c6468f",
+  "recordedAt": "2026-10-29T00:01:48.685Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/bookings/booking-workspace-client.tsx": "3db0ad9ce005698d5a14212cd188273b03e7919fbf6894379c1f404bc88a6cd1",
+    "lib/booking-slot-hints.ts": "b69e7968c7bee0a990c1f30b803312654858859439580c89e64bd00404446e4b",
+    "lib/vietnamese-workspace-copy.json": "02aadc2a8bec77f1cd6fae1ad18f73cd79c4264d36c6c2d797359a880fc43d8b",
+    "tests/booking-slot-hints.test.mjs": "2f9d8eba4d4a7bb074be8a8a8024b398a45c9ffd0973b436288a95de4738a337"
+  }
+}

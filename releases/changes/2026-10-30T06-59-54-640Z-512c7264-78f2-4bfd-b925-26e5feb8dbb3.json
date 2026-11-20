@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "personal-qr-universal-links-provisioning-20261030",
+  "status": "blocked",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Universal Links for salon Camera QR remain unshipped: no compatible validated Associated Domains provisioning profile available; current release explicitly uses existing reylumi scheme and web fallback",
+  "files": [
+    "ios/Reylumi/Reylumi.entitlements",
+    "ios/project.yml"
+  ],
+  "source": {
+    "commit": "61fed55b84b52413476f2a2aba861177f94682ad",
+    "snapshot": "C:/Reylumi-worktrees/personal-qr-camera-20261029/artifacts/personal-qr-camera-20261029/source"
+  },
+  "dependencies": [
+    "personal-qr-camera-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Existing Mac App Store profile Associated Domains capability",
+      "result": "failed",
+      "evidence": "artifacts/release-20261030/native-link-gate.json"
+    },
+    {
+      "name": "Compatible profile,actual signed entitlement and physical HTTPS Camera warm/cold/login continuation",
+      "result": "pending"
+    }
+  ],
+  "requiredAction": {
+    "team": "WJ4VQ4529Z",
+    "bundle": "com.reylumi.ios",
+    "capability": "com.apple.developer.associated-domains",
+    "domains": [
+      "applinks:reylumi.com",
+      "applinks:www.reylumi.com"
+    ],
+    "boundary": "Obtain separately authorized compatible provisioning through existing signing/distribution owner; do not change team,credentials or capability without confirmation."
+  },
+  "id": "512c7264-78f2-4bfd-b925-26e5feb8dbb3",
+  "recordedAt": "2026-10-30T06:59:54.640Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

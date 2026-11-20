@@ -1,0 +1,866 @@
+{
+  "schemaVersion": 1,
+  "kind": "reylumi-ios-source-declaration-candidate",
+  "status": "DRAFT_SOURCE_SUPPORTED_RUNTIME_PENDING",
+  "source": {
+    "baselineCommit": "8a9d9335207db37969bff824e6ef3e55f37b6484",
+    "headAtRead": "8a9d9335207db37969bff824e6ef3e55f37b6484",
+    "contentComparison": "LF-normalized comparison with exact baseline Git blob; separate raw SHA256 hashes retain Windows-byte evidence",
+    "allReferencedFilesMatchBaseline": true
+  },
+  "authority": {
+    "appleReadbackPerformed": false,
+    "providerRequests": false,
+    "credentialsRead": false,
+    "productFilesChanged": false,
+    "submitted": false,
+    "published": false
+  },
+  "scope": {
+    "region": "USA",
+    "baseDownload": "free",
+    "marketAndAdCreditsIncluded": true,
+    "ugcOwnership": "Users retain rights; limited service license",
+    "ownerImposedGlobalAgeGate": false,
+    "selectedImageProvider": "OpenAI; actual configuration/runtime not proved"
+  },
+  "priorityFindings": [
+    "Search query and raw GPS are server-persisted with signed-in user ID, not only transient requests.",
+    "Beauty following is a persisted social graph; Contacts requires candidate consideration."
+  ],
+  "privacy": [
+    {
+      "category": "Collects data",
+      "candidateAnswer": "Yes",
+      "status": "source-supported",
+      "evidence": [
+        "search-persistence",
+        "social-graph",
+        "business-data-map"
+      ],
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Search History",
+      "candidateAnswer": "Yes",
+      "status": "source-supported-candidate",
+      "linked": "Yes for signed-in sessions",
+      "purposes": [
+        "App Functionality"
+      ],
+      "evidence": [
+        "search-rpc",
+        "search-persistence",
+        "search-schema"
+      ],
+      "remaining": "Bind actual deployed/native candidate and cleanup; expiry is not physical-deletion proof.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Precise Location",
+      "candidateAnswer": "Yes if GPS search remains in candidate",
+      "status": "source-supported-candidate",
+      "linked": "Yes for signed-in sessions",
+      "purposes": [
+        "App Functionality"
+      ],
+      "evidence": [
+        "gps-client",
+        "search-rpc",
+        "search-persistence"
+      ],
+      "remaining": "Raw coordinates are persisted without coarsening in this source path; live/provider behavior not verified.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Contacts",
+      "candidateAnswer": "Yes if Beauty following remains in candidate",
+      "status": "source-supported-taxonomy-inference",
+      "linked": "Yes",
+      "purposes": [
+        "App Functionality"
+      ],
+      "evidence": [
+        "social-graph"
+      ],
+      "remaining": "Apple Contacts includes social graph; this does not assert phone address-book permission. Add Product Personalization only if used.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Name / Email / Phone / Physical Address / User ID",
+      "candidateAnswer": "Carry forward Yes candidates by actual flow",
+      "status": "prior-source-map-carry-forward",
+      "linked": "Generally Yes",
+      "purposes": [
+        "App Functionality"
+      ],
+      "evidence": [
+        "business-data-map",
+        "native-data-map"
+      ],
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Payment Info / Other Financial Info / Purchase History",
+      "candidateAnswer": "Carry forward Yes candidates in full scope",
+      "status": "prior-source-map-carry-forward",
+      "linked": "Generally Yes",
+      "purposes": [
+        "App Functionality"
+      ],
+      "evidence": [
+        "business-data-map",
+        "commerce-data-map"
+      ],
+      "remaining": "Check Writer bank handling differs from external hosted-card entry; no global payment-data exemption.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Photos or Videos / Other User Content / Customer Support / Emails or Text Messages",
+      "candidateAnswer": "Carry forward Yes by actual flow",
+      "status": "prior-source-map-plus-openai-delta",
+      "linked": "Generally Yes",
+      "purposes": [
+        "App Functionality"
+      ],
+      "evidence": [
+        "business-data-map",
+        "native-data-map",
+        "openai-payload",
+        "photo-consent"
+      ],
+      "remaining": "Do not infer anonymous pixels or optional-disclosure exemption from consent.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Device ID",
+      "candidateAnswer": "Yes candidate for persistent browser/device abuse identifier",
+      "status": "source-supported-candidate",
+      "linked": "Potentially Yes",
+      "purposes": [
+        "App Functionality"
+      ],
+      "evidence": [
+        "abuse-context",
+        "abuse-server"
+      ],
+      "remaining": "Verify lifetime/provider practice; no IDFA and hashing do not prove no identifier or anonymous data.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Advertising Data / Product Interaction",
+      "candidateAnswer": "Yes candidate for stored campaign events",
+      "status": "source-supported-candidate",
+      "linked": "Potentially linked or pseudonymous",
+      "purposes": [
+        "Third-Party Advertising",
+        "Analytics"
+      ],
+      "evidence": [
+        "ad-events",
+        "ad-client"
+      ],
+      "remaining": "Only assign purposes to data actually used in salon ads/measurement; not all contact/financial data.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Tracking",
+      "candidateAnswer": null,
+      "status": "provider-runtime-proof-required",
+      "evidence": [
+        "native-data-map",
+        "ad-events",
+        "openai-payload"
+      ],
+      "remaining": "Confirm cross-company matching, advertising measurement and partner/broker secondary use; no global Yes/No from source alone.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "category": "Coarse Location / Diagnostics / Browsing / Other Usage / Other Data / Sensitive / Health etc.",
+      "candidateAnswer": null,
+      "status": "flow-specific-review-required",
+      "evidence": [
+        "native-data-map",
+        "business-data-map",
+        "native-manifest"
+      ],
+      "remaining": "Separate actual fields, retention and purposes; local-only diagnostics and generic free text do not establish all categories.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    }
+  ],
+  "age": [
+    {
+      "field": "userGeneratedContent",
+      "candidateAnswer": "Yes",
+      "status": "source-supported-candidate",
+      "evidence": [
+        "beauty-boundary",
+        "forum"
+      ],
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "socialMedia",
+      "candidateAnswer": "Yes",
+      "status": "source-supported-candidate",
+      "evidence": [
+        "social-graph",
+        "gps-client"
+      ],
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "messagingAndChat",
+      "candidateAnswer": "Yes",
+      "status": "source-supported-candidate",
+      "evidence": [
+        "forum"
+      ],
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "advertising",
+      "candidateAnswer": "Yes",
+      "status": "source-supported-candidate",
+      "evidence": [
+        "ad-client",
+        "ad-events"
+      ],
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "parentalControls",
+      "candidateAnswer": "No candidate",
+      "status": "final-walkthrough-required",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "ageAssurance",
+      "candidateAnswer": "No candidate",
+      "status": "final-walkthrough-required",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "socialMediaAgeRestricted",
+      "candidateAnswer": "No evidence for Yes",
+      "status": "declared-age-range-enforcement-not-proved",
+      "remaining": "To answer Yes to this specific option Apple requires Declared Age Range and age-appropriate content; this is not asserted as a general API obligation for every social app. Owner no age gate does not establish Yes.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "unrestrictedWebAccess",
+      "candidateAnswer": null,
+      "status": "native-walkthrough-required",
+      "evidence": [
+        "navigation-policy",
+        "external-sheet"
+      ],
+      "remaining": "Broad HTTPS SFSafariViewController; main WebView origin restriction does not establish No.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "contentFrequency",
+      "candidateAnswer": null,
+      "status": "operator-corpus-review-required",
+      "remaining": "Actual corpus, ads and linked pages; source filter or isolated tests do not establish None.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "chanceBasedActivities",
+      "candidateAnswer": "No candidate if actual offer/rules inventory confirms",
+      "status": "offer-inventory-required",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "kidsAgeBand",
+      "candidateAnswer": "Not Applicable candidate",
+      "status": "no-kids-category-election",
+      "appleSaved": false,
+      "runtimeVerified": false
+    },
+    {
+      "field": "ageRatingOverride",
+      "candidateAnswer": "No override proposed",
+      "status": "await-apple-computed-rating",
+      "remaining": "Current OS26 Apple table puts Social Media at13+; no final app rating calculated or saved.",
+      "appleSaved": false,
+      "runtimeVerified": false
+    }
+  ],
+  "contentRights": {
+    "candidate": "USES_THIRD_PARTY_CONTENT",
+    "status": "source-supported-candidate-with-rights-review",
+    "evidence": [
+      "legal-current",
+      "beauty-boundary",
+      "forum",
+      "ad-client"
+    ],
+    "remaining": "Confirm actual permissions/licensing for displayed assets, creatives, templates and UGC; do not claim Reylumi owns every submission.",
+    "appleSaved": false,
+    "runtimeVerified": false
+  },
+  "native": {
+    "manifestIsAppPrivacyLabel": false,
+    "requiredReasonAPIs": [
+      {
+        "category": "UserDefaults",
+        "reason": "CA92.1"
+      },
+      {
+        "category": "SystemBootTime",
+        "reason": "35F9.1"
+      }
+    ],
+    "archiveSDKReportVerified": false,
+    "physicalDeviceVerified": false,
+    "exportClassification": "Final archive review separately; ITSAppUsesNonExemptEncryption=false unchanged while source has CryptoKit/local encryption. No exemption determination made."
+  },
+  "unresolved": [
+    {
+      "owner": "engineering",
+      "decision": "Bind exact web/native candidate, enabled features and SDK/archive/network evidence."
+    },
+    {
+      "owner": "provider-operator and engineering",
+      "decision": "Actual retention/logging/regions and partner secondary use, without secrets or customer uploads."
+    },
+    {
+      "owner": "content-operator",
+      "decision": "Content frequencies, external-web behavior, ad destinations and moderation operations."
+    },
+    {
+      "owner": "owner and rights-operator",
+      "decision": "Actual third-party asset rights; preserve existing UGC ownership and age-policy decisions."
+    },
+    {
+      "owner": "authorized Apple operator",
+      "decision": "Final labels, computed age rating and content-rights save/readback only after facts and candidate close."
+    }
+  ],
+  "officialSources": [
+    {
+      "id": "apple-privacy",
+      "url": "https://developer.apple.com/app-store/app-privacy-details/",
+      "sections": [
+        "Data collection",
+        "Location",
+        "Contacts",
+        "Search History",
+        "Data linked to the user",
+        "Tracking",
+        "Web views"
+      ],
+      "reviewedAt": "2026-11-18",
+      "authority": "Apple official",
+      "browsed": true
+    },
+    {
+      "id": "apple-manage-privacy",
+      "url": "https://developer.apple.com/help/app-store-connect/manage-app-information/manage-app-privacy/",
+      "sections": [
+        "App-level answers",
+        "Publish"
+      ],
+      "reviewedAt": "2026-11-18",
+      "authority": "Apple official",
+      "browsed": true
+    },
+    {
+      "id": "apple-age-definitions",
+      "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions/",
+      "sections": [
+        "Categories",
+        "OS26 values"
+      ],
+      "reviewedAt": "2026-11-18",
+      "authority": "Apple official",
+      "browsed": true
+    },
+    {
+      "id": "apple-age-process",
+      "url": "https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating/",
+      "sections": [
+        "Set age rating",
+        "Age categories and override"
+      ],
+      "reviewedAt": "2026-11-18",
+      "authority": "Apple official",
+      "browsed": true
+    },
+    {
+      "id": "apple-review",
+      "url": "https://developer.apple.com/app-store/review/guidelines/",
+      "sections": [
+        "1.2",
+        "5.1.2(i)",
+        "5.2"
+      ],
+      "reviewedAt": "2026-11-18",
+      "authority": "Apple official",
+      "browsed": true
+    },
+    {
+      "id": "apple-content-rights",
+      "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/app-and-compliance-information/",
+      "sections": [
+        "Content Rights"
+      ],
+      "reviewedAt": "2026-11-18",
+      "authority": "Apple official",
+      "browsed": true
+    },
+    {
+      "id": "apple-content-enum",
+      "url": "https://developer.apple.com/documentation/appstoreconnectapi/appupdaterequest/data-data.dictionary/attributes-data.dictionary",
+      "access": "Official indexed enum; HTML page requires JavaScript",
+      "reviewedAt": "2026-11-18",
+      "authority": "Apple official",
+      "browsed": true
+    },
+    {
+      "id": "apple-export",
+      "url": "https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance/",
+      "sections": [
+        "Export compliance"
+      ],
+      "reviewedAt": "2026-11-18",
+      "authority": "Apple official",
+      "browsed": true
+    }
+  ],
+  "sourceEvidence": [
+    {
+      "id": "gps-client",
+      "file": "app/explore/explore-client.tsx",
+      "ranges": [
+        [
+          2578,
+          2579
+        ],
+        [
+          3408,
+          3409
+        ]
+      ],
+      "sha256": "50d6e0afa32ea05622e7ad88a86ba01ac82c30680d1ecfec6a903e37ed7a4845",
+      "gitBlobSha256": "50d6e0afa32ea05622e7ad88a86ba01ac82c30680d1ecfec6a903e37ed7a4845",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 4032
+    },
+    {
+      "id": "search-rpc",
+      "file": "lib/explore-search.ts",
+      "ranges": [
+        [
+          375,
+          392
+        ]
+      ],
+      "sha256": "ae083c3ae7dfe978a4dd12e9cc806d96f229ba925ea9d47ded1d0303ccf2bec9",
+      "gitBlobSha256": "ae083c3ae7dfe978a4dd12e9cc806d96f229ba925ea9d47ded1d0303ccf2bec9",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 547
+    },
+    {
+      "id": "search-persistence",
+      "file": "supabase/migrations/20261017030000_explore_anywhere_search.sql",
+      "ranges": [
+        [
+          188,
+          204
+        ]
+      ],
+      "sha256": "25a059f341259f399d34ee565a667826a1d296e77be727f788e67bc11729dadf",
+      "gitBlobSha256": "25a059f341259f399d34ee565a667826a1d296e77be727f788e67bc11729dadf",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 272
+    },
+    {
+      "id": "search-schema",
+      "file": "supabase/migrations/20261009052031_explore_search_sessions.sql",
+      "ranges": [
+        [
+          38,
+          55
+        ]
+      ],
+      "sha256": "fc40a4af02343a77742154657cfbb2c41ceb700b32eb226fe747e67db0603077",
+      "gitBlobSha256": "fc40a4af02343a77742154657cfbb2c41ceb700b32eb226fe747e67db0603077",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 395
+    },
+    {
+      "id": "social-graph",
+      "file": "supabase/migrations/202608210004_account_beauty_following.sql",
+      "ranges": [
+        [
+          1,
+          7
+        ],
+        [
+          77,
+          77
+        ]
+      ],
+      "sha256": "2c930ac950f999346a5ae7334b7d8ffb030b01a630d69af7393151bc3814f3fd",
+      "gitBlobSha256": "2c930ac950f999346a5ae7334b7d8ffb030b01a630d69af7393151bc3814f3fd",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 286
+    },
+    {
+      "id": "abuse-context",
+      "file": "lib/abuse-context.ts",
+      "ranges": [
+        [
+          1,
+          18
+        ]
+      ],
+      "sha256": "2df18b5915c2cb3cf5ba1c3f899c7192de5c43c2fc6a79c0418baf4a2d117d20",
+      "gitBlobSha256": "2df18b5915c2cb3cf5ba1c3f899c7192de5c43c2fc6a79c0418baf4a2d117d20",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 23
+    },
+    {
+      "id": "abuse-server",
+      "file": "lib/abuse-server.ts",
+      "ranges": [
+        [
+          41,
+          51
+        ]
+      ],
+      "sha256": "16a32b5052c3ba3e713124a47c98b7c051c0314c559aefa523565449a4047671",
+      "gitBlobSha256": "16a32b5052c3ba3e713124a47c98b7c051c0314c559aefa523565449a4047671",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 104
+    },
+    {
+      "id": "ad-events",
+      "file": "supabase/migrations/202610080002_owner_campaigns.sql",
+      "ranges": [
+        [
+          28,
+          35
+        ],
+        [
+          205,
+          220
+        ]
+      ],
+      "sha256": "270fec5292b974a2b558668287756dd98239373b49ec36a71a64e683a7153dbf",
+      "gitBlobSha256": "270fec5292b974a2b558668287756dd98239373b49ec36a71a64e683a7153dbf",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 304
+    },
+    {
+      "id": "ad-client",
+      "file": "components/owner-sponsored-post.tsx",
+      "ranges": [
+        [
+          92,
+          102
+        ]
+      ],
+      "sha256": "8634d1cafcff88f6d30f201bce7e4cc14e4f93bba4cd54f42544778e910221ca",
+      "gitBlobSha256": "8634d1cafcff88f6d30f201bce7e4cc14e4f93bba4cd54f42544778e910221ca",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 104
+    },
+    {
+      "id": "openai-payload",
+      "file": "lib/public-image-verifier-openai.ts",
+      "ranges": [
+        [
+          8,
+          11
+        ],
+        [
+          105,
+          140
+        ]
+      ],
+      "sha256": "76a9be68dcd28ba53e9add1c6e48a5d577b0f8ad6359f2c76cae484664b9dbc5",
+      "gitBlobSha256": "76a9be68dcd28ba53e9add1c6e48a5d577b0f8ad6359f2c76cae484664b9dbc5",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 141
+    },
+    {
+      "id": "photo-consent",
+      "file": "lib/public-photo-processing-consent.ts",
+      "ranges": [
+        [
+          4,
+          9
+        ],
+        [
+          20,
+          32
+        ]
+      ],
+      "sha256": "f22273e1c660840b0ebef7ef59e5f6583eed1a4aa188a0cf6e6ce0b3106411ea",
+      "gitBlobSha256": "f22273e1c660840b0ebef7ef59e5f6583eed1a4aa188a0cf6e6ce0b3106411ea",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 33
+    },
+    {
+      "id": "beauty-boundary",
+      "file": "lib/beauty.ts",
+      "ranges": [
+        [
+          1040,
+          1065
+        ]
+      ],
+      "sha256": "dcff2f6e983f158ffec1bd1ccee30581e2c846e4973b4e27ecff01566212b198",
+      "gitBlobSha256": "dcff2f6e983f158ffec1bd1ccee30581e2c846e4973b4e27ecff01566212b198",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 1629
+    },
+    {
+      "id": "salon-boundary",
+      "file": "lib/salon-profile.ts",
+      "ranges": [
+        [
+          1795,
+          1835
+        ]
+      ],
+      "sha256": "a68c703f0342e2f11199cd004b51358f92e5bcb1c79a8a766c0e58242bf973d7",
+      "gitBlobSha256": "a68c703f0342e2f11199cd004b51358f92e5bcb1c79a8a766c0e58242bf973d7",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 3327
+    },
+    {
+      "id": "legal-current",
+      "file": "lib/legal-policies.ts",
+      "ranges": [
+        [
+          330,
+          369
+        ],
+        [
+          669,
+          669
+        ]
+      ],
+      "sha256": "9857a58cb1e904420a3cd5db9c7c6e06883f5c96525c77639c70a15cbc3b0a32",
+      "gitBlobSha256": "9857a58cb1e904420a3cd5db9c7c6e06883f5c96525c77639c70a15cbc3b0a32",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 1585
+    },
+    {
+      "id": "native-info",
+      "file": "ios/Reylumi/Info.plist",
+      "ranges": [
+        [
+          12,
+          25
+        ]
+      ],
+      "sha256": "4f43ad28350f2a24ae4a18a3ff6e5cee222d4556c13d703346dd718458e9db2c",
+      "gitBlobSha256": "3cd7b37c015c2e9a43373cbc45daa9e589a87fc37cc378ad7aa6a4f3b3e4d7e9",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 26
+    },
+    {
+      "id": "native-manifest",
+      "file": "ios/Reylumi/PrivacyInfo.xcprivacy",
+      "ranges": [
+        [
+          1,
+          22
+        ]
+      ],
+      "sha256": "200bfa311faafe43b751fadcd33bd76a670d83a87c9b9337403a3073be12645e",
+      "gitBlobSha256": "24bc76d99600aabffda189c61ec29e7d31c0f997e0c4f93238336c39d8757b6a",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 24
+    },
+    {
+      "id": "native-resource",
+      "file": "ios/project.yml",
+      "ranges": [
+        [
+          17,
+          21
+        ]
+      ],
+      "sha256": "3f67be8dfdcd7b93a699a0915029201f344665ee54df6c9f78255fa8a9a5badd",
+      "gitBlobSha256": "fcfdd647bd8e67bded111410806dd4a5d6ce10dfd724dde7b0452ab54a70341f",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 53
+    },
+    {
+      "id": "native-crypto",
+      "file": "ios/Reylumi/ReylumiBackgroundSync.swift",
+      "ranges": [
+        [
+          80,
+          92
+        ]
+      ],
+      "sha256": "6df08a434652f080b4c7252c8baf7a9d2614c6425f377d322a60053ab3aff1dc",
+      "gitBlobSha256": "f2a3e6175f72970ad059f3ff45718ced471d0c3284c1f15c09761d62e259cae9",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 384
+    },
+    {
+      "id": "navigation-policy",
+      "file": "ios/Reylumi/NavigationPolicy.swift",
+      "ranges": [
+        [
+          26,
+          28
+        ]
+      ],
+      "sha256": "81d5469ddb16a87e34f6af6e013d5ea058cf62c9e6944a05ee2c9afa17e7196e",
+      "gitBlobSha256": "17a0ca61d2d0e556a38c155e784ea30ca26a40c716c44faf9ace4164c8834094",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 103
+    },
+    {
+      "id": "external-sheet",
+      "file": "ios/Reylumi/ReylumiViewController.swift",
+      "ranges": [
+        [
+          352,
+          367
+        ]
+      ],
+      "sha256": "e8285bdf0c5dbe621152c04a8e4432ca2929defa9fa5bfe7dee2950980fc51e1",
+      "gitBlobSha256": "078a6fd0e77e168a6c5d5f846ad8ade0fe67e63983d5ddc21ff061a02e24eeb0",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 639
+    },
+    {
+      "id": "forum",
+      "file": "supabase/migrations/20261103180000_owner_forum.sql",
+      "ranges": [
+        [
+          25,
+          45
+        ],
+        [
+          179,
+          213
+        ]
+      ],
+      "sha256": "7c34878bd6862dd2d61372828f2f6307d8fbff9842298ec82b279ec3b93f6d73",
+      "gitBlobSha256": "7c34878bd6862dd2d61372828f2f6307d8fbff9842298ec82b279ec3b93f6d73",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 288
+    },
+    {
+      "id": "deletion-boundary",
+      "file": "supabase/migrations/20261118220000_public_post_media_deletion.sql",
+      "ranges": [
+        [
+          50,
+          66
+        ]
+      ],
+      "sha256": "0892e6467d5a2b0b5837ad4bd10401fa43d969b789a27e1a2f5031ba13a61c93",
+      "gitBlobSha256": "0892e6467d5a2b0b5837ad4bd10401fa43d969b789a27e1a2f5031ba13a61c93",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 291
+    },
+    {
+      "id": "prior-privacy-worksheet",
+      "file": "docs/ios-submission-app-privacy-20261116.md",
+      "ranges": [
+        [
+          1,
+          6
+        ]
+      ],
+      "sha256": "710ad897665ddb99317858aca193bdaf3257d6a612018d3b1309f355746035be",
+      "gitBlobSha256": "710ad897665ddb99317858aca193bdaf3257d6a612018d3b1309f355746035be",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 61
+    },
+    {
+      "id": "prior-age-worksheet",
+      "file": "docs/ios-store-age-rating-worksheet-20261116.md",
+      "ranges": [
+        [
+          1,
+          8
+        ]
+      ],
+      "sha256": "880ca027f51fcbd7e802733177d1830fb0afa4a774e8bbb755a51f4de1cf0a1e",
+      "gitBlobSha256": "880ca027f51fcbd7e802733177d1830fb0afa4a774e8bbb755a51f4de1cf0a1e",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 68
+    },
+    {
+      "id": "native-data-map",
+      "file": "docs/ios-submission-native-data-map-20261116.md",
+      "ranges": [
+        [
+          1,
+          8
+        ]
+      ],
+      "sha256": "50d0149acf0e5b454cf85a6283c5637789197fa016dc80a7c3c8a3bf5a0b4c8e",
+      "gitBlobSha256": "50d0149acf0e5b454cf85a6283c5637789197fa016dc80a7c3c8a3bf5a0b4c8e",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 239
+    },
+    {
+      "id": "business-data-map",
+      "file": "docs/ios-submission-business-data-map-20261116.md",
+      "ranges": [
+        [
+          1,
+          8
+        ]
+      ],
+      "sha256": "58dc55d31fb96a9513365249e3e8f4a5cff31d1ca1ad02d821b8942b044b4578",
+      "gitBlobSha256": "58dc55d31fb96a9513365249e3e8f4a5cff31d1ca1ad02d821b8942b044b4578",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 236
+    },
+    {
+      "id": "commerce-data-map",
+      "file": "docs/ios-submission-commerce-scope-20261116.md",
+      "ranges": [
+        [
+          1,
+          8
+        ]
+      ],
+      "sha256": "77eb052d034f607ba25cdb4c4aa8d0fee5f5a001604b7f446708f2c0d12fe5b7",
+      "gitBlobSha256": "77eb052d034f607ba25cdb4c4aa8d0fee5f5a001604b7f446708f2c0d12fe5b7",
+      "normalizedMatchesBaseline": true,
+      "lineCount": 62
+    }
+  ],
+  "report": {
+    "file": "docs/ios-store-declarations-next-20261118.md",
+    "sha256": "ccc82b3e8dd297beee1e583a92ab34be92a8296d5a383bb554b114a8b77b9f97"
+  },
+  "createdAt": "2026-11-18T22:20:35.825Z"
+}

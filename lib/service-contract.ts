@@ -131,6 +131,18 @@ export function validateServiceConfig(
       "Booking add-ons must be unique and cannot link to the same service.";
   }
 
+  if (input.bookingAddOns !== undefined) {
+    const addons = input.bookingAddOns;
+    const ids = Array.isArray(addons) ? addons.map(item => item?.serviceId).filter(Boolean) : [];
+    if (!Array.isArray(addons) || addons.length > 40 || new Set(ids).size !== ids.length ||
+      addons.some(item => !item || typeof item.name !== "string" || !item.name.trim() || item.name.trim().length > 120 ||
+        !["one", "many"].includes(item.group) || !Number.isFinite(item.basePrice) || item.basePrice < 0 ||
+        !Number.isInteger(item.durationMinutes) || item.durationMinutes < 1 || item.durationMinutes > 1440 ||
+        (input.serviceId && item.serviceId === input.serviceId))) {
+      fieldErrors.addOnServiceIds = "Each add-on needs a name, a valid group, a non-negative price and 1–1,440 extra minutes. Maximum 40 add-ons.";
+    }
+  }
+
   return {
     fieldErrors,
     valid: Object.keys(fieldErrors).length === 0,

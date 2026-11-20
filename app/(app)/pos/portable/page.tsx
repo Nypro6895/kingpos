@@ -1,3 +1,6 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
+import { portablePosHeldTicketState, portableLoadServiceRelay, portableHoldPosDraft, portableUpdatePosHeldTicket } from "@/app/pos/portable/actions";
 import { PosDeskClient } from "@/app/pos/pos-desk-client";
 import { PosRapidMobileBridge } from "@/app/pos/pos-rapid-mobile-bridge";
 import styles from "@/app/pos/pos-rapid-mobile.module.css";
@@ -13,11 +16,12 @@ import {
   portableCancelWaitingVisitForPos,
   portableSubmitPosDeskReceipt,
   portableSelectWaitingVisitForPos,
+  portableResolveScannedCheckinReceipt,
   portableUpdatePosActiveDraft,
   portableUpdatePosLiveDraftCustomer,
 } from "@/app/pos/portable/actions";
 
-export default async function PortablePosPage() {
+async function PortablePosPage() {
   if (!(await cookies()).get('kingpos-workspace-device')?.value) return <PrepareWorkspaceDevice/>;
   let data: Awaited<ReturnType<typeof getPortablePosDeskData>>;
 
@@ -28,11 +32,10 @@ export default async function PortablePosPage() {
       <section className="grid h-full place-items-center px-6 text-center">
         <div className="max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-semibold text-zinc-950">
-            Portable POS is locked
+            <WorkspaceText text="Portable POS is locked" />
           </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
-            End the current device session and sign in again with a valid Portable
-            POS ID.
+            <WorkspaceText text="End the current device session and sign in again with a valid Portable POS ID." />
           </p>
         </div>
       </section>
@@ -49,6 +52,10 @@ export default async function PortablePosPage() {
         <PosRapidMobileBridge staffCheckInEnabled={data.defaults.staffCheckInEnabled} services={data.services} staff={data.staff} />
         <div className={styles.engine} data-pos-rapid-engine>
           <PosDeskClient
+            holdSharedDraft={portableHoldPosDraft}
+            heldTicketLoad={portableLoadServiceRelay}
+            heldTicketState={portablePosHeldTicketState}
+            heldTicketUpdate={portableUpdatePosHeldTicket}
             actions={{
               adjustStaffTurn: portableAdjustStaffTurn,
               cancelWaitingVisitForPos: portableCancelWaitingVisitForPos,
@@ -56,11 +63,13 @@ export default async function PortablePosPage() {
               getPosLiveDraft: portableGetPosLiveDraft,
               searchPosDeskCustomers: portableSearchPosDeskCustomers,
               selectWaitingVisitForPos: portableSelectWaitingVisitForPos,
+              resolveScannedCheckinReceipt: portableResolveScannedCheckinReceipt,
               submitPosDeskReceipt: portableSubmitPosDeskReceipt,
               updatePosActiveDraft: portableUpdatePosActiveDraft,
               updatePosLiveDraftCustomer: portableUpdatePosLiveDraftCustomer,
             }}
             activeSession={null}
+            canAdjustStaffTurn={data.canAdjustStaffTurn}
             defaults={data.defaults}
             offlineDraftSyncEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"}
             liveDraft={data.liveDraft}
@@ -77,3 +86,5 @@ export default async function PortablePosPage() {
     </section></SingleWorkspaceWindow>
   );
 }
+
+export default withExperiencePage(PortablePosPage);

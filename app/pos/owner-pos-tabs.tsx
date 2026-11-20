@@ -1,37 +1,134 @@
 "use client";
-import "./owner-pos.css";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { ROLE_NAVIGATION } from "@/app/role-navigation";
+import { usePathname } from "next/navigation";
+import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { RoleMoreContent } from "@/components/role-more-content";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { OwnerPosIcon, type OwnerPosIconName } from "./owner-pos-icon";
+import { PortableSyncIndicator } from "./portable/portable-sync-indicator";
+import "./owner-pos.css";
+import { OwnerNotebookMenu } from "./owner-notebook-menu";
 
 const shortcuts: { id: string; href: string; label: string; icon: OwnerPosIconName }[] = [
- {id:'pos',href:'/pos',label:'POS',icon:'pos'},
- {id:'ticket',href:'/pos/ticket',label:'Ticket',icon:'ticket'},
- {id:'book',href:'/pos/book',label:'Book',icon:'booking'},
- {id:'checkIn',href:'/pos/check-in',label:'Check In',icon:'checkin'},
- {id:'report',href:'/pos/report',label:'Report',icon:'report'},
- {id:'settings',href:'/pos/settings',label:'Settings',icon:'settings'},
+  { id: "pos", href: "/pos", label: "POS", icon: "pos" },
+  { id: "ticket", href: "/pos/ticket", label: "Tickets", icon: "ticket" },
+  { id: "book", href: "/pos/book", label: "Bookings", icon: "booking" },
+  { id: "checkIn", href: "/pos/check-in", label: "Check In", icon: "checkin" },
+  { id: "report", href: "/pos/report", label: "Reports", icon: "report" },
+  { id: "settings", href: "/pos/settings", label: "Settings", icon: "settings" },
 ];
-const menus = [...ROLE_NAVIGATION.owner.links, ...ROLE_NAVIGATION.owner.moreLinks,
-  { href: "/pos/settings", label: "POS Settings", id: "pos-settings" },
-  { href: "/settings", label: "Account Settings", id: "account-settings" },
-].filter((item, index, items) => items.findIndex(other => other.href === item.href) === index);
 
-export function OwnerPosTabs({ active }: { active: "pos" | "ticket" | "book" | "checkIn" | "report" | "settings" }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const [open, setOpen] = useState(false);
-  const close = () => { dialog.current?.close(); setOpen(false); };
-  if (active === "settings") return <nav aria-label="Owner POS"><Link className="owner-switch" href="/pos" aria-label="Back to POS" title="Back to POS"><OwnerPosIcon name="pos" /></Link></nav>;
+function OwnerMoreMenu() {
+  const translate = useWorkspaceTranslation();
+  const id = useId();
+  const trigger = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const [placement, setPlacement] = useState<{ top: number; left: number; width: number; height?: number; maxHeight: number } | null>(null);
+  const open = placement !== null;
+  const openRef = useRef(false);
+
+  function closeMenu() {
+    openRef.current = false;
+    setPlacement(null);
+  }
+
+  function placeMenu() {
+    const button = trigger.current;
+    if (!button || button.getClientRects().length === 0) { setPlacement(null); return; }
+    openRef.current = true;
+    const rect = button.getBoundingClientRect();
+    const viewport = window.visualViewport;
+    const width = viewport?.width ?? window.innerWidth;
+    const height = viewport?.height ?? window.innerHeight;
+    const offsetLeft = viewport?.offsetLeft ?? 0;
+    const offsetTop = viewport?.offsetTop ?? 0;
+    const compact = width < 768;
+    const tablet = width >= 768 && width < 1200;
+    const panelWidth = Math.min(tablet ? 480 : compact ? width - 16 : 800, width - 24);
+    const top = compact || tablet ? offsetTop + 12 : Math.max(offsetTop + 8, Math.min(rect.bottom + 8, offsetTop + height - 300));
+    const availableHeight = Math.max(120, offsetTop + height - top - 12);
+    setPlacement({ top, left: compact || tablet ? offsetLeft + width - panelWidth - 12 : Math.max(offsetLeft + 12, Math.min(rect.left, offsetLeft + width - panelWidth - 12)), width: panelWidth, height: compact || tablet ? availableHeight : undefined, maxHeight: availableHeight });
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    const focus = requestAnimationFrame(() => panel.current?.querySelector<HTMLAnchorElement>("a")?.focus({ preventScroll: true }));
+    function dismiss(event: PointerEvent) {
+      const target = event.target;
+      if (target instanceof Node && !panel.current?.contains(target) && !trigger.current?.contains(target)) closeMenu();
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      closeMenu();
+      trigger.current?.focus({ preventScroll: true });
+    }
+    function onFocus(event: FocusEvent) {
+      const target = event.target;
+      if (target instanceof Node && !panel.current?.contains(target) && !trigger.current?.contains(target)) closeMenu();
+    }
+    function onScroll(event: Event) {
+      if (!openRef.current) return;
+      if (event.target instanceof Node && panel.current?.contains(event.target)) return;
+      placeMenu();
+    }
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("focusin", onFocus);
+    function reposition() { if (openRef.current) placeMenu(); }
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", onScroll, true);
+    window.visualViewport?.addEventListener("resize", reposition);
+    window.visualViewport?.addEventListener("scroll", reposition);
+    return () => {
+      cancelAnimationFrame(focus);
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("focusin", onFocus);
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", onScroll, true);
+      window.visualViewport?.removeEventListener("resize", reposition);
+      window.visualViewport?.removeEventListener("scroll", reposition);
+      // Activity hides the POS tree but portals live outside its hidden DOM.
+      closeMenu();
+    };
+  }, [open]);
+
   return <>
-    <nav className="owner-top-nav" aria-label="Owner POS">
-      <button className="owner-nav-item owner-more-button" aria-label="More" aria-haspopup="dialog" aria-expanded={open} onClick={() => { dialog.current?.showModal(); setOpen(true); }}><OwnerPosIcon name="more" /><span>More</span></button>
-      {shortcuts.map(item => <Link className="owner-nav-item" href={item.href} key={item.href} aria-label={item.label} aria-current={item.id === active ? "page" : undefined}><OwnerPosIcon name={item.icon} /><span>{item.label}</span></Link>)}
-    </nav>
-    <dialog ref={dialog} className="owner-menu-dialog" aria-labelledby="owner-menu-title" onCancel={close} onClick={event => { if (event.target === event.currentTarget) { const box = event.currentTarget.getBoundingClientRect(); if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) close(); } }}>
-      <header><h2 id="owner-menu-title">All menus</h2><button onClick={close} aria-label="Close menus">×</button></header>
-      <div className="owner-menu-links">{menus.map(item => <Link key={item.id} href={item.href} onClick={close}>{item.label}<span aria-hidden="true">›</span></Link>)}</div>
-    </dialog>
+    <button ref={trigger} type="button" className="owner-nav-item owner-more-button" aria-label={translate("More")} aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => open ? closeMenu() : placeMenu()}>
+      <OwnerPosIcon name="more" /><span><WorkspaceText text="More" /></span>
+    </button>
+    {placement ? createPortal(
+      <div id={id} ref={panel} className="owner-more-popover" style={{
+        ...placement,
+        top: `calc(${placement.top}px + env(safe-area-inset-top))`,
+        height: placement.height === undefined ? undefined : `calc(${placement.height}px - env(safe-area-inset-top) - env(safe-area-inset-bottom))`,
+        maxHeight: `calc(${placement.maxHeight}px - env(safe-area-inset-top) - env(safe-area-inset-bottom))`,
+      }} role="region" aria-label={translate("More")} data-owner-more-popover>
+        <RoleMoreContent workspace="pos" roleKind="owner" activeItemIds={["owner-pos"]} onNavigate={closeMenu} onClose={() => { closeMenu(); trigger.current?.focus({ preventScroll: true }); }} />
+      </div>, document.body,
+    ) : null}
   </>;
+}
+
+type OwnerTab = "pos" | "ticket" | "book" | "checkIn" | "report" | "settings" | "more";
+
+/** The installed host keeps this outside the retained, CSS-hidden checkout. */
+export function OwnerPosNavigation({ active, syncScope }: { active: OwnerTab; syncScope?: string }) {
+  return <div className="owner-navigation" data-owner-navigation>
+    <OwnerPosTabs active={active} />
+    {syncScope ? <div className="owner-sync-status"><PortableSyncIndicator scope={syncScope} /></div> : null}
+  </div>;
+}
+
+export function OwnerPosTabs({ active }: { active: OwnerTab }) {
+  const translate = useWorkspaceTranslation();
+  const pathname = usePathname();
+  const mobile = <OwnerNotebookMenu key={`device:${pathname ?? active}`} active={active} more={<OwnerMoreMenu key={pathname ?? active} />} />;
+  return <>{mobile}<nav className="owner-top-nav owner-notebook-desktop" aria-label={translate("Owner POS")}>
+    <OwnerMoreMenu key={pathname ?? active} />
+    {shortcuts.map(item => <Link className="owner-nav-item" data-owner-tab={item.id} href={item.href} key={item.href} aria-label={translate(item.label)} aria-current={item.id === active ? "page" : undefined}><OwnerPosIcon name={item.icon} /><span><WorkspaceText text={item.label} /></span></Link>)}
+  </nav></>;
 }

@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "more-responsive-20261106",
+  "status": "needs-integration",
+  "summary": "Completed presentation-only responsive grouped More on phone, iPad and desktop; pinned All Settings; original navigation and business behavior preserved.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "components/role-more-content.tsx",
+    "components/role-more-content.css",
+    "app/role-more-groups.ts",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/(app)/more/page.tsx",
+    "tests/more-responsive-ui.test.mjs"
+  ],
+  "dependencies": [
+    "more-single-settings-20261106"
+  ],
+  "validation": [
+    {
+      "name": "18 role/viewport cases plus 4 POS cases and enlarged text",
+      "result": "passed",
+      "evidence": "artifacts/more-responsive-20261106/responsive-verification.json"
+    },
+    {
+      "name": "POS/Settings browser lifecycle: 26 checks",
+      "result": "passed",
+      "evidence": "artifacts/pos-more-settings-20261025"
+    },
+    {
+      "name": "Advertising and More directory role navigation",
+      "result": "passed"
+    },
+    {
+      "name": "Full TypeScript noEmit",
+      "result": "passed",
+      "evidence": "artifacts/more-responsive-20261106/typecheck.txt"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\more-responsive-20261106\\snapshot",
+    "patch": "C:\\Reylumi\\kingpos\\artifacts\\more-responsive-20261106\\task-only.patch",
+    "hashes": "C:\\Reylumi\\kingpos\\artifacts\\more-responsive-20261106\\source-hashes.json"
+  },
+  "id": "c6b6868b-e4d8-4578-850e-b1e7e3ce5740",
+  "recordedAt": "2026-11-06T06:54:44.920Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

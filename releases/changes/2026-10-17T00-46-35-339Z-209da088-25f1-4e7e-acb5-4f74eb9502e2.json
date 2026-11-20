@@ -1,0 +1,94 @@
+{
+  "kind": "change",
+  "changeId": "pos-payroll-audit-fixes-20261017",
+  "status": "needs-integration",
+  "summary": "Implemented regular/POS navigation, role-home cold start, POS draft protection, autosave-only payroll fields, shared payroll reads and live refresh; local checks complete, production integration and native Xcode/device verification pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/pos-tickets/page.tsx",
+    "app/(app)/pos/more/page.tsx",
+    "app/(app)/pos/settings/page.tsx",
+    "app/navigation-shell.tsx",
+    "app/payroll/payroll-live-refresh.tsx",
+    "app/payroll/staff-income-autosave-inputs.tsx",
+    "app/payroll/use-payroll-refresh-batch.ts",
+    "app/pos-tickets/work-log-filters.tsx",
+    "app/pos/owner-local-panels.tsx",
+    "app/pos/owner-pos-more.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "components/app-local-pos-settings.tsx",
+    "components/role-more-content.tsx",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/index.html",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/OfflineRouteTests.swift",
+    "ios/ReylumiTests/OfflineWebViewTests.swift",
+    "lib/app-local-command-client.ts",
+    "lib/app-local-owner-page-registry.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/app-local-resource-invalidation.ts",
+    "lib/app-local-resource.ts",
+    "lib/app-local-secondary-metadata.ts",
+    "lib/app-local-secondary-registry.tsx",
+    "lib/payroll-read-args.ts",
+    "lib/payroll.ts",
+    "scripts/build-app-local-bundle.mjs",
+    "tests/app-local-business-ui.test.mjs",
+    "tests/app-local-resource-races.test.mjs",
+    "tests/app-local-resource-refresh.test.mjs",
+    "tests/owner-local-workspace-ui.test.mjs",
+    "tests/payroll-live-refresh-ui.test.mjs",
+    "tests/payroll-read-parity.test.mjs",
+    "tests/scoped-ui-drafts-ui.test.mjs",
+    "tests/workspace-navigation-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\pos-payroll-fixes-20261017\\frozen-source",
+    "commit": "5e6c1c142977ea32fb420c868cff346c1c7049fa",
+    "sha256": "63941035b3bf8b85e224ffe76496ccf8c080a2cfe7bab38ea34355674776dd31"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "68 unique local regression cases; initial fixture failure corrected and all affected cases rerun",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\pos-payroll-fixes-20261017\\checks.json"
+    },
+    {
+      "name": "Production web build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\pos-payroll-fixes-20261017\\build-final.log"
+    },
+    {
+      "name": "344 bundled asset hashes",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\pos-payroll-fixes-20261017\\checks.json"
+    },
+    {
+      "name": "Xcode XCTest/archive and physical iPhone flows",
+      "result": "pending",
+      "evidence": "Windows host; native test cases updated but not executed"
+    },
+    {
+      "name": "Fresh production source integration before an authorized deployment",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\pos-payroll-fixes-20261017\\handoff.json"
+    }
+  ],
+  "id": "209da088-25f1-4e7e-acb5-4f74eb9502e2",
+  "recordedAt": "2026-10-17T00:46:35.339Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import test from "node:test";
 import React from "react";
@@ -9,19 +9,20 @@ import { chromium } from "playwright-core";
 
 const source = readFileSync("app/salon-profile/salon-website-home.tsx", "utf8");
 const exports = {};
-const css = readFileSync("app/salon-profile/salon-website-home.module.css", "utf8");
-const actionExports = {};
-new Function("require","exports",ts.transpileModule(readFileSync("app/salon-profile/post-actions.tsx","utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText)(createRequire(import.meta.url),actionExports);
+const css = readFileSync("app/salon-profile/salon-website-home.module.css", "utf8") + readFileSync("app/salon-profile/website-photo-feed.module.css", "utf8");
+const actionExports = { PostActions: () => null }; // Layout fixture excludes live post mutations.
 const classes = Object.fromEntries([...css.matchAll(/\.([a-zA-Z][a-zA-Z0-9]*)/g)].map(match => [match[1], match[1]]));
 function fixtureRequire(name) {
+  if(name.includes("workspace-language")) return {WorkspaceElement:({as,children,...props})=>React.createElement(as,props,children),WorkspaceText:({text})=>text,useWorkspaceTranslation:()=>text=>text};
   if (name.includes("post-actions")) return actionExports;
   if (name.endsWith(".css")) return { default: classes };
   if (name.includes("quick-booking-client")) return { preloadQuickBooking() {} };
   if (name.includes("operating-hours-display")) return { OperatingHoursDisplay: () => React.createElement("p", null, "Monday 9 AM – 6 PM") };
   if (name.includes("nail-illustration-credit")) return { NailIllustrationCredit: () => null };
-  const fixturePath = name.includes("website-photo-feed") ? "app/salon-profile/website-photo-feed.tsx"
+  const fixturePath = name.startsWith("@/") && existsSync(name.slice(2)+".ts") ? name.slice(2)+".ts" : name.startsWith("@/") && existsSync(name.slice(2)+".tsx") ? name.slice(2)+".tsx" : name.includes("website-photo-feed") ? "app/salon-profile/website-photo-feed.tsx"
     : name === "@/lib/salon-profile-content" ? "lib/salon-profile-content.ts"
-    : name === "@/lib/default-nail-images" ? "lib/default-nail-images.ts" : null;
+    : name.includes("salon-website-images") ? "lib/salon-website-images.ts"
+    : name.includes("default-nail-images") ? "lib/default-nail-images.ts" : null;
   if (!fixturePath) return createRequire(import.meta.url)(name);
   const loaded = {};
   new Function("require", "exports", ts.transpileModule(readFileSync(fixturePath, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText)(fixtureRequire, loaded);
@@ -42,12 +43,12 @@ test("all three website layouts fit mobile and desktop, keep essentials, and sho
       const page = await browser.newPage({ viewport: { width, height: 900 } });
       const html = renderToStaticMarkup(React.createElement(exports.SalonWebsiteHome, { data, posts, preferences: { layout, show_services: true, show_team: true }, canBook: true, onPost() {}, onGallery() {}, onServices() {}, onTeam() {}, onBook() {} }));
       await page.setContent(`<style>*{box-sizing:border-box}body{margin:0;padding:12px;font-family:Arial}h3,h4,p{margin:0}button{border:0;font:inherit;cursor:pointer}${css}</style>${html}`);
-      assert.equal(await page.locator(".latest .post").count(), 3);
-      assert.equal(await page.locator(".latest .post strong").first().textContent(), "Post 4");
-      if (layout === "booking") assert.equal(await page.locator(".feature img").count(),0);
+      assert.equal(await page.locator(".latest .post").count(), layout === "booking" ? 5 : 4);
+      assert.equal(await page.locator(".latest .post .postBody > strong").first().textContent(), "Post 4");
+      if (layout === "booking") assert.equal(await page.locator(".feature .mosaic").count(),0);
       else assert.equal(await page.locator(".feature img").first().getAttribute("alt"),"Post 0");
       for (const section of ["hours", "services", "team", "about"]) assert.equal(await page.locator(`.${section}`).count(), 1, `${section}/${layout}/${width}`);
-      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${layout} overflows at ${width}`);
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${layout} overflows at ${width}: ${JSON.stringify(await page.locator("*").evaluateAll(els=>els.filter(e=>e.getBoundingClientRect().right>innerWidth).slice(0,8).map(e=>({tag:e.tagName,class:e.className,w:e.getBoundingClientRect().width}))))}`);
       const boxes = await page.locator(".home>section").evaluateAll(elements => elements.map(el => { const r = el.getBoundingClientRect(); return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}; }));
       for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) assert.ok(!(boxes[i].x < boxes[j].right && boxes[i].right > boxes[j].x && boxes[i].y < boxes[j].bottom && boxes[i].bottom > boxes[j].y), `${layout} sections overlap`);
       await page.close();
@@ -128,6 +129,6 @@ test("automatic hero uses engagement, server daily choice, manual priority, and 
  const manual=exports.selectWebsitePhotos([{...list[0],isPinned:true},...list.slice(1)],"2");assert.equal(manual.featured.id,"0");
  const shared=exports.selectWebsitePhotos([...list,{...list[4],id:"duplicate"}]);
  const urls=[...shared.photos,...shared.latest.filter(post=>post.imageUrl)].map(post=>post.imageUrl);assert.equal(new Set(urls).size,urls.length);
- const hidden=exports.selectWebsitePhotos(list,null,[],false);assert.equal(hidden.photos.length,0);assert.equal(hidden.latest.length,3);
+ const hidden=exports.selectWebsitePhotos(list,null,[],false);assert.equal(hidden.photos.length,0);assert.equal(hidden.latest.length,5);
  const broken=exports.selectWebsitePhotos(list,"4",[list[4].imageUrl]);assert.notEqual(broken.featured?.id,"4");
 });

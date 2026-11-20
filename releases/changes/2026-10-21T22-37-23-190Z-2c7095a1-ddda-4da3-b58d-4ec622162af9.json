@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "staff-my-work-verified-read-identity-20261021",
+  "status": "needs-integration",
+  "summary": "Scoped verified Staff identity reuse eliminates duplicate helper gates only within one exact read request; uncached fresh final session/status/auth and unique active Staff validation remain mandatory. Legacy callers and mutation behavior unchanged.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/read-context-scope.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-workdays.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "tests/staff-my-work-verified-read-identity.test.mjs",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/live-workspace-experience.test.mjs"
+  ],
+  "source": {
+    "commit": "5b7654a6a782032d9411502921e2faa637876803",
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\frozen-implementation-20261021T223721238421Z\\source"
+  },
+  "validation": [
+    {
+      "name": "preserved baseline RED composed actual-SDK reuse-count regression",
+      "result": "failed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\baseline-red-20261021T222708958395Z\\baseline-manifest.json"
+    },
+    {
+      "name": "40 scoped new security and existing regression tests; 0 skipped",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\canonical-validation-20261021T223544386893Z\\scoped-tests.log"
+    },
+    {
+      "name": "canonical changed-file lint and complete TypeScript noEmit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\canonical-validation-20261021T223544386893Z\\results.json"
+    },
+    {
+      "name": "isolated raw source frozen; production integration and live latency remain unmeasured",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\frozen-implementation-20261021T223721238421Z\\patch-manifest.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "2c7095a1-ddda-4da3-b58d-4ec622162af9",
+  "recordedAt": "2026-10-21T22:37:23.190Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-staff-identity-reuse-20261021",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

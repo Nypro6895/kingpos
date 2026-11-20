@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r10-services-invariants-integration-20261022",
+  "status": "working",
+  "summary": "Integrate frozen Services invariant7 product files and realm guard audit onto validated frozen R9 observability. Preserve pilot off/production blocked; repair two concrete old fixture loaders, assertions unchanged. Local QA only.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/services/page.tsx",
+    "app/services/services-catalog-pilot.tsx",
+    "app/services/services-manager.tsx",
+    "docs/services-catalog-invariants.txt",
+    "docs/services-catalog-measurement-protocol.txt",
+    "lib/app-local-page-registry.tsx",
+    "lib/services-catalog-cache.ts",
+    "lib/services-catalog-controller.ts",
+    "lib/services-catalog-runtime.ts",
+    "releases/changes/2026-10-22T00-18-24-850Z-39ee8deb-57af-4f75-8267-8d1703996528.json",
+    "releases/changes/2026-10-22T00-38-42-252Z-099d6700-7e5b-46a9-9f7f-9241f1aa92cd.json",
+    "tests/services-catalog-cache.test.mjs",
+    "tests/services-catalog-controller.test.mjs",
+    "tests/services-catalog-mutation.test.mjs",
+    "tests/services-catalog-native-registry.test.mjs",
+    "docs/services-catalog-realm-guards.txt",
+    "releases/changes/2026-10-22T00-58-21-154Z-377f0c45-abe5-4269-aafc-1d96594e3358.json",
+    "releases/changes/2026-10-22T01-13-26-233Z-00d7fda2-b2fa-488f-8f73-ff7febcc23fa.json",
+    "tests/services-catalog-realm-guards.test.mjs",
+    "tests/staff-online-access-server.test.mjs",
+    "tests/app-local-staff-online-access-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r10-services",
+    "commit": "bf404b5345ab9da21fa81e141366cf6d2136fbca"
+  },
+  "dependencies": [
+    "reylumi-final-r9-observability-integration-20261022"
+  ],
+  "validation": [
+    {
+      "name": "combined-local-regression-build",
+      "result": "pending"
+    },
+    {
+      "name": "authenticated-Simulator-and-Services-editor-return",
+      "result": "pending"
+    }
+  ],
+  "id": "76854de4-8450-43a8-9ea1-6b69afd3379a",
+  "recordedAt": "2026-10-22T01:27:27.741Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r10-services",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

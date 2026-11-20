@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import {
@@ -19,7 +21,9 @@ function ReylumiLogo() {
   );
 }
 
-export default async function CustomerDisplaySetupPage() {
+async function CustomerDisplaySetupPage() {
+  const __vt = await getWorkspaceTranslation();
+
   const session = await getCurrentPortablePosSession();
 
   if (session) {
@@ -35,9 +39,11 @@ export default async function CustomerDisplaySetupPage() {
         <PortablePosLoginForm
           rememberedAccessId={rememberedAccessId}
           returnTo="/pos/customer-display"
-          submitLabel="Pair Display"
+          submitLabel={__vt("Pair Display")}
         />
       </div>
     </main>
   );
 }
+
+export default withExperiencePage(CustomerDisplaySetupPage);

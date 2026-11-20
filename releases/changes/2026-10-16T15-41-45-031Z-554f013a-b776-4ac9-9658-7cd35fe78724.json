@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "app-local-role-policy-20261016",
+  "status": "working",
+  "summary": "Inventory every actual app page/layout; supply advisory local-render policies, complete public Help content/assets and scoped named customer/staff read adapters without altering writes.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-route-policy.ts",
+    "lib/app-local-route-inventory.generated.json",
+    "scripts/generate-app-local-routes.mjs",
+    "lib/app-local-reference-content.ts",
+    "lib/app-local-role-resources.ts",
+    "lib/app-local-role-resources-server.ts",
+    "tests/app-local-route-policy.test.mjs",
+    "tests/app-local-role-resources.test.mjs"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Route coverage, public content completeness, read authority and invalidation"
+    }
+  ],
+  "id": "554f013a-b776-4ac9-9658-7cd35fe78724",
+  "recordedAt": "2026-10-16T15:41:45.031Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

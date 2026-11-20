@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "campaign-native-event-admission-20261020",
+  "status": "ready",
+  "summary": "Route scope-matched public native Campaigns view/click events to the original signed-ticket handler; private action authentication remains unchanged",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/app-local/command/route.ts",
+    "tests/campaign-native-delivery.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-native-events-live-20261020\\snapshot"
+  },
+  "dependencies": [
+    "campaign-native-delivery-bridge-20261020"
+  ],
+  "validation": [
+    {
+      "name": "Six client, server and full command entrypoint privacy/authority tests",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped lint",
+      "result": "passed"
+    },
+    {
+      "name": "Production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/campaign-native-events-live-20261020/web-build.log"
+    }
+  ],
+  "id": "c3f7170d-bf1c-46d6-9d50-086e63799e33",
+  "recordedAt": "2026-10-20T07:12:43.541Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\campaign-top-local-live-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/app-local/command/route.ts": "447ceff056af6c9b29ca5c1473f4ff95cb57d193270c903aa288d9cf2685d5d1",
+    "tests/campaign-native-delivery.test.mjs": "63f9208ef6f9805e4ee118e321ca49854284c786dba7e804783cc347e208bd2f"
+  }
+}

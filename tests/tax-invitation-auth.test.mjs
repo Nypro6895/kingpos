@@ -1,0 +1,11 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {build} from 'esbuild';
+async function load(file,stubs={}){const output=await build({entryPoints:[file],bundle:true,write:false,platform:'node',format:'esm',jsx:'automatic',alias:{'@':process.cwd()},plugins:[{name:'auth-boundaries',setup(api){api.onResolve({filter:/.*/},a=>stubs[a.path]?{path:a.path,namespace:'stub'}:undefined);api.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:stubs[a.path]}));}}]});return import('data:text/javascript;base64,'+Buffer.from(output.outputFiles[0].text).toString('base64'));}
+const nodes=e=>!e?[]:Array.isArray(e)?e.flatMap(nodes):typeof e==='object'?[e,...nodes(e.props?.children)]:[];
+test('invitation destination survives both Tax auth forms; unsafe destinations fall back',async()=>{
+ const token='a'.repeat(64),path='/tax/invite/'+token;
+ for(const mode of ['login','signup']){
+ const stubs={'next/link':'export default function Link(){return null}',[`@/app/${mode}/${mode}-form`]:`export function ${mode==='login'?'LoginForm':'SignupForm'}(){return null}`};const {default:Page}=await load(`app/(tax)/tax/${mode}/page.tsx`,stubs);
+ for(const [next,target] of [[path,path],['https://evil.test','/tax'],['/tax/invite/invalid','/tax'],[undefined,'/tax']]){const tree=nodes(await Page({searchParams:Promise.resolve({next})}));assert.equal(tree.find(e=>e.props?.nextPath).props.nextPath,target);assert.ok(tree.some(e=>typeof e.props?.href==='string'&&e.props.href.includes('next='+encodeURIComponent(target))));}
+ }
+});
+test('Tax return allowlist binds salon, strips untrusted parameters and rejects external paths',async()=>{const {taxOwnerReturnPath,taxPaymentReturnPath,taxInvitePath}=await load('lib/tax-flow.ts');const salon='00000000-0000-4000-8000-000000000010';assert.equal(taxOwnerReturnPath('/payroll/tax-company/workspace?salon=wrong&next=https://evil.test',salon),'/payroll/tax-company/workspace?salon='+salon);for(const bad of ['//evil.test','https://reylumi.com/payroll/tax-company/settings','/settings','/payroll/tax-company/settings/../other'])assert.equal(taxOwnerReturnPath(bad,salon),undefined);assert.match(taxPaymentReturnPath('/payroll/tax-company/settings',salon),/activation=payment$/);assert.equal(taxInvitePath('bad'),undefined);});

@@ -1,0 +1,130 @@
+{
+  "kind": "change",
+  "changeId": "android-qa-settings-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Complete isolated Android QA APK and verified shared Settings, passive-read invalidation, and Gift wallet fixes. Galaxy and synthetic business UI acceptance passed. Selectively integrate common fixes with current live/native source; this QA branch is not a production/store candidate. ios channel is schema compatibility only; no iOS binary built. Original handoff 20e33025-98b4-4e16-8ec2-adc76b5ea4d2. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "android/README.md",
+    "android/app/build.gradle",
+    "android/app/src/main/AndroidManifest.xml",
+    "android/app/src/main/assets/NativeBridge.js",
+    "android/app/src/main/java/com/reylumi/android/DeviceAccess.java",
+    "android/app/src/main/java/com/reylumi/android/MainActivity.java",
+    "android/app/src/main/java/com/reylumi/android/NavigationPolicy.java",
+    "android/app/src/main/res/values-vi/strings.xml",
+    "android/app/src/main/res/values/strings.xml",
+    "android/app/src/main/res/xml/file_paths.xml",
+    "android/app/src/qa/AndroidManifest.xml",
+    "android/app/src/qa/assets/QaNetworkGuard.js",
+    "android/app/src/qa/res/mipmap-anydpi/ic_launcher_qa.xml",
+    "android/app/src/qa/res/values/strings.xml",
+    "android/app/src/qa/res/xml/qa_network_security.xml",
+    "android/app/src/test/java/com/reylumi/android/NavigationPolicyTest.java",
+    "android/app/src/test/java/com/reylumi/android/QaNavigationPolicyTest.java",
+    "android/tests/qa-bridge.test.mjs",
+    "app/api/gift-cards/route.ts",
+    "app/api/rewards/route.ts",
+    "app/qa/checkout/[session]/route.ts",
+    "app/settings/setting-content.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "components/experience-page-boundary.tsx",
+    "components/gift-card/customer-gift-cards.tsx",
+    "docs/android-native-qa-20261111.md",
+    "docs/android-qa-settings-20261111.md",
+    "docs/experience-read-operation-audit-20261111.md",
+    "lib/experience-mutations.ts",
+    "qa/local/Open-AndroidQA.ps1",
+    "qa/local/README.md",
+    "qa/local/configure.mjs",
+    "tests/experience-passive-posts.test.mjs",
+    "tests/experience-settings-refresh-runtime.test.mjs",
+    "tests/gift-paid-return-wallet.test.mjs",
+    "tests/mixed-post-read-hints.test.mjs",
+    "tests/qa-checkout-route.test.mjs",
+    "tests/settings-retained-activity.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "android-flow-audit-20261111",
+    "qa-isolated-environment-20261111"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "b26bca27-121a-41d0-9e00-b0e6a51deed2",
+  "recordedAt": "2026-11-12T02:06:58.528Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "android/README.md": "0c4846ebf74f224e89574eabe68b81305fc9f44abc1d62191dc1a0eac6b9b985",
+    "android/app/build.gradle": "9b80d3da49c9653fb288f800179168043eba855e2d993659ea692854c00aa3fa",
+    "android/app/src/main/AndroidManifest.xml": "c5e63088b8a685545b735839c37e581725c6946c37d92c153333f22347985b95",
+    "android/app/src/main/assets/NativeBridge.js": "2e661c88ce75e597c48a52811ae6915eeff2f4a6d9f2196efd07dd77ed8b5d24",
+    "android/app/src/main/java/com/reylumi/android/DeviceAccess.java": "a128e87377308f48f60d394afb96b7e6a2d4573ec55edff1ae17deb0834cfe85",
+    "android/app/src/main/java/com/reylumi/android/MainActivity.java": "dc44dc7b142cebfb18b413513d06b86ced2b1883a240546674a823b4a5b5db2c",
+    "android/app/src/main/java/com/reylumi/android/NavigationPolicy.java": "6fdaab74600ee711359066ee0472563e6fe0466c2c3eca9c893bb8a5ab9c41b9",
+    "android/app/src/main/res/values-vi/strings.xml": "c1cd62421d064191e58ff4e6fd5f46192090281ab55219c9f77109fcd4559001",
+    "android/app/src/main/res/values/strings.xml": "724ade0b9c286d211e0e84680615f4f1fe1ccac0dd27208f5448b144b2417dde",
+    "android/app/src/main/res/xml/file_paths.xml": "8550fa7aa6b5da363f8ec2dfc9dc11e3381d3c2bf27ff49a497ea346d4b60c3c",
+    "android/app/src/qa/AndroidManifest.xml": "55c03a0debf21158f6de173c514ed93c9160fe3a66e51039ba0e3b649cefa536",
+    "android/app/src/qa/assets/QaNetworkGuard.js": "7ade4c862d86d777dfc6922618b03997b253eb0d0a227ea9311845a65aa02063",
+    "android/app/src/qa/res/mipmap-anydpi/ic_launcher_qa.xml": "418d5599b2a6882f259ded94cea826477ca6e1cfec10f01603b35ec866eccfcc",
+    "android/app/src/qa/res/values/strings.xml": "7f20f7c6135e77897fbc9a298b31f16ce1c98bc4ad2a6a22e997f97e343c1e35",
+    "android/app/src/qa/res/xml/qa_network_security.xml": "c869d1fafdd3261c25f2973afa1d7f77e4e0f476d3dbfe5cfe00028fe81a513a",
+    "android/app/src/test/java/com/reylumi/android/NavigationPolicyTest.java": "aafa25e0956ff8be86d07c59d6df2632cf6f8227a1cd2bf78524f9981a195f64",
+    "android/app/src/test/java/com/reylumi/android/QaNavigationPolicyTest.java": "bb4c6a9378f8b94f51005b45ec96c6cf725b0891aeff09b474bef56419e5d2af",
+    "android/tests/qa-bridge.test.mjs": "51ddd9019337377acfa8753df689bd26914c62e566c9016ab24ef20dea32829d",
+    "app/api/gift-cards/route.ts": "9da6257110229b896378f3b7d19ef4904bed19fbcf3693d29714dad1c2d071de",
+    "app/api/rewards/route.ts": "975ef8576f2bf4593ce85f1aeac84e3ef54bd0628c44849fa512c4e2eb0ac7d7",
+    "app/qa/checkout/[session]/route.ts": "bbd3f6ec1820044f0b21f0e5510ad64ea4414fdc8f6724430f2c33588e5609dd",
+    "app/settings/setting-content.tsx": "29fe96cf764d4cf89d216ffcceb8b5a568c34c5ead7703aa13bcd2ec172399fb",
+    "app/settings/settings-hub-client.tsx": "ef8b6356ea42594dd14f5098061327f768c49168f826eabe20316b7c0ea11ac9",
+    "components/experience-page-boundary.tsx": "f0dd9fa2613517581e6882dc6f5827e8a21845715ff7c9ed623f80459679adfc",
+    "components/gift-card/customer-gift-cards.tsx": "430cde470d72b3503bda530756dd28ef1c5bdc8d437140e17795266a77e4f688",
+    "docs/android-native-qa-20261111.md": "545a31ce473d2f1556d449af78f50b92fb925ee1855b7ffe4822dbaaf3da8a4c",
+    "docs/android-qa-settings-20261111.md": "a20a3bda65c7e1e463b487a56388dff62f7872f71e74d4e391e00250770aea2d",
+    "docs/experience-read-operation-audit-20261111.md": "632bcbfa200bc4519db457778c564c26162b574df0a71b8eb8e51f9d3b7cefad",
+    "lib/experience-mutations.ts": "da271f0ae0a7d27156f1f40d9993447f97ec174f1f6100b74940bc85419d26a0",
+    "qa/local/Open-AndroidQA.ps1": "04b0c312160e9273d01e5dbb420e0abc13cc544dd3325d7ecc93a03e386de255",
+    "qa/local/README.md": "0b38de0e93c68b7588cfc69da05924fd6a36b081f42e9fd447cd3cb36c94537a",
+    "qa/local/configure.mjs": "c7dbda02f084a3887155fe2fc0b442f0e3707079a29e68ce2e2738882d9a6910",
+    "tests/experience-passive-posts.test.mjs": "a0cf951053466c366198bf5d20241f8a9c066686c91167e747a05a12591ed01b",
+    "tests/experience-settings-refresh-runtime.test.mjs": "680e6f9dbbfe943e5f552bae7303da9c8226594ff145ba7c16af167c55a7cf13",
+    "tests/gift-paid-return-wallet.test.mjs": "eeaec874970db2218b0d0724c6efc4ecdc4fe986e4dc29a124d05554d533d853",
+    "tests/mixed-post-read-hints.test.mjs": "aeb518cb7203d288052cb49b8e033638e9f4e02df2f90c5a2b1901b6e42c944f",
+    "tests/qa-checkout-route.test.mjs": "48f2e6689bf1c729c8fd97647bf8a43317737d34bff4441412a0413bb0a92b3c",
+    "tests/settings-retained-activity.test.mjs": "7aafb8e00d29d4e01a0271e822bf476acc6fc6462b607acddcde921db98358e6"
+  }
+}

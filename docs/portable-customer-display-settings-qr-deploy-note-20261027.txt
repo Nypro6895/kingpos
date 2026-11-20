@@ -1,0 +1,46 @@
+Portable Windows settings and customer display - 2026-10-27
+
+Change: portable-customer-display-settings-qr-20261027
+Shared-release queue only. No production publish, upload, migration or native bridge change.
+
+Behavior
+- Compact standard gear Settings dialog: Keyboard On/Off; Customer display; Application.
+- Supplemental keyboard remains off by default and local to each machine. Fixed POS,
+  staff PIN and customer keypads remain. Supplemental input also works inside dialogs.
+- Toolbar keeps notification, status/sync, lock/logout, fullscreen and customer display.
+- Customer display has a dedicated app check-in QR alongside phone entry. QR encodes
+  only the public HTTPS /check-in/<entry UUID> accepted by the existing mobile scanner;
+  it never encodes the paired screen control token. Existing server grants still apply.
+- QR refreshes every 30 seconds and is hidden after 90 seconds without confirmation.
+  Phone entry remains available when the server cannot issue a QR.
+- Split promotion/check-in is the default layout. Full promotion is optional.
+  Local controls: enable ads, idle delay 0/30/60/90s, rotation 8/12/15s, layout.
+- Portrait rearranges the regions; narrow screens prioritize phone entry and QR with
+  contained vertical scrolling. Promotions do not interrupt check-in or checkout.
+- Authorized owners can edit shared salon background, two promotion images and text
+  within Settings. Server permission, salon scope and snapshot conflict guards remain.
+  Saving appearance signals other customer windows to refresh without restarting.
+
+Validation evidence
+C:/Reylumi/output/portable-customer-display-20261027/
+- final-tests.log: display, QR/mobile parser, settings permissions, keyboard, login,
+  navigation races, POS compact checkout, staff PIN, Booking and native persistence.
+- Actual rendered SVG QR decoded and passed to the existing mobile scanner parser.
+- Browser sizes: 1920x1080, 1600x900, 1366x768, 1024x600, 900x650,
+  768x1024, 600x800, 390x844, 320x568. QR >=160px; touch controls >=44px.
+- typecheck.log: source TypeScript with task config excluding unrelated stale generated
+  Next caches; task config preserved with evidence.
+- next-compile-final.log: isolated full-route Next webpack compile mode, not final
+  production page generation. Compile source hashes are saved separately; the final
+  background-image prop was added afterward and verified by TypeScript and the actual
+  display browser test (background-final.log). Run the full production build after merge.
+- Physical phone camera, native screen DPI and real touch hardware remain release QA.
+
+Integration
+- Apply task-only.patch to current production source, reconcile shared files, preserve
+  unrelated changes. Frozen full files are reference only, not a replacement baseline.
+  Windows mixed line endings: git apply --ignore-space-change; patch checked against
+  the captured pre-task files. Verify source hashes before integrating.
+- Depends on portable-device-supplemental-keyboard-20261026 and canonical Personal QR
+  flow qr-full-flow-20261025 (Personal QR, Staff Scan and canonical migration together).
+- No independent deployment. Fresh full build and live checks belong to shared release.

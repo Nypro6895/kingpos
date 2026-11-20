@@ -7,13 +7,15 @@ function storage(method, key, value) {
 }
 contextBridge.exposeInMainWorld('kingposDesktop', Object.freeze({
   version: 4,
+  printing: Object.freeze({print: job => ipcRenderer.invoke('kingpos:receipt-print',{method:'print',job}),readiness: scope => ipcRenderer.invoke('kingpos:receipt-print',{method:'readiness',scope})}),
   recovery: Object.freeze({ retry: () => ipcRenderer.invoke('kingpos:retry-open') }),
   offline: Object.freeze({ prepare: (scope, assets) => ipcRenderer.invoke('kingpos:offline-prepare', {scope, assets}), lock: () => ipcRenderer.sendSync('kingpos:offline-lock') }),
-  updates: Object.freeze({ state: () => ipcRenderer.invoke('kingpos:update', {method:'state'}), later: () => ipcRenderer.invoke('kingpos:update', {method:'later'}), schedule: at => ipcRenderer.invoke('kingpos:update', {method:'schedule', at}), now: () => ipcRenderer.invoke('kingpos:update', {method:'now'}) }),
+  updates: Object.freeze({ state: () => ipcRenderer.invoke('kingpos:update', {method:'state'}), later: () => ipcRenderer.invoke('kingpos:update', {method:'later'}), download: () => ipcRenderer.invoke('kingpos:update', {method:'download'}), schedule: at => ipcRenderer.invoke('kingpos:update', {method:'schedule', at}), now: () => ipcRenderer.invoke('kingpos:update', {method:'now'}) }),
   display: Object.freeze({ pair: token => ipcRenderer.invoke('kingpos:display', { method: 'pair', token }), open: () => ipcRenderer.invoke('kingpos:display', { method: 'open' }), close: () => ipcRenderer.invoke('kingpos:display', { method: 'close' }) }),
   windowControls: Object.freeze({
     fullscreen: toggle => ipcRenderer.invoke('kingpos:fullscreen', toggle),
     menu: () => ipcRenderer.send('kingpos:menu'),
+    action: action => ipcRenderer.invoke('kingpos:application-action', action),
     onFullscreen: callback => { const listener = (_event, value) => callback(value === true); ipcRenderer.on('kingpos:fullscreen-state', listener); return () => ipcRenderer.removeListener('kingpos:fullscreen-state', listener); },
   }),
   storage: Object.freeze({ get: key => storage('get', key), set: (key, value) => storage('set', key, value), remove: key => storage('remove', key) }),

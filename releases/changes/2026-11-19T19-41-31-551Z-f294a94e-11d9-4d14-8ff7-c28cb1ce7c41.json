@@ -1,0 +1,97 @@
+{
+  "kind": "change",
+  "changeId": "owner-tax-readonly-mirror-20261114",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/payroll/tax-company/page.tsx",
+    "app/(tax)/tax/qa/owner-report/route.ts",
+    "app/payroll/tax-company-live-report.tsx",
+    "app/tax/owner-tax-report.module.css",
+    "app/tax/owner-tax-report.tsx",
+    "docs/owner-tax-readonly-20261114.md",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/app-local-payroll-tax-metadata.ts",
+    "lib/app-local-payroll-tax-registry.tsx",
+    "lib/app-local-payroll-tax-server.ts",
+    "lib/owner-tax-report-model.ts",
+    "lib/owner-tax-report.ts",
+    "lib/vietnamese-context-copy.json",
+    "tests/app-local-owner-tax-report.test.mjs",
+    "tests/owner-tax-report-browser.mjs",
+    "tests/owner-tax-report-model.test.mjs",
+    "tests/owner-tax-report-page.test.mjs",
+    "tests/owner-tax-report-source.test.mjs",
+    "tests/tax-personal-workspace.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-04.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "850780e8-728c-4369-a43a-5f371ba9421f"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-04",
+  "id": "f294a94e-11d9-4d14-8ff7-c28cb1ce7c41",
+  "recordedAt": "2026-11-19T19:41:31.551Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "ac8c5810ac5277837d3b520fff3df5ef1f35c7ee0554d78c5f3395cc9ee8884a",
+    "app/(app)/payroll/tax-company/page.tsx": "6304d68a6d4d9b1bb132ab7743c9d90dd1e471066dcd62bedfea0daed1b4ccdf",
+    "app/(tax)/tax/qa/owner-report/route.ts": "0b52e53791a8cfa35328aa6586a37634cf78dc7125c578a3923da58a5576010f",
+    "app/payroll/tax-company-live-report.tsx": "f87aa98c1471fe809f8d14a97bc55e5e7f3d6db0b77c499df6e189eb514adffe",
+    "app/tax/owner-tax-report.module.css": "8f932d6de8774082a92bf317725862270582ef9a4cfb5ac9c1aac1f31cfe5b5b",
+    "app/tax/owner-tax-report.tsx": "df1c0fa4a4cf82a3ccb989afcd3cf0d6c0a4fac2e9929d509d224039168178d4",
+    "docs/owner-tax-readonly-20261114.md": "b2d77fc1a495b3f71db2c7026a71c45ac33b6971d122ff08feb004ee5498fd4b",
+    "lib/app-local-owner-payroll-view.tsx": "d07d658f55769673dbe920280c942999aef8f9e6f3873d6db3b42256b204e97c",
+    "lib/app-local-payroll-tax-metadata.ts": "31debf31e934f54ef42a505b650e83349b7e58c7b64ebbd356246d807b892215",
+    "lib/app-local-payroll-tax-registry.tsx": "32e6557762c14d3828cf9c5dd43a4bdb8ad673e2e5cb6819f9f0204c3d85351d",
+    "lib/app-local-payroll-tax-server.ts": "71a61ded2f63bfa53fa2500a30518d50c22cf9ab05731901bdef42cbb099ce82",
+    "lib/owner-tax-report-model.ts": "8aa6718d6fa3777f90b075ac3f3a5b82220a7683310b2ceed7b974851449624e",
+    "lib/owner-tax-report.ts": "1e04500dd7049a0dff006e3e7e1c9d23649214d0805147c02d13cb1ab16cf3c9",
+    "lib/vietnamese-context-copy.json": "460b9fa18972c9a773e03d11cd9db0ebcc2e650f83932164ec1875d5adcfbb40",
+    "tests/app-local-owner-tax-report.test.mjs": "3614ecf04253132c61c942e525338d024e8f460acd6c34c5447fd08fd1afc3f6",
+    "tests/owner-tax-report-browser.mjs": "c4b918baefd8d84f5e3f2ee01ad7356625a2d106f1d065342bf119d240dc1928",
+    "tests/owner-tax-report-model.test.mjs": "9941d19f58f7d8ae0e8e84077b0de0c526757e9daad9f7fa7650cd77a43d21e1",
+    "tests/owner-tax-report-page.test.mjs": "456693fb4478f20a262aaa2dc7f4144110b58db7847d19b31af015988531f06f",
+    "tests/owner-tax-report-source.test.mjs": "2c44312d09f76583f2c3b79ded137b218a74bda5f738e3d50c4199f05e7c7485",
+    "tests/tax-personal-workspace.integration.test.mjs": "170b049827fe5c8265460bd58a638029c86c5308214dfb4e69a5125253d09059"
+  }
+}

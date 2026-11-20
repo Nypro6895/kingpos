@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "changeId": "ios-personal-settings-20261029",
+  "status": "ready",
+  "summary": "Personal iOS Settings: streamlined identity and editors, single-tap navigation, compact security rows, email authorization before replacing/removing an existing phone, public media controls and tested blocking.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/settings-hub.css",
+    "app/account/account-profile-editor.tsx",
+    "app/account/actions.ts",
+    "app/account/phone-change-actions.ts",
+    "lib/account-phone-change.ts",
+    "app/settings/personal-public-profile-panel.tsx",
+    "app/settings/blocked-users-panel.tsx",
+    "app/settings/notification-preferences-panel.tsx",
+    "app/settings/deferred-personal-section.tsx",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/login-security/login-security-quick-editor.tsx",
+    "lib/vietnamese-settings-copy.json",
+    "tests/settings-hub-ui.test.mjs",
+    "tests/login-security-contract.test.mjs",
+    "tests/ios-personal-settings.test.mjs",
+    "tests/account-phone-change.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integration": {
+    "originalEvents": [
+      "f49dc3d4-407a-4b42-aa19-a7defb34b7cd"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "45c66e66-fea4-48de-bf21-4ad1db8683ac",
+  "recordedAt": "2026-10-29T09:30:59.389Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/settings/settings-hub-client.tsx": "6ee5950b3f5358d168756d170665608558b18664eeec391b18b42489e7385211",
+    "app/settings/settings-hub.css": "bb8b42bf70fa5705de12c5e3f339eb534086aecfcb09453b3fd357261dec23e2",
+    "app/account/account-profile-editor.tsx": "cea6f038f65eba28ecc095e7c87f9c8d9f5ac8cc74ba01e331aedff38be3fb23",
+    "app/account/actions.ts": "eef210c32fdc2e2ddddc31f364d174e79ce5ec054d473eb92a7fc3ca1b61d0de",
+    "app/account/phone-change-actions.ts": "55d70d3a368ae3c684f19ba03367da285685b968fb0de4d015f14282414608b5",
+    "lib/account-phone-change.ts": "0ea8ff3963191eeeb39ec0b8bec4d5d731833c7ed1ead744f25672d1b4cb1702",
+    "app/settings/personal-public-profile-panel.tsx": "1df5f522ce619ba765577ccf3211047153be0dc3cf140fee1cb7b45a27afc601",
+    "app/settings/blocked-users-panel.tsx": "ae44579f18b37624caf81154960e39770c1b9de454d4fa2e72f8bcf1d553ca01",
+    "app/settings/notification-preferences-panel.tsx": "efaff29cf74d07a4d02f59ecb049520d90212f342b4a1a73977de962f1a8fbd5",
+    "app/settings/deferred-personal-section.tsx": "1b90d60dbf44b0ef1aacd4a021800db0fc485432993f7d0461ec14838d118caa",
+    "app/settings/login-security/login-security-panel.tsx": "7550f81465774f99eae7d873839eac5a750317e4abce05d707a1333eb13b7d66",
+    "app/settings/login-security/login-security-quick-editor.tsx": "85d51f3215b27152242d14b9cc5ecb5d3737ea984c402444ce6911bd3541cc1d",
+    "lib/vietnamese-settings-copy.json": "f8cbd2a8a5c258b26e1215f7d539d850ba157e214362ea2363d12d3c7c650b6e",
+    "tests/settings-hub-ui.test.mjs": "67e4aa14d2e2857669fd7582e1d183004aabaaa03bf9ec8b0294a050532aa948",
+    "tests/login-security-contract.test.mjs": "4617b6eb38517ad041e7f6ba910ebe37ca17b035cb6b5ba4cb2371e7eba7a760",
+    "tests/ios-personal-settings.test.mjs": "18281ad209305f97f2131bbfc878eacc904a77ff1ad34dbc30cb54f42bc2bfd7",
+    "tests/account-phone-change.test.mjs": "4a0c23e6c8fb799e6df45a9f27242608a0de036a4c29a26bd3d9091c333886b8"
+  }
+}

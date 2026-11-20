@@ -1,0 +1,89 @@
+{
+  "kind": "release",
+  "summary": "Complete14-package remaining-chat release including newly completed My Pay disclosure removal on exact-source web and TestFlight",
+  "changes": [
+    "61a9a430-1afd-478b-bc54-0a383a997a1f",
+    "ed191f56-53e9-40df-8ee4-39817fca6943",
+    "172a18b3-1eca-4b0d-8ebb-77b0425c0840",
+    "bb980f4e-efe5-4360-95d4-c79b5156d3fa"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+      "baselineDeploymentId": "dpl_2y9eNg7nYiVU5pSx1zBLZ5PM7EvE",
+      "sourceSha256": "8dd3f677348eb96a235d026aa436931191a579dd81b2fa550215ca6ea58e7bb3",
+      "overlaySha256": "62dacead8e0925ed3e2e57ecb6f26163f9e40732fd7a626dc08cdd43edecd045",
+      "evidence": "artifacts/release-20261029-mypay/web-live-source-verified.json",
+      "sourceCommit": "c976282fc1bc33b0545f4e0356668e67e6c18485"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "71",
+      "commit": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+      "evidence": "artifacts/release-20261029-fixture-startup/availability-verified.json"
+    }
+  },
+  "preservedRelease": "1ccb10a6-36a9-407b-844d-85e39941a608",
+  "attempts": {
+    "priorSourceFirstFailure": "b453f048-2568-44ea-b3ac-72cf6ec11c24",
+    "priorSourceSecondFailure": "5934c748-fec0-44b1-a2d6-cce5078b63d8",
+    "successfulSource": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+    "successfulAttempt": 1,
+    "strategy": "14 fresh-host invocations, all235 unique cases; product/test-method bodies and authority deadlines unchanged",
+    "isolatedHostSourceFailure": "6394397f-7ae1-4e5e-8bb1-162a121d97cb",
+    "testMethodsAndAuthorityDeadlinesUnchanged": true,
+    "fixtureSetupBudgetSeconds": {
+      "before": 5,
+      "after": 45
+    }
+  },
+  "sourceProof": {
+    "webOverlayCommit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+    "nativeCommit": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+    "productSourceUnchanged": true,
+    "testMethodBodiesAndAssertionsUnchanged": true,
+    "functionalAuthorityDeadlinesUnchanged": true,
+    "fixtureBootstrapSeconds": 45,
+    "hostInvocations": 14,
+    "coverageInventorySha256": "7ba61d7f2fe610905542a501dec82fe1258d8a6318af07b565249b9b4aaa8bda",
+    "executionEvidence": "artifacts/release-20261029-fixture-startup/native-verified.json",
+    "nativeSourceSha256": "914bb5d96b78dddc61da02d192abdce9cce007516d3db6f0c0c876455d262b1b",
+    "bundleSha256": "80fb21ca6d13b30f3300289ced176b44054c7531a0ae863fe4991804b881fe6d",
+    "sourceFiles": 2771,
+    "bundleFiles": 346,
+    "run": 40962263505,
+    "tests": 235,
+    "failures": 0
+  },
+  "deferred": [
+    {
+      "changeId": "market-publishers-20261029",
+      "reason": "Underlying independent Developer Market platform not present in production; required older chain remains needs-integration with commerce/provider acceptance pending. Never overlay publisher-only files."
+    },
+    {
+      "changeId": "payroll-compact-income-20261029",
+      "reason": "Owner explicitly requires history audit and logic agreement before implementation/publication; display-only portions already shipped."
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "reason": "Disabled-compatible code already live; sales activation/financial keys/provider readiness not part of this release."
+    }
+  ],
+  "limitations": {
+    "authenticatedStaffVisualAcceptance": false,
+    "staffVisualReason": "Existing browser session returned access-context-changed before My Pay UI; no role or security changes made",
+    "physicalAcceptance": false,
+    "physicalReason": "New candidate binary not physically tested; separate owner-authorized Personal audit recovered330 and is running actual70 exclusively;328/329 retained as historical failures; root never installs/controls device",
+    "appStorePublished": false,
+    "productionCustomerMergeInvokedByQA": false,
+    "realFinancialTransactions": false
+  },
+  "id": "67f21d58-f623-4745-a065-13bac2d79655",
+  "recordedAt": "2026-10-29T22:14:56.194Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "filePath": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\releases\\history\\2026-10-29T22-14-56-194Z-67f21d58-f623-4745-a065-13bac2d79655.json"
+}

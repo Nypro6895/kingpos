@@ -1,0 +1,51 @@
+{
+  "validation": [
+    {
+      "name": "ESLint and diff whitespace",
+      "result": "passed"
+    },
+    {
+      "name": "Existing Beauty and reward wallet tests: 7",
+      "result": "passed"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/beauty-cards-ui-20261106/verification.json",
+      "name": "18 browser layout scenarios plus reward refresh/error/account-reset and salon-timezone checks"
+    },
+    {
+      "name": "TypeScript with baseline PDF dependencies resolved from existing complete node_modules",
+      "result": "passed"
+    },
+    {
+      "name": "Current production baseline integration, production build, authenticated live and physical iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "commit": "d33616c68e2f50bf3e7c9c931852a5c275111352",
+    "snapshot": "C:\\Reylumi-worktrees\\beauty-cards-ui-20261106\\artifacts\\beauty-cards-ui-20261106\\frozen"
+  },
+  "status": "needs-integration",
+  "files": [
+    "app/beauty/beauty-home.tsx",
+    "app/beauty/beauty-home.css",
+    "app/beauty/beauty-reward-summary.tsx",
+    "app/beauty/beauty-reward-summary.module.css",
+    "app/beauty/beauty-appointment.tsx"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Completed UI-only Beauty greeting and peach/mint cards approved in chat; frozen patch tested locally, awaiting current-baseline release integration",
+  "dependencies": [],
+  "kind": "change",
+  "changeId": "beauty-cards-ui-20261106",
+  "notes": "Five presentation files only; do not replace canonical checkout or deploy task baseline wholesale. Handoff: docs/beauty-cards-ui-20261106-handoff.txt",
+  "id": "c5e348e2-6f10-4024-b5ea-6b61c7533c16",
+  "recordedAt": "2026-11-06T06:19:59.438Z",
+  "worktree": "C:\\Reylumi-worktrees\\beauty-cards-ui-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 import { createCustomer } from "@/app/customers/actions";
 import { CustomerForm } from "@/app/customers/customer-form";
 import { hasPermission } from "@/lib/permissions";
@@ -11,7 +13,7 @@ type NewCustomerPageProps = {
   }>;
 };
 
-export default async function NewCustomerPage({ searchParams }: NewCustomerPageProps) {
+async function NewCustomerPage({ searchParams }: NewCustomerPageProps) {
   const [{ error }, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/customers/new"),
@@ -25,14 +27,17 @@ export default async function NewCustomerPage({ searchParams }: NewCustomerPageP
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-10">
+      <h1 className="mb-6 text-xl font-semibold"><WorkspaceText text="New Customer" /></h1>
       <CustomerForm action={createCustomer} error={error} mode="create" />
 
       <Link
         className="mt-6 inline-flex text-sm font-medium text-zinc-950 underline"
         href="/customers"
       >
-        Back to Customers
+        <WorkspaceText text="Back to Customers" />
       </Link>
     </main>
   );
 }
+
+export default withExperiencePage(NewCustomerPage);

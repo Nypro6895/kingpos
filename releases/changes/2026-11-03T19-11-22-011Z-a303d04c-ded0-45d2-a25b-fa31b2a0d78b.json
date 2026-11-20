@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "forum-starter-content-v2-20261103",
+  "status": "working",
+  "summary": "Rewrite all starter posts around nail-tech work, everyday life, salon operations and practical Reylumi use; remove forum-feature filler",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/seeds/forum-starter-content.json",
+    "supabase/migrations/20261103200000_forum_starter_content_rewrite.sql",
+    "tests/forum-starter-content.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "Content and database verification",
+      "result": "pending"
+    }
+  ],
+  "id": "a303d04c-ded0-45d2-a25b-fa31b2a0d78b",
+  "recordedAt": "2026-11-03T19:11:22.011Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-brand-compact-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

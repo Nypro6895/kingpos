@@ -1,0 +1,35 @@
+{
+  "synthetic": true,
+  "sourceCommit": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+  "sameViewerAndWorkspace": true,
+  "originalCookieHeader": "sb-access-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJzZXNzaW9uX2lkIjoiNzAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDA3IiwiZXhwIjoxNzkyNDI0NDIzfQ.InN5bnRoZXRpYy1ub3QtYS1yZWFsLXNpZ25hdHVyZSI; sb-refresh-token=synthetic-original-refresh-token; kingpos-login-session-id=70000000-0000-4000-8000-000000000007; kingpos-selected-workspace=manage%3A40000000-0000-4000-8000-000000000004; kingpos-current-account-id=30000000-0000-4000-8000-000000000003; kingpos-current-manage-salon-id=40000000-0000-4000-8000-000000000004; reylumi-remember-login=1",
+  "originalSetCookie": [
+    "sb-access-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJzZXNzaW9uX2lkIjoiNzAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDA3IiwiZXhwIjoxNzkyNDI0NDIzfQ.InN5bnRoZXRpYy1ub3QtYS1yZWFsLXNpZ25hdHVyZSI; Path=/; Expires=Sun, 17 Jan 2027 15:39:20 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "sb-refresh-token=synthetic-original-refresh-token; Path=/; Expires=Sun, 17 Jan 2027 15:39:20 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "kingpos-login-session-id=70000000-0000-4000-8000-000000000007; Path=/; Expires=Sun, 17 Jan 2027 15:39:20 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "kingpos-selected-workspace=manage%3A40000000-0000-4000-8000-000000000004; Path=/; Expires=Sun, 17 Jan 2027 15:39:20 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "kingpos-current-account-id=30000000-0000-4000-8000-000000000003; Path=/; Expires=Sun, 17 Jan 2027 15:39:20 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "kingpos-current-manage-salon-id=40000000-0000-4000-8000-000000000004; Path=/; Expires=Sun, 17 Jan 2027 15:39:20 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "reylumi-remember-login=1; Path=/; Expires=Sun, 17 Jan 2027 15:39:20 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax"
+  ],
+  "refreshASetCookie": [
+    "sb-access-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJzZXNzaW9uX2lkIjoiNzAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDA3IiwiZXhwIjoxNzkyNDI3OTYzLCJzeW50aGV0aWNfcmVmcmVzaF9zZXF1ZW5jZSI6MX0.InN5bnRoZXRpYy1ub3QtYS1yZWFsLXNpZ25hdHVyZSI; Path=/; Expires=Sun, 17 Jan 2027 15:39:23 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "sb-refresh-token=synthetic-refreshed-token-1; Path=/; Expires=Sun, 17 Jan 2027 15:39:23 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "reylumi-remember-login=1; Path=/; Expires=Sun, 17 Jan 2027 15:39:23 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "kingpos-login-session-id=70000000-0000-4000-8000-000000000007; Path=/; Expires=Sun, 17 Jan 2027 15:39:23 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax"
+  ],
+  "distinctRefreshBSetCookie": [
+    "sb-access-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJzZXNzaW9uX2lkIjoiNzAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDA3IiwiZXhwIjoxNzkyNDI3OTY0LCJzeW50aGV0aWNfcmVmcmVzaF9zZXF1ZW5jZSI6Mn0.InN5bnRoZXRpYy1ub3QtYS1yZWFsLXNpZ25hdHVyZSI; Path=/; Expires=Sun, 17 Jan 2027 15:39:24 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "sb-refresh-token=synthetic-refreshed-token-2; Path=/; Expires=Sun, 17 Jan 2027 15:39:24 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "reylumi-remember-login=1; Path=/; Expires=Sun, 17 Jan 2027 15:39:24 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax",
+    "kingpos-login-session-id=70000000-0000-4000-8000-000000000007; Path=/; Expires=Sun, 17 Jan 2027 15:39:24 GMT; Max-Age=7776000; Secure; HttpOnly; SameSite=lax"
+  ],
+  "lateBSetCookie": [],
+  "producer": "Actual shipped NextRequest/NextResponse + proxy/refresh-session + Supabase SDK; synthetic provider fetch only",
+  "notes": [
+    "All JWTs, refresh strings and UUID identities are deliberately synthetic; no real key, credential or account data is used.",
+    "B headers are generated just above the real60s refresh threshold and delivered late by native tests; A is generated3.2s later below the same threshold with identical original cookies.",
+    "Distinct B uses an isolated actual worker-local refresh map; synthetic provider issues a different valid same-viewer token generation.",
+    "Set-Cookie headers retain actual Next serialization, percent-encoding, Secure, HttpOnly and SameSite attributes. Native tests own response delivery ordering."
+  ]
+}

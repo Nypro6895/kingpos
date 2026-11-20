@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r9-observability-integration-20261022",
+  "status": "working",
+  "summary": "Integrate frozen auth-observability onto preserved R8 in isolated local QA candidate; preserve Services R8 pilot off and production blocked. Re-export the actual scoped invalidation helper in admission fixture. Add separately pinned positive recovery controls. No deploy/native install/real provider action.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-role-read-cache.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs",
+    "tests/app-local-scoped-invalidation-ui.test.mjs",
+    "scripts/ios/acceptance-report.mjs",
+    "tests/ios-acceptance-report.test.mjs",
+    "docs/ios-acceptance-measurement.md",
+    "lib/read-request-timing.ts",
+    "lib/supabase/server.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/app-local/context/route.ts",
+    "lib/read-request-trace-protocol.ts",
+    "lib/app-local-host.ts",
+    "lib/experience-trace.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "tests/context-today-timing.test.mjs",
+    "tests/app-local-read-correlation.test.mjs",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+    "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/app-local-read-cancellation.test.mjs",
+    "tests/app-local-staff-online-access.test.mjs",
+    "tests/owner-today-failure-causality.test.mjs",
+    "tests/app-local-page-admission-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "463bc607dfa046449f893a7fb73b6275d90785d1",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r9-observability"
+  },
+  "dependencies": [
+    "reylumi-final-r8-pilot-off-integration-20261022",
+    "ios-auth-observability-qa-20261021"
+  ],
+  "validation": [
+    {
+      "name": "integrated-local-regression-build-and-positive-recovery",
+      "result": "pending"
+    },
+    {
+      "name": "authenticated-integrated-Simulator-backend-transport",
+      "result": "pending"
+    }
+  ],
+  "id": "e58be46c-46f2-44e9-adc4-b4d3584f4973",
+  "recordedAt": "2026-10-22T01:02:07.171Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r9-observability",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "openai-photo-consented-wiring-20261118",
+  "status": "working",
+  "summary": "Wire the selected OpenAI photo verifier only behind current per-post end-user permission; keep completed request recovery before new admission and all non-post uploads outside this path.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/beauty.ts",
+    "lib/salon-profile.ts",
+    "types/beauty.ts",
+    "lib/legal-policies.ts",
+    "tests/public-photo-consented-wiring.test.mjs",
+    "docs/openai-photo-consented-wiring-20261118.md"
+  ],
+  "validation": [
+    {
+      "name": "Actual scoped caller, permission, provider-failure and idempotent recovery tests",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "openai-public-photo-verifier-20261118"
+  ],
+  "id": "ae846731-88d6-4cef-b8d9-7df8d44c398c",
+  "recordedAt": "2026-11-18T21:27:10.199Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

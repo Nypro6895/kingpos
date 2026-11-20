@@ -26,7 +26,7 @@ test(
  const root=createRoot(document.getElementById('root'));window.render=()=>root.render(<App/>);window.render();
  `,
       },
-      bundle: true,
+      bundle: true, loader: {".css":"empty"},
       write: false,
       jsx: "automatic",
       plugins: [
@@ -140,7 +140,7 @@ test(
  createRoot(document.getElementById('root')).render(<NotificationPreferencesPanel/>);
  `,
       },
-      bundle: true,
+      bundle: true, loader: {".css":"empty"},
       write: false,
       jsx: "automatic",
       plugins: [
@@ -197,6 +197,7 @@ test(
       );
       await booking.click();
       await page.waitForFunction(() => window.saved.length === 1);
+      await page.waitForFunction(() => document.querySelector('[role="switch"][aria-label="Booking updates"]')?.getAttribute('aria-checked') === 'false');
       assert.equal(await booking.getAttribute("aria-checked"), "false");
       assert.deepEqual(await page.evaluate(() => window.saved), [
         { category: "booking", enabled: false },

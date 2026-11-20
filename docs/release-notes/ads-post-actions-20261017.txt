@@ -1,0 +1,25 @@
+REYLUMI — GHI CHÚ QUẢNG CÁO VÀ POST ACTIONS
+Ngày: 17/10/2026
+
+Đợt này chỉ phát hành tối ưu quảng cáo và Post actions. Các chỉnh sửa chưa phát hành khác để đợt sau.
+Nguồn web/iOS ban đầu: 7b16aea3d2b600a9292c1dceeb6236c15fd8cc84; iOS 1.1.0 (31.1).
+Alias web đã chụp: dpl_Gheha59JRQyJT19pwwqrHEXgogbC.
+
+QUẢNG CÁO
+- Tự động chuẩn hóa/nén ảnh cho khách hàng, admin và luồng Beauty/Salon liên quan; giữ tỷ lệ, không phóng lớn. Mặc định cạnh dài tối đa 1600px, mục tiêu 300KB, trần 500KB, WebP; giữ chuyển động trong giới hạn an toàn.
+- Popup không làm mờ nền, không khóa trang/cuộn. Chuẩn bị ảnh trước khi hiện, giới hạn thời gian chờ và hủy kết quả quá hạn.
+- Giữ chỗ riêng với xác nhận hiển thị; không ghi lượt xem khi ảnh chưa hiện, không gửi lặp gây trừ sai credits. Giữ giá, wallet và credit ledger.
+- Chủ project cho phép tối ưu thêm 6 ảnh cũ: lưu bản đối chiếu tạm, giữ ảnh gốc và cập nhật đường dẫn có kiểm tra thay đổi đồng thời.
+
+POST ACTIONS
+- Beauty, Salon và Explore dùng chung menu/hộp thoại/đầu mối sửa, lưu trữ, xóa và chọn ảnh nổi bật. Dọn mã cũ trùng lặp; giữ lớp tương thích cho app/client đã tải.
+- Tải caption đầy đủ và quyền từ máy chủ; tải lỗi thì ngăn lưu nhầm đoạn trích. Giữ nháp khi lỗi, ngăn gửi lặp và đồng bộ các bản sao theo bài/tài khoản.
+- Giữ cập nhật dữ liệu Salon/revalidatePath và quyền đã cấp. Bài lưu trữ không bị ẩn vĩnh viễn trên thiết bị; chủ bài Beauty vẫn thấy trong My posts.
+- Menu vừa màn hình nhỏ, trạng thái featured lấy lại chính xác. Không xóa/gộp các bảng còn liên kết đặt lịch, bình luận, báo cáo hoặc campaign. Không xóa media gốc/bằng chứng báo cáo.
+
+TÍCH HỢP
+- Hai event nguồn: e67274f1-4541-40a4-8d8e-26e1906f592f và 5cfc5228-c4f8-43dc-81a3-78450ae0363a.
+- Migration Post actions đổi mã trong bản phát hành thành 20261017194500 để tránh mã Explore 20261017040000 đã dùng; SQL giữ nguyên.
+- Tạo lại bundle iOS từ đúng nguồn đã ghép, giữ các chức năng native đã upload.
+- Kết quả thực tế về web, iOS/Apple, kiểm tra và giới hạn nằm trong release receipt và report.txt của artifacts/ads-post-actions-release-20261017.
+- TestFlight có sẵn không đồng nghĩa App Store đã phát hành; WebKit không phải kiểm tra iPhone thật.

@@ -1,4 +1,8 @@
 
+import { SalonName } from "@/components/salon-member-badge";
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
+
 import { SubmitButton } from "@/components/submit-button";
 import {
   acceptStaffInviteByRequestFormAction,
@@ -77,7 +81,7 @@ function StatusBadge({ status }: { status: string }) {
     <span
       className={`inline-flex min-h-7 w-fit items-center rounded-md border px-2.5 py-1 text-xs font-medium ${className}`}
     >
-      {status}
+      <WorkspaceText text={status} />
     </span>
   );
 }
@@ -122,12 +126,12 @@ function StaffInvitationCard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-lg font-semibold text-zinc-950">
-            {request.salon_name}
+            <SalonName name={request.salon_name} salonId={request.salon_id}/>
           </p>
           {address ? <p className="mt-1 text-sm text-zinc-600">{address}</p> : null}
           <p className="mt-2 text-sm text-zinc-600">
-            Invited as {request.staff_job_title ?? "Staff"} · Expires{" "}
-            {formatDateTime(request.expires_at)}
+            <WorkspaceText text="Invited as" /> <WorkspaceText text={request.staff_job_title ?? "Staff"} /> <WorkspaceText text="· Expires" />{" "}
+            <WorkspaceText text={formatDateTime(request.expires_at)} />
           </p>
         </div>
         <StatusBadge status={request.status} />
@@ -141,7 +145,7 @@ function StaffInvitationCard({
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               type="submit"
             >
-              Accept
+              <WorkspaceText text="Accept" />
             </SubmitButton>
           </form>
           <form action={declineStaffInviteByRequestFormAction}>
@@ -150,7 +154,7 @@ function StaffInvitationCard({
               className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950"
               type="submit"
             >
-              Decline
+              <WorkspaceText text="Decline" />
             </SubmitButton>
           </form>
         </div>
@@ -171,16 +175,16 @@ function StaffApplicationCard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-lg font-semibold text-zinc-950">
-            {request.salon_name}
+            <SalonName name={request.salon_name} salonId={request.salon_id}/>
           </p>
           {address ? <p className="mt-1 text-sm text-zinc-600">{address}</p> : null}
           <p className="mt-2 text-sm text-zinc-600">
-            Submitted {formatDateTime(request.created_at)} · Requested title{" "}
-            {request.requested_job_title ?? "Not specified"}
+            <WorkspaceText text="Submitted" /> <WorkspaceText text={formatDateTime(request.created_at)} /> <WorkspaceText text="· Requested title" />{" "}
+            <WorkspaceText text={request.requested_job_title ?? "Not specified"} />
           </p>
           {request.message ? (
             <p className="mt-2 rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
-              {request.message}
+              <WorkspaceText text={request.message} />
             </p>
           ) : null}
         </div>
@@ -194,7 +198,7 @@ function StaffApplicationCard({
             className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950"
             type="submit"
           >
-            Cancel application
+            <WorkspaceText text="Cancel application" />
           </SubmitButton>
         </form>
       ) : request.status === "accepted" ? (
@@ -202,7 +206,7 @@ function StaffApplicationCard({
           className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           href="/staff/my-work"
         >
-          Open staff workplace
+          <WorkspaceText text="Open staff workplace" />
         </Link>
       ) : null}
     </article>
@@ -221,14 +225,14 @@ function SalonResultCard({ salon }: { salon: PublicStaffApplicationSalon }) {
   return (
     <article className="content-surface grid gap-4 border-zinc-200 bg-white p-5 rounded-none border-y shadow-none">
       <div>
-        <p className="text-lg font-semibold text-zinc-950">{salon.salon_name}</p>
+        <p className="text-lg font-semibold text-zinc-950"><SalonName name={salon.salon_name} salonId={salon.salon_id}/></p>
         {address ? <p className="mt-1 text-sm text-zinc-600">{address}</p> : null}
       </div>
       <form action={submitStaffSalonApplicationFormAction} className="grid gap-3">
         <input name="salon_id" type="hidden" value={salon.salon_id} />
         <label className="block">
           <span className="text-sm font-medium text-zinc-700">
-            Requested title
+            <WorkspaceText text="Requested title" />
           </span>
           <input
             className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
@@ -236,7 +240,7 @@ function SalonResultCard({ salon }: { salon: PublicStaffApplicationSalon }) {
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-zinc-700">Message</span>
+          <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Message" /></span>
           <textarea
             className="mt-2 min-h-24 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
             name="message"
@@ -246,14 +250,14 @@ function SalonResultCard({ salon }: { salon: PublicStaffApplicationSalon }) {
           className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
-          Apply
+          <WorkspaceText text="Apply" />
         </SubmitButton>
       </form>
     </article>
   );
 }
 
-export default async function StaffConnectionsPage({
+async function StaffConnectionsPage({
   searchParams,
 }: StaffConnectionsPageProps) {
   const params = await searchParams;
@@ -280,7 +284,7 @@ export default async function StaffConnectionsPage({
   const connected = requests.filter((request) => request.status === "accepted");
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-6 sm:px-6 lg:px-8">
+    <main className="grid w-full min-w-0 gap-8 px-4 py-6 sm:px-6 lg:px-8">
       {params.connection_notice ? (
         <Notice>{params.connection_notice}</Notice>
       ) : null}
@@ -290,7 +294,7 @@ export default async function StaffConnectionsPage({
 
       {connected.length > 0 ? (
         <section className="grid gap-3">
-          <h2 className="text-xl font-semibold text-zinc-950">Connected</h2>
+          <h2 className="text-xl font-semibold text-zinc-950"><WorkspaceText text="Connected" /></h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {connected.map((request) => (
               <Link
@@ -298,7 +302,7 @@ export default async function StaffConnectionsPage({
                 href="/staff/my-work"
                 key={request.id}
               >
-                {request.salon_name} · Open staff workplace
+                <SalonName name={request.salon_name} salonId={request.salon_id}/> <WorkspaceText text="· Open staff workplace" />
               </Link>
             ))}
           </div>
@@ -306,7 +310,7 @@ export default async function StaffConnectionsPage({
       ) : null}
 
       <section className="grid gap-3">
-        <h2 className="text-xl font-semibold text-zinc-950">Invitations</h2>
+        <h2 className="text-xl font-semibold text-zinc-950"><WorkspaceText text="Invitations" /></h2>
         {invitations.length > 0 ? (
           <div className="grid gap-3">
             {invitations.map((request) => (
@@ -314,12 +318,12 @@ export default async function StaffConnectionsPage({
             ))}
           </div>
         ) : (
-          <EmptyState>No invitations for this account.</EmptyState>
+          <EmptyState><WorkspaceText text="No invitations for this account." /></EmptyState>
         )}
       </section>
 
       <section className="grid gap-3">
-        <h2 className="text-xl font-semibold text-zinc-950">My Applications</h2>
+        <h2 className="text-xl font-semibold text-zinc-950"><WorkspaceText text="My Applications" /></h2>
         {applications.length > 0 ? (
           <div className="grid gap-3">
             {applications.map((request) => (
@@ -327,15 +331,15 @@ export default async function StaffConnectionsPage({
             ))}
           </div>
         ) : (
-          <EmptyState>No applications submitted.</EmptyState>
+          <EmptyState><WorkspaceText text="No applications submitted." /></EmptyState>
         )}
       </section>
 
       <section className="grid gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-950">Apply to Salon</h2>
+          <h2 className="text-xl font-semibold text-zinc-950"><WorkspaceText text="Apply to Salon" /></h2>
           <p className="mt-1 text-sm text-zinc-600">
-            Search active salons that allow staff applications.
+            <WorkspaceText text="Search active salons that allow staff applications." />
           </p>
         </div>
 
@@ -345,7 +349,7 @@ export default async function StaffConnectionsPage({
           method="get"
         >
           <label className="block sm:col-span-2">
-            <span className="text-sm font-medium text-zinc-700">Salon name</span>
+            <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Salon name" /></span>
             <input
               className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
               defaultValue={query}
@@ -354,7 +358,7 @@ export default async function StaffConnectionsPage({
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-zinc-700">City</span>
+            <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="City" /></span>
             <input
               className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
               defaultValue={city}
@@ -362,7 +366,7 @@ export default async function StaffConnectionsPage({
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-zinc-700">State</span>
+            <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="State" /></span>
             <input
               className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
               defaultValue={state}
@@ -374,7 +378,7 @@ export default async function StaffConnectionsPage({
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               type="submit"
             >
-              Search
+              <WorkspaceText text="Search" />
             </SubmitButton>
           </div>
         </form>
@@ -387,10 +391,12 @@ export default async function StaffConnectionsPage({
               ))}
             </div>
           ) : (
-            <EmptyState>No application-enabled salons matched.</EmptyState>
+            <EmptyState><WorkspaceText text="No application-enabled salons matched." /></EmptyState>
           )
         ) : null}
       </section>
     </main>
   );
 }
+
+export default withExperiencePage(StaffConnectionsPage);

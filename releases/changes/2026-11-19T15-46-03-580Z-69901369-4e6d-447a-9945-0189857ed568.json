@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "combined-policy-regression-20261119",
+  "status": "working",
+  "summary": "Align integrated legal regressions with the existing November18 revision and owner-approved per-request advertising refund policy; no policy runtime change.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/legal-privacy-implementation-20261118.test.mjs",
+    "docs/combined-policy-regression-20261119.md"
+  ],
+  "source": {
+    "commit": "cffd219ee5cd12d7c0945035b7356e96dd88e723"
+  },
+  "validation": [
+    {
+      "name": "Existing integrated policy regression baseline",
+      "result": "failed",
+      "evidence": "8 passed, 2 failed: October metadata expectation and blanket ban on the cash refund phrase are stale against integrated approved policy."
+    }
+  ],
+  "dependencies": [],
+  "id": "69901369-4e6d-447a-9945-0189857ed568",
+  "recordedAt": "2026-11-19T15:46:03.580Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

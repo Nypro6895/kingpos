@@ -1,0 +1,36 @@
+{
+  "status": "needs-integration",
+  "summary": "One fresh hidden-post reader per viewer/browser event instead of one per mounted subscriber; ignore unrelated storage events. Server authorization and write guards unchanged. Requires next bundled iOS build; not in TestFlight55.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "source": {
+    "commit": "b90ff55"
+  },
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Before patch reproduced 18 reads for one focus and unrelated storage; after patch 4 real-browser tests pass including viewer isolation and block refresh",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit incremental false",
+      "result": "passed"
+    },
+    {
+      "name": "Production build, packaged native source, real-iPhone first-load and post-focus comparison",
+      "result": "pending"
+    }
+  ],
+  "changeId": "iphone-hidden-post-focus-fanout-20261028",
+  "files": [
+    "components/post-safety.tsx",
+    "tests/hidden-posts-initial.test.mjs"
+  ],
+  "id": "653d1e33-ab63-44c5-bdb6-43316f7e5ce6",
+  "recordedAt": "2026-10-28T19:14:38.441Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

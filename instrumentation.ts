@@ -1,6 +1,7 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-  if (process.env.NODE_ENV !== "production") return;
+  if (process.env.NODE_ENV !== "production" || process.env.KINGPOS_DISABLE_BACKGROUND_DISPATCH === "1") return;
+  if (process.env.REYLUMI_DISABLE_BACKGROUND_DISPATCH === "1") return;
   const { dispatchBookingMessages } = await import("@/lib/booking-notifications");
   // Portable runs a persistent Node server. Serverless deployments can call the
   // authenticated worker endpoint on their scheduler instead.
@@ -9,7 +10,7 @@ export async function register() {
     if (running) return;
     running = true;
     try { await dispatchBookingMessages(); }
-    catch { console.error("Booking notification worker failed; queued messages remain available for review."); }
+    catch { console.error("Background worker failed; queued work remains available for retry."); }
     finally { running = false; }
   }, 60000);
   timer.unref();

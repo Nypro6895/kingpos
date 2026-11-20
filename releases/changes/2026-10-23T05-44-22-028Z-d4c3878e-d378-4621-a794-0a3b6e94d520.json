@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "settings-pos-windows-download-release-20261023",
+  "status": "working",
+  "summary": "Align Settings POS download selection with the authoritative Windows release resolver; preserve production Test rejection and existing authorization.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/settings/direct-settings-actions.ts",
+    "tests/settings-pos-windows-download.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\candidate-settings-download",
+    "commit": "b823db4bf44f916543f13550c52bd8ac294958dc"
+  },
+  "validation": [
+    {
+      "name": "Focused reproduction, regression and build",
+      "result": "pending"
+    }
+  ],
+  "releaseHold": true,
+  "id": "d4c3878e-d378-4621-a794-0a3b6e94d520",
+  "recordedAt": "2026-10-23T05:44:22.028Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-5\\candidate-settings-download",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

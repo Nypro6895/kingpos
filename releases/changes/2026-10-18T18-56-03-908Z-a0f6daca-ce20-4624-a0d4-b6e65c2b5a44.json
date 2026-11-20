@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "all-chats-release-integration-20261018",
+  "status": "working",
+  "summary": "Reconcile completed chat and note changes against exact live web and uploaded native source; integrate tested shared read optimization and preserve already-shipped Ticket and other features",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/read/route.ts",
+    "app/api/pos/owner/bookings/route.ts",
+    "app/api/pos/owner/reports/route.ts",
+    "app/api/salon-profile/content/route.ts",
+    "app/market/market-experience-client.tsx",
+    "app/staff/my-work/staff-my-work-client.tsx",
+    "app/staff/today/today-dashboard-client.tsx",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "lib/app-local-resource.ts",
+    "lib/daily-pos-report.ts",
+    "lib/experience-resource-cache.ts",
+    "lib/fetch-workspace-resource.ts",
+    "lib/operational-report.ts",
+    "lib/pos-workspace-sync.ts",
+    "lib/read-refresh-scheduler.ts",
+    "lib/read-request-metrics.ts",
+    "lib/read-request-timing.ts",
+    "lib/use-experience-resource.ts",
+    "lib/use-live-experience-refresh.ts",
+    "lib/use-staff-read-resource.ts",
+    "lib/workspace-resource-response.ts",
+    "tests/app-local-resource-races.test.mjs",
+    "tests/app-local-resource-refresh.test.mjs",
+    "tests/app-local-shared-read-ui.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/experience-resource-cache.test.mjs",
+    "tests/live-workspace-experience.test.mjs",
+    "tests/navigation-cache-reliability.test.mjs",
+    "tests/read-refresh-runtime-ui.test.mjs",
+    "tests/read-refresh-scheduler.test.mjs",
+    "tests/read-request-observability.test.mjs",
+    "tests/report-read-optimization.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos/work/all-chats-release-20261018",
+    "baselineDeploymentId": "dpl_AJH7dftnK4UoUkTimJp4dSxpxisT",
+    "baselineCommit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53"
+  },
+  "dependencies": [
+    "data-loading-unification-20261018"
+  ],
+  "validation": [
+    {
+      "name": "Combined release build, regression, source preservation, web and native publication",
+      "result": "pending"
+    }
+  ],
+  "id": "a0f6daca-ce20-4624-a0d4-b6e65c2b5a44",
+  "recordedAt": "2026-10-18T18:56:03.908Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\all-chats-release-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

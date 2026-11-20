@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "data-loading-unification-20261018",
+  "status": "working",
+  "summary": "Unify scoped automatic read coordination for web and installed iOS, reduce report read work and add bounded privacy-safe request diagnostics while preserving authoritative write and permission logic",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-resource.ts",
+    "lib/experience-resource-cache.ts",
+    "lib/use-experience-resource.ts",
+    "lib/use-live-experience-refresh.ts",
+    "lib/pos-workspace-sync.ts",
+    "lib/operational-report.ts",
+    "lib/workspace-resource-response.ts",
+    "lib/fetch-workspace-resource.ts"
+  ],
+  "source": {
+    "baselineCommit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+    "snapshot": "work/data-loading-unification-20261018"
+  },
+  "dependencies": [
+    "navigation-cache-release-integration-20261018"
+  ],
+  "validation": [
+    {
+      "name": "Web/iOS read lifecycle, report output equivalence and security regression",
+      "result": "pending"
+    }
+  ],
+  "id": "b2706e20-e674-4b9b-8479-437041f1cf25",
+  "recordedAt": "2026-10-18T18:10:50.614Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

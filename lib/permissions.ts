@@ -134,6 +134,13 @@ export async function hasPermission(
   return permissionCodes.has(permissionCode);
 }
 
+/** UI only: reuse grants already verified in this render; mutations still read fresh. */
+export function hasPermissionForRender(permissionCode: string, context: CurrentBusinessContext): boolean {
+  if (!context.user || !context.currentMembership || getSalonLifecyclePermissionDenial(permissionCode, context)) return false;
+  if (isOwnerMembership(context.currentMembership)) return true;
+  return context.permissionCodes.includes(permissionCode);
+}
+
 export async function requirePermission(
   permissionCode: string,
   context?: CurrentBusinessContext,

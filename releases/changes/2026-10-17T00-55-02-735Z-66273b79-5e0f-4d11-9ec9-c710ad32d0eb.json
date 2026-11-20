@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "pos-payroll-release-integration-20261017",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Integrate audited POS/payroll fixes with exact production source and latest uploaded native 26.1, preserving existing functions; run Xcode before publication.",
+  "files": [
+    "app/market/booking-deposit-actions.ts",
+    "app/market/booking-deposit-panel.tsx",
+    "app/settings/salon-list-panel.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "tests/booking-deposit-settings-target.test.mjs",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "commit": "6832972f97b22ab4180650019beb1d1cb93fdf96",
+    "nativeBaselineCommit": "78b00c0e92e3af3674214616ab53784b556a03ef"
+  },
+  "validation": [
+    {
+      "name": "Final source integration and native/web checks",
+      "result": "pending"
+    }
+  ],
+  "id": "66273b79-5e0f-4d11-9ec9-c710ad32d0eb",
+  "recordedAt": "2026-10-17T00:55:02.735Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

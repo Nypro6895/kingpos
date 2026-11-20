@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "today-statistics-native-test-settle-20261101",
+  "status": "ready",
+  "summary": "Wait for initial deferred shell reads to settle before asserting chart Count/Sales/hour interactions issue no server read; unchanged all-read equality and zero-command assertions, full 240-case inventory preserved.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-today-release-20261101\\artifacts\\release\\frozen-test-settle",
+    "commit": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022"
+  },
+  "validation": [
+    {
+      "name": "Exact first-run failure attribution: asynchronous startup shell reads, chart assertions all passed",
+      "result": "passed",
+      "evidence": "artifacts/release/native-attempt1/test.log"
+    },
+    {
+      "name": "Diff review: wait for shell.configuration and shell.summary plus one second with unchanged counters; no assertion removed or filtered",
+      "result": "passed",
+      "evidence": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022"
+    }
+  ],
+  "dependencies": [
+    "today-statistics-20261101"
+  ],
+  "id": "adc88739-7e75-4cf9-8ed9-d991f8060adf",
+  "recordedAt": "2026-11-01T20:29:13.473Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "d7e6cd3fd2edb1593a0892907aa35ddf05154b263127b5768c8bd6d3a64c56c5"
+  }
+}

@@ -1,0 +1,18 @@
+.reply { margin-top: 10px; display: flex; justify-content: flex-end; }
+.textReply { border: 0; border-radius: 0; background: transparent; padding: 4px 0; color: #00858a; font-size: 13px; line-height: 20px; font-weight: 600; cursor: pointer; }
+.textReply:hover { text-decoration: underline; text-underline-offset: 3px; }
+.textReply:focus-visible { outline: 2px solid #008c90; outline-offset: 4px; }
+.outline,.send { min-height: 40px; border-radius: 10px; padding: 6px 20px; font-size: 14px; line-height: 20px; font-weight: 600; }
+.outline { border: 1.5px solid #008c90; background: white; color: #00858a; }
+.outline:focus-visible,.send:focus-visible { outline: 2px solid #008c90; outline-offset: 3px; }
+.composer { width: 100%; display: grid; gap: 8px; border-radius: 12px; background: #f5f5f5; padding: 12px; }
+.composer[hidden] { display: none; }
+.label { font-size: 16px; line-height: 22px; font-weight: 600; color: #171717; }
+.composer textarea { min-height: 86px; width: 100%; resize: vertical; border: 1px solid #bfc0c3; border-radius: 10px; background: white; padding: 10px 12px; font-size: 16px; line-height: 24px; color: #18181b; }
+.composer textarea:focus { outline: 2px solid #008c90; outline-offset: 1px; }
+.hint { font-size: 12px; line-height: 18px; color: #616161; }
+.actions { display: flex; justify-content: space-between; gap: 12px; }
+.actions button { min-width: 105px; }
+.send { border: 1.5px solid #008c90; background: #008c90; color: white; }
+.send:disabled { border-color: #dedede; background: #dedede; color: #777; }
+.outline:disabled { opacity: .6; }

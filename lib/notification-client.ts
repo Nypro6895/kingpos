@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 import type { CustomerNotificationSummary } from "@/app/customer-shell-context";
 import type { NotificationFeedItem } from "@/types/notifications";
+import { experienceResourceCache } from "@/lib/experience-resource-cache";
 export const NOTIFICATIONS_SEED = "kingpos:notifications-seed";
 export const NOTIFICATIONS_REFRESH = "kingpos:notifications-refresh";
 export const NOTIFICATIONS_VIEWED = "kingpos:notifications-viewed";
@@ -9,11 +10,29 @@ const NOTIFICATIONS_COUNT = "kingpos:notifications-count";
 const pending = new Set<string>();
 const inFlightIds = new Set<string>();
 let timer: ReturnType<typeof setTimeout> | undefined;
+let generation = 0;
+let listeningForReset = false;
+const viewedRequests = new Set<AbortController>();
+function listenForReset() {
+  if (listeningForReset || typeof window === "undefined") return;
+  listeningForReset = true;
+  window.addEventListener("reylumi:experience-reset", () => {
+    generation++;
+    if (timer) clearTimeout(timer);
+    timer = undefined; pending.clear(); inFlightIds.clear();
+    viewedRequests.forEach(controller => controller.abort()); viewedRequests.clear();
+  });
+}
 export function queueViewedNotification(id: string) {
+  listenForReset();
+  if (experienceResourceCache.stats().suspended) return;
   if (inFlightIds.has(id)) return;
   pending.add(id);
   if (timer) return;
   timer = setTimeout(async () => {
+    const requestGeneration = generation;
+    const controller = new AbortController();
+    viewedRequests.add(controller);
     timer = undefined;
     const ids = Array.from(pending).slice(0, 50);
     ids.forEach((id) => {
@@ -25,12 +44,15 @@ export function queueViewedNotification(id: string) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),
+        signal: controller.signal,
       });
       if (!response.ok) throw Error("Could not save viewed notifications.");
+      if (requestGeneration !== generation || controller.signal.aborted) return;
       window.dispatchEvent(
         new CustomEvent(NOTIFICATIONS_VIEWED, { detail: ids }),
       );
       const data = await response.json();
+      if (requestGeneration !== generation || controller.signal.aborted) return;
       if (typeof data.unreadCount === "number")
         window.dispatchEvent(
           new CustomEvent(NOTIFICATIONS_COUNT, {
@@ -38,6 +60,7 @@ export function queueViewedNotification(id: string) {
           }),
         );
     } catch {
+      if (requestGeneration !== generation || controller.signal.aborted) return;
       window.dispatchEvent(
         new CustomEvent("kingpos:notifications-error", {
           detail:
@@ -45,6 +68,8 @@ export function queueViewedNotification(id: string) {
         }),
       );
     } finally {
+      viewedRequests.delete(controller);
+      if (requestGeneration !== generation) return;
       ids.forEach((id) => inFlightIds.delete(id));
       if (pending.size) queueViewedNotification(Array.from(pending)[0]);
     }
@@ -105,9 +130,10 @@ function createNotificationStore(
       notify();
     },
     refresh(force = false) {
-      if (running || (!force && Date.now() - refreshedAt < 30000))
+      if (disposed || experienceResourceCache.stats().suspended || running || (!force && Date.now() - refreshedAt < 30000))
         return running;
       running = (async () => {
+        const requestGeneration = generation;
         try {
           const response = await fetch("/api/notifications?limit=5", {
             cache: "no-store",
@@ -115,7 +141,7 @@ function createNotificationStore(
           });
           const data = await response.json();
           if (!response.ok) throw Error(data.error);
-          if (disposed) return;
+          if (disposed || requestGeneration !== generation || experienceResourceCache.stats().suspended) return;
           hasLiveUpdate = true;
           const actionItems = snapshot.previewItems.filter(
             (item) => item.source !== "app",
@@ -129,13 +155,7 @@ function createNotificationStore(
           refreshedAt = Date.now();
           notify();
         } catch {
-          if (!disposed)
-            window.dispatchEvent(
-              new CustomEvent("kingpos:notifications-error", {
-                detail:
-                  "Could not refresh notifications. Showing the last available updates.",
-              }),
-            );
+          // Background refresh leaves the current summary readable without a banner.
         } finally {
           running = null;
         }
@@ -155,6 +175,7 @@ function createNotificationStore(
 export function useNotificationSummary(
   initial: CustomerNotificationSummary,
   scope: string,
+  enabled = true,
 ) {
   const store = useMemo(
     () => createNotificationStore(initial, scope),
@@ -166,6 +187,8 @@ export function useNotificationSummary(
     store.serverSnapshot,
   );
   useEffect(() => {
+    if (!enabled) return;
+    listenForReset();
     store.activate();
     const refresh = (event?: Event) => {
       if (document.visibilityState === "visible")
@@ -201,16 +224,18 @@ export function useNotificationSummary(
       window.clearInterval(poll);
       store.dispose();
     };
-  }, [store]);
+  }, [store, enabled]);
   return snapshot;
 }
 
 export async function markAllCenterViewed() {
+  const requestGeneration = generation;
   const response = await fetch("/api/notifications", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ all: true }),
   });
   if (!response.ok) throw Error("Could not mark notifications viewed.");
+  if (requestGeneration !== generation) return;
   window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH));
 }

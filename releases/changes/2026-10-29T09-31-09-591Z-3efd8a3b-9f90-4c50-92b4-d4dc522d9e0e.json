@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "pos-receipt-flow-20261029",
+  "status": "ready",
+  "summary": "POS shared header restored; receipt add line opens services then staff; compact responsive Ticket search. Current Ticket source already has a single toolbar.; latest owner-confirmed top +Add/Reset and bottom Services pencil retained; preserve shipped WorkspaceFrame.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos.css",
+    "app/globals.css",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integration": {
+    "originalEvents": [
+      "5a6af92c-15ea-4927-8938-3cad7698e236"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "3efd8a3b-9f90-4c50-92b4-d4dc522d9e0e",
+  "recordedAt": "2026-10-29T09:31:09.591Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-pos-client.tsx": "2bebfed17523c36a217382d105fab97f7f23efacdcad62cec1cdaba2d8666ddb",
+    "app/pos/owner-pos.css": "f2d85033f8072b4888276435a8e0a19fac293ef7fc829fb5751a498b55a91cbd",
+    "app/globals.css": "9b8714752609a71adb28363e2784d9c1eecc8f845b8161dacb11e23f03ef47c4",
+    "app/pos/owner-workspace-frame.tsx": "703a7f16a39345d012c21497c5a1d1dfa7b65f7f6bab110696b3163e4ab9d3ef",
+    "app/pos-tickets/ticket-filters.tsx": "caee309f98d69780c3689c7373e7cdddba8354b7d37bc7e39bf217807bc9de1c",
+    "app/pos-tickets/ticket-filters.module.css": "f9ffb5098172bf0af8879f6752447b17a70764aa04c789429dd26fe3875211ed"
+  }
+}

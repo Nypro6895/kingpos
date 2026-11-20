@@ -1,0 +1,20 @@
+POS service catalog - 2026-10-26
+
+Implemented locally:
+- Desktop/portable POS initializes new service lines from services.base_price, matching the existing catalog used by profile and booking.
+- First numeric key replaces a newly selected default amount. Clicking the current amount or selecting a receipt line arms replacement. Slash preserves additive price parts. Existing restored/booking amounts are retained.
+- Shared service catalog for owner POS, portable Windows POS and their service pickers. Optional category folders with editable colors; uncategorized services stay at root; disabling grouping shows the full catalog.
+- POS Settings > Checkout & saved tickets: grouping toggle and colors. Stored in existing salon workspace_preferences via its existing permission-checked optimistic concurrency RPC. No schema migration.
+- Windows/desktop Customers and Saved tickets shortcuts shrink from 80px to 48px at widths >=981px. Mobile target size retained.
+
+Validation:
+- Seven browser/runtime and helper tests passed across pos-service-catalog-ui, portable-booking-pos-ui, pos-compact-checkout-ui and owner-workspace-ui. Owner suite uses compiled current globals.css + owner-pos.css, rather than its fallback stylesheet excerpt.
+- Source TypeScript check passed excluding stale .next-readiness-check generated Help routes. Default tsc still fails on six pre-existing moved-Help generated imports.
+- ESLint scoped files: no errors; existing unused no-img-element suppression in settings page remains.
+- Browser shortcut assertion verifies 44-52px desktop height for both controls.
+- Updated the pre-existing booking test mock to export resolveScannedCheckinReceipt; no production calls.
+
+Release:
+- Not deployed. Web-only change; no native/desktop shell or bridge sources changed.
+- Frozen source is under artifacts/pos-service-categories-20261026/source. Changed files already contained unrelated changes before this task. Coordinator must reconcile the scoped behavior above against exact current production source and compatible pending patches; do not deploy this dirty checkout or frozen full files wholesale.
+- Reuse existing pos_settings.workspace_preferences and save_pos_workspace_settings schema prerequisite.

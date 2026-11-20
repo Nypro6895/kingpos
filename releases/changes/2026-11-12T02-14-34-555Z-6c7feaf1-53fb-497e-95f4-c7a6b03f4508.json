@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "after97-scoped-native-upload-20261111",
+  "status": "ready",
+  "summary": "Scoped creative upload staging integrated without changing existing sessions, private roles, RLS, image-only 5 MB limits or single-claim completion; exact production function and ledger verified.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261112021000_after97_scoped_creative_upload.sql",
+    "tests/after97-scoped-upload.integration.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\upload-schema-snapshot",
+    "commit": "ac449728fe73bd23c84629abc5f0a4a4db43263e"
+  },
+  "validation": [
+    {
+      "name": "PostgreSQL-compatible migration integration: legacy/new limits, denial and claim",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-migration-test.txt"
+    },
+    {
+      "name": "Production ledger/function hash, service-only execution and RLS",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-schema-verified.json"
+    }
+  ],
+  "id": "6c7feaf1-53fb-497e-95f4-c7a6b03f4508",
+  "recordedAt": "2026-11-12T02:14:34.555Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "supabase/migrations/20261112021000_after97_scoped_creative_upload.sql": "e7a7a6ca25bab2059ec2696f31b7d0fd583135a610e6b98e2c98be3419915076",
+    "tests/after97-scoped-upload.integration.test.mjs": "335eeea7171c6dd088bbd361f09e9d3f39e544c9583c637ead362228d5f22824"
+  }
+}

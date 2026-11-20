@@ -1,4 +1,12 @@
 "use client";
+import { BookingSetupGuide, type SetupPublication } from "./booking-setup-guide";
+import {SettingsChildPage} from "@/app/settings/settings-child-pages";
+
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
+import { getStaffLegalName } from "@/lib/staff-legal-name";
+import Link from "next/link";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useCallback, useEffect, useState } from "react";
 import {
   loadDirectSettings,
@@ -8,11 +16,13 @@ import {
   buttonClass,
   InlineForm,
   Check,
+  SettingsFieldGroup,
   type DirectData,
 } from "./direct-settings-ui";
 import {
   SalonDetailsPanel,
   BookingSettingsPanel,
+  SalonHoursPanel,
 } from "./salon-settings-panels";
 import { TeamSettingsPanel, PayrollSettingsPanel } from "./team-payroll-panels";
 import { PosSettingsPanel } from "./pos-settings-panel";
@@ -27,9 +37,16 @@ import { RecoveryBackOfficePanel } from "./recovery-back-office/recovery-back-of
 import { staffBookingPreferencesAction } from "@/app/staff/appointments/staff-preferences-actions";
 import "@/app/services/services.css";
 import "./direct-settings.css";
+import { SettingsLoading } from "./settings-loading";
+import { getAppLocalHost } from "@/lib/app-local-host";
+import { getAppLocalCommandScope } from "@/lib/app-local-command-client";
+import { useAppLocalResource } from "@/lib/app-local-resource";
+import { useExperienceScope } from "@/components/experience-scope";
 import { ShortcutsSettingsPanel } from "./shortcuts-settings-panel";
 
 function OwnPreferences({ salonId }: { salonId: string }) {
+  const __vt = useWorkspaceTranslation();
+
   const [values, setValues] = useState<{
       online: boolean;
       notifications: boolean;
@@ -59,7 +76,7 @@ function OwnPreferences({ salonId }: { salonId: string }) {
   if (!values)
     return (
       <p role={error ? "alert" : "status"} className="text-sm text-zinc-500">
-        {error || "Loading booking preferences…"}
+        <WorkspaceText text={error || "Loading booking preferences…"} />
       </p>
     );
   return (
@@ -83,7 +100,7 @@ function OwnPreferences({ salonId }: { salonId: string }) {
           }}
           onSaved={load}
         >
-          <Check name={preference} label={label} checked={values[preference]} />
+          <Check name={preference} label={__vt(label)} checked={values[preference]} />
         </InlineForm>
       ))}
     </div>
@@ -92,14 +109,21 @@ function OwnPreferences({ salonId }: { salonId: string }) {
 function Content({
   data,
   reload,
+  view,
+  publication,
+  canManageSalonStatus,
 }: {
+  canManageSalonStatus?: boolean;
+  publication?: SetupPublication;
+  view?: "hours" | "overview";
   data: DirectData;
   reload: () => Promise<void>;
 }) {
   switch (data.kind) {
     case "salon-profile":
+      return view === "hours" ? <SalonHoursPanel data={data} onSaved={reload}/> : <SalonDetailsPanel data={data} onSaved={reload}/>;
     case "public-profile":
-      return <SalonDetailsPanel data={data} onSaved={reload} />;
+      return <>{data.canViewBooking?<DirectSettingsPanel kind="booking" salonId={data.salonId} view="overview" publication={data.canManageSalon?{readiness:data.readiness,enabled:data.setting.public_discovery_enabled,available:data.publicProfileAvailable,canManageStatus:canManageSalonStatus}:undefined}/>:null}<SalonDetailsPanel data={data} onSaved={reload}/></>;
     case "shortcuts":
       return <ShortcutsSettingsPanel salonId={data.salonId} configuration={data.configuration} onSaved={reload}/>;
     case "services":
@@ -113,7 +137,7 @@ function Content({
         />
       );
     case "booking":
-      return <BookingSettingsPanel data={data} onSaved={reload} />;
+      return view === "overview" ? <BookingSetupGuide salonId={data.salonId} setup={data.setup} settings={data.settings} publication={publication}/> : <>{data.canViewSalonInformation?<DirectSettingsPanel kind="salon-profile" salonId={data.salonId} view="hours"/>:null}<BookingSettingsPanel data={data} onSaved={reload}/></>;
     case "staff-team":
       return <TeamSettingsPanel data={data} onSaved={reload} />;
     case "payroll":
@@ -127,6 +151,12 @@ function Content({
     case "staff-workspace":
       return (
         <div className="grid gap-4">
+          <section>
+            <h3 className="text-sm font-semibold"><WorkspaceText text="Legal name" /></h3>
+            <p className="mt-1 text-sm">{getStaffLegalName(data.staff) || <WorkspaceText text="Not set" />}</p>
+            <Link className="inline-flex min-h-11 items-center text-sm text-teal-700 underline" href="/account"><WorkspaceText text="Edit legal name in Personal" /></Link>
+          </section>
+          <SettingsChildPage title={<WorkspaceText text="Public staff profile"/>}>
           <StaffPublicProfileEditor
             expectedSalonId={data.salonId}
             onSaved={reload}
@@ -137,12 +167,16 @@ function Content({
             jobTitle={data.staff.job_title}
             specialties={data.staff.specialties}
           />
+          </SettingsChildPage>
+          <SettingsFieldGroup title="Booking preferences">
           <OwnPreferences salonId={data.salonId} />
+          </SettingsFieldGroup>
         </div>
       );
     case "staff-schedule":
       return (
         <StaffAvailabilityEditor
+          settingsMode
           staff={[data.staff]}
           availabilityRules={data.availabilityRules}
           timeBlocks={data.timeBlocks}
@@ -162,10 +196,10 @@ function Content({
       return (
         <div className="grid gap-3">
           <p className="text-sm text-zinc-500">
-            Access rules are read-only. Manage staff access in Staff & Team.
+            <WorkspaceText text="Access rules are read-only. Manage staff access in Staff & Team." />
           </p>
           {data.catalog.roles.map((role) => (
-            <details
+            <SettingsDetails
               className="rounded-lg border border-zinc-200 bg-white p-4"
               key={role.id}
             >
@@ -177,26 +211,58 @@ function Content({
                   <li key={p.id}>{p.name}</li>
                 ))}
               </ul>
-            </details>
+            </SettingsDetails>
           ))}
         </div>
       );
   }
 }
-export function DirectSettingsPanel({ kind, salonId, onChanged }: { kind: DirectSettingsKind; salonId?: string; onChanged?:()=>void|Promise<void> }) {
+type DirectPanelProps = { canManageSalonStatus?: boolean; publication?: SetupPublication; view?: "hours" | "overview"; kind: DirectSettingsKind; salonId?: string; onChanged?:()=>void|Promise<void> };
+
+function NativeDirectSettingsPanel({kind,salonId,onChanged,view,publication,canManageSalonStatus}: DirectPanelProps & {salonId:string}) {
+  const scope = getAppLocalCommandScope();
+  // Reuse the existing bounded, scoped memory cache. This resource remains
+  // retention:none: no settings form is persisted to native/disk storage.
+  const state = useAppLocalResource<DirectData>(scope, "settings.direct", {kind,salonId}, {refreshAfterMs:15_000});
+  const refresh = state.refresh;
+  const reload = useCallback(async () => { try { await refresh(); } finally { await onChanged?.(); } }, [refresh,onChanged]);
+  const error = !scope || !state.available || state.accessDenied ? "Your account has changed. Please open the page again." : state.error;
+  const data = scope && state.available && !state.accessDenied ? state.data : undefined;
+  return <div className="settings-style"><div className="settings-direct-panel grid gap-4">
+    {error && <div role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800"><p><WorkspaceText text={error}/></p><button type="button" className={`${buttonClass} mt-2`} onClick={() => void state.refresh()}><WorkspaceText text="Retry"/></button></div>}
+    {data && data.kind === kind && "salonId" in data && data.salonId === salonId ? <Content data={data} reload={reload} view={view} publication={publication} canManageSalonStatus={canManageSalonStatus}/> : !error && <SettingsLoading/>}
+  </div></div>;
+}
+
+export function DirectSettingsPanel(props: DirectPanelProps) {
+  if (getAppLocalHost().isNative && props.salonId && !["recovery-back-office","roles","permissions"].includes(props.kind)) return <NativeDirectSettingsPanel {...props} salonId={props.salonId}/>;
+  return <LegacyDirectSettingsPanel {...props}/>;
+}
+
+function LegacyDirectSettingsPanel({ kind, salonId, onChanged, view, publication, canManageSalonStatus }: DirectPanelProps) {
+  const gate = useExperienceScope(), scope = gate?.context.scope;
   const [data, setData] = useState<DirectData | null>(null),
     [error, setError] = useState(""),
     [retry, setRetry] = useState(0);
+  const read = useCallback(async (signal?: AbortSignal) => {
+    if (scope && salonId && !["recovery-back-office","roles","permissions"].includes(kind)) {
+      const response = await getAppLocalHost().read<DirectData>("settings.direct", {kind,salonId}, {scope,signal});
+      if (response.scope !== scope || !response.data) throw new Error("Your account has changed. Please open the page again.");
+      return response.data;
+    }
+    return loadDirectSettings(kind, salonId);
+  }, [kind, salonId, scope]);
   const reload = useCallback(async () => {
     try {
-      const value = await loadDirectSettings(kind, salonId);
+      const value = await read();
       setData(value);
       setError("");
     } finally { await onChanged?.(); }
-  }, [kind, salonId, onChanged]);
+  }, [read, onChanged]);
   useEffect(() => {
     let active = true;
-    loadDirectSettings(kind, salonId)
+    const controller = new AbortController();
+    read(controller.signal)
       .then((value) => {
         if (active) {
           setData(value);
@@ -209,16 +275,17 @@ export function DirectSettingsPanel({ kind, salonId, onChanged }: { kind: Direct
       });
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [kind, salonId, retry]);
+  }, [read, retry]);
   return (
-    <div className="settings-direct-panel grid gap-4">
+    <div className="settings-style"><div className="settings-direct-panel grid gap-4">
       {error && (
         <div
           role="alert"
           className="rounded-md bg-red-50 p-3 text-sm text-red-800"
         >
-          <p>{error}</p>
+          <p><WorkspaceText text={error} /></p>
           <button
             type="button"
             className={`${buttonClass} mt-2`}
@@ -227,26 +294,19 @@ export function DirectSettingsPanel({ kind, salonId, onChanged }: { kind: Direct
               setRetry((n) => n + 1);
             }}
           >
-            Retry
+            <WorkspaceText text="Retry" />
           </button>
         </div>
       )}
       {data && data.kind === kind && (!salonId || ("salonId" in data && data.salonId === salonId)) ? (
         <>
-          {"salonName" in data && (
-            <p className="text-sm font-medium text-zinc-500">
-              {data.salonName}
-            </p>
-          )}
-          <Content data={data} reload={reload} />
+          <Content data={data} reload={reload} view={view} publication={publication} canManageSalonStatus={canManageSalonStatus} />
         </>
       ) : (
         !error && (
-          <p role="status" className="text-sm text-zinc-500">
-            Loading settings…
-          </p>
+          <SettingsLoading/>
         )
       )}
-    </div>
+    </div></div>
   );
 }

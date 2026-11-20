@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-29T09:43:40.337Z",
+  "sourceBuild": "1.0.0(66)",
+  "source": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+  "confirmedIssues": [
+    "POS/Ticket global header hidden",
+    "Native Ticket legacy and new filters simultaneously visible"
+  ],
+  "notBugs": [
+    "Settings Cancel reachable by scrolling at y709 and worked; editor restored",
+    "Staff Scan disabled because Owner has not enabled it"
+  ],
+  "otherOpened": [
+    "All10 salon Settings destinations and back",
+    "Personal profile/Public profile/Loginsecurity/Blocked/Connections/Notifications",
+    "StaffToday/Schedule, workspace switches, Legal/Help"
+  ],
+  "unconfirmedNotReleaseBlocker": [
+    "StaffPost transient loading snapshot not measured"
+  ],
+  "deviceContainer": "B0B4DD71-F574-4465-BF2C-8CA6A8DF7460",
+  "pid": 6106,
+  "overallAccepted": false,
+  "speedBenchmark": false,
+  "worker": "01a17f46-d4e7-7f91-a818-ff9669455f6a",
+  "authority": "Owner permits routine fixes; worker finitecheckpoint acknowledged before final patch freeze"
+}

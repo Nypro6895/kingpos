@@ -12,6 +12,14 @@ function moduleAt(path, globals) {
   return exports;
 }
 
+test("native read cancellation gives a useful message without replaying across the cancelled boundary",async()=>{
+ let calls=0;
+ const cancelled=Object.assign(new Error("This request was superseded. Please try again."),{name:"AbortError",reason:"cancelled"});
+ const api=moduleAt("lib/post-comments-client.ts",{URLSearchParams,AbortController,setTimeout,clearTimeout,fetch:async()=>{calls++;throw cancelled;}});
+ await assert.rejects(api.fetchPostCommentsPage({target:{sourceType:"beauty_post",sourceId:"post"},offset:0,pageSize:10}),/Comments could not be loaded/);
+ assert.equal(calls,1);
+});
+
 test("comment reader uses an independent uncached request with same-origin credentials", async () => {
   let request;
   const page = { items: [], totalCount: 0, hasMore: false, nextOffset: null, error: null };
@@ -43,6 +51,27 @@ test("comment read timeout aborts the network request", async () => {
   await assert.rejects(promise, /took too long/);
   assert.equal(signal.aborted, true);
   assert.equal(cleared, true);
+});
+
+test("a transient Safari network failure retries only the read once", async () => {
+  let calls = 0;
+  const page = { items: [], totalCount: 0, error: null };
+  const api = moduleAt("lib/post-comments-client.ts", {
+    URLSearchParams, AbortController, TypeError, setTimeout, clearTimeout,
+    fetch: async () => { if (++calls === 1) throw new TypeError("Load failed"); return { ok: true, json: async () => page }; },
+  });
+  assert.equal(await api.fetchPostCommentsPage({ target: { sourceType: "beauty_post", sourceId: "post" }, offset: 0, pageSize: 10 }), page);
+  assert.equal(calls, 2);
+});
+
+test("persistent network failure stops after two reads and returns a useful message", async () => {
+  let calls = 0;
+  const api = moduleAt("lib/post-comments-client.ts", {
+    URLSearchParams, AbortController, TypeError, setTimeout, clearTimeout,
+    fetch: async () => { calls++; throw new TypeError("Load failed"); },
+  });
+  await assert.rejects(api.fetchPostCommentsPage({ target: { sourceType: "beauty_post", sourceId: "post" }, offset: 0, pageSize: 10 }), /Comments could not be loaded/);
+  assert.equal(calls, 2);
 });
 
 test("read endpoint delegates to the existing permission-aware loader and forbids caching", async () => {

@@ -1,0 +1,92 @@
+CONFIRMED IPHONE UI FIXES — QUEUED, NOT DEPLOYED
+
+Authorization: fix only the defects confirmed in the physical iPhone Mirroring
+review and queue for a combined release. No standalone deployment, upload,
+plugin activation or subscription is authorized by this task.
+
+Source: fix/confirmed-iphone-queue-20261105, based on de818d0.
+Required predecessor: touch-keyboard-review-20261105 (d95681b product source).
+This patch completes that predecessor; it does not replace or publish it.
+The predecessor's frozen files and journal remain unchanged.
+
+CONFIRMED DEFECT / ROOT CAUSE / FIX / RETEST
+
+1. Empty customer advances in New appointment.
+Cause: step buttons advanced directly without validating the current draft.
+Predecessor fix: app/bookings/booking-workspace-client.tsx, goStep validates
+customer, service and date/time for both Next and direct step navigation.
+Retest: empty customer cannot advance; customer name or selected customer
+can advance. Preserve Any professional and authoritative server validation.
+
+2. Navigation visible behind appointment Back/Next.
+Cause: fixed navigation did not track modal lifetime, including portals.
+Predecessor fix: lib/mobile-viewport.ts, components/iphone-glass-nav.css,
+components/use-dialog-viewport.ts and booking modal layout.
+Retest: navigation hidden while modal is visible, restored after dismissal
+and route changes; no leftover scroll lock.
+
+3. Profile Save obscured by navigation.
+Cause: clearance depended on an ancestor absent from native portal layout.
+Predecessor fix: app/account/account-profile-editor.module.css and .tsx.
+Retest: Cancel/Save visible above navigation at rest and visual viewport
+while editing, including layouts outside customer-desktop-content.
+
+4. Navigation overlaps input controls.
+Cause: no shared keyboard state for WebKit visual viewport/native resize.
+Predecessor fix: lib/mobile-viewport.ts, app/navigation-shell.tsx,
+components/iphone-glass-nav.css.
+New follow-up: lib/mobile-viewport.ts also recognizes a 44px input accessory
+bar (hardware keyboard/Mirroring). The former 120px threshold only detected
+the full software keyboard and could leave navigation visible in that case.
+Retest: focus/blur and keyboard close transition restore navigation only
+after viewport recovery. Cover Profile, comment, search and expense.
+
+5. Header remains shifted after input dismissal in Profile Edit.
+Cause found in predecessor: native keyboard frame resize and WebKit viewport
+both adjusted layout, compounded by forced dialog geometry overrides.
+Predecessor fix: ios/Reylumi/ReylumiLocalAppViewController.swift,
+ios/Reylumi/ReylumiViewController.swift, ios/Reylumi/AppViewport.js,
+components/use-dialog-viewport.ts.
+Retest: physical iPhone keyboard open/close repeatedly; remain in Edit and
+check header safe area before Cancel. Requires native build and device QA.
+The earlier physical review exercised shipped code, not this candidate.
+
+6. Profile displays codes/placeholders and truncated timezone.
+Predecessor fix: app/account/account-profile-editor.tsx and
+components/time-zone-select.tsx: language select and readable labels,
+Not provided for missing phone/legal name, compact timezone option.
+Retest: blank values do not resemble legal identity; English/Tieng Viet
+selection saves without changing unrelated profile fields.
+
+7. Illustration credit wraps inside tiny Owner Rewards artwork.
+Cause: full-size promotional artwork credit was reused in a 72px thumbnail.
+New fix: components/rewardlumi/reward-owner-prompt.tsx requests compact
+artwork; reward-promo-artwork.tsx omits only that small visual credit.
+Accessible illustration description and full-size credits remain.
+Retest: Owner Today at 320/390px; small artwork has no broken label,
+full-size promotional preview retains Illustration credit.
+
+8. Extra disclosure chevron beside action-menu dots.
+Cause: global details/summary CSS adds a chevron unless a custom icon exists;
+plain text dots were not recognized as a custom icon.
+New fix: components/more-options-icon.tsx is used by
+components/contextual-support.tsx and
+app/salon-profile/salon-website-header.tsx. Existing global SVG exclusion
+now applies without disabling ordinary disclosure indicators.
+Retest: Book, Reports, Staff Today and salon profile show a single dots icon;
+ordinary details still show a chevron; menu labels/activation remain intact.
+
+EXCLUSIONS
+No new fixes to Confirm, menu routing, Scan/Market entitlements or attendance
+policy. Keep Profile and Library separate, account-wide notifications,
+midnight timestamps and financial calculations unchanged.
+
+VALIDATION
+12 focused runtime tests passed: touch/keyboard, booking modal Activity,
+slot hints and retained Settings navigation/drafts.
+ESLint passed for all six changed TS/TSX files. git diff --check passed.
+Local browser layout verification passed at 320px and 390px, covering
+action-menu icon, ordinary disclosure, compact illustration accessibility
+and full-size credit. Screenshots/result are in artifacts/confirmed-iphone/.
+Production build result is recorded in the completion journal.
+Native Xcode/device acceptance remains pending; no production publication.

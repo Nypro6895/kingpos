@@ -234,7 +234,7 @@ export async function createSettingsSalon(
     if (error || !data?.salon_id)
       throw new Error(error?.message ?? "Could not create salon.");
     revalidatePath("/", "layout");
-    return { ok: true as const };
+    return { ok: true as const, salonId: String(data.salon_id) };
   } catch (error) {
     return {
       ok: false as const,

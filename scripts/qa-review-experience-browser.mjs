@@ -1,0 +1,48 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright-core';
+const ids=JSON.parse(fs.readFileSync('artifacts/review-experience-flow-20261029/isolated-ids.json','utf8'));
+const output='artifacts/review-experience-flow-20261029/browser';fs.mkdirSync(output,{recursive:true});
+const origin=fs.readFileSync('artifacts/review-experience-flow-20261029/https-origin.txt','utf8').trim();
+const entryKey=fs.readFileSync('artifacts/review-experience-flow-20261029/qa-entry-key.txt','utf8').trim();
+const loginUrl=(role,next)=>`${origin}/__review-qa-login?key=${entryKey}&as=${role}&next=${encodeURIComponent(next)}`;
+const browser=await chromium.launch({channel:'chrome',headless:true});
+const errors=[],checks=[];
+const push=checks.push.bind(checks);checks.push=(...items)=>{items.forEach(item=>console.log(item));return push(...items);};
+const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();page.setDefaultTimeout(90000);page.on('pageerror',e=>errors.push(e.message));
+try{
+ await page.goto(loginUrl('customer','/activity'),{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>Array.from(document.querySelectorAll('button')).some(button=>button.textContent==='Details'&&Object.keys(button).some(key=>key.startsWith('__reactProps')&&typeof button[key]?.onClick==='function')));
+ console.log('Authenticated Activity hydrated');
+ await page.locator('article').filter({has:page.getByText('QA Pedicure',{exact:true})}).getByRole('button',{name:'Details',exact:true}).click();
+ console.log('Details opened');
+ await page.getByRole('button',{name:'Report experience',exact:true}).click();
+ await page.getByRole('button',{name:'Had an issue',exact:true}).click();
+ await page.getByLabel('Optional details',{exact:true}).fill('QA independent concern: chipped finish.');
+ await page.getByRole('button',{name:'Share issue',exact:true}).click();
+ await page.getByRole('button',{name:'Edit my feedback',exact:true}).waitFor();checks.push('Customer posts a verified concern in the actual Activity drawer');
+ await page.screenshot({path:`${output}/customer-saved.png`,fullPage:true});
+ await page.getByRole('button',{name:'Close history details'}).click();
+ await page.goto(`${origin}/more/reviews`);await page.getByText('QA independent concern: chipped finish.',{exact:true}).waitFor();checks.push('My Reviews reads the saved concern');
+ await page.screenshot({path:`${output}/my-reviews.png`,fullPage:true});
+ await page.goto(loginUrl('owner','/salon-profile#customer-experiences'));
+ await page.getByText('QA independent concern: chipped finish.',{exact:true}).waitFor();
+ const ownerCard=page.locator('article').filter({hasText:'QA independent concern: chipped finish.'});
+ await ownerCard.getByLabel('Reply as the salon',{exact:true}).fill('We can help with a repair. Please contact our front desk.');
+ await ownerCard.getByRole('button',{name:'Reply',exact:true}).click();
+ await ownerCard.getByText('We can help with a repair. Please contact our front desk.',{exact:true}).waitFor();checks.push('Owner replies to the correct Verified Visit');
+ await ownerCard.getByRole('button',{name:'Mark handled by salon',exact:true}).click();
+ await ownerCard.getByText('Salon marked this issue as handled. This does not change your feedback or its eligibility for LUMI Truth.',{exact:true}).waitFor();checks.push('Owner marks handled while issue remains visible');
+ await page.screenshot({path:`${output}/owner-handled.png`,fullPage:true});
+ await page.goto(loginUrl('customer','/notifications'));
+ await page.waitForFunction(()=>document.body.innerText.includes('The salon replied to your experience'));checks.push('Customer receives an in-app reply notification');
+ await page.goto(`${origin}/more/reviews`);await page.getByText('We can help with a repair. Please contact our front desk.',{exact:true}).first().waitFor();
+ const customerCard=page.locator('article').filter({hasText:'QA independent concern: chipped finish.'});
+ await customerCard.getByRole('button',{name:'Issue shared',exact:true}).click();await customerCard.getByRole('button',{name:'Edit my feedback',exact:true}).click();
+ await customerCard.getByLabel('Optional details',{exact:true}).fill('QA concern updated by the customer.');await customerCard.getByRole('button',{name:'Save feedback',exact:true}).click();
+ await customerCard.getByLabel("Optional details",{exact:true}).waitFor({state:"hidden"});
+ await page.reload();await page.getByText('QA concern updated by the customer.',{exact:true}).first().waitFor();checks.push('Customer edit persists after reload');
+ for(const width of [320,390,428,768,1280]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
+ checks.push('My Reviews has no horizontal overflow from 320 to 1280px');
+ assert.deepEqual(errors,[]);fs.writeFileSync(`${output}/results.json`,JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks},null,2));
+}catch(error){fs.writeFileSync(`${output}/failure.json`,JSON.stringify({url:page.url(),checks,errors,message:error.message,text:await page.locator('body').innerText().catch(()=>'' )},null,2));await page.screenshot({path:`${output}/failure.png`,fullPage:true}).catch(()=>{});throw error;}finally{await browser.close();}

@@ -1,0 +1,67 @@
+REYLUMI — LOCAL-FIRST POS, STAFF AND CUSTOMER EXPERIENCE
+2026-10-16 UTC
+
+Purpose
+Open a previously prepared authorized screen from device storage, keep work
+while moving between tabs or losing connectivity, and reconcile changed live
+data without rebuilding the entire screen. A first installation or a screen
+that has never completed preparation still needs a connection. No zero-ms or
+unmeasured physical-device speed claim is made.
+
+POS and owner
+Preserve the existing financial rules, draft versions, receipt checkpoints,
+idempotent operation IDs and fresh server validation. Device recovery survives
+a new iPhone WebView; another window cannot overwrite its active draft. Lost
+responses retry the same operation. A submitted receipt does not reappear as
+an unsent cart. Offline navigation opens complete prepared documents; warm
+online tabs retain the existing workspace. Guarded navigation streams before
+checkout data; checkout still waits for its complete authorized inputs.
+
+Staff
+My Work, workday and appointments use scoped partial reads. Protected disk
+reads require an explicit owner or authorized staff-manager confirmation of
+the current linked account in Staff. No historical link is silently approved.
+An approval allows previously loaded own work/pay for at most 24 hours without
+a fresh server check. Revocation applies on reconnect or lease expiry. Rebind,
+deactivation and revision changes invalidate the prior authority. Staff draft
+restoration or reconnection never silently submits a money/service change.
+
+Security repair
+Close participant direct-write access to staff connection requests. Preserve
+legitimate manager writes and application/invitation decisions. New invitations
+and owner resends receive protected provenance; historical pending invitations
+need an owner resend before acceptance. Preserve all historical records and
+existing online staff access. The migration does not change payroll formulas,
+payment ledgers, account ownership or remove existing staff connections.
+
+Customer
+Retain authorized activity/history read results and prepared booking, saved
+place, saved-post and following screens. Booking selections may be restored;
+slot availability and confirmations are checked again. Payment details, tokens,
+authentication/admin/edit pages and server actions are not generic cached data.
+Prepared appointment, favorites, saved-post, following and receipt views update
+quietly after fresh matching online authorization, at most once every 30 seconds;
+active input, retained client drafts and scroll are preserved.
+
+Web and app
+Prepared pages include every required build script/style/font, including lazy
+code. Publish a prepared page only after all required assets pass integrity and
+completeness checks. Scope, device generation, permission and expiry checks run
+before cached private markup can appear. Logout clears read snapshots and route
+hints, while financial outboxes remain separately scoped and recoverable.
+The iPhone app retains the last successfully prepared bare route. The Lumi
+launch presentation and existing Safari payment/security flows are preserved.
+
+Live data
+Foreground/resume refreshes staff turns and income through existing partial
+reads and wakes the existing POS outbox. iOS background refresh is best effort,
+scheduled by iOS, and performs bounded authorized reads only. It is not a
+continuous background connection and never submits financial writes. Native
+snapshots are encrypted and excluded from backup; no session credential is
+persisted in that snapshot store. Revoked staff offline permission is checked
+again on background staff reads before any new private snapshot is stored.
+
+Release evidence
+Use the dated immutable change events, exact source hashes and final release
+receipt for actual tests, deployment IDs and Apple/TestFlight availability.
+A local build or higher app version alone is not publication evidence.

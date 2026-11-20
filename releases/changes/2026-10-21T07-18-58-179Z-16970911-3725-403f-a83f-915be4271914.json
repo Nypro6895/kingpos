@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "pc-ios-today-session-reliability-20261021",
+  "status": "needs-integration",
+  "summary": "Verified unconfirmed refresh errors preserve session authority and read failures retain diagnostic provenance; actual Today503 and WK restart cause remain open; release held",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/bounded-get.ts",
+    "lib/supabase/auth-rest.ts",
+    "lib/read-request-timing.ts",
+    "tests/read-failure-provenance.test.mjs",
+    "tests/read-deadline-sdk-contract.test.mjs",
+    "tests/context-today-timing.test.mjs",
+    "lib/supabase/auth-rejection.ts",
+    "lib/supabase/refresh-session.ts",
+    "tests/refresh-session-availability.test.mjs",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/app-local-command-backend-trace.test.mjs",
+    "tests/read-backend-profile.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\frozen-patch",
+    "commit": "4ee944727133257a6a2f1f84c01c9186bb0fb520",
+    "sourceSha256": "1135afeedf044a9ffacb10c9e17771ea0275455b8362d029cda317d84f2d6ea1"
+  },
+  "validation": [
+    {
+      "name": "unified-regressions-148",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\unified-regressions-r2.log"
+    },
+    {
+      "name": "production-web-build-and-typescript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\production-build-result.json"
+    },
+    {
+      "name": "product-lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\product-lint.log"
+    },
+    {
+      "name": "frozen-source-and-shared-hold-files",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\verification.json"
+    },
+    {
+      "name": "actual-device-today503-and-restart",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\verification.json"
+    }
+  ],
+  "dependencies": [
+    "online-authority-refresh-20261021"
+  ],
+  "releaseHold": true,
+  "id": "16970911-3725-403f-a83f-915be4271914",
+  "recordedAt": "2026-10-21T07:18:58.179Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-pc-reliability-20261021",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

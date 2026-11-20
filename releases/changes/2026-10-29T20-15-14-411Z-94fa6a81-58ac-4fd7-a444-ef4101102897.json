@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "pos-sync-toolbar-20261029",
+  "status": "ready",
+  "summary": "Owner POS sync indicator moved to right edge of Saved tickets and Customers toolbar; preserve status colors; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "dccf4807-f7c7-4783-a75e-4ca9056bd5cf"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "94fa6a81-58ac-4fd7-a444-ef4101102897",
+  "recordedAt": "2026-10-29T20:15:14.411Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos/owner-pos-client.tsx": "25c116b5ebf7cb839cda0e7a190023a4f2a3528d551d0226bc25b950bf041ed2",
+    "app/pos/owner-pos.css": "f50f3d6e8cad3d435b05615ce9ca7c1d85f0b31c346b0caa6b7686a98e5ea601"
+  }
+}

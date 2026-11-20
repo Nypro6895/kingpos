@@ -1,5 +1,6 @@
-import {ExploreBookButton,ExploreSalonLove} from "@/components/explore-account-actions";
+import { withExperiencePage } from "@/components/experience-page";
 import { SalonProfileView } from "@/app/salon-profile/salon-profile-view";
+import { RewardSalonPanel } from "@/components/rewardlumi/reward-salon-panel";
 import { getCurrentBusinessContext, isSalonManageContext } from "@/lib/current-context";
 import { getPublicSalonProfileData } from "@/lib/salon-profile";
 import type { Metadata } from "next";
@@ -15,7 +16,7 @@ export async function generateMetadata({
   params,
 }: PublicSalonProfilePageProps): Promise<Metadata> {
   const { salonId } = await params;
-  const data = await getPublicSalonProfileData(salonId);
+  const data = await getPublicSalonProfileData(salonId, 0);
 
   if (!data) {
     return {
@@ -32,12 +33,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function PublicSalonProfilePage({
+async function PublicSalonProfilePage({
   params,
 }: PublicSalonProfilePageProps) {
   const { salonId } = await params;
   const [data, context] = await Promise.all([
-    getPublicSalonProfileData(salonId),
+    getPublicSalonProfileData(salonId, 0),
     getCurrentBusinessContext(),
   ]);
 
@@ -51,7 +52,6 @@ export default async function PublicSalonProfilePage({
 
   return (
     <main>
-      <div className="flex justify-end gap-3 px-5 py-3"><ExploreSalonLove salonId={salonId} name={data.profile.name}/><ExploreBookButton href={`/book/${salonId}`} name={data.profile.name} contactHref={`/explore/salons/${salonId}`} phoneHref={data.profile.phone?`tel:${data.profile.phone}`:null}/></div>
       <SalonProfileView
         capabilities={{
           canBook: data.directoryListing?.claimState !== "unclaimed" && data.profile.operatingStatus.kind !== "permanently_closed",
@@ -67,8 +67,11 @@ export default async function PublicSalonProfilePage({
           isAuthenticated: Boolean(context.user),
           isOwnSalon: false,
         }}
+        rewards={<RewardSalonPanel salonId={salonId} canBook={data.profile.activeServiceCount > 0 && data.directoryListing?.claimState !== "unclaimed" && data.profile.operatingStatus.kind !== "permanently_closed"} />}
         data={data}
       />
     </main>
   );
 }
+
+export default withExperiencePage(PublicSalonProfilePage);

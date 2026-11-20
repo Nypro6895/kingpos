@@ -1,0 +1,34 @@
+TICKET OWNER — CHỜ GHÉP DEPLOY CHUNG
+Ngày: 2026-10-25 (America/Chicago)
+Yêu cầu: Sửa phần header Ticket Owner bị lặp, gộp tiêu đề/ngày/tìm kiếm/menu vào một hàng; lưu cùng các bản đang sửa để deploy sau.
+
+Đã sửa:
+- Một hàng duy nhất: POS Tickets | ngày chọn được | Search | menu trợ giúp.
+- Mobile dùng ngày dạng 10/25/2026; màn hình rộng dùng Oct 25, 2026. Chỉ một giá trị ngày hiển thị tại mỗi độ rộng.
+- Giữ tiêu đề Ticket trong hàng này khi CSS POS mobile ẩn các tiêu đề trang khác.
+- Giữ date picker, tìm kiếm trực tiếp, Enter đóng bàn phím và menu hiện có.
+
+Change ID: owner-ticket-single-row-20261025
+Trạng thái: needs-integration; chưa deploy.
+Nguồn cố định: artifacts/owner-ticket-single-row-20261025/source
+Patch riêng của lượt sửa: artifacts/owner-ticket-single-row-20261025/change.patch
+Manifest hoàn tất: artifacts/owner-ticket-single-row-20261025/completion.json
+Event hoàn tất: xem completion-event.json trong cùng thư mục artifacts.
+
+Kiểm tra:
+- Chromium với component thật và dữ liệu/action mô phỏng: 320/375/390/430/768/979/980/1280px, cùng một hàng, không tràn ngang, tiêu đề còn hiển thị, vùng chọn ngày 44px.
+- Tìm theo khách/staff/service, xóa tìm kiếm, trạng thái rỗng, chọn ngày, Enter, menu, mở/hủy sửa ticket và tính tổng/discount đều đạt.
+- ESLint và kiểm tra whitespace của patch đạt. Ảnh và kết quả: artifacts/owner-ticket-single-row-20261025/.
+- TypeScript riêng TicketFilters cùng các dependency import đạt (tsconfig.json trong thư mục artifacts của task).
+- TypeScript toàn checkout gặp 6 lỗi TS2307 trong .next-readiness-check/types: cache route Help còn tham chiếu app/(app)/help sau khi Help đã chuyển route. Cần tạo lại cache/build từ nguồn release đã ghép; không xóa hay sửa phần Help trong lượt Ticket này.
+- Chưa kiểm tra phiên đăng nhập thật trên iPhone hoặc build toàn bộ nguồn release đã ghép.
+
+Khi deploy chung:
+- Đọc docs/release-policy.txt và pending journal, lấy đúng baseline production dưới khóa điều phối.
+- Ghép ticket-toolbar-20261017 và compact-ticket-layout-20261017 nếu production còn thiếu; đó là phần bỏ header/filter cũ. Đảm bảo trang app/(app)/pos-tickets/page.tsx không còn WorkspaceToolbar/CompactFilters riêng, và OwnerLiveTickets chỉ render một TicketFilters kèm ContextualSupport.
+- Giữ bản pos-mobile-compact-20261024. Áp dụng change.patch của lượt này sau các thay đổi đó. Giữ ngoại lệ [data-ticket-title] trong quy tắc ẩn h1 mobile để tiêu đề không biến mất.
+- Không chép toàn bộ globals.css hoặc checkout dirty đè baseline; patch chỉ thêm CSS module, chỉnh TicketFilters và một selector trong globals.css.
+- Ghép cùng Help/Settings và các event hoàn tất khác theo journal; không coi task working là đã sẵn sàng.
+- Build/test nguồn đã ghép; kiểm tra /pos-tickets ở More và /pos/ticket trong POS, date/search/menu đúng một lần, phiên iPhone thật và portable Ticket.
+- Đây là thay đổi giao diện web; tự nó không đổi Swift, bridge hay bundle native. Đánh giá native theo nguồn release thực tế.
+- Chỉ ghi đã phát hành sau khi xác minh live. Note này không yêu cầu deploy ngay.

@@ -1,0 +1,128 @@
+{
+  "kind": "change",
+  "changeId": "ios-role-priority-prefetch-20261027",
+  "status": "ready",
+  "summary": "Role-aware prioritized read preparation for Owner/Staff/Personal, bounded proactive Explore loading, foreground-preserving renewal, fast native cache restoration and cookie pipeline timing; source/tests/archive validated, awaiting coordinated release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/explore/explore-auto-load.tsx",
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-discovery-feed.tsx",
+    "app/explore/explore-feed.tsx",
+    "app/local-app/entry.tsx",
+    "app/local-app/navigation.tsx",
+    "docs/ios-priority-prefetch-deploy-note-20261027.md",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/ReylumiTests/NativeCookiePipelineTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/scripts/native-offline-bridge.test.mjs",
+    "lib/app-local-prefetch-plan.ts",
+    "lib/app-local-prefetch.ts",
+    "lib/app-local-resource.ts",
+    "lib/explore-ahead-buffer.ts",
+    "lib/read-priority-scheduler.ts",
+    "releases/changes/2026-10-27T17-34-35-870Z-3c6931fe-9096-42ed-8435-1f617a156244.json",
+    "scripts/ios/acceptance-report.mjs",
+    "tests/app-local-prefetch-plan.test.mjs",
+    "tests/app-local-prefetch-runtime.test.mjs",
+    "tests/explore-ahead-buffer.test.mjs",
+    "tests/ios-native-pipeline-report.test.mjs",
+    "tests/read-priority-scheduler.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-ios-priority-prefetch-20261027\\artifacts\\ios-priority-prefetch-20261027\\frozen-source-final",
+    "commit": "2a4fb9d058dffcd367872df1ba1137ebae47bcdb",
+    "tree": "a72279ad9a08b9ded3da45a4cb23f4f335ea9585",
+    "generatedOverlay": {
+      "origin": "https://github.com/Nypro6895/kingpos/actions/runs/40557254859",
+      "artifactId": 12758561863,
+      "files": [
+        "ios/Reylumi/LocalAppBundle/app.css",
+        "ios/Reylumi/LocalAppBundle/manifest.json"
+      ],
+      "reason": "Use the clean CI archive CSS and manifest; bundled JavaScript and all other resources already match exactly.",
+      "bundleBuildId": "a9436da6c80ef48dca89f60a29a5a201f07ba557bb541c302e5cbfb70b22ea28",
+      "bundleSha256": "e1588e58ca480c84684810889745bd09c3021ca8ab4cad3254eec0b62317b201"
+    }
+  },
+  "baseCommit": "699101149dbf5614ae17ab601b5e306ed311664c",
+  "patchSha256": "9ce1df3a9ff76569964ae9d81dc3aca2b5bfa29637382818aa64af11fd06f558",
+  "validation": [
+    {
+      "name": "Shared queue, three-role plan, real React resource/Explore integration, native bridge/report regressions",
+      "result": "passed",
+      "evidence": "artifacts/ios-priority-prefetch-20261027/regression-tests-final.log"
+    },
+    {
+      "name": "Next production build including TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/ios-priority-prefetch-20261027/web-build-final.log"
+    },
+    {
+      "name": "Source-bound native package verification",
+      "result": "passed",
+      "evidence": "artifacts/ios-priority-prefetch-20261027/local-bundle-provenance.json"
+    },
+    {
+      "name": "Frozen scoped source hash verification",
+      "result": "passed",
+      "evidence": "artifacts/ios-priority-prefetch-20261027/frozen-source-final.json"
+    },
+    {
+      "name": "Native Simulator XCTest and unsigned device archive",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/40557254859"
+    }
+  ],
+  "dependencies": [],
+  "limitations": [
+    "No production deploy or TestFlight upload performed.",
+    "Physical iPhone render latency and percentage improvement not measured.",
+    "Preparation is limited to current permitted role snapshots and periods, not all history.",
+    "RAM cache is bounded to 30 entries/5 MiB; unvisited oversized or evicted data reloads on opening.",
+    "Staff reads without durable native authority remain RAM-only under existing grant policy."
+  ],
+  "id": "d6c3e8d2-8193-4be8-bad7-7d567abc884e",
+  "recordedAt": "2026-10-27T18:29:47.974Z",
+  "worktree": "C:\\Reylumi\\kingpos-ios-priority-prefetch-20261027",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/explore/explore-auto-load.tsx": "68d974e19bc826f44500f300e1fe63099f6ab488c6f1938503e7b3a9a78667d1",
+    "app/explore/explore-client.tsx": "cb11edd630634198c9370d3a7442da90e00b8a0c8555240ac0f038afc7e6363c",
+    "app/explore/explore-discovery-feed.tsx": "8a8e405e6e4d3dc4a6473f58ad7ebdc543e80c74ccfde36f06b6cefb92000a77",
+    "app/explore/explore-feed.tsx": "4e59a73dad939656d027fc56e24ae51ce114e22814af449c39dbec80fecc297d",
+    "app/local-app/entry.tsx": "fc6b1f73b5043ed390682695351c8448c8f940a6cd9bd2d32b53b22986b7db12",
+    "app/local-app/navigation.tsx": "d84c88a46cd6e1ed7ad494ae07a18736f93d58a14e09734688a026ec6bf183d5",
+    "docs/ios-priority-prefetch-deploy-note-20261027.md": "af6b8ae4504a9db7c82578f47f9e9b770f96c9512a2ebb71e83b16c40e74f045",
+    "ios/Reylumi/LocalAppBundle/app.css": "cc5acef63bfed4022acb0d19974d55b15baf6859558e351cca15bb312d307178",
+    "ios/Reylumi/LocalAppBundle/app.js": "216b6db622dfa54a80649243eba36177fbd5f145d2aae1678d5547e89cc251c3",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "724ff54d935777662a039571545e845560a3fa17bcc293bff2091e7476f89ef0",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "36a0cf48cc9c3dfa414f42dbc5e27b8023087b67c6bee62d3e3d2ad1a4c93a51",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift": "843ad8fe2ab71120670cbc04db8a4ef9f6e46b24c77c23e666fe58f9d1fca728",
+    "ios/ReylumiTests/NativeCookiePipelineTests.swift": "d183929e18e6e3ec989113f33011aa637c431584c615b48ac309e7c552b9b2c3",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "f9e9414ff0bbb5b543d7bd46e1cc34944ee6474c8cfaaaabc856243c5206b618",
+    "ios/scripts/check-build.sh": "a1225ec5acd4964fe0be8457eacda286992d1e1cb95a97997062865c6af3acbd",
+    "ios/scripts/native-offline-bridge.test.mjs": "8db6fad3005d582215cfbaeba2134449fceda76acc5488d53faf4334dcd8d238",
+    "lib/app-local-prefetch-plan.ts": "d48d49aa29ec6ecc827ea349caa34b7c5b6f4592df330b2cfd10d7c99ad32514",
+    "lib/app-local-prefetch.ts": "4888489097cf2bdcc14e452de681dcf5f073b86f32e9bc2c3d6da1859591e80b",
+    "lib/app-local-resource.ts": "f67404df9aacb2ad9dd2d875581cc340e0c96e14810cd95f67dade44876ca55d",
+    "lib/explore-ahead-buffer.ts": "ed6aa52308d497914c7ae11ed171e6424f293fb69716b9c281f95538abf19566",
+    "lib/read-priority-scheduler.ts": "1c633a7a34f9bdc167da58ef02429f72cfae562d180f2394b3ef663d09d5ab92",
+    "releases/changes/2026-10-27T17-34-35-870Z-3c6931fe-9096-42ed-8435-1f617a156244.json": "ee5e64097343d7d7fb75d1625da4e594cb76a90d64b875a76ad5a24781b69170",
+    "scripts/ios/acceptance-report.mjs": "b562148cacea201a050f3b258e91f3101cdb695e02b20eea1d40dbff6a74aec2",
+    "tests/app-local-prefetch-plan.test.mjs": "7d724a886ecc3fd824cc59ccad0d39fe3cd88e27f97b5f850bd9e6cd632f2c1b",
+    "tests/app-local-prefetch-runtime.test.mjs": "fc7ad10bf8adb6a62e6fb6aa13f7bc1826a193f8627719162229042f91581f3a",
+    "tests/explore-ahead-buffer.test.mjs": "d80260ff61d0beda04c093a6c3719f4c1ec6b6c1d325c192240933bc828595cd",
+    "tests/ios-native-pipeline-report.test.mjs": "def1539b0f2657a919f8db8cc48dea8ff81908878f25f1a20e18137bf0513617",
+    "tests/read-priority-scheduler.test.mjs": "ebd53b35360853239c78e8d7261a9b30802f6bbaff48709fed96e6ef93864ef7"
+  }
+}

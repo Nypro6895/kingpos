@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "beauty-image-publication-gate-20261119-r1",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "docs/beauty-image-publication-gate-20261119.md",
+    "supabase/migrations/20261119184500_beauty_image_publication_gate.sql",
+    "tests/beauty-image-publication-gate.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-37.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Exact frozen Beauty25-check regression/four observed lock schedules and final450-source22-migration isolated16-check rehearsal passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\android-windows-portable-r1\\production-migration-rehearsal22-r1\\result.json"
+    }
+  ],
+  "originalEvents": [
+    "dfe158df-ca95-4e99-91ad-e5d4bb21850a"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-37",
+  "id": "b341a7ee-ac39-4516-b695-6c9d83afafe9",
+  "recordedAt": "2026-11-19T19:41:38.774Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "docs/beauty-image-publication-gate-20261119.md": "2887af3b80e09bb75eb05f762a45dbb34f60e32fbc1d1ffe6582d9ee95f7e26a",
+    "supabase/migrations/20261119184500_beauty_image_publication_gate.sql": "cd39e00086915be45d10c1c1cdd5ee38995e8ab599ecd661afd228007f1ba521",
+    "tests/beauty-image-publication-gate.integration.test.mjs": "9811be3b304677a5b6c00ea104b6d04f72de8391049e3471e2dabdea8016d7bb"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "remove-saved-address-card-20261029",
+  "status": "needs-integration",
+  "summary": "Remove technical saved-address fallback card from salon settings across grouped, legacy and app-local views; preserve address editing and storage.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/salon-settings/page.tsx",
+    "components/app-local-salon-settings.tsx",
+    "app/settings/salon-settings-panels.tsx"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "artifacts/remove-saved-address-card-20261029/source",
+    "baseCommit": "64d9f14"
+  },
+  "validation": [
+    {
+      "name": "TSX transpilation of all three changed views and no fallback references",
+      "result": "passed"
+    },
+    {
+      "name": "Production baseline integration and iPhone visual QA",
+      "result": "pending"
+    }
+  ],
+  "notes": "Web-only UI change. Apply only scoped diff to current release source; no native build required. Address persistence and editing unchanged.",
+  "id": "b423bc25-cc12-460a-b53e-c6ab65bbaaa6",
+  "recordedAt": "2026-10-29T13:29:54.314Z",
+  "worktree": "C:\\Reylumi-worktrees\\remove-saved-address-card-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

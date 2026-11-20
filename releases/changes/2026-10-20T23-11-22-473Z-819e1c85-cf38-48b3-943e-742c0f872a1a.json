@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "ios-workspace-cookie-deletion-20261020",
+  "status": "working",
+  "summary": "Repair native workspace-cookie deletion after a successful role switch while preserving authority, generation and no-replay checks.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos-cookie-fix-20261020",
+    "commit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89"
+  },
+  "validation": [
+    {
+      "name": "Release45 Owner to Personal failure captured with native HTTP200 then cookieMismatch/reset/local409",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/auth-report.html"
+    },
+    {
+      "name": "Complete isolated actual-WK baseline/prototype/security comparison",
+      "result": "pending"
+    },
+    {
+      "name": "Native repair and original contract suite",
+      "result": "pending"
+    },
+    {
+      "name": "Authenticated Staff role test",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "819e1c85-cf38-48b3-943e-742c0f872a1a",
+  "recordedAt": "2026-10-20T23:11:22.473Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-cookie-fix-20261020",
+  "supersedesEvents": []
+}

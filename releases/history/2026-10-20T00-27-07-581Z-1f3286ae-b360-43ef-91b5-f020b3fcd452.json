@@ -1,0 +1,51 @@
+{
+  "kind": "release",
+  "releaseId": "session-role-stability-release-20261019",
+  "summary": "Verified web publication of session/guest/workspace repair and compatible hidden-post read migration. Native upload remains pending; failed native test setup was not uploaded.",
+  "changes": [
+    "300f6a72-2292-4acd-817a-87cbfc233fbe"
+  ],
+  "source": {
+    "commit": "d7500fafb22c3a5bb8f5149db496999058c2b036",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/frozen-d7500fa",
+    "baselineDeploymentId": "dpl_PSPG2rQUTEvvyPJhuL82Wqwc3qUQ",
+    "baselineCommit": "1647461cd8e820f07da2dcc3048c665fbad32842",
+    "sourceSha256": "6d3f083dc39738c04996cf6b43bb386048b94a9df32b20a4e07e8d0f93440054",
+    "overlaySha256": "bd7ee8961479f35b2cdd693a96abbc91f5b65be0d58a8f963596b9e2318cbb1c"
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_8zvbNL9LePEukw2jUYGd56KYtjFj",
+      "baselineDeploymentId": "dpl_PSPG2rQUTEvvyPJhuL82Wqwc3qUQ",
+      "sourceSha256": "6d3f083dc39738c04996cf6b43bb386048b94a9df32b20a4e07e8d0f93440054",
+      "overlaySha256": "bd7ee8961479f35b2cdd693a96abbc91f5b65be0d58a8f963596b9e2318cbb1c",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/live-source-verification.json"
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "evidence": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/native/upload-failure-39345863120.json",
+      "notes": "Standalone test-only fixture revision validation pending. No signed/uploaded build from failed attempt."
+    }
+  },
+  "database": {
+    "migrationVersion": "20261019220000",
+    "sourceSha256": "3dd1e4a03ba1c46104ad447819995ca01f4aa6501e379c43076268a635cd857f",
+    "committed": true,
+    "noBusinessRowsWritten": true,
+    "evidence": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/database-release-verification.json"
+  },
+  "verification": {
+    "local": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/local-verification.json",
+    "candidateFinal": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/candidate-browser-final.json",
+    "initialUnclassifiedWebKitObservation": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/guest-browser-smoke-assessment.json",
+    "liveGuest": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/live-browser-smoke.json",
+    "liveOwner": "C:/Users/giuse/kingpos/artifacts/session-role-stability-release-20261019/live-owner-smoke.json",
+    "physicalIPhone": false
+  },
+  "id": "1f3286ae-b360-43ef-91b5-f020b3fcd452",
+  "recordedAt": "2026-10-20T00:27:07.581Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-session-role-stability-20261019"
+}

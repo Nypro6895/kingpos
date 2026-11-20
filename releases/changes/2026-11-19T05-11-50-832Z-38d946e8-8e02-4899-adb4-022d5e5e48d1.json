@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "rights-evidence-operator-ui-20261118",
+  "status": "ready",
+  "summary": "Owner-approved collapsed rights evidence UI: explicit ordinary triage, independent capture/removal decisions, durable30min actor/case-scoped exact unknown retry, protected private view and known-minor preview/signing guard.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/post-safety/rights-evidence-panel.tsx",
+    "app/(app)/admin/post-safety/rights-evidence-panel.module.css",
+    "app/(app)/admin/post-safety/rights-evidence-actions.ts",
+    "lib/platform-admin/rights-evidence.ts",
+    "lib/rights-evidence-intent.ts",
+    "app/(app)/admin/post-safety/case-card.tsx",
+    "lib/platform-admin/post-safety.ts",
+    "tests/rights-evidence-operator-actions.test.mjs",
+    "tests/rights-evidence-operator-ui.browser.test.mjs",
+    "docs/rights-evidence-operator-ui-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\rights-evidence-operator-ui-20261118\\frozen-source"
+  },
+  "dependencies": [
+    "rights-evidence-runtime-20261118",
+    "rights-image-evidence-backend-20261118",
+    "rights-case-evidence-query-20261118"
+  ],
+  "validation": [
+    {
+      "name": "19focusedactualUI/action/parser/recovery/signingrecords+11browserscenarios,0skip",
+      "result": "passed",
+      "evidence": "artifacts/rights-evidence-operator-ui-20261118/browser-acceptance.json"
+    },
+    {
+      "name": "51combinedUI/runtime/oldmaintenancefocusedrecords,0skip",
+      "result": "passed",
+      "evidence": "artifacts/rights-evidence-operator-ui-20261118/freeze-acceptance.json"
+    },
+    {
+      "name": "ScopedESLint and6productTSsemantic/syntactic0diagnostics",
+      "result": "passed",
+      "evidence": "artifacts/rights-evidence-operator-ui-20261118/typescript-diagnostics-r2.json"
+    },
+    {
+      "name": "390/1100actualcomponentcapturesvisuallyreviewed,44px/nooverflow/noexternalnetwork",
+      "result": "passed",
+      "evidence": "artifacts/rights-evidence-operator-ui-20261118/verified-390.png"
+    },
+    {
+      "name": "10frozenSHA equality and prior12runtimefilesunchanged",
+      "result": "passed",
+      "evidence": "artifacts/rights-evidence-operator-ui-20261118/freeze-acceptance.json"
+    }
+  ],
+  "scopeBoundary": "Sourcecandidateonly; coordinatorassembledNext/hosted/nativeacceptance separate. No policyactivation/operatorrolegrants/holdediting/automaticrestore/newAIorprovidercalls/realcustomerdata/commit/push/deploy. Knownminorlegacyguardonly; broadcross-casepublicpreview/specialillegalhandling remainsdocumentedoutsidev1.",
+  "id": "38d946e8-8e02-4899-adb4-022d5e5e48d1",
+  "recordedAt": "2026-11-19T05:11:50.832Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/post-safety/rights-evidence-panel.tsx": "42d2a9b9b2697e1c78bb9f3d02603917f009269b6e96171bc34cb563cd3d4a8f",
+    "app/(app)/admin/post-safety/rights-evidence-panel.module.css": "64cd7b8fae271e32abb5ff2306a1d96dab7abef4ca26cc9d7ab119ba841df12b",
+    "app/(app)/admin/post-safety/rights-evidence-actions.ts": "deb87c545e240fedf50dfa3d021156af05513b21b21cefe7550df22cfbe5d6fd",
+    "lib/platform-admin/rights-evidence.ts": "22f4f949c60e623d6036a2c41e8296f50d0fe8eb87e948e7b3aeb49ef01a1aa8",
+    "lib/rights-evidence-intent.ts": "da3196c8cdcf2ef83c536aad9fe25e7786e9a4008bb05e8e36c005ef83b280ba",
+    "app/(app)/admin/post-safety/case-card.tsx": "a9beefa4bd28d032c73fd7de10aa74c891d99ad84c6eec40e29d924e0e71f3fa",
+    "lib/platform-admin/post-safety.ts": "951377aad6c8ab3b6f7fdb97b935a4d52cc829c372905954a954dd610d75b37c",
+    "tests/rights-evidence-operator-actions.test.mjs": "9c05684622d19e82951547a3bdc8ee6c5442a321cd9c01798bf0ff7adf80ccd5",
+    "tests/rights-evidence-operator-ui.browser.test.mjs": "9bac1ae4d0a13964c3c8e9681e525d5714e0f3df185271e8260cda8d2f3316a2",
+    "docs/rights-evidence-operator-ui-20261118.md": "eedc1974c74721c7f82b348521facb6ec0c6bcd47874b66cb6f1d51895a6c85d"
+  }
+}

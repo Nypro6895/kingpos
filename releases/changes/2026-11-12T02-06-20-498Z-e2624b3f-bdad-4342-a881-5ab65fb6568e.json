@@ -1,0 +1,111 @@
+{
+  "kind": "change",
+  "changeId": "salon-address-directions-autocomplete-20261106",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Clickable salon address text and address autocomplete across booking, Explore, profile and salon setup; iOS Maps app handoff Original handoff 72363d96-651e-404f-8847-09f43ba91933. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/explore/explore-salon-card.tsx",
+    "app/explore/explore-search-toolbar.tsx",
+    "app/explore/explore-client.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-home.tsx",
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/booking/manage/[token]/guest-manage-client.tsx",
+    "app/activity/history-details-drawer.tsx",
+    "app/my-bookings/[bookingId]/booking-detail-actions.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/(app)/salon-settings/page.tsx",
+    "app/my-place/place-panels.tsx",
+    "app/salons/salon-management-page.tsx",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "app/settings/salon-list-panel.tsx",
+    "app/(app)/activity/receipts/[ticketId]/page.tsx",
+    "app/(app)/claim/[salonId]/page.tsx",
+    "lib/vietnamese-dictionary.ts",
+    "app/explore/explore-map.tsx",
+    "components/salon-address-link.tsx",
+    "components/address-autocomplete.tsx",
+    "lib/location/map-links.ts",
+    "lib/location/address-suggestions-data.ts",
+    "lib/location/address-suggestions.ts",
+    "app/api/location/suggestions/route.ts",
+    "tests/salon-address-flow-browser.mjs",
+    "tests/salon-address-suggestions.test.mjs",
+    "tests/salon-map-lifecycle-browser.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "e2624b3f-bdad-4342-a881-5ab65fb6568e",
+  "recordedAt": "2026-11-12T02:06:20.498Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/explore/explore-salon-card.tsx": "cbd4fd4178efc2dc0d645f7b3098ff8ec30738d90dbaea9017e89778b9d0d57d",
+    "app/explore/explore-search-toolbar.tsx": "0c915ff5f3f60999014e4a65b7ae499a3b24332d7c05eded53d1a33155f3afea",
+    "app/explore/explore-client.tsx": "50d6e0afa32ea05622e7ad88a86ba01ac82c30680d1ecfec6a903e37ed7a4845",
+    "app/salon-profile/salon-profile-view.tsx": "8854fcd954017d3684b754450a3b3ed74bcac2e202bce9dc3f5a3d646510f336",
+    "app/salon-profile/salon-website-home.tsx": "117f4cd6eee7c3d461f1915bd2de64ffb453c02af7d8bdf3aa40d9d2a6519535",
+    "app/book/[salonId]/public-booking-client.tsx": "a9103bf94155d35fc27039a71920310458e4933cf7be003f424a5c9652e7feac",
+    "app/booking/manage/[token]/guest-manage-client.tsx": "6716d0d81d82039b3386f55f0d94ca6d667f010f0dcb0f254f7d86509e9c20e0",
+    "app/activity/history-details-drawer.tsx": "12eb8fc1b59417f8c027e256d4abea3e07e2cf8524ec3120a32a4d85882ae42c",
+    "app/my-bookings/[bookingId]/booking-detail-actions.tsx": "4426dbc112053d1370d82018a1497188f8c0e366ff7ed4de92514021f337208e",
+    "app/settings/salon-settings-panels.tsx": "c19b1cf4f16894513dcdcf8ece72b581f1e9302bc2bf23f53af76ce1ec90a135",
+    "app/(app)/salon-settings/page.tsx": "630ec7bdc604280333ba3ae3e452b56ba66afa6c66a0832cf9c1222ff704c035",
+    "app/my-place/place-panels.tsx": "df226531012e94f068bc595a2a1ef0e6519cf01c978bb3279a8fee0165f0f59f",
+    "app/salons/salon-management-page.tsx": "42fa85e112aade8f6d5f5dedbc03590b64577274d6fc0b36cbcd6ca1a701a8cc",
+    "ios/Reylumi/NavigationPolicy.swift": "17a0ca61d2d0e556a38c155e784ea30ca26a40c716c44faf9ace4164c8834094",
+    "ios/Reylumi/ReylumiViewController.swift": "9d3f970b32df38d93fa86b53176a37aed15a6589d53f2733d933cf428162e787",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "5b767f38e0bd84e0cd4b9411412b3a7bbdf0f51211aff3c4c4e5941db6ce8e8d",
+    "app/settings/salon-list-panel.tsx": "53781bb4291bdc5439e04d49cd7ad27190031ff2e05da08e3dd388df882d66e1",
+    "app/(app)/activity/receipts/[ticketId]/page.tsx": "b087e4c9f79a13a04fdb480e7f3878bd2687e097eafabb7d54d6d077c5e147e0",
+    "app/(app)/claim/[salonId]/page.tsx": "e7bd2290a7ec3f3e048219355b7e63e13547fff56693a1e12865faa46b4512c6",
+    "lib/vietnamese-dictionary.ts": "5e80dcca2251f596feabdf786989ca111d3dd468624f7001e3ae620c0e4a22a6",
+    "app/explore/explore-map.tsx": "0ff2352bd89f5c783422e2a141a5128cf1d78c8dafee1535ff047ada55361a07",
+    "components/salon-address-link.tsx": "ef78bbf31db2328d5f31b3a86227709f1f9dac03148f719fef574bee50ef2d82",
+    "components/address-autocomplete.tsx": "c8e83a08c0a88d9647da5ec20a93f24cdb1914524c28fd0d492b50843300edc9",
+    "lib/location/map-links.ts": "033b76c15e7c3d75d0736aa0db98e7d35d327e70be580992230828550e4eb75d",
+    "lib/location/address-suggestions-data.ts": "4bbf9262afc6d688073901fab8e768160867077bb17a4e7737ac6576a4a16434",
+    "lib/location/address-suggestions.ts": "43f77c647b065b74a58e74496a6d6b07461f384b1f1f9d365d113370308252d9",
+    "app/api/location/suggestions/route.ts": "a8fe86198c1b93073cbc4f999a33d2b26ce7d6fd84be2982092e9a334635a2d6",
+    "tests/salon-address-flow-browser.mjs": "0f7589dfa2136595f6127c4aa4a5ef1d1e8ad80fd4c21cc8309ce9f0d19e67b2",
+    "tests/salon-address-suggestions.test.mjs": "94b85b93747ad77cbfddf04afe0ee026f46f49f8f176b3915bb78d89f9d85636",
+    "tests/salon-map-lifecycle-browser.mjs": "7bcbb5ebf887b359405c4e932bdb37e9c692e1eb7ca3e48228315e46a3f730bf"
+  }
+}

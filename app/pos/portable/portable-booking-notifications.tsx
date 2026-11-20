@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
@@ -9,6 +10,8 @@ import styles from "./portable-booking-notifications.module.css";
 export function PortableBookingNotifications({ salonId, timezone, canConfirm }: {
   salonId: string; timezone: string; canConfirm: boolean;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
   const bell = useRef<HTMLButtonElement>(null);
@@ -106,32 +109,32 @@ export function PortableBookingNotifications({ salonId, timezone, canConfirm }: 
       buttons[(index + (event.key === "ArrowDown" ? 1 : buttons.length - 1)) % buttons.length]?.focus();
     }
   }}>
-    <button ref={bell} type="button" className={styles.bell} aria-label={`Appointment notifications${loaded ? `, ${rows.length} pending` : ""}`} aria-expanded={open} aria-controls={id}
+    <button ref={bell} type="button" className={styles.bell} aria-label={__vt(`Appointment notifications${loaded ? `, ${rows.length} pending` : ""}`)} aria-expanded={open} aria-controls={id}
       onClick={() => { if (open) close(); else { setConfirmed([]); setOpen(true); void refresh(); } }}>
       <svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
       {rows.length > 0 && <span aria-hidden="true" className={styles.badge}>{rows.length > 99 ? "99+" : rows.length}</span>}
     </button>
     <span className="sr-only" role="status">{announcement}</span>
     {open && <section id={id} className={styles.panel} aria-labelledby={`${id}-title`}>
-      <div className={styles.heading}><div><h2 id={`${id}-title`}>New appointments</h2><p>{loaded ? `${rows.length} pending` : "Loading…"}</p></div><button ref={closeButton} className={styles.close} type="button" aria-label="Close appointment notifications" onClick={close}>×</button></div>
-      {offline && <p className={styles.message} role="status">Offline. Showing the last update. Reconnect to confirm appointments.</p>}
-      {error && <div className={`${styles.message} ${styles.error}`} role="alert">{error} <button type="button" className={styles.close} disabled={offline || !!busy} onClick={() => void refresh()}>Retry</button></div>}
-      {loaded && !error && rows.length === 0 && confirmed.length === 0 && <p className={styles.message}>No new appointments. You’re all caught up.</p>}
-      {!canConfirm && <p className={styles.message}>This device can view appointments. Confirmation requires booking edit access.</p>}
+      <div className={styles.heading}><div><h2 id={`${id}-title`}><WorkspaceText text="New appointments" /></h2><p>{loaded ? `${rows.length} pending` : <WorkspaceText text="Loading…" />}</p></div><button ref={closeButton} className={styles.close} type="button" aria-label={__vt("Close appointment notifications")} onClick={close}>×</button></div>
+      {offline && <p className={styles.message} role="status"><WorkspaceText text="Offline. Showing the last update. Reconnect to confirm appointments." /></p>}
+      {error && <div className={`${styles.message} ${styles.error}`} role="alert"><WorkspaceText text={error} /> <button type="button" className={styles.close} disabled={offline || !!busy} onClick={() => void refresh()}><WorkspaceText text="Retry" /></button></div>}
+      {loaded && !error && rows.length === 0 && confirmed.length === 0 && <p className={styles.message}><WorkspaceText text="No new appointments. You’re all caught up." /></p>}
+      {!canConfirm && <p className={styles.message}><WorkspaceText text="This device can view appointments. Confirmation requires booking edit access." /></p>}
       <ul className={styles.list}>{[...rows, ...confirmed].map(item => {
         const done = confirmed.some(row => row.id === item.id);
         const staffNames = [...new Set((item.lines ?? []).map(line => line.staffName?.trim()).filter((name): name is string => !!name))];
         const staffLabel = staffNames.join(", ") || item.staffName?.trim() || "Unassigned";
         return <li className={styles.item} key={item.id}>
           <div className={styles.details}>
-          <strong>{item.customerName || "Walk-in customer"}</strong>
-          {Boolean(item.noShowCount) && <p className="text-xs font-semibold text-orange-800">{item.noShowCount} previous no-show{item.noShowCount === 1 ? "" : "s"}</p>}
-          <p><time dateTime={item.startAt}>{new Intl.DateTimeFormat("en-US", { timeZone: timezone, dateStyle: "medium", timeStyle: "short" }).format(new Date(item.startAt))}</time></p>
-          <p>{item.serviceNames.join(", ") || item.notes || "Appointment"}</p>
-          <p className={styles.staff}><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span>Staff: {staffLabel}</span></p>
+          <strong><WorkspaceText text={item.customerName || "Walk-in customer"} /></strong>
+          {Boolean(item.noShowCount) && <p className="text-xs font-semibold text-orange-800">{item.noShowCount} <WorkspaceText text="previous no-show" />{item.noShowCount === 1 ? "" : "s"}</p>}
+          <p><time dateTime={item.startAt}><WorkspaceText text={new Intl.DateTimeFormat("en-US", { timeZone: timezone, dateStyle: "medium", timeStyle: "short" }).format(new Date(item.startAt))} /></time></p>
+          <p><WorkspaceText text={item.serviceNames.join(", ") || item.notes || "Appointment"} /></p>
+          <p className={styles.staff}><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span><WorkspaceText text="Staff:" /> {staffLabel}</span></p>
           </div>
-          <div className={styles.footer}><span className={`${styles.status} ${done ? styles.confirmed : ""}`}>{done ? "Confirmed" : "Pending"}</span>
-            {!done && <button type="button" className={styles.confirm} disabled={!canConfirm || offline || !!busy} aria-label={`Confirm appointment for ${item.customerName || "Walk-in customer"}`} onClick={() => void confirm(item)}>{busy === item.id ? "Confirming…" : "Confirm"}</button>}
+          <div className={styles.footer}><span className={`${styles.status} ${done ? styles.confirmed : ""}`}>{done ? <WorkspaceText text="Confirmed" /> : <WorkspaceText text="Pending" />}</span>
+            {!done && <button type="button" className={styles.confirm} disabled={!canConfirm || offline || !!busy} aria-label={__vt(`Confirm appointment for ${item.customerName || "Walk-in customer"}`)} onClick={() => void confirm(__vt(item))}>{busy === item.id ? "Confirming…" : <WorkspaceText text="Confirm" />}</button>}
           </div>
         </li>;
       })}</ul>

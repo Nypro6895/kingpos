@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "check-writer-operational-20261103",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Complete first-party Check Writer runtime, hosted schema/encryption, existing Market activation, secure issuance/PDF/print verification on exact current baseline; preserve Payroll and approved USD4.90 price",
+  "files": [],
+  "source": {
+    "commit": "7b677c06d8e76029a0d02b7dde641b31ea8472a3",
+    "snapshot": "C:\\Reylumi-worktrees\\check-writer-operational-20261103"
+  },
+  "validation": [
+    {
+      "name": "Exact current deployed source captured and all hashes checked",
+      "result": "passed",
+      "evidence": "artifacts/check-writer-operational-20261103/baseline.json"
+    }
+  ],
+  "dependencies": [
+    "check-writer-secure-addon-20261027",
+    "check-writer-audit-price-20261028",
+    "check-writer-release-gates-20261028"
+  ],
+  "id": "730f6a34-3f59-447e-857e-0fbaa00ad250",
+  "recordedAt": "2026-11-03T17:36:13.049Z",
+  "worktree": "C:\\Reylumi-worktrees\\check-writer-operational-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

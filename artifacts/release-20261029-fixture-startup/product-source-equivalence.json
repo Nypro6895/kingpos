@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-29T21:59:57.632Z",
+  "webOverlayCommit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+  "nativeSource": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+  "productSourceUnchanged": true,
+  "testMethodBodiesAndAssertionsUnchanged": true,
+  "functionalAndAuthorityDeadlinesUnchanged": true,
+  "fixtureBootstrapSeconds": {
+    "before": 5,
+    "after": 45
+  },
+  "testHelperOnlyDelta": [
+    "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift"
+  ],
+  "changedExecutionFiles": [
+    "ios/scripts/check-build.sh",
+    ".github/workflows/reylumi-ios-testflight.yml"
+  ],
+  "otherDelta": "Release metadata"
+}

@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "plugins-list-aligned-20261018",
+  "status": "ready",
+  "summary": "Uniform Plugins directory with individual pages; retain original Campaigns UI, permissions, forms and pricing logic",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/market/system-workspace.tsx",
+    "app/(app)/admin/market/system.css",
+    "app/(app)/admin/plugins/[pluginId]/page.tsx",
+    "app/(app)/admin/plugins/page.tsx",
+    "app/(app)/admin/market/billing-actions.ts",
+    "app/(app)/admin/market/plugin-operations-actions.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\plugins-list-aligned-20261018\\snapshot"
+  },
+  "validation": [
+    {
+      "name": "TypeScript noEmit",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Rendered directory, routes, authorization, original forms and 320/390/736/1280 layouts",
+      "result": "passed",
+      "evidence": "artifacts/plugins-list-aligned-20261018/verification.json"
+    },
+    {
+      "name": "Campaigns and financial modules unchanged",
+      "result": "passed"
+    }
+  ],
+  "id": "1b731d74-a302-4b5b-9cb8-6ac2d6a0ea1c",
+  "recordedAt": "2026-10-19T00:32:06.839Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/market/system-workspace.tsx": "5cd23f25335c17e7ce9d87caccc4a85733569ec64332f9525ddc74a58640ded6",
+    "app/(app)/admin/market/system.css": "5b8469228ca75daf9f00d8bccd01e243d5fb97393c0ef51d0fc2f3e1f2caea42",
+    "app/(app)/admin/plugins/[pluginId]/page.tsx": "8bc77d5b324e78f59a5bcf4a0e4bf552f4424d7d7a6f68d0b932fd4c1fa5ab8a",
+    "app/(app)/admin/plugins/page.tsx": "61e978d1a93cc0a1304215b26079e5af4c434d5fd6b6d846c9e6d48b90b88d51",
+    "app/(app)/admin/market/billing-actions.ts": "b878706168497b17a88a678abfe9ea34f3ce9eaa044d7cb7acc8afe5a820b0b6",
+    "app/(app)/admin/market/plugin-operations-actions.ts": "10d351f0f53247b47dc52202e884374a8b3eebc9421603df82bb6da3a280e01c"
+  }
+}

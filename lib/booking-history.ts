@@ -1,3 +1,4 @@
+import { appointmentState } from "@/lib/appointment-state";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 
 export type HistoryTicket = {
@@ -30,6 +31,7 @@ export function historyBookingLabel(status: string, startAt: string, evidence?: 
   if (status === "cancelled" || status === "no_show") return null;
   if (evidence?.checkedInAt || status === "checked_in") return "Checked in";
   if (status === "in_service") return "In service";
-  if (new Date(startAt).getTime() < now) return "Past appointment";
+  if (status === "completed") return "Completed";
+  if (appointmentState(status, startAt, now) === "overdue") return "Overdue / needs action";
   return null;
 }

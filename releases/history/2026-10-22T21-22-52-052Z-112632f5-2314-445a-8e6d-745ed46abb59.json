@@ -1,0 +1,133 @@
+{
+  "kind": "release",
+  "summary": "Exact R12 native source 1.0.0 (46) is uploaded, Apple VALID and available to both verified existing internal TestFlight groups. App Store publication and installation on a physical phone are not claimed.",
+  "occurredAt": "2026-10-22T21:18:40.082Z",
+  "releaseId": "reylumi-core-r12-20261022-task6",
+  "changes": [
+    "b1b24e5e-f58a-4372-ae1a-3969479a33e5"
+  ],
+  "sourceCommit": "b823db4bf44f916543f13550c52bd8ac294958dc",
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "46",
+      "commit": "b823db4bf44f916543f13550c52bd8ac294958dc",
+      "bundleIdentifier": "com.reylumi.ios",
+      "appleBuildId": "d233a9c0-8847-4a75-8ab2-b02f0be50417",
+      "evidence": {
+        "verifiedUploadSourceAndBundle": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\native\\testflight-r12-39853868930\\COLLECTION-RECEIPT.json",
+          "sha256": "1c5f210d3c9ff59bc351f18f6f14864d293fee3f13cfd53c4cca6aee2a27febc"
+        },
+        "verifiedExistingGroupAvailability": {
+          "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\native\\availability-r12-39856164562\\COLLECTION-RECEIPT.json",
+          "sha256": "38ee1133f2176407c556062fcfba2973468ac83298405e1771def4c43be2cfd0"
+        }
+      }
+    }
+  },
+  "sourceBinding": {
+    "finalSourceManifest": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\SOURCE-MANIFEST.json",
+      "sha256": "725944d9ed4679942f8f146fd3071df2e46c4b47850f7b26f415cd8046a9e420"
+    },
+    "compositeFunctionalSourceManifest": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\FUNCTIONAL-SOURCE-MANIFEST.json",
+      "sha256": "8ef56ef194021a3286245451c7873de25b75c8859bd691329c7bf19342185041"
+    },
+    "uploadedBundleBuildId": "865ab8ada60fb02faac9e3dba1959dd045f3d741bd9aa442a1edf8700d54d384",
+    "sourceAndBundleVerified": true,
+    "sourceSnapshotVerified": true,
+    "exportedIPABundleVerifiedInRun": true,
+    "inRunSigningBundleVerificationCount": 4,
+    "interpretation": "Source and bundle proof comes from the hash-bound upload COLLECTION-RECEIPT, where sourceAndBundleVerified=true. The availability-only collector retains its generic upload-only field sourceAndBundleVerified=false; it is not used as source proof or silently rewritten. Both actual receipts are required and matched."
+  },
+  "nativeValidation": {
+    "uploadWorkflowRunId": 39853868930,
+    "runConclusion": "success",
+    "started": 205,
+    "passed": 205,
+    "failed": 0,
+    "skipped": 0,
+    "retried": 0,
+    "evidence": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\native\\testflight-r12-39853868930\\COLLECTION-RECEIPT.json",
+      "sha256": "1c5f210d3c9ff59bc351f18f6f14864d293fee3f13cfd53c4cca6aee2a27febc"
+    }
+  },
+  "apple": {
+    "appId": "6821394475",
+    "buildId": "d233a9c0-8847-4a75-8ab2-b02f0be50417",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "expired": false,
+    "expirationDate": "2027-01-20T13:14:36-08:00",
+    "checkedAt": "2026-10-22T21:18:40.082Z",
+    "availabilityWorkflowRunId": 39856164562,
+    "verificationOperation": "GET requests only; no groups/testers/invitations/notifications/metadata changes"
+  },
+  "distribution": {
+    "status": "available-to-existing-internal-groups",
+    "existingGroupCount": 2,
+    "groups": [
+      {
+        "id": "afe80011-9371-4a4c-afda-025b624f3275",
+        "name": "Reylumi Internal",
+        "isInternalGroup": true,
+        "hadBaselineBuild45": true,
+        "hasNewBuild46": true,
+        "associationConfirmed": true,
+        "existingDistributionGroup": true
+      },
+      {
+        "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+        "name": "Reylumi support",
+        "isInternalGroup": true,
+        "hadBaselineBuild45": true,
+        "hasNewBuild46": true,
+        "associationConfirmed": true,
+        "existingDistributionGroup": true
+      }
+    ],
+    "baseline": {
+      "version": "1.0.0",
+      "build": "45",
+      "appleBuildId": "0e3ee01a-8ece-4312-b087-dc9825b9e98d"
+    },
+    "externalTestFlightPublication": "not claimed",
+    "appStorePublication": "not claimed"
+  },
+  "limits": [
+    "TestFlight availability confirms Apple access for these existing internal groups, not installation or automatic update on any particular phone.",
+    "Physical iPhone checking remains an optional post-deploy follow-up under the accepted Simulator criterion, not an unresolved predeploy blocker.",
+    "No fresh R12 authenticated live login or physical-device runtime QA is claimed.",
+    "No retained IPA bytes or independent downloaded-IPA binary SHA inspection; signed-archive identity comes from the verified in-run receipt and exported IPA bundle verification from the official job log.",
+    "App Store submission, approval and publication are distinct states and are not claimed here.",
+    "Web publication and Campaign operations are covered by their separate immutable receipts; this manifest targets only ios."
+  ],
+  "preservedHistory": {
+    "priorPreparation": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\NATIVE-PUBLICATION-PREPARATION-waiting-availability.json",
+      "sha256": "6c4b1a052e4556db6adfb5edb774d5a046de5d689f9187ad9fb061dae46b5ffc"
+    },
+    "webOperationalManifest": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\WEB-PUBLICATION-MANIFEST-operational-complete.json",
+      "sha256": "76b7090c5208f869a016298d91149826d18908314607b735a06314c52174113c"
+    },
+    "priorHeldManifest": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\WEB-PUBLICATION-MANIFEST-campaign-held.json",
+      "sha256": "8364ca34fbd26493a07770f39933667d33b8c72526d94ebda93eba8a474dd0de"
+    },
+    "priorCampaignDenial": {
+      "path": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\r12-final\\CAMPAIGN-RESUME-APPROVAL-BLOCK.json",
+      "sha256": "9cfe9fbc2c04943d1e664b1ab321a0eab7dda1920d3c568b91d31cd85e20ab41"
+    },
+    "oldFailedNativeCI": "Original dd32 failed CI and diagnostic evidence remain preserved; this receipt reports actual final b823 native executions only."
+  },
+  "scope": "Resolves only ios for exact composite ready event b1b24e5e-f58a-4372-ae1a-3969479a33e5 at the verified internal TestFlight channel. No other historical producer event is marked published.",
+  "id": "112632f5-2314-445a-8e6d-745ed46abb59",
+  "recordedAt": "2026-10-22T21:22:52.052Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\release-journal-r12"
+}

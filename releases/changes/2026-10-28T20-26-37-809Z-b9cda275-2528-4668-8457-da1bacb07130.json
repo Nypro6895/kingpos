@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "staff-post-safari-webp-fallback",
+  "status": "needs-integration",
+  "summary": "Staff post Safari canvas WebP fallback implemented and tested; frozen handoff queued for one combined deployment",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/image-upload-client.ts",
+    "app/api/images/normalize/route.ts",
+    "tests/image-upload-safari.test.mjs",
+    "docs/staff-post-safari-webp-deploy-note-20261028.txt"
+  ],
+  "source": {
+    "snapshot": "artifacts/staff-post-safari-webp-20261028/source"
+  },
+  "validation": [
+    {
+      "name": "Image upload and normalization runtime tests",
+      "result": "passed",
+      "evidence": "7 tests passed"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Full TypeScript check",
+      "result": "failed",
+      "evidence": "Existing stale generated Help TS2307 and dictionary duplicate Pay month TS2783; see deploy note"
+    },
+    {
+      "name": "Production baseline integration, build and affected physical iPhone",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "b9cda275-2528-4668-8457-da1bacb07130",
+  "recordedAt": "2026-10-28T20:26:37.809Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

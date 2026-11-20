@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "salon-claim-lookup-diagnostics-20261014",
+  "status": "ready",
+  "summary": "Safe lookup diagnostics integrated into production source baseline; authenticated timeout reproduced and failure logging verified without input/identity disclosure. Functional fixes are in salon-claim-create-fix-20261015.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/claim/actions.ts",
+    "app/salons/actions.ts",
+    "lib/business-claim-diagnostics.ts",
+    "tests/business-claim-diagnostics.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\source-v1",
+    "baseCommit": "34ea63589e7e8caf5718bf4ffe54e403eab6775a"
+  },
+  "validation": [
+    {
+      "name": "Automated claim regression suite",
+      "result": "passed",
+      "evidence": "13 tests passed: business-claim-{lookup.integration,http,diagnostics,provider}.test.mjs; 30000 synthetic rows and 14 matching inputs."
+    },
+    {
+      "name": "ESLint and salon routing",
+      "result": "passed",
+      "evidence": "Seven changed TypeScript/TSX files linted with no warnings; verify-salon-creation-routing.mjs passed."
+    },
+    {
+      "name": "Production build",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\build-final.log"
+    },
+    {
+      "name": "Full schema and authenticated database integration",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\runtime-evidence.json; 261 baseline migrations, candidate migration and business-claims.integration.sql; C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\backend-create-result.json"
+    },
+    {
+      "name": "Real browser password login, failure/retry/create/duplicate/claim/manage",
+      "result": "passed",
+      "evidence": "docs/qa/salon-claim-create-20261015.txt; C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\ui-database-verification.json; separate reviewer RPC, not admin UI or live SMS."
+    },
+    {
+      "name": "Disposable fixture cleanup",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\cleanup.json"
+    }
+  ],
+  "id": "5b4368a3-b932-4ddd-abf6-77f3fda5b9d3",
+  "recordedAt": "2026-10-15T16:23:02.343Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-claim-create-fix\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/claim/actions.ts": "6abf0722b3c9df55902476a18c57d2542f8c9b97fce6214e64de3bf93b2cfd9a",
+    "app/salons/actions.ts": "ef37073f265805274c1797a1d9d30bfea3fe81122d2fb1b1491ce1401870f979",
+    "lib/business-claim-diagnostics.ts": "a26763f8438c3b955db4b832120069a3a3bd1de5170df73a005d76cc3136b918",
+    "tests/business-claim-diagnostics.test.mjs": "b2a313f5e897da8903ae4da2a561aa4fe7d3c85da312b2b782fcbac3341c8782"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "kind": "change",
+  "changeId": "native-wk-fixture-bootstrap-budget-20261029",
+  "status": "working",
+  "summary": "Bound cold WebKit profile startup separately from security behavior:45s blank-document fixture setup before cookie seeding; no app code or authority/test-body deadline changes",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift"
+  ],
+  "dependencies": [
+    "native-suite-host-isolation-20261029"
+  ],
+  "nativeBaselineBuild": "70",
+  "id": "40820898-9c30-4d6b-948a-b86bee945bf3",
+  "recordedAt": "2026-10-29T21:57:41.429Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

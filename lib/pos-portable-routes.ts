@@ -26,13 +26,13 @@ export const PORTABLE_POS_ROUTE_LINKS: PortablePosRouteLink[] = [
     href: PORTABLE_POS_ROUTES.ticket,
     icon: "ticket",
     id: "ticket",
-    label: "Ticket",
+    label: "Tickets",
   },
   {
     href: PORTABLE_POS_ROUTES.book,
-    icon: "book",
+    icon: "calendar",
     id: "book",
-    label: "Book",
+    label: "Bookings",
   },
   {
     href: PORTABLE_POS_ROUTES.checkIn,
@@ -44,7 +44,7 @@ export const PORTABLE_POS_ROUTE_LINKS: PortablePosRouteLink[] = [
     href: PORTABLE_POS_ROUTES.report,
     icon: "report",
     id: "report",
-    label: "Report",
+    label: "Reports",
   },
 ];
 

@@ -1,0 +1,67 @@
+{
+  "kind": "change",
+  "changeId": "public-photo-processing-consent-ui-20261118",
+  "status": "needs-integration",
+  "summary": "Approved per-post OpenAI photo checkbox in Beauty/Salon with synchronous scope resets, unchanged legacy/unknown receipt replays and22passing actual-UI mock tests",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/beauty/beauty-profile-client.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/public-photo-processing-permission.tsx",
+    "tests/beauty-pending-publication.test.mjs",
+    "tests/salon-public-image-submission.test.mjs",
+    "tests/public-photo-processing-permission-ui.test.mjs",
+    "docs/public-photo-processing-consent-ui-20261118.md",
+    "tests/beauty-library-entry.test.mjs",
+    "tests/beauty-timeline-publish-race.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "40b1b6e7909f6e50e3372dbf873b814ab4eb1f66",
+    "observedHead": "40b1b6e7909f6e50e3372dbf873b814ab4eb1f66",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\public-photo-processing-consent-ui-20261118\\frozen",
+    "sourceSha256": "6e3d9debab151ff94df31e7d4b6781a1c88f054db39ef76018d39744aab6fb31",
+    "fileSha256": {
+      "app/beauty/beauty-profile-client.tsx": "15e177bb57ad76fba141d870d2bd36f65f8b1bd7dc4f2304c74e8c9f36893848",
+      "app/salon-profile/salon-profile-view.tsx": "79dd02dddfde95db2b1f511d8e260e939b4ab0743bf9ff2d1a2f8f080d935d3f",
+      "components/public-photo-processing-permission.tsx": "36244a54609be8695fe79a32a6f24a938617e96c0e02d3f57c84894ba4dd83af",
+      "docs/public-photo-processing-consent-ui-20261118.md": "707500aa6611ef4360267e91bdf7ab56a5f1f9e60fa4a5e6660ceeb2f4813f3c",
+      "tests/beauty-library-entry.test.mjs": "5d61557161933f9b14ac5998e82e191a33f35f2c0cc35b4ff33a8592c42986fb",
+      "tests/beauty-pending-publication.test.mjs": "ee11633edb48b038a5c1a277b35cf57f230e1e0347fe3c782453526bf4412da4",
+      "tests/beauty-timeline-publish-race.test.mjs": "728db5628a9bebd3df3c7b1aa7450c606ce7978d1ca753b1e29ca37866e526ec",
+      "tests/public-photo-processing-permission-ui.test.mjs": "34ef4d48f3844fd964945be5e3947502527ae62d7138dec171d7e522776f1c00",
+      "tests/salon-public-image-submission.test.mjs": "36a1fa767852fd4dd28f20e2b87e598b2218a2ca476fc70ee8ecc69c8c66b7d8"
+    }
+  },
+  "validation": [
+    {
+      "name": "Five focused actual-client/hook suites with synthetic transport,22/22 andzero skips",
+      "result": "passed",
+      "evidence": "artifacts/public-photo-processing-consent-ui-20261118/final-focused-acceptance.log"
+    },
+    {
+      "name": "Scoped ESLint, source/whitespace/unchanged helper and11 unrelated frozen files",
+      "result": "passed",
+      "evidence": "artifacts/public-photo-processing-consent-ui-20261118/validation.json"
+    },
+    {
+      "name": "Actual Beauty composer phone/tablet visual fixture and independent bounded source critic",
+      "result": "passed",
+      "evidence": "artifacts/public-photo-processing-consent-ui-20261118/frozen-manifest.json"
+    },
+    {
+      "name": "Coordinator combined build, real source server/browser, native/device/release acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "public-photo-processing-consent-20261118"
+  ],
+  "id": "6437d96d-042a-4f23-b6bc-ae30805c96ab",
+  "recordedAt": "2026-11-19T03:49:52.047Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

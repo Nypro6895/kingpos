@@ -1,0 +1,78 @@
+{
+  "kind": "change",
+  "changeId": "staff-my-pay-ledger-20261113",
+  "status": "ready",
+  "summary": "Coordinator integrated staff-my-pay-ledger-20261113 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/payroll/staff-payment-table.tsx",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/staff/my-work/staff-pay-analysis.module.css",
+    "lib/vietnamese-payroll-mobile.json",
+    "tests/staff-my-pay-ledger-browser.mjs",
+    "docs/staff-my-pay-ledger-20261113.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "214a77f4-7c18-4ffa-bf92-5b859ac53411",
+    "originalSource": {
+      "commit": "dcff6f6d781a4a1b991ff1653b6799a84f127ede",
+      "snapshot": "C:\\Reylumi-worktrees\\payroll-compact-settings-20261112\\artifacts\\staff-my-pay-ledger-20261113\\source"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-14T02:37:32.904Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    },
+    {
+      "name": "Exact-source full 264-case native suite on iPad Simulator and unsigned device archive; 15 hosts, no skips, duplicates or failures",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/complete-release-20261114/artifacts/native-integration-20261114/ipad-verified-43566268190.json"
+    }
+  ],
+  "dependencies": [
+    "payroll-payment-ledger-live-20261112"
+  ],
+  "supersedesEvents": [
+    "214a77f4-7c18-4ffa-bf92-5b859ac53411"
+  ],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "d38cb460-71b6-49b4-a8f9-a7bda810145b",
+  "recordedAt": "2026-11-14T06:49:42.568Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/payroll/staff-payment-table.tsx": "87813f6f64c19eb456ca79afb21af0e8b164ca54cc5428910f547f7593c25eff",
+    "app/staff/my-work/staff-pay-analysis.tsx": "6582d0418cbfe968a36f3fd611afa86c7a5d3781429c200caa67a0f306c3cd6e",
+    "app/staff/my-work/staff-pay-analysis.module.css": "3fadd3562da0656afdd2fb0e9f1b416644d26aa5420b0050da3807fc0b2f2540",
+    "lib/vietnamese-payroll-mobile.json": "14e5b4e4d0efc0072d545f00b108e52bc38d9ac1e1d53798099a26383feb45d1",
+    "tests/staff-my-pay-ledger-browser.mjs": "d8fa9591c8735d14792e8a9ebf3058b76fbcbc943333eb890c14415071c40abc",
+    "docs/staff-my-pay-ledger-20261113.md": "a3418455bd3c6aa80cf7e047d9c8a3a76e1c9f547a8a489e6430f2371fc112f8"
+  }
+}

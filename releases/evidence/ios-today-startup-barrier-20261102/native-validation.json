@@ -1,0 +1,316 @@
+{
+  "baselineNativeCommit": "a284c46594a8cf0b34aacf49cb4aa22cf0f34022",
+  "physicalDeviceAcceptance": false,
+  "nativeInputFileCount": 58,
+  "nativeInputMismatches": [],
+  "testsSucceeded": true,
+  "greenSummary": [
+    "Executed 61 tests, with 0 failures (0 unexpected) in 9.577 (9.597) seconds",
+    "Executed 61 tests, with 0 failures (0 unexpected) in 9.577 (9.597) seconds"
+  ],
+  "redReproduction": [
+    "/tmp/reylumi-startup-barrier-20261102/ios/ReylumiTests/AuthLifecycleTransportTests.swift:130: error: -[ReylumiTests.AuthLifecycleTransportTests testColdPageRetryRechecksContextAfterBackgroundConfirmationFailed] : failed: caught error: \"Error Domain=ReylumiLocalApp Code=503 \"Please reconnect to update this page.\" UserInfo={NSLocalizedDescription=Please reconnect to update this page.}\"",
+    "/tmp/reylumi-startup-barrier-20261102/ios/ReylumiTests/AuthLifecycleTransportTests.swift:146: error: -[ReylumiTests.AuthLifecycleTransportTests testColdReadRecoversOnceWhenPendingConfirmationFailsTransiently] : failed: caught error: \"Error Domain=ReylumiLocalApp Code=503 \"Please reconnect to update this page.\" UserInfo={NSLocalizedDescription=Please reconnect to update this page.}\"",
+    "\t Executed 3 tests, with 3 failures (2 unexpected) in 0.184 (0.186) seconds",
+    "\t Executed 3 tests, with 3 failures (2 unexpected) in 0.184 (0.187) seconds",
+    "\t Executed 3 tests, with 3 failures (2 unexpected) in 0.184 (0.187) seconds"
+  ],
+  "greenTestResults": [
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testActualNormalGuestPublicContextAndSeparatelyLabeledLeaseOutageRemainReadable]' passed (0.059 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testActualSerializedCookieRefreshCancelsOnlyStaleDeliveryAndRetainsNewState]' passed (0.268 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testColdContextRecoveryStopsOnRepeatedServiceFailure]' passed (0.018 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testColdOnlineContextDuringLeaseOutageReadsWithoutPersistingOrCommandAuthority]' passed (0.004 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testColdPageRetryRechecksContextAfterBackgroundConfirmationFailed]' passed (0.046 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testColdReadNeverRetriesDeniedOrMalformedPendingContext]' passed (0.117 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testColdReadRecoversOnceWhenPendingConfirmationFailsTransiently]' passed (0.063 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testExplicitDeniedOrUnconfirmedLeaseNeverAcquiresAnOfflineLeaseOrCommandAuthority]' passed (0.021 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testExplicitHTTPDenialsRemainDenialsAfterAnotherResponseRefreshesCookies]' passed (0.156 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testExternalWorkspaceChangeAfterInternalWorkspaceCommitStillRevokesAuthority]' passed (0.057 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testHTTP200ContextDenialSurvivesInternalCookieRefreshAndRevokesStoredDisplay]' passed (0.438 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testHTTP401AndSignOutPreserveTypedResetWireContract]' passed (0.009 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testHTTP403WithdrawsAnOnlineOnlyContextBeforeAnyLaterReadCanUseItsBarrier]' passed (0.008 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testOwnerLeaseDenialRevokesOnlyThatScopeAndCannotRestoreItsOfflineSnapshot]' passed (0.050 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testPossiblyCommittedCommandWithStaleCookieReplyIsNeverAutomaticallyReplayed]' passed (0.060 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testStaleContextTaskFinishesBeforeTheNextFreshGETCanStart]' passed (0.059 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testTemporaryLeaseOutagePreservesOriginalLeaseAndSnapshotWithoutExtendingThem]' passed (0.034 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testUnknownExternalChangesAfterInternalCommitStillRevokeCurrentAuthority]' passed (0.140 seconds).",
+    "Test Case '-[ReylumiTests.AuthLifecycleTransportTests testWorkspaceSwitchCannotUseDisplayOnly503AsItsCommandGrant]' passed (0.004 seconds).",
+    "Test Case '-[ReylumiTests.CampaignReadTransportTests testCampaignCoordinatesUsePrivateReadBodyAndNeverEnterURLOrReadCache]' passed (0.360 seconds).",
+    "Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testHTTP503AndURLSessionTimeoutRemainDistinctWithoutWriteRetry]' passed (0.012 seconds).",
+    "Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testJoinedContextSharesActualHTTPIDAndCachedContextCannotClaimIt]' passed (0.030 seconds).",
+    "Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testLegacyAndMismatchedReadEchoPreserveNumericTimingWithoutCorrelationOrChangingResults]' passed (0.097 seconds).",
+    "Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testOverlappingCommandsKeepTheirOwnRequestIDsWhenResponsesFinishOutOfOrder]' passed (0.028 seconds).",
+    "Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testPreflight503CarriesCommandTimingWithoutSendingCommandPOST]' passed (0.003 seconds).",
+    "Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testUnknownFailureCodeIsIgnoredAndMalformedCallerCannotCreateDiagnosticAuthority]' passed (0.005 seconds).",
+    "Test Case '-[ReylumiTests.CommandDiagnosticsTransportTests testUntrustedResponseMetadataCannotReplaceLocalIDOrChangeSuccessfulCommandResult]' passed (0.013 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testActualInstalledExploreBoundsTransientContextRecoveryBeforeUserRetry]' passed (2.563 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testAuthoritative404EvictsOnlyExactReadBut503RetainsOtherSnapshot]' passed (0.073 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testCachedAuthorityRotationAdmitsSelectedLeaseWithoutCancellingItsOwnContextRead]' passed (0.058 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testColdCachedContextWaitsForFreshAuthorityWhenPrivateReadFinishesFirst]' passed (0.093 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testConcurrentExactResponseCookieRotationsPreserveReadsAndHonorRemovedChunks]' passed (0.073 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testForbiddenReadEvictsOnlyItsSnapshotWithoutResettingOtherPages]' passed (0.074 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testFullSessionResetStillRevokesCachedAuthorityAndRejectsOldGeneration]' passed (0.012 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testLateReadAfterConfirmedWorkspaceCookieCommitIsDiscardedWithoutReset]' passed (0.023 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testLateReadAfterResetCannotReturnOrPersistOldAccountData]' passed (0.019 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testLongNamedReadUsesBoundedSameOriginJSONPostWithoutCommandReplay]' passed (0.037 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testOnlyNamedReadsUseFixedEndpointAndCommandsAreSingleAttempt]' passed (0.041 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testPartialLeaseFailurePreservesOnlyUnchangedAuthorityAndNeverAllowsCommands]' passed (0.160 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testPortableLockPersistsOriginalHTTPSCookieAndOnlyRevokesDeviceDisplayLease]' passed (0.051 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testRequestedContextPathProofAndCachedPortableDisplayAuthorityAreExact]' passed (0.011 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testResponseCookieProofRejectsUnrelatedWorkspaceAccountAndLogoutChanges]' passed (0.074 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testSameScopeStaffMarketStaffRetainsDOMAuthorityAndStaffCacheUntilBindingChanges]' passed (0.074 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testStaffAndOwnerContextsSelectMatchingLeaseAndDeniedScopeDoesNotEraseOtherRole]' passed (0.046 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testUnavailableContextKeepsCachedReadButExplicitDenialStillRevokesIt]' passed (0.135 seconds).",
+    "Test Case '-[ReylumiTests.LocalAppTransportTests testUnusedDefaultTransportsReleaseWithoutCreatingADeinitializingSessionDelegate]' passed (0.313 seconds).",
+    "Test Case '-[ReylumiTests.ScopeConflictTransportTests testConflictRecoveryPreservesHTTPDenialsUnavailableAndUnconfirmedEnvelope]' passed (0.433 seconds).",
+    "Test Case '-[ReylumiTests.ScopeConflictTransportTests testDepartingRead409AfterWorkspaceSwitchCannotWithdrawTheVerifiedDestination]' passed (0.030 seconds).",
+    "Test Case '-[ReylumiTests.ScopeConflictTransportTests testOldScopeConflictCannotWithdrawADifferentAlreadyVerifiedScope]' passed (0.043 seconds).",
+    "Test Case '-[ReylumiTests.ScopeConflictTransportTests testPageSupersessionCancelsOldDeliveryWithoutFabricatingWorkspaceDenial]' passed (0.021 seconds).",
+    "Test Case '-[ReylumiTests.ScopeConflictTransportTests testPreConflictSameScopeResponseIsCancelledAndOnlyNewAuthorityGETCanReauthorizeIt]' passed (0.091 seconds).",
+    "Test Case '-[ReylumiTests.ScopeConflictTransportTests testRead409BeforeContext200WithdrawsOldScopeAndPreservesCurrentAuthorityFlight]' passed (0.095 seconds).",
+    "Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testActualCacheBridgeAllowsOnlyRemovalWithFreshOnlineStaffProof]' passed (0.397 seconds).",
+    "Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testExplicitOnlineOnlyPurgesSameScopeStaffLeaseAndSnapshotInsteadOfTemporaryOutageReuse]' passed (0.052 seconds).",
+    "Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testExplicitStaffOnlineProofReadsFreshWithoutOfflineOrBackgroundAuthority]' passed (0.005 seconds).",
+    "Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testGeneric503UnconfirmedAndNonHTTPSCannotAcquireNewStaffCommandOrRemovalAuthority]' passed (0.011 seconds).",
+    "Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testMalformedStaleWrongIdentityAndWrongRouteOnlineProofsRemainDenied]' passed (0.110 seconds).",
+    "Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testOnlineOnlyCommandsUseFreshBoundedStaffPreflightAndNeverReplayServerDenial]' passed (0.010 seconds).",
+    "Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testOnlineOnlyResourceDenialsAndEvictionNeverRequireOrCreateAReadLease]' passed (2.169 seconds).",
+    "Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testPinnedStaffActionIDsExistInActuallyInstalledManifest]' passed (0.012 seconds).",
+    "Test Case '-[ReylumiTests.StaffOnlineAccessTransportTests testPreResetHeldOnlineProofCannotRestoreStaffAuthorityOrRemoveNewScopeData]' passed (0.011 seconds)."
+  ],
+  "sourceManifest": [
+    {
+      "sha": "aca7238ab097217fe8a4596cc5b24bfd99b60a0c8d01da3f0e0679469b54e23a",
+      "path": "Reylumi/AppLocalBridge.js"
+    },
+    {
+      "sha": "c0009b57ece7e38b9b31edccee4536eec793bd2f4a48a8d1ef14bf8c0b61a362",
+      "path": "Reylumi/AppViewport.js"
+    },
+    {
+      "sha": "cdb884c47dab04c2d731759ffb60c3c91613a8607b61000276107fc131d0def0",
+      "path": "Reylumi/NativeBridge.js"
+    },
+    {
+      "sha": "72b9dd830979b8be96c2f0f6b515a570ffcc41127cb6a6efd6df3ff62f8ecff9",
+      "path": "Reylumi/NavigationPolicy.swift"
+    },
+    {
+      "sha": "2e4d1993940a3033add3a0cbc6c1ffdf740028fe84df123904adedcac0e1d044",
+      "path": "Reylumi/ReylumiApp.swift"
+    },
+    {
+      "sha": "860b8e2aaf2978e587b5768d52f959f1c55266c9b807b71957eb3675e0b46470",
+      "path": "Reylumi/ReylumiAppDelegate.swift"
+    },
+    {
+      "sha": "6df08a434652f080b4c7252c8baf7a9d2614c6425f377d322a60053ab3aff1dc",
+      "path": "Reylumi/ReylumiBackgroundSync.swift"
+    },
+    {
+      "sha": "af508e0ca36beb96614eecc582f8f7cb04b8f871cb92e4ed1a8b0c9cdff077a6",
+      "path": "Reylumi/ReylumiCookieAuthority.swift"
+    },
+    {
+      "sha": "1283e96e63582a653fc4f99788a17cf0f8c719b9e515c8df32da85da9cf907a3",
+      "path": "Reylumi/ReylumiLaunchView.swift"
+    },
+    {
+      "sha": "6838276e4554be0488a709506e8bfb756ff7b4c9801a85e0099d7d995946e951",
+      "path": "Reylumi/ReylumiLocalAppTransport.swift"
+    },
+    {
+      "sha": "e30ac065c88ffbed40fc190931c28a9deac943901ef269e89446d579fe777955",
+      "path": "Reylumi/ReylumiLocalAppViewController.swift"
+    },
+    {
+      "sha": "324976619c3745eed1f68fc04e03fb949e866143c92ac338d257bd3e577da65b",
+      "path": "Reylumi/ReylumiLocalBundle.swift"
+    },
+    {
+      "sha": "3e7a0af9dcdcedaa674fe8bd6e255d18570b7634485e09c7a93444399171dfbc",
+      "path": "Reylumi/ReylumiLocalDiagnostics.swift"
+    },
+    {
+      "sha": "d3c5ed13f6a2122818680b53eee21d27a3ded036e932afe2e83f527f979b1e94",
+      "path": "Reylumi/ReylumiLocalReadStore.swift"
+    },
+    {
+      "sha": "ad5bb9f83de337bf7c334a247f812ce71370606cb4b1a3b9267accf2c2d7e82a",
+      "path": "Reylumi/ReylumiOfflineRoute.swift"
+    },
+    {
+      "sha": "5af139fc0ce18bf20560f5a15111afe0ba89b78d19c927df2bb534eed91b6673",
+      "path": "Reylumi/ReylumiStartupState.swift"
+    },
+    {
+      "sha": "196c344f1c740a3ab4ebd96445cb80ccb4b47e5f9820910bf0a45ba3daa1906d",
+      "path": "Reylumi/ReylumiViewController.swift"
+    },
+    {
+      "sha": "84e016297d056be5cf38aba952ee323061d6891798ea321ce71abf4337f3e9dc",
+      "path": "Reylumi/ReylumiWorkspacePreference.swift"
+    },
+    {
+      "sha": "72c7d24704014fc43418caf0de10610912623033478dc1cfe1a4f8458970f0db",
+      "path": "Reylumi/Assets.xcassets/Contents.json"
+    },
+    {
+      "sha": "a36004c574d5e5759a3d660aa45074061b40d646ac9760d6a371c641f3c3403b",
+      "path": "Reylumi/Assets.xcassets/AppBackground.colorset/Contents.json"
+    },
+    {
+      "sha": "4d409617f26818cc08ee4c63d5d41a2f1f4be7e304ba1a26429f361aab86d4d8",
+      "path": "Reylumi/Assets.xcassets/AppIcon.appiconset/Contents.json"
+    },
+    {
+      "sha": "1ca5a142e4121d1209fdbec52489385f8bb25069f3e174e9e0a8082c6035c998",
+      "path": "Reylumi/Assets.xcassets/LoadingLogo.imageset/Contents.json"
+    },
+    {
+      "sha": "e10e88be14f0ffd74aaf1a093d34f47456852efe37992c89b485f1606df47dbc",
+      "path": "ReylumiTests/AppViewportTests.swift"
+    },
+    {
+      "sha": "3e52134d262097dc27101214fe5a9af2aa90dd731bf68d824168163a79808def",
+      "path": "ReylumiTests/AuthCookieProtocolFixture.json"
+    },
+    {
+      "sha": "c3a94e0803d85ad29cf551d1e1a8500890d6b8ebe0ddacf21e75a8da536ef1b5",
+      "path": "ReylumiTests/AuthLifecycleContextFixture.json"
+    },
+    {
+      "sha": "c358851f9311e5a2d152981b9d104454af665af71973f4017047143295499ccd",
+      "path": "ReylumiTests/AuthLifecycleGuestContextFixture.json"
+    },
+    {
+      "sha": "94d5d4a7f9e3e3c6df9de8171f7cfc3102e63c79912c5488ec5f904eb4dc72f0",
+      "path": "ReylumiTests/AuthLifecycleTransportTests.swift"
+    },
+    {
+      "sha": "f4cbaa19e3cfa13bf24fd31201a667196886c9027fb644468949e2e0a65bf1b8",
+      "path": "ReylumiTests/BackgroundCookieAuthorityWKTests.swift"
+    },
+    {
+      "sha": "35b8e97de05ac50529f7012d973c168bc3b3a60cccfacb5088026305ee676f64",
+      "path": "ReylumiTests/BackgroundSyncTests.swift"
+    },
+    {
+      "sha": "d5e1aeb94b6d663b3c764ce4e1d51c27ccce84a2fe4471a0c79b8b5da917e135",
+      "path": "ReylumiTests/BusinessContextCacheAdmissionTests.swift"
+    },
+    {
+      "sha": "418fba3d6ff8b725a3408f4e826ca00fc0d730dde94109318c9949cf14bf14bd",
+      "path": "ReylumiTests/BusinessContextFailureTests.swift"
+    },
+    {
+      "sha": "eb13483bb01fc62f7dd798b5e7424e9e7971aa1676b4776db07c898526be2bbe",
+      "path": "ReylumiTests/CampaignReadTransportTests.swift"
+    },
+    {
+      "sha": "e445fa3e165056387c26af37e57069d270cbbe2892966748af4f7d74305e2e69",
+      "path": "ReylumiTests/CommandDiagnosticsTransportTests.swift"
+    },
+    {
+      "sha": "659528bded76e3d49628dbcfd61b6660564fe49d63677388801b670631da3d04",
+      "path": "ReylumiTests/IsolatedWKCookieProfileOwner.swift"
+    },
+    {
+      "sha": "b676a5886abf23207063d49fb90b2eed3965b166dcb238935c2726281103353a",
+      "path": "ReylumiTests/LaunchAppearanceTests.swift"
+    },
+    {
+      "sha": "637a844279b03c63b087a89241e1a61e5103915a503982eddc5ed3b63b21c01d",
+      "path": "ReylumiTests/LocalAppTransportTests.swift"
+    },
+    {
+      "sha": "d411a9cb799fe22b407d692dd83f20acd1f6dae4e572dc3b4b97db0b22476e46",
+      "path": "ReylumiTests/LocalAppWebViewTests.swift"
+    },
+    {
+      "sha": "a9ecde5f5ebeadd67286f5767c6b13093d5e08500611c22c64be94ec4c705d3e",
+      "path": "ReylumiTests/LocalBundleTests.swift"
+    },
+    {
+      "sha": "cf01b0e00d969626d00ab15578bfc0335c830b4f94c5b83959742c69dc08a841",
+      "path": "ReylumiTests/LocalDiagnosticsTests.swift"
+    },
+    {
+      "sha": "8a8a3edd163d9e365c4d6564d65623c5910ad516f6dd471d7fabb551e52920d0",
+      "path": "ReylumiTests/LocalHostedReturnTests.swift"
+    },
+    {
+      "sha": "ce48a39bed26f24dda36b1e01c62469432a3fb39ece9ca7faa6dd4d01938e952",
+      "path": "ReylumiTests/LocalReadStoreTests.swift"
+    },
+    {
+      "sha": "900146dfb78a3a42803e4e944b6787c5d464695b9796d44e2bf1139d757bdfad",
+      "path": "ReylumiTests/NativeCookieAuthorityTests.swift"
+    },
+    {
+      "sha": "7b1310ef8ceabfb4bba4065c2068367b4bcc2ff7aba9c4e58af5d2945c863f2e",
+      "path": "ReylumiTests/NativeCookieAuthorityWKTests.swift"
+    },
+    {
+      "sha": "176b6910bb63d1fc1fa3c14f281bd8b8ffa4be487368bb04f5e5ae04e227b987",
+      "path": "ReylumiTests/NativeCookiePipelineTests.swift"
+    },
+    {
+      "sha": "ad227982368b055701a36ed6086760c9f06452b4445bcd31b5e17a212a66cdee",
+      "path": "ReylumiTests/NavigationPolicyTests.swift"
+    },
+    {
+      "sha": "b3ea2e8e9af44134cf7cb808b16b2b17568abd00d7a8ac2549911da9501c9821",
+      "path": "ReylumiTests/OfflineRouteTests.swift"
+    },
+    {
+      "sha": "c08195f354acd7e165bac6e889f70053a915cf20686e0bc82807606cda9d5ae1",
+      "path": "ReylumiTests/OfflineWebViewTests.swift"
+    },
+    {
+      "sha": "40e59d96e855608f8581652d9b71afda3f502803f7a6b14acb30d8557527cdf1",
+      "path": "ReylumiTests/OnlineAuthorityRefreshTests.swift"
+    },
+    {
+      "sha": "0c04cdbdbb1ea3e64ae38d58d47d7ef693d241cf4e6bd9e4debeeb4387f38e56",
+      "path": "ReylumiTests/OwnerPayrollMeasurementFixture.json"
+    },
+    {
+      "sha": "f681207b0c7b3312f012be9a569ad078c27da63bcd021ab345963b5bc2351ce6",
+      "path": "ReylumiTests/OwnerTodayDiagnosticsTests.swift"
+    },
+    {
+      "sha": "8fe2a848b87832e5e32278fe67ad1b4f22a3e3a1010861ae5c0f56486b68aa00",
+      "path": "ReylumiTests/OwnerTodayMeasurementFixture.json"
+    },
+    {
+      "sha": "195485c1ef8b61ee8da163f51b459bcc68f3f467237b31bfda758051ff48c8e3",
+      "path": "ReylumiTests/ScopeConflictTransportTests.swift"
+    },
+    {
+      "sha": "8082e2c73c767355169c3f50a32acf8fe9c3a981ecacade9f6a2962cf24945cc",
+      "path": "ReylumiTests/SecurityChallengeWebViewTests.swift"
+    },
+    {
+      "sha": "2f363e7d32dfb469bb0f160ae9c4000d527435d292d213cea58a0e9386f8fedb",
+      "path": "ReylumiTests/SinglePostGetterTests.swift"
+    },
+    {
+      "sha": "07f9ebd9b8d4462d0a3d8111a1fa28548f3d61fe3087f98e769ac95bd4fcf567",
+      "path": "ReylumiTests/StaffOnlineAccessTransportTests.swift"
+    },
+    {
+      "sha": "50399a3add563aafe4e9a9ec5c3ae89e9e02762037eefeef309f543061ed6e1d",
+      "path": "ReylumiTests/StartupStateTests.swift"
+    },
+    {
+      "sha": "21a58367313dcbd5b93d44c1e002bed29474e631c822e76ddeda401ff582e031",
+      "path": "ReylumiTests/WorkspacePreferenceTests.swift"
+    },
+    {
+      "sha": "963c53d7a83f4ea6e6de98c0a0af4afafbf9784f94c041cb11a5b01c8c2aaafd",
+      "path": "ReylumiTests/WorkspaceSwitchTests.swift"
+    }
+  ],
+  "greenLogSha256": "1847f3e4c398364dc772e7701169afe6bb8d3c70c5cf692ca62fb1aebae59aaa"
+}

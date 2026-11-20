@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "payroll-style-reference-20261101",
+  "status": "ready",
+  "summary": "Reference-aligned flat Payroll UI across Shop, Staff and Tools/settings/tax/download; Shop default and unified Gift/Reward/Discount parent; responsive desktop layout. Financial formulas and writes preserved.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/payroll-tabs.tsx",
+    "app/payroll/shop-money-workspace.tsx",
+    "app/payroll/shop-money.module.css",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/payroll-history-navigation.ts",
+    "tests/payroll-history-context-browser.mjs",
+    "tests/payroll-history-navigation.test.mjs",
+    "app/payroll/payroll-theme.module.css",
+    "docs/payroll-style-reference-20261101.md",
+    "tests/payroll-reference-style-browser.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\payroll-style-reference-20261101\\artifacts\\payroll-style-reference-20261101\\frozen-source",
+    "baseCommit": "88246c1"
+  },
+  "validation": [
+    {
+      "name": "Production build and offline assets, dispatch disabled",
+      "result": "passed",
+      "evidence": "artifacts/payroll-style-reference-20261101/build.log"
+    },
+    {
+      "name": "28 formula, reconciliation, wiring and navigation assertions",
+      "result": "passed",
+      "evidence": "artifacts/payroll-style-reference-20261101/regression.log"
+    },
+    {
+      "name": "64 actual-component views, zero overflow/errors/mutations",
+      "result": "passed",
+      "evidence": "artifacts/payroll-style-reference-20261101/browser/results.json"
+    },
+    {
+      "name": "10 exact-history and period navigation checks",
+      "result": "passed",
+      "evidence": "artifacts/payroll-style-reference-20261101/history-browser.log"
+    },
+    {
+      "name": "Scoped ESLint zero errors, seven pre-existing unused warnings",
+      "result": "passed",
+      "evidence": "artifacts/payroll-style-reference-20261101/lint.log"
+    }
+  ],
+  "id": "7d38e6da-6d33-4c8f-affb-8c1f937577ef",
+  "recordedAt": "2026-11-01T05:23:56.305Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-style-reference-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "6847c37aad36325c6204c61d37839699e4b181e26b4f409f5de2ed1c252edffa",
+    "app/payroll/payroll-mobile.module.css": "069e9c31679d693eeb3490b8e615e2e16854a00ab262d4aafd352785a9eddb60",
+    "app/payroll/payroll-tabs.tsx": "d286ac1c2fc8501b66aa1777dad99e4ced39b0839d2e41f7e9940e3b1e5cd234",
+    "app/payroll/shop-money-workspace.tsx": "9c3f39817550e326c186ef0e0735d9ddf7b72249f336034c21d931261dd90392",
+    "app/payroll/shop-money.module.css": "5a06d4522d3d5fa5f912fd5223cc35f9e195f2976df771113e5f1a7da08ddc81",
+    "lib/app-local-owner-payroll-view.tsx": "1b3bffd4c404b847a2d529eb89bc2034db3e14bc4625ff65d812f80d0b5b6a3d",
+    "lib/payroll-history-navigation.ts": "d23d89f8abc58a9d0ff408408ce02dfef22913b7856fb05233d7f9800adce876",
+    "tests/payroll-history-context-browser.mjs": "781cc51ebae19104ccb4e41f7c8712b01d3bc4b90d1613d7fac88e42700fc315",
+    "tests/payroll-history-navigation.test.mjs": "1a4cb6b6b9032efb64db3f95ff1febe257f188ae4b1e6fb1f27cda189641969c",
+    "app/payroll/payroll-theme.module.css": "70a7f57477c1b44a5073569750db3c8d1aabd82b1e0843985c6dbf3fc67b85e1",
+    "docs/payroll-style-reference-20261101.md": "e6b000cc8e15b1dff9b64ca1d4d4332b3bc782e4f50deda52f8a2c259d60ab79",
+    "tests/payroll-reference-style-browser.mjs": "27debb0d166102ff8001f76ae684c66536440f04a70f56183a5809bc4da24c47"
+  }
+}

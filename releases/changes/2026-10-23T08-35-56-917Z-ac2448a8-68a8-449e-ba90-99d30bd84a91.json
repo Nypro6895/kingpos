@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "campaign-run-again-20261023",
+  "status": "working",
+  "summary": "Integrate authorized Campaign Run again release with shipped owner-pause, archive, demand/budget and native command behavior. Preserve inherited approved settings, change only duration and credits, skip repeated admin review and retain separate history. Final production baseline capture and full candidate build pending release lock.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/actions.ts",
+    "app/campaigns/campaign-workspace.tsx",
+    "components/owner-campaign-dialog.tsx",
+    "lib/owner-campaign-rules.ts",
+    "types/owner-campaign.ts",
+    "lib/vietnamese-campaign-copy.json",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "supabase/migrations/20261023190000_campaign_run_again.sql",
+    "tests/campaign-run-again-actions.test.mjs",
+    "tests/campaign-run-again.integration.test.mjs",
+    "tests/campaign-workspace-runtime.test.mjs",
+    "tests/campaign-owner-status-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/campaign-run-again-release-20261023/provisional-ui",
+    "provisionalSourceCommit": "39ccf257b39faace89144a81aa79b26b0e78ac3d"
+  },
+  "validation": [
+    {
+      "name": "Locked live baseline assembly, production build, rerun-aware funding demand regression and native source-bound release",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "ac2448a8-68a8-449e-ba90-99d30bd84a91",
+  "recordedAt": "2026-10-23T08:35:56.917Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

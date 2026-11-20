@@ -1,0 +1,69 @@
+{
+  "kind": "change",
+  "changeId": "settings-compact-complete-20261102",
+  "status": "ready",
+  "summary": "Final live compact Settings summary: long description remains editable without expanding read preview; accurate staff online-booking permissions retained",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/salon-settings/page.tsx",
+    "app/settings/compact-settings-workspace.tsx",
+    "app/settings/compact-settings.css",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "tests/settings-compact-runtime.test.mjs",
+    "tests/settings-consistent-layout.test.mjs",
+    "tests/settings-grouped-editors.test.mjs",
+    "tests/settings-owner-closure-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-combined-release-20261102\\artifacts\\settings-release\\frozen-live-compact",
+    "commit": "08d0a17e4b6a97185a7f76893ccf70059d613197"
+  },
+  "validation": [
+    {
+      "name": "Full production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/build-final.log"
+    },
+    {
+      "name": "21 Settings, profile and staff-hours regression/browser tests, none skipped",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/regression-final.log"
+    },
+    {
+      "name": "Independent booking-rule and staff-online toggle permission contract",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/booking-permission-contract.log"
+    },
+    {
+      "name": "Scope lint",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/permission-lint.log"
+    }
+  ],
+  "dependencies": [
+    "staff-hours-style-20261102"
+  ],
+  "supersedesEvents": [
+    "3607055f-7c06-4220-8c35-f2bb4c04c823"
+  ],
+  "id": "5c8633cd-5c7f-4723-aae7-c42cd2b185fd",
+  "recordedAt": "2026-11-02T16:06:24.353Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-combined-release-20261102",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/salon-settings/page.tsx": "bb61c41246642d976f634b91f04579ab2877a4a31f2d1fb330f52b171efd9df0",
+    "app/settings/compact-settings-workspace.tsx": "eacdfd1f17309ff4ed8e5a103be7a08a523caf3820d36ad08c09217d997ec8af",
+    "app/settings/compact-settings.css": "cbd24feda0b05864fdbc33b05617e875b1dda5c58d6aade4fa2541378874cfbe",
+    "app/settings/direct-settings-ui.tsx": "17e7608096450c30c0704ffaf15f414184e018950577805009e6d40927f85fc0",
+    "app/settings/salon-settings-panels.tsx": "8e92fc24c3c7c7c9a68d98c9219fb04f182d756336fa024a4b6d4b74af81086f",
+    "app/settings/settings-hub-client.tsx": "331527b125cda9b4c1c243907c2d2897bf8049eca578fce6218112581a0d18b7",
+    "tests/settings-compact-runtime.test.mjs": "a6a7c09cea82591783ad6889637f2d19783402c8e853a5a442111eee334e0bd6",
+    "tests/settings-consistent-layout.test.mjs": "6fc625506165ba28097ae39933a98fbfd8e0b8ed858005a38ad984aaeb0cdb8d",
+    "tests/settings-grouped-editors.test.mjs": "eae0c52c34a54f22208e767adab37bdeb956698591008f002fb2e5a419e18afc",
+    "tests/settings-owner-closure-ui.test.mjs": "9ce9da4583ae9d79d67a447cc757a79f32ca7966ded7af46a9a785d2609055ea"
+  }
+}

@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import { withBotId } from "botid/next/config";
+import { browserSecurityHeaders } from "./lib/browser-security-headers";
 
 const SUPABASE_PUBLIC_IMAGE_BUCKETS = [
   "account-avatars",
@@ -76,16 +78,34 @@ if (deploymentId) {
 }
 
 const nextConfig: NextConfig = {
+  // Next 16 preserves up to three visited routes with Activity. Protected data
+  // remains uncached on the server and is scoped/validated by the client shell.
+  cacheComponents: true,
+  // Next 16.3+ changes Link prefetch semantics when this is enabled. Keep the
+  // existing per-link behavior during this security-only dependency upgrade.
+  partialPrefetching: false,
   // Allow an isolated production check while the development tunnel is running.
   distDir: process.env.KINGPOS_BUILD_OUTPUT || ".next",
   experimental: {
+    // Keep unrelated route styles out of the first frame and cache each asset.
+    cssChunking: false,
     serverActions: { bodySizeLimit: "16mb" },
     // Use the build's unique ID consistently; serverless runtime does not rerun
     // this config to populate the NEXT_DEPLOYMENT_ID environment variable.
     runtimeServerDeploymentId: false,
   },
   allowedDevOrigins: ["*.trycloudflare.com"],
+  headers: async () => [{ source: "/:path*", headers: browserSecurityHeaders(process.env) }],
+  outputFileTracingIncludes: {
+    "/api/vendor/maplibre-gl": ["./node_modules/maplibre-gl/dist/maplibre-gl.js", "./node_modules/maplibre-gl/package.json"],
+    "/api/vendor/maplibre-gl/*": ["./node_modules/maplibre-gl/dist/maplibre-gl.js", "./node_modules/maplibre-gl/package.json"],
+    "/api/check-writer": ["./assets/check-writer/*"],
+    "/api/check-writer/pdf": ["./assets/check-writer/*"],
+    "/api/security/challenge": ["./app/fonts/GeistMono.ttf", "./app/fonts/Geist-OFL.txt"],
+  },
   images: {
+    // Local QA Storage is loopback-only; render directly in the isolated browser.
+    unoptimized: process.env.NODE_ENV !== "production" && process.env.REYLUMI_QA_MODE === "local",
     remotePatterns: supabaseImagePatterns(),
   },
   reactCompiler: true,
@@ -93,4 +113,4 @@ const nextConfig: NextConfig = {
   generateBuildId: async () => deploymentSourceId ?? null,
 };
 
-export default nextConfig;
+export default withBotId(nextConfig);

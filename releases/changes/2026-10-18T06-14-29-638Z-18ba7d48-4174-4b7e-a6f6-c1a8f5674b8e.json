@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "campaign-native-parity-20261018",
+  "status": "ready",
+  "summary": "Refresh installed Campaigns to 120-credit UI and centered/background-upload flows; preserve explicit ceilings for older installed clients without accepting unbounded legacy requests",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/actions.ts",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "tests/campaign-installed-compatibility.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-live-20261018\\native-source",
+    "nativeBaselineCommit": "15e41dcd249ff533d955f87cf57c95c16cc44d78",
+    "nativeBaselineBuild": "34"
+  },
+  "dependencies": [
+    "campaign-admin-20261017",
+    "campaign-production-integration-20261018"
+  ],
+  "validation": [
+    {
+      "name": "Native package and server compatibility, 7 cases including actual bundled Help/Market and owner commerce boundaries",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos/artifacts/campaign-live-20261018/native-compat-tests.log"
+    },
+    {
+      "name": "Full assembled web build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos/artifacts/campaign-live-20261018/web-build.log"
+    }
+  ],
+  "id": "18ba7d48-4174-4b7e-a6f6-c1a8f5674b8e",
+  "recordedAt": "2026-10-18T06:14:29.638Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/campaigns/actions.ts": "764e11257e709272be7475f7571a0d847dca99989156405bb035bf449e52a46f",
+    "ios/Reylumi/LocalAppBundle/app.js": "538398fa7189babd85e9f43f4232ae21dd9106a96980b035d4f6dbc998d97b31",
+    "ios/Reylumi/LocalAppBundle/app.css": "f2ded45da7d22468afeaf5db0bdd1f570b230afe8c09fbfafb3292dae6068b87",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "1642701f49b5a6530c8eef101ba0de4d5f8e2bb5b9017067094a41d290fde286",
+    "tests/campaign-installed-compatibility.test.mjs": "1984b66f548188e134ef7a70f02a88c3e32f92643adfed097a509d22f236a081"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "nativeImpact": {
+    "physicalAcceptance": "pending",
+    "uploaded": false,
+    "requiresBundledClientRebuild": true
+  },
+  "changeId": "loading-refresh-audit-20261106",
+  "files": [
+    "app/activity/customer-activity-client.tsx",
+    "app/activity/customer-journey.module.css",
+    "app/activity/customer-journey.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-resource.ts",
+    "tests/customer-journey-ui.test.mjs",
+    "tests/loading-refresh-lifecycle.test.mjs",
+    "docs/loading-refresh-audit-20261106.txt"
+  ],
+  "dependencies": [],
+  "limits": "Isolated browser/transport fixtures only. The short supplied video confirms flicker but does not prove an authenticated backend request loop. No deployment or native upload.",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\loading-refresh-audit-20261106\\artifacts\\loading-refresh-audit-20261106\\frozen-source",
+    "commit": "41121657689af4176276af54c66fd97f3ac8b3c5"
+  },
+  "validation": [
+    {
+      "evidence": "49/49 tests; docs/loading-refresh-audit-20261106.txt",
+      "result": "passed",
+      "name": "Targeted browser/runtime suite"
+    },
+    {
+      "evidence": "tsc --noEmit --pretty false --incremental false; Next production TypeScript",
+      "result": "passed",
+      "name": "TypeScript"
+    },
+    {
+      "evidence": "npm run build: 288 static pages; 540 offline assets",
+      "result": "passed",
+      "name": "Production web build"
+    },
+    {
+      "evidence": "node scripts/build-app-local-bundle.mjs --verify-only: safari16, 348 actions, 969 modules, zero unsupported",
+      "result": "passed",
+      "name": "Installed local-app bundle check"
+    },
+    {
+      "evidence": "eslint changed TSX/TS and regression test; git diff --check",
+      "result": "passed",
+      "name": "Scoped ESLint and diff whitespace"
+    },
+    {
+      "evidence": "390px screenshot visually inspected; unchanged tab position while refreshing at 320/390/1280px",
+      "result": "passed",
+      "name": "Mobile rendering"
+    }
+  ],
+  "summary": "Fix reproduced false loading on cached named reads, settle missing booking details, coalesce automatic Bookings revalidation, and keep list geometry stable. Validated patch; integrate into current release baseline before publication.",
+  "kind": "change",
+  "id": "a1de4ca5-d84b-4471-8198-68405e8ec8bd",
+  "recordedAt": "2026-11-06T06:19:30.322Z",
+  "worktree": "C:\\Reylumi-worktrees\\loading-refresh-audit-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/activity/customer-activity-client.tsx": "9c18e184bb10d31ace6cf7108ab1cc89afe76651e864eb5173ea7ca63490cfa4",
+    "app/activity/customer-journey.module.css": "f41bf5ef4eb5a21f57b31b0cf456941b1103ec5c9d9e1bb254425b6b756b4cc7",
+    "app/activity/customer-journey.tsx": "121aadf257eaeff41c53d07c598d582308210b74c2895901c4698a5fc6db36cd",
+    "lib/app-local-page-registry.tsx": "2bf84503a9f786937a1b0ae5b0a8c281272e52571b612cac589192bc5883861e",
+    "lib/app-local-resource.ts": "4e72eaabd0b6bf4565dbbec87f2df97d701e90e21028b8316a545972bd38b825",
+    "tests/customer-journey-ui.test.mjs": "b3f4612752c4659cf49131285f6df7dc19caa68552a6e5ab8c4758f7055a83c6",
+    "tests/loading-refresh-lifecycle.test.mjs": "e54c241a62bfcc3a011c6b0402929663cd17e0c826c0c6b8d3c86161703a7764",
+    "docs/loading-refresh-audit-20261106.txt": "12bf312d02a71dab22c659069abd3be8551825ed7c83ccf10d275e47beadded8"
+  }
+}

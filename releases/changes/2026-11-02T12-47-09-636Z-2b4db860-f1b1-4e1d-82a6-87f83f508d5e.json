@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "attention-compact-20261101",
+  "status": "ready",
+  "summary": "Integrated authorized queued change with daily Reports on current baseline: Compact discount alerts and focused ticket edit details; capture event customer context and trusted Owner/POS source",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/today/attention-detail.tsx",
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/owner-attention.module.css",
+    "lib/owner-attention-presentation.ts",
+    "supabase/migrations/20261101223000_attention_display_context.sql",
+    "tests/attention-compact.test.mjs",
+    "tests/attention-compact-browser.mjs",
+    "tsconfig.attention.json",
+    "docs/attention-compact-20261101.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\reports-overview-20261102\\artifacts\\release\\frozen"
+  },
+  "validation": [
+    {
+      "name": "Daily overview and owner-report access regressions",
+      "result": "passed",
+      "evidence": "25 tests; artifacts/release/regression.txt"
+    },
+    {
+      "name": "Responsive actual component fixture",
+      "result": "passed",
+      "evidence": "320/390/430/768/1280; staff filter, Ticket link and Daily Report link; artifacts/release/report-browser-results.json"
+    },
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release/typecheck.txt"
+    },
+    {
+      "name": "Installed Safari16 bundle compilation",
+      "result": "passed",
+      "evidence": "artifacts/release/bundle-check.txt"
+    }
+  ],
+  "supersedesEvents": [
+    "53d1e0b2-8cf3-4430-bbb7-fd3db857ed9b"
+  ],
+  "id": "2b4db860-f1b1-4e1d-82a6-87f83f508d5e",
+  "recordedAt": "2026-11-02T12:47:09.636Z",
+  "worktree": "C:\\Reylumi-worktrees\\reports-overview-20261102",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/staff/today/attention-detail.tsx": "cb5e94eff3e064000ede60af2fe05d57b21827ecfa4c279dd300252fa481ef7b",
+    "app/staff/today/owner-attention-panel.tsx": "ed1350de848ffe839b43300aa94a071204637568d065f194aeb5080977e3d1dc",
+    "app/staff/today/owner-attention.module.css": "5a68c1571bb0279f117f5d84e5778ea465d60e052b9bd34c878825aac7d0b132",
+    "lib/owner-attention-presentation.ts": "4d04f5bf6527156d9f606357584b74588e739c7bea9e27bcc73fb934328f69d4",
+    "supabase/migrations/20261101223000_attention_display_context.sql": "6b78d5384b7d0760688337d3f1c5c66506bc01dbdac54a646ae394323c0604ce",
+    "tests/attention-compact.test.mjs": "e32f5052d145205d1d30692719606a6e960d8e3cf3f7ae3e7359aa8aa7d7c44a",
+    "tests/attention-compact-browser.mjs": "561c81a1f43858e9bebfcfdb5bc92b387e9bd7133b10a7685a9e2c1bb32dc262",
+    "tsconfig.attention.json": "da69c69dfeaa3d8e9e193f6e8580df9944c478974d9efe8eedb876a94d5309da",
+    "docs/attention-compact-20261101.txt": "353682b535f781ab1a474948e8460ca15ac32f6e07ef6af84cd2c853d072781a"
+  }
+}

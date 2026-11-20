@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "combined-five-preparation-20261028",
+  "status": "working",
+  "summary": "Prepare and validate five authorized scopes on native63/web7z; release HOLD, no production or pipeline actions",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "commit": "5f7cf6fa5da8fc3a3b8ffb1a64b881329c79cfa5"
+  },
+  "dependencies": [
+    "payroll-remove-source-notice-20261028",
+    "iphone-reports-overlap-20261028",
+    "ios-startup-cookie-recovery-20261028",
+    "mobile-page-spacing-20261028",
+    "mobile-notebook-menu-20261028"
+  ],
+  "validation": [
+    {
+      "name": "Combined integration, full-app, native and device acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "e5aef85f-3224-4cb9-984c-88bf9899c463",
+  "recordedAt": "2026-10-29T03:25:06.949Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-five-prep-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

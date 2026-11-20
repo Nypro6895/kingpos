@@ -1,4 +1,7 @@
 import "server-only";
+import { getNotificationEmailConfig, sendSupportEmail } from "@/lib/support-email";
+import { sendSmtp } from "@/lib/smtp-mail";
+import { randomUUID } from "node:crypto";
 
 export type EmailDeliveryResult =
   | {
@@ -13,7 +16,7 @@ export type EmailDeliveryResult =
   | {
       reason: string;
       recipient: string;
-      status: "failed";
+      status: "failed" | "unknown";
     };
 
 type SendEmailInput = {
@@ -36,8 +39,8 @@ function getEmailConfig() {
   return { apiKey, from };
 }
 
-export function isEmailProviderConfigured() {
-  return Boolean(getEmailConfig());
+export async function isEmailProviderConfigured() {
+  return Boolean(getEmailConfig() || await getNotificationEmailConfig());
 }
 
 export async function sendEmail(
@@ -51,6 +54,14 @@ export async function sendEmail(
       reason: "No recipient email was provided.",
       status: "skipped",
     };
+  }
+
+  const shared = await getNotificationEmailConfig();
+  if (shared) {
+    const result = shared.provider === "smtp" && shared.smtp
+      ? await sendSmtp(shared.smtp, { ...input, from: shared.from, replyTo: shared.replyTo || shared.from })
+      : await sendSupportEmail(shared, { id: randomUUID(), to: recipient, name: "there", subject: input.subject, body: input.text });
+    return result.status === "sent" ? { recipient, status: "sent" } : { recipient, status: result.status, reason: result.reason || "Email delivery is unconfirmed." };
   }
 
   if (!config) {

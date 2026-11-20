@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "localAuditDate": "2026-11-18",
+  "timezone": "America/Chicago",
+  "preparedAt": "2026-11-18T21:53:38.108Z",
+  "status": "LOCAL_IMPLEMENTATION_VALIDATED_RELEASE_BLOCKED",
+  "mayBeSubmitted": false,
+  "mayPushFinal": false,
+  "sourceBaselineCommit": "04128e40de1a2ce22170c0fc95ea053668c29e26",
+  "ownerDecisions": {
+    "steps": [
+      3,
+      4,
+      2
+    ],
+    "operator": "Reylumi LLC",
+    "storefront": "USA",
+    "freeDownload": true,
+    "ugcRightsRetained": true,
+    "marketAndAdTransactionsInScope": true,
+    "selectedPhotoProvider": "OpenAI",
+    "newDedicatedKeyRequested": true,
+    "routineAdminPhotoPreapproval": false
+  },
+  "credentialSetup": {
+    "keyName": "Codex",
+    "localDestinationToolResult": "not-approved-twice",
+    "keyCreatedByThisWorkflow": false,
+    "secretWrittenByThisWorkflow": false,
+    "createEncryptedKeyInvocations": 0,
+    "actualOpenAIRequests": 0
+  },
+  "photoProcessing": {
+    "scope": [
+      "Beauty post photos",
+      "Salon look/update post photos"
+    ],
+    "payload": "normalized still WebP only",
+    "captionsOrContextIdsSent": false,
+    "privatePayrollTaxBankSupportRoutesAdded": false,
+    "pixelsMayContainPersonalInformation": true,
+    "currentExplicitPerSubmissionConsentRequired": true,
+    "consentUiStatus": "proposal-awaiting-approval",
+    "adminExactTextControlsStatus": "revised-proposal-awaiting-approval",
+    "modelLiveCompatibilityAccuracyLatencyVerified": false
+  },
+  "appPrivacy": {
+    "historicalWorksheet": "docs/ios-submission-app-privacy-20261116.md",
+    "historicalScopePack": "docs/ios-submission-scope-20261116.json",
+    "historicalLineReferencesRemainHistorical": true,
+    "oldSourceEntriesChecked": 136,
+    "sourceDrift": [
+      {
+        "file": "lib/campaign-payments.ts",
+        "historicalSha256": "de3ee81917146dacf5d59bd9aeb29344ddf50d3b6b8ab9cbc6d153ec3471521a",
+        "currentSha256": "48727257a75f6bc05b84aa5a1154a8050d49e15eb27f041ad46e87c66876f6f4"
+      },
+      {
+        "file": "lib/legal-policies.ts",
+        "historicalSha256": "413e13b53019cb3be3ab867efee9e922226e467bf074e0eb15e20fa1faa6344e",
+        "currentSha256": "9857a58cb1e904420a3cd5db9c7c6e06883f5c96525c77639c70a15cbc3b0a32"
+      }
+    ],
+    "newRecipient": "OpenAI when a consented photo-check call is configured and made",
+    "photoDataLinkedInPlatform": true,
+    "dataNotCollectedDeclarationSupported": false,
+    "trackingFinalAnswer": null,
+    "providerRetentionAndSecondaryUseActualProjectVerified": false,
+    "finalASCAnswersSaved": false,
+    "historicalSourceHashScanLimit": "Only explicit file/path + sha256 objects were compared. Hash dictionaries and all old line references still require the final integration evidence refresh; this is not exhaustive current-source validation."
+  },
+  "commerce": {
+    "sourceFixes": [
+      "Reconciliation failures remain pending",
+      "Credit-expiry database errors preserve webhook retry"
+    ],
+    "scopedTests": 123,
+    "actualCharges": 0,
+    "pricingChanged": false,
+    "flagsEnabled": false,
+    "savedRuntimeConfigurationRead": false,
+    "adCreditCashRefundPolicyAndUiVerified": false
+  },
+  "photoDeletion": {
+    "newApprovedUnsharedTerminalObjectsOnly": true,
+    "legacyExcluded": true,
+    "sharedCoverBookingMarketHistoryReferencesProtected": true,
+    "anyReviewCaseRetained": true,
+    "privateReviewEvidenceOriginRemovalWorkflowImplemented": false,
+    "cdnOrBrowserRecallVerified": false,
+    "localFullSchemaMigrations": 435,
+    "localFullSchemaTests": 10,
+    "productionRemovalPerformed": false
+  },
+  "validation": {
+    "build": "artifacts/ios-steps-234-20261118/combined-build-result-r2.json",
+    "sourceParity": "artifacts/ios-steps-234-20261118/build-source-verification-r2.json",
+    "legalRender": "artifacts/ios-steps-234-20261118/legal-r2-acceptance.json",
+    "coordinatorFocusedTests": 29,
+    "rootScopedLint": "passed",
+    "crlfAwareWhitespace": "passed"
+  },
+  "runtime": {
+    "authenticatedProductionAssignmentObserved": true,
+    "deploymentId": "dpl_F5yYNDU4nXW2epT5pozciBmPfHhv",
+    "exactCurrentSourceAndAppliedEnvironmentVerified": false,
+    "providerSettingsRequests": 0,
+    "supportMailboxOperationVerified": false
+  },
+  "releaseActions": {
+    "push": false,
+    "deploy": false,
+    "hostedMigration": false,
+    "nativeUpload": false,
+    "appleMetadataWrite": false,
+    "appReviewSubmit": false
+  },
+  "remaining": [
+    "Approve and implement the revised admin exact-text controls",
+    "Approve and implement user-facing OpenAI notice and unchecked per-post consent",
+    "Complete secure key destination confirmation and real benign provider acceptance",
+    "Verify deployed config/provider/retention and Support operations",
+    "Prepare precise private-evidence and shared-image copyright takedown operations",
+    "Confirm commercial cash-refund/cancellation disclosures",
+    "Refresh every pending change, integrate one final source and verify native/store declarations"
+  ]
+}

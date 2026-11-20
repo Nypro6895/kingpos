@@ -1,0 +1,67 @@
+{
+  "status": "needs-integration",
+  "validation": [
+    {
+      "result": "passed",
+      "evidence": "artifacts/profile-legal-name-consistency-20261029/all-tests.log",
+      "name": "32 runtime SQL and browser checks"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/profile-legal-name-consistency-20261029/browser-tests.log",
+      "name": "final UI at 390px and 768px"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/profile-legal-name-consistency-20261029/typescript-final.log",
+      "name": "source TypeScript"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/profile-legal-name-consistency-20261029/eslint-final.log",
+      "name": "scoped ESLint and source diff check"
+    },
+    {
+      "result": "pending",
+      "evidence": "artifacts/profile-legal-name-consistency-20261029/HANDOFF.md",
+      "name": "migration live baseline build authenticated and physical-device checks"
+    }
+  ],
+  "source": {
+    "snapshot": "artifacts/profile-legal-name-consistency-20261029/source"
+  },
+  "dependencies": [
+    "staff-profile-legal-name-20261029"
+  ],
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "changeId": "profile-legal-name-consistency-20261029",
+  "files": [
+    "app/account/account-profile-editor.tsx",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/staff/my-work/staff-profile-settings-drawer.tsx",
+    "app/staff/staff-directory-editor.tsx",
+    "app/staff/staff-public-profile-editor.tsx",
+    "lib/payroll.ts",
+    "lib/staff-legal-name-server.ts",
+    "lib/staff-legal-name.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff.ts",
+    "lib/vietnamese-dictionary.ts",
+    "supabase/migrations/20261029160000_staff_personal_legal_name.sql",
+    "tests/profile-legal-name-consistency-ui.test.mjs",
+    "tests/profile-legal-name-consistency.integration.test.mjs",
+    "tests/profile-legal-name-consistency.test.mjs",
+    "tests/staff-profile-legal-name.test.mjs"
+  ],
+  "summary": "Unify Owner Personal and linked Staff legal names from Personal; Owner names only unlinked Staff",
+  "id": "da1e55f0-3302-4dd4-b7a8-d3eeb782444e",
+  "recordedAt": "2026-10-29T15:20:24.051Z",
+  "worktree": "C:\\Reylumi-worktrees\\staff-profile-legal-name-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

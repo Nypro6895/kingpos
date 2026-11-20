@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
+import { SalonIdentityContext } from "@/components/salon-member-badge";
 import { PortableOfflineShell } from "@/app/pos/portable/portable-offline-shell";
+import { PortableNativeStorageBoundary } from "@/app/pos/portable/portable-native-storage-boundary";
+import { headers } from "next/headers";
+import { portableNativePlatform } from "@/lib/portable-native-platform";
 import Image from "next/image";
 import { Suspense } from "react";
 import { PortablePanels } from "@/app/pos/portable/portable-panels";
@@ -17,6 +22,22 @@ import { PortableWorkspaceTabs } from "@/app/pos/portable/portable-workspace-tab
 import { PortableWorkspaceStateProvider } from "@/app/pos/portable/portable-workspace-state";
 import { PORTABLE_POS_CAPABILITIES } from "@/lib/pos-portable-capabilities";
 import { PORTABLE_POS_ROUTE_LINKS } from "@/lib/pos-portable-routes";
+import { WorkspaceLanguageProvider, WorkspaceText } from "@/components/workspace-language";
+import { marketServiceClient } from "@/lib/market-payments";
+import { ReceiptContextProvider } from "@/components/receipt-print-context";
+import { loadPortableReceiptBrand } from "@/lib/receipt-brand-server";
+
+// Available in the initial server HTML, including login and every Portable tab.
+export const metadata: Metadata = {
+  title: "Reylumi POS Portable",
+  applicationName: "Reylumi POS Portable",
+  manifest: "/pos/portable/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Reylumi POS",
+    statusBarStyle: "default",
+  },
+};
 
 function ReylumiLogo() {
   return (
@@ -34,7 +55,7 @@ function ReylumiLogo() {
 async function PreparedPanel({ render }: { render: () => Promise<React.ReactNode> }) {
   try { return await render(); }
   catch {
-    return <p role="alert" className="p-6">This view could not load. Other loaded tabs remain available. Reconnect and refresh to try again.</p>;
+    return <p role="alert" className="p-6"><WorkspaceText text="This view could not load. Other loaded tabs remain available. Reconnect and refresh to try again." /></p>;
   }
 }
 
@@ -66,6 +87,14 @@ export default async function PortablePosLayout({
   if (!session) {
     return <PortableLoginScreen />;
   }
+  const receiptBrand = await loadPortableReceiptBrand(session);
+  // Portable uses its own authenticated device session, rather than owner cookies.
+  const language = await Promise.resolve().then(async () => {
+    const { data } = await marketServiceClient().from("vietnamese_plugin_subscriptions").select("installed,portable_enabled,trial_ends_at,paid_until").eq("salon_id", session.salon_id).maybeSingle();
+    return data;
+  }).catch(() => null);
+  const languageExpiry = language ? [language.trial_ends_at, language.paid_until].filter(Boolean).sort((a, b) => Date.parse(b) - Date.parse(a))[0] : null;
+  const vietnamese = Boolean(language?.installed && language.portable_enabled && languageExpiry && Date.parse(languageExpiry) > preparedAt);
 
   const workspaceLinks = PORTABLE_POS_ROUTE_LINKS.filter((link) => {
     if (link.id === "pos") {
@@ -100,7 +129,7 @@ export default async function PortablePosLayout({
   // Online-only sessions load a panel on first visit and retain it thereafter.
   const offlineEnabled = process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1";
   for (const link of offlineEnabled ? workspaceLinks : []) {
-    panels[link.href] = <Suspense fallback={<p role="status" className="p-6">Loading {link.label}…</p>}>
+    panels[link.href] = <Suspense fallback={<p role="status" className="p-6"><WorkspaceText text="Loading" /> <WorkspaceText text={link.label} />…</p>}>
       {panelPages[link.id]}
     </Suspense>;
   }
@@ -112,8 +141,11 @@ export default async function PortablePosLayout({
       data-portable-pos-shell
       data-portable-shell
       data-pos-persistent-workspace
+      data-receipt-local-scope={`${session.salon_id}:${session.key_id}`}
+      data-receipt-local-commands={offlineEnabled && session.capabilities.includes(PORTABLE_POS_CAPABILITIES.posUse) ? "true" : "false"}
     >
-      <PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
+      <PortableNativeStorageBoundary nativeExpected={portableNativePlatform((await headers()).get("user-agent")) ?? false} scope={`${session.salon_id}:${session.key_id}`}><SalonIdentityContext salonId={session.salon_id}><WorkspaceLanguageProvider portableSession enabled={vietnamese} portableEnabled={vietnamese} expiresAt={languageExpiry ?? null}><PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
+        <ReceiptContextProvider scope={`${session.salon_id}:${session.key_id}`} brand={receiptBrand} timezone={session.salon_timezone}>
         <PortableWorkspaceTabs
           canConfirmBookings={session.capabilities.includes(PORTABLE_POS_CAPABILITIES.bookCreate)}
           localPanels
@@ -128,8 +160,9 @@ export default async function PortablePosLayout({
         </div>
         <PortableOfflineShell />
         <PortableShellRefresh />
-        <PortableTouchKeyboard enabled={session.touch_keyboard_enabled !== false} />
-      </PortableWorkspaceStateProvider>
+        <PortableTouchKeyboard />
+        </ReceiptContextProvider>
+      </PortableWorkspaceStateProvider></WorkspaceLanguageProvider></SalonIdentityContext></PortableNativeStorageBoundary>
     </main>
   );
 }

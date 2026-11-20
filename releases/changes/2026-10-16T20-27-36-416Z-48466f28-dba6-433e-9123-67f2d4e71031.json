@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "salon-not-found-title-followup-20261016",
+  "status": "working",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/not-found.tsx"
+  ],
+  "summary": "Live settled-state check reproduced duplicate titles after a retained default 404. Add a matching app-level not-found view that leaves title ownership to active route metadata.",
+  "source": {
+    "commit": "da426d42a3d15fa1508dc478a4da51cfe2673500"
+  },
+  "validation": [
+    {
+      "name": "Production Next Activity navigation settled title regression",
+      "result": "pending"
+    }
+  ],
+  "id": "48466f28-dba6-433e-9123-67f2d4e71031",
+  "recordedAt": "2026-10-16T20:27:36.416Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

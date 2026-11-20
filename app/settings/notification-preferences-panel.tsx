@@ -1,10 +1,14 @@
 "use client";
+import { WorkspaceText } from "@/components/workspace-language";
 import { useEffect, useState } from "react";
+import { SettingsFieldGroup, SettingsSwitch } from "./direct-settings-ui";
 import {
   NOTIFICATION_CATEGORIES,
   type NotificationPreferences,
 } from "@/lib/notification-categories";
 export function NotificationPreferencesPanel() {
+
+
   const [preferences, setPreferences] = useState<NotificationPreferences>({});
   const [staffBooking, setStaffBooking] = useState<{
     salonId: string;
@@ -83,14 +87,13 @@ export function NotificationPreferencesPanel() {
     }
   }
   return (
-    <div className="space-y-4">
-      <p className="text-xs text-zinc-500">Applies to new in-app notifications in every workspace.</p>
+    <div className="settings-style"><div className="space-y-4">
       {error && (
         <p
           role="alert"
           className="rounded-md bg-red-50 p-3 text-sm text-red-700"
         >
-          {error}{" "}
+          <WorkspaceText text={error} />{" "}
           {!loaded && (
             <button
               type="button"
@@ -100,82 +103,31 @@ export function NotificationPreferencesPanel() {
                 setRetry((value) => value + 1);
               }}
             >
-              Retry
+              <WorkspaceText text="Retry" />
             </button>
           )}
         </p>
       )}
       {!loaded && !error && (
         <p role="status" className="text-sm text-zinc-500">
-          Loading preferences…
+          <WorkspaceText text="Loading preferences…" />
         </p>
       )}
-      <div className="content-surface divide-y divide-zinc-100 border-zinc-200 rounded-none border-y shadow-none">
-        {NOTIFICATION_CATEGORIES.filter(
-          (c) => !["likes", "marketing"].includes(c.id),
-        ).map((c) => {
-          const checked =
-            preferences[c.id] ??
-            (c.id === "check_in" ? checkInDefault : c.enabled);
-          return (
-            <button
-              key={c.id}
-              type="button"
-              role="switch"
-              aria-label={c.label}
-              aria-checked={checked}
-              disabled={!loaded || busy !== null}
-              onClick={() => void save(c.id, !checked)}
-              className="grid min-h-16 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 p-4 text-left transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-zinc-950 disabled:opacity-60"
-            >
-              <span>
-                <span className="block text-sm font-semibold text-zinc-950">
-                  {c.label}
-                </span>
-                <span className="mt-1 block text-xs leading-5 text-zinc-500">
-                  {c.description}
-                </span>
-              </span>
-              <span
-                aria-hidden="true"
-                className={`relative h-7 w-12 rounded-full p-1 transition ${checked ? "bg-zinc-950" : "bg-zinc-300"}`}
-              >
-                <span
-                  className={`block h-5 w-5 rounded-full bg-white shadow-sm transition ${checked ? "translate-x-5" : "translate-x-0"}`}
-                />
-              </span>
-            </button>
-          );
-        })}
-      </div>
-      {staffBooking && (
-        <button
-          type="button"
-          role="switch"
-          aria-checked={staffBooking.enabled}
-          disabled={busy !== null}
-          onClick={() => void saveStaffBooking()}
-          className="flex min-h-16 w-full items-center gap-4 rounded-lg border border-zinc-200 p-4 text-left"
-        >
-          <span className="flex-1">
-            <span className="block text-sm font-semibold">
-              Assigned bookings in this salon
-            </span>
-            <span className="mt-1 block text-xs text-zinc-500">
-              Your existing staff booking mute. Both this switch and Booking
-              updates must be On.
-            </span>
-          </span>
-          <span className="text-sm font-semibold">
-            {staffBooking.enabled ? "On" : "Off"}
-          </span>
-        </button>
-      )}
+      <p className="text-xs text-zinc-500"><WorkspaceText text="Changes save automatically" /></p>
+      {[
+        {title:"Bookings & visits",categories:["booking","reminders","receipts","check_in"]},
+        {title:"Team & activity",categories:["team","comments","forum","following"]},
+      ].map(group=><SettingsFieldGroup key={group.title} title={group.title}>
+        <div className="settings-switch-list">{NOTIFICATION_CATEGORIES.filter(c=>group.categories.includes(c.id)).map(c=>
+          <SettingsSwitch key={c.id} label={c.label} description={c.description}
+            checked={preferences[c.id]??(c.id==="check_in"?checkInDefault:c.enabled)}
+            disabled={!loaded||busy!==null} onChange={()=>void save(c.id,!(preferences[c.id]??(c.id==="check_in"?checkInDefault:c.enabled)))}/>
+        )}</div>
+        {group.title==="Bookings & visits"&&staffBooking?<SettingsSwitch label="Assigned bookings in this salon" description="Your existing staff booking mute. Both this switch and Booking updates must be On." checked={staffBooking.enabled} disabled={busy!==null} onChange={()=>void saveStaffBooking()}/>:null}
+      </SettingsFieldGroup>)}
       <p className="text-xs leading-5 text-zinc-500">
-        Check-in uses the role default until you choose On or Off here. Followed
-        posts are an opt-in digest, at most once per profile per day. Likes and
-        promotions remain off; their delivery is not yet available.
+        <WorkspaceText text="Check-in uses the role default until you choose On or Off here. Followed posts are an opt-in digest, at most once per profile per day. Likes and promotions remain off; their delivery is not yet available." />
       </p>
-    </div>
+    </div></div>
   );
 }

@@ -4,9 +4,6 @@ import { resolveSettingsTarget } from "@/lib/settings-target-context";
 import { hasPermission } from "@/lib/permissions";
 import { getSalonOwnerRoster } from "@/lib/owner-transfer";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
-import { currentUserCanAccessRecoveryBackOffice } from "@/lib/account-security-backoffice";
-import { getCurrentPlatformAdminContext } from "@/lib/platform-admin/auth";
-import { getTwilioSettings, publicTwilioSettings } from "@/lib/twilio-settings";
 
 export async function loadSettingsHub() {
   const context = await getCurrentBusinessContext();
@@ -29,8 +26,7 @@ export async function loadSettingsHub() {
     return {id:salon.id,accountId:salon.account_id,...identity(salon.id,salon.name),status:salon.status,owner,role:target.currentWorkspace?.roleLabel ?? "Manager",permissions:Object.fromEntries(permissions),owners,ownersError};
   }));
   const staff = context.availableStaffSalons.map(s=>({id:s.id,accountId:s.account_id,...identity(s.id,s.name),status:s.status}));
-  const [support,admin] = await Promise.all([currentUserCanAccessRecoveryBackOffice(),getCurrentPlatformAdminContext()]);
   const hasBusinessWorkspace = context.workspaceOptions.some(workspace => workspace.type === "salon");
-  return {managed,staff,hasBusinessWorkspace,accounts:context.availableAccounts.map(a=>({id:a.id,name:a.name,canCreate:context.accountMemberships.some(m=>m.account_id===a.id && m.status==="active" && isOwnerMembership(m))})),support,twilio:admin?.roleSlug==="platform_owner"?publicTwilioSettings(await getTwilioSettings()):null};
+  return {managed,staff,hasBusinessWorkspace,accounts:context.availableAccounts.map(a=>({id:a.id,name:a.name,canCreate:context.accountMemberships.some(m=>m.account_id===a.id && m.status==="active" && isOwnerMembership(m))}))};
 }
 export type SettingsHubIndex = Awaited<ReturnType<typeof loadSettingsHub>>;

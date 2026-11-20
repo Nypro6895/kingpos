@@ -1,0 +1,77 @@
+{
+  "kind": "change",
+  "changeId": "public-photo-processing-consent-ui-20261118",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "app/beauty/beauty-profile-client.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/public-photo-processing-permission.tsx",
+    "docs/public-photo-processing-consent-ui-20261118.md",
+    "tests/beauty-library-entry.test.mjs",
+    "tests/beauty-pending-publication.test.mjs",
+    "tests/beauty-timeline-publish-race.test.mjs",
+    "tests/public-photo-processing-permission-ui.test.mjs",
+    "tests/salon-public-image-submission.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [
+    "public-photo-processing-consent-20261118"
+  ],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-20.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "6437d96d-042a-4f23-b6bc-ae30805c96ab"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-20",
+  "id": "83f55c3e-cf06-4aa1-a2ec-82ec6802d26c",
+  "recordedAt": "2026-11-19T19:41:35.014Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "app/beauty/beauty-profile-client.tsx": "9d03ffd0734f779b08c8f5f58455212aeedd73303833b4a4623a8cb583210880",
+    "app/salon-profile/salon-profile-view.tsx": "49cfeb6813ac1c6fbdd0c3d1310f009ced9af401c5e303b880d237354ab4493a",
+    "components/public-photo-processing-permission.tsx": "36244a54609be8695fe79a32a6f24a938617e96c0e02d3f57c84894ba4dd83af",
+    "docs/public-photo-processing-consent-ui-20261118.md": "707500aa6611ef4360267e91bdf7ab56a5f1f9e60fa4a5e6660ceeb2f4813f3c",
+    "tests/beauty-library-entry.test.mjs": "4e6cabbd072714d14750f13a2ed3b5de0b12867e1bcebe2d976cd6c597c8aecb",
+    "tests/beauty-pending-publication.test.mjs": "ee11633edb48b038a5c1a277b35cf57f230e1e0347fe3c782453526bf4412da4",
+    "tests/beauty-timeline-publish-race.test.mjs": "728db5628a9bebd3df3c7b1aa7450c606ce7978d1ca753b1e29ca37866e526ec",
+    "tests/public-photo-processing-permission-ui.test.mjs": "34ef4d48f3844fd964945be5e3947502527ae62d7138dec171d7e522776f1c00",
+    "tests/salon-public-image-submission.test.mjs": "36a1fa767852fd4dd28f20e2b87e598b2218a2ca476fc70ee8ecc69c8c66b7d8"
+  }
+}

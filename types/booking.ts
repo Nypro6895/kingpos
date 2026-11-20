@@ -149,6 +149,9 @@ export type Booking = {
   created_by_user_id: string | null;
   updated_by_user_id: string | null;
   payment_status: BookingPaymentStatus;
+  deposit_paid_cents?: number;
+  deposit_refunded_cents?: number;
+  deposit_receipt_url?: string | null;
   deposit_policy_snapshot: Record<string, unknown>;
   cancellation_policy_snapshot: Record<string, unknown>;
   created_at: string;

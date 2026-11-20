@@ -1,0 +1,101 @@
+{
+  "kind": "change",
+  "changeId": "service-owned-addon-groups",
+  "status": "ready",
+  "summary": "Compact service details with reachable Save/Cancel and independent owned optional add-on groups; booking structure preserved; price/time/staff availability verified. Not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/services/services-manager.tsx",
+    "app/services/services.css",
+    "app/services/service-addon-groups.tsx",
+    "lib/services.ts",
+    "lib/service-contract.ts",
+    "types/service.ts",
+    "lib/public-booking.ts",
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/book/[salonId]/booking-addon-groups.tsx",
+    "lib/salon-profile.ts",
+    "supabase/migrations/20261017194500_service_owned_addon_groups.sql",
+    "tests/service-owned-addons.integration.test.mjs",
+    "tests/service-addon-scheduling.test.mjs",
+    "tests/service-owned-addons-ui.test.mjs",
+    "tests/service-addon-booking-ui.test.mjs",
+    "docs/service-owned-addons-handoff-2026-10-17.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\service-addon-groups-20261017\\frozen",
+    "sourceSha256": "cfddc920acdacd8b949a0ab2cc6d7f759e7d485592907ba35e93441203f51b4d",
+    "overlaySha256": "0ce20973f6933a044afc23607d31ffb0a9c6f13c2b46e3b2257e6ff7f87218c2"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Production build of isolated runtime source, all changed runtime hashes match",
+      "result": "passed",
+      "evidence": "artifacts/service-addon-groups-20261017/build-clean.log"
+    },
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/service-addon-groups-20261017/typecheck-final.log"
+    },
+    {
+      "name": "Lint (no errors, existing warnings)",
+      "result": "passed",
+      "evidence": "artifacts/service-addon-groups-20261017/lint-final.log"
+    },
+    {
+      "name": "Core booking and service regressions",
+      "result": "passed",
+      "evidence": "artifacts/service-addon-groups-20261017/regression-core.log; artifacts/service-addon-groups-20261017/regression-browser-clean.log"
+    },
+    {
+      "name": "Existing complete booking wizard",
+      "result": "passed",
+      "evidence": "artifacts/service-addon-groups-20261017/wizard-clean.log"
+    },
+    {
+      "name": "Service editor and actual booking extra groups browser checks",
+      "result": "passed",
+      "evidence": "artifacts/service-addon-groups-20261017/editor-ui.log; artifacts/service-addon-groups-20261017/booking-ui-final-component.log"
+    },
+    {
+      "name": "Price, duration, buffer, split staff and SQL availability",
+      "result": "passed",
+      "evidence": "artifacts/service-addon-groups-20261017/timing-final-passed.log; artifacts/service-addon-groups-20261017/sql-final-with-dates.log"
+    },
+    {
+      "name": "Task-only patch applies to captured before-source",
+      "result": "passed",
+      "evidence": "git apply --check --directory=artifacts/service-addon-groups-20261017/before artifacts/service-addon-groups-20261017/task-only.patch"
+    }
+  ],
+  "notes": "Apply the additive SQL migration before the web overlay. Integrate task-only.patch with the exact live baseline; frozen files include pre-existing unrelated source and must not overwrite it wholesale. No native build required by this patch alone.",
+  "supersedesEvents": [
+    "7b4f68a5-3cee-4d41-878c-a5f7b5b2b256"
+  ],
+  "id": "64572a22-ac21-458a-9143-76a8e9a32af8",
+  "recordedAt": "2026-10-17T20:10:08.202Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/services/services-manager.tsx": "5a037c6d9b0b67ad7a64ac7fd3cc66f06c950ee96a888b1a83cfcde352fae8f8",
+    "app/services/services.css": "fb04975309989a6deac004ed9627eb545b5de6e7ef8a97f00e398903ca58c8bc",
+    "app/services/service-addon-groups.tsx": "f18aece85dba374eda29a1a4f0864c88a1f0c68e8f6897bf941d9c3c9090f791",
+    "lib/services.ts": "23471147e5ef147bbac9a466c9c2a3c49cc2306ad979d5b715f165c766bfcdc5",
+    "lib/service-contract.ts": "f143d1552f0b1c8cf2df33892cb2182b3b80e92f1c05fb791cddc0c3c85abb87",
+    "types/service.ts": "9570a28e0cd2f158f7358405ad108445c8049276d349dc04988dbc1677b6487d",
+    "lib/public-booking.ts": "7e5ae2cb04bb979d3651eb03cb59fc636fa0a8e9e14e1c39ff294fcd822f3189",
+    "app/book/[salonId]/public-booking-client.tsx": "5dc327f34941b6c08146f36493f5ff31f6bbcf1fd160efee29384fcd85f9c7ce",
+    "app/book/[salonId]/booking-addon-groups.tsx": "4f0042f3185f4d6978843f956781a5f7a7c8c73e5b85b07bbc9e3d2ab038f0f5",
+    "lib/salon-profile.ts": "890c9bd56d6b784e81933396749c40d5b732f0ed5875e22096e66f6d0f02c2ac",
+    "supabase/migrations/20261017194500_service_owned_addon_groups.sql": "09527616821f204fdd7780ef23c3d1fcd2d7bc05b33608193ae291374a2daaf5",
+    "tests/service-owned-addons.integration.test.mjs": "afdea0fc836d9bd417e8bea68527d85a5cd6185786f0344cd2d7926d74d45831",
+    "tests/service-addon-scheduling.test.mjs": "04762d33d8e56bdfd9497a088627e9e7a5a2b61b9d71a696d6cc525936a5e568",
+    "tests/service-owned-addons-ui.test.mjs": "c312f066950541c0e85d2de8daf457f695835d0bd4f3850a4ff1a9d3732c6906",
+    "tests/service-addon-booking-ui.test.mjs": "6ec64c2710caef6e854ff199077f98b076da3efb40e2581009c5fcd76e0b6ee6",
+    "docs/service-owned-addons-handoff-2026-10-17.md": "0bf4815ab602a70331f4b82b2a3779068cbbfd0ae3d8c9bd2645ec80a7aa7bd8"
+  }
+}

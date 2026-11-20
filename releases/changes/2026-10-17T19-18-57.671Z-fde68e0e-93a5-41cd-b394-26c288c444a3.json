@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "ticket-toolbar-20261017",
+  "status": "needs-integration",
+  "summary": "Completed one-row owner More ticket toolbar: small title over single clickable date, live Search and retained screen menu. Removed separate header and duplicate filter affordance; portable filters remain unchanged. Not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/(app)/pos-tickets/page.tsx"
+  ],
+  "source": {
+    "snapshot": "artifacts/ticket-toolbar-20261017/source",
+    "patch": "artifacts/ticket-toolbar-20261017/change.patch",
+    "baselineSnapshot": "artifacts/ticket-toolbar-20261017/before",
+    "nativeAssessment": "Web-compatible presentation only; no native binary required by this change."
+  },
+  "dependencies": [
+    "compact-ticket-layout-20261017"
+  ],
+  "validation": [
+    {
+      "name": "TypeScript noEmit",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint three changed files",
+      "result": "passed"
+    },
+    {
+      "name": "Browser UI",
+      "result": "passed",
+      "evidence": "artifacts/ticket-toolbar-20261017/qa-result.json; one header/date, menu open/close, live search, date routing, Enter, 320/393px layout"
+    }
+  ],
+  "fileHashes": {
+    "app/pos-tickets/ticket-filters.tsx": "d738e47232ff1d5e8eb1f9d18b651e43edb176c65fc5bfc18d6657159654e31c",
+    "app/pos-tickets/owner-live-tickets.tsx": "770af6fb2ea9d97e65f44a1d258cc8e45080d42d6e4d52725ae3b391e1400f8e",
+    "app/(app)/pos-tickets/page.tsx": "db7ba7f2d0c4e0d35267c3ed50eb07d985f8c515e23129c55062d77258134b93"
+  },
+  "id": "fde68e0e-93a5-41cd-b394-26c288c444a3",
+  "recordedAt": "2026-10-17T19:18:57.671Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

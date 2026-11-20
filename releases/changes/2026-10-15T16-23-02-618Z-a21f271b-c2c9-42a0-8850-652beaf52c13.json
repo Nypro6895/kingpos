@@ -1,0 +1,87 @@
+{
+  "kind": "change",
+  "changeId": "salon-claim-create-fix-20261015",
+  "status": "ready",
+  "summary": "Fix claim lookup timeout with indexed candidates, preserve salon creation lookup errors via authenticated GET, and open an approved salon through the authorized workspace handoff. Browser create and claim flows verified on disposable full-schema Supabase. Not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/business-claims/matches/route.ts",
+    "app/claim/actions.ts",
+    "app/claim/claim-panel.tsx",
+    "app/salons/actions.ts",
+    "app/salons/claim-suggestions.tsx",
+    "lib/business-claim-client.ts",
+    "lib/business-claim-diagnostics.ts",
+    "supabase/migrations/20261015051000_business_claim_lookup_indexes.sql",
+    "tests/business-claim-diagnostics.test.mjs",
+    "tests/business-claim-http.test.mjs",
+    "tests/business-claim-lookup.integration.test.mjs",
+    "docs/qa/salon-claim-create-20261015.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\source-v1",
+    "baseCommit": "34ea63589e7e8caf5718bf4ffe54e403eab6775a"
+  },
+  "validation": [
+    {
+      "name": "Automated claim regression suite",
+      "result": "passed",
+      "evidence": "13 tests passed: business-claim-{lookup.integration,http,diagnostics,provider}.test.mjs; 30000 synthetic rows and 14 matching inputs."
+    },
+    {
+      "name": "ESLint and salon routing",
+      "result": "passed",
+      "evidence": "Seven changed TypeScript/TSX files linted with no warnings; verify-salon-creation-routing.mjs passed."
+    },
+    {
+      "name": "Production build",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\build-final.log"
+    },
+    {
+      "name": "Full schema and authenticated database integration",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\runtime-evidence.json; 261 baseline migrations, candidate migration and business-claims.integration.sql; C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\backend-create-result.json"
+    },
+    {
+      "name": "Real browser password login, failure/retry/create/duplicate/claim/manage",
+      "result": "passed",
+      "evidence": "docs/qa/salon-claim-create-20261015.txt; C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\ui-database-verification.json; separate reviewer RPC, not admin UI or live SMS."
+    },
+    {
+      "name": "Disposable fixture cleanup",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-claim-create-fix-20261015\\cleanup.json"
+    }
+  ],
+  "dependencies": [
+    "salon-claim-lookup-diagnostics-20261014"
+  ],
+  "nativeAssessment": "Web and SQL only; no Swift, bundled assets, app configuration or bridge change. Existing native client remains compatible.",
+  "limitations": [
+    "No production migration or web deployment in this task.",
+    "Actual email signup, SMS/voice/OTP, admin review UI and iPhone payments were not tested.",
+    "Separate existing menu switch from salon-profile to Personal can show a workspace error; recorded in QA report, outside this patch."
+  ],
+  "id": "a21f271b-c2c9-42a0-8850-652beaf52c13",
+  "recordedAt": "2026-10-15T16:23:02.618Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-claim-create-fix\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/business-claims/matches/route.ts": "30657e4fcfe9016f53a85d93744b914dea278fc2b94415bb264940da0b9143e1",
+    "app/claim/actions.ts": "6abf0722b3c9df55902476a18c57d2542f8c9b97fce6214e64de3bf93b2cfd9a",
+    "app/claim/claim-panel.tsx": "bc042ae1915611ae46f06dde348ad28ea8220ae2573b0a89db989fcd76d401b1",
+    "app/salons/actions.ts": "ef37073f265805274c1797a1d9d30bfea3fe81122d2fb1b1491ce1401870f979",
+    "app/salons/claim-suggestions.tsx": "8abc99ee214a5d0475375c6483269b928ec0f1b91570366b550276146cfb271b",
+    "lib/business-claim-client.ts": "1caf33dfce13cd86460c4bef4bcb5949f53dd932db60d696f7dbd655fa78c6f1",
+    "lib/business-claim-diagnostics.ts": "a26763f8438c3b955db4b832120069a3a3bd1de5170df73a005d76cc3136b918",
+    "supabase/migrations/20261015051000_business_claim_lookup_indexes.sql": "805f050f26bc71b4354cd762f5a09e5b7458452664b21126e61555f272cc8c16",
+    "tests/business-claim-diagnostics.test.mjs": "b2a313f5e897da8903ae4da2a561aa4fe7d3c85da312b2b782fcbac3341c8782",
+    "tests/business-claim-http.test.mjs": "bf66b69f4a2044752d038083f7e612b3257e6b23517eb3666665ce006fac8a2b",
+    "tests/business-claim-lookup.integration.test.mjs": "9b14522c3afb449ae27d29a771d926a8c9fb9a06fdf6f969fa00283654f6bea7",
+    "docs/qa/salon-claim-create-20261015.txt": "006bcc2ebc14e8c56547968ca4c109bb063d12c3fcfcc9cdfca17f035743e7fe"
+  }
+}

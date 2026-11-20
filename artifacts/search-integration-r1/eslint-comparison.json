@@ -1,0 +1,298 @@
+{
+  "createdAt": "2026-11-19T07:30:36.458Z",
+  "runtimeFiles": [
+    "app/explore/explore-client.tsx",
+    "lib/explore-query-intent.ts",
+    "lib/explore-query-routing.ts",
+    "lib/explore-search-metrics.ts",
+    "lib/explore-search-refresh.ts",
+    "lib/explore-search-rpc.ts",
+    "lib/explore-search.ts",
+    "lib/use-explore-search-media.ts",
+    "types/explore.ts"
+  ],
+  "baselineCommit": "045dfa2278548787c1abb434b0362ef83b90afec",
+  "baselineMessages": [
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'PostIdentity' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'SalonTrustLine' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'SalonVerifiedBadge' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'resolveNailCoverImage' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'isDefaultNailImage' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'NailIllustrationCredit' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'ExploreBookButton' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'ExploreSalonLove' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'SavePostButton' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'formatDistance' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'phoneHref' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'displaySalonName' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'featuredServiceLine' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'salonAvailabilityLine' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'useInspirationHidden' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'inspirationDistanceLabel' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'inspirationAvailabilityLabel' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'DesktopInspiredCard' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'PublicSalonProfilesSection' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'DesktopDiscoveryFilterBar' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'onApplySearchShortcut' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'onSelectCategory' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nC:\\Reylumi-worktrees\\combined-store-release-20261119\\app\\explore\\explore-client.tsx:3098:7\n  3096 |   useEffect(()=>{\n  3097 |     if(homeSearchPending && homeSearchResponse && !explicitSearchMode && !gpsResponse && sessionResponse===initialResponse) {\n> 3098 |       setSessionResponse(homeSearchResponse);\n       |       ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  3099 |     }\n  3100 |   },[homeSearchPending,homeSearchResponse,explicitSearchMode,gpsResponse,sessionResponse,initialResponse]);\n  3101 |   const gpsActive = Boolean(gpsResponse);"
+    }
+  ],
+  "currentMessages": [
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'PostIdentity' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'SalonTrustLine' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'SalonVerifiedBadge' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'resolveNailCoverImage' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'isDefaultNailImage' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'NailIllustrationCredit' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'ExploreBookButton' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'ExploreSalonLove' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'SavePostButton' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'formatDistance' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'phoneHref' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'displaySalonName' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'featuredServiceLine' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'salonAvailabilityLine' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'useInspirationHidden' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'inspirationDistanceLabel' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'inspirationAvailabilityLabel' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'DesktopInspiredCard' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'PublicSalonProfilesSection' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'DesktopDiscoveryFilterBar' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'onApplySearchShortcut' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "message": "'onSelectCategory' is defined but never used."
+    },
+    {
+      "file": "app/explore/explore-client.tsx",
+      "ruleId": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nC:\\Reylumi-worktrees\\combined-store-release-20261119\\app\\explore\\explore-client.tsx:3098:7\n  3096 |   useEffect(()=>{\n  3097 |     if(homeSearchPending && homeSearchResponse && !explicitSearchMode && !gpsResponse && sessionResponse===initialResponse) {\n> 3098 |       setSessionResponse(homeSearchResponse);\n       |       ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  3099 |     }\n  3100 |   },[homeSearchPending,homeSearchResponse,explicitSearchMode,gpsResponse,sessionResponse,initialResponse]);\n  3101 |   const gpsActive = Boolean(gpsResponse);"
+    }
+  ],
+  "newMessages": [],
+  "passed": true,
+  "currentExit": 1
+}

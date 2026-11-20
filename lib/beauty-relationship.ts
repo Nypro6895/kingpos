@@ -18,6 +18,7 @@ import {
 } from "@/lib/supabase/server";
 import type { BeautyProfileVisibility } from "@/types/beauty";
 import type {
+  ExplorePersonalPostCursor,
   ExplorePersonalPostItem,
   ExplorePersonalPostPage,
 } from "@/types/explore";
@@ -93,6 +94,9 @@ export type BeautyProfileRoutePage =
       customerId: null;
       profile: ResolvedBeautyProfile;
       publicPosts: ExplorePersonalPostItem[];
+      nextCursor: ExplorePersonalPostCursor | null;
+      hasMore: boolean;
+      postsError: string | null;
     }
   | {
       access: "private_relationship";
@@ -530,6 +534,7 @@ export async function getPublicBeautyProfile(
 }
 
 export async function getBeautyProfileRoutePage(input: {
+  cursor?: ExplorePersonalPostCursor | null;
   customerId?: string | null;
   profileId: string;
 }): Promise<BeautyProfileRoutePage | null> {
@@ -578,6 +583,7 @@ export async function getBeautyProfileRoutePage(input: {
 
   const publicPostPage: ExplorePersonalPostPage = await getExplorePersonalPostPage({
     pageSize: 12,
+    cursor: input.cursor,
     profileId,
   });
 
@@ -586,5 +592,8 @@ export async function getBeautyProfileRoutePage(input: {
     customerId: null,
     profile: publicProfile,
     publicPosts: publicPostPage.items,
+    nextCursor: publicPostPage.nextCursor,
+    hasMore: publicPostPage.hasMore,
+    postsError: publicPostPage.error,
   };
 }

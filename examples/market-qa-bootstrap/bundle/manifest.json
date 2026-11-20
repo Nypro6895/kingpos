@@ -1,0 +1,81 @@
+{
+  "scope": "synthetic Market RPC contract/QR private storage only; NOT full KingPOS/Auth UI baseline; no Auth accounts or credentials created",
+  "normalization": "CRLF to LF; one final LF",
+  "featureEnabled": false,
+  "financeEnabled": false,
+  "authAccountsCreated": 0,
+  "files": [
+    {
+      "source": "examples/market-qa-bootstrap/00-preflight.sql",
+      "name": "00-00-preflight.sql",
+      "rawSha256": "6c3b04918d2a60af7bca0eb559e9c4decab4833d2542ebf1b58843f58f43877d",
+      "executedSha256": "14f35f2e212cfc47a4deb6a9e1aa294797a823e076a589a0c8e33ff426a316df"
+    },
+    {
+      "source": "examples/market-qa-bootstrap/01-foundation.sql",
+      "name": "01-01-foundation.sql",
+      "rawSha256": "d312650b91848d2cb727836545b27abc0130613bca8c98279e75ad71f502daf5",
+      "executedSha256": "d2c675c7f5ce32bec417663c4c1f60521e7fea40cb59937f0027688e67c17d34"
+    },
+    {
+      "source": "supabase/migrations/20261028043000_market_platform.sql",
+      "name": "02-20261028043000_market_platform.sql",
+      "rawSha256": "07800590066ef83696e9f6ff8a4aa676346201f637722e8929024e28431aeab5",
+      "executedSha256": "7107a89a7c71a339b829ba70df3d55073db55202588b8a65f93d41ab06ee336f"
+    },
+    {
+      "source": "supabase/migrations/20261028050000_market_platform_commerce.sql",
+      "name": "03-20261028050000_market_platform_commerce.sql",
+      "rawSha256": "e1b22dbc81bf6a122172235e1ba9f6ea6705e5c87deeff2695bf99fa95fc9382",
+      "executedSha256": "e1b22dbc81bf6a122172235e1ba9f6ea6705e5c87deeff2695bf99fa95fc9382"
+    },
+    {
+      "source": "supabase/migrations/20261028060000_market_owner_connections.sql",
+      "name": "04-20261028060000_market_owner_connections.sql",
+      "rawSha256": "22ad168a344216cb7b85b362e44bcfd363b1aabe4e5900d5f628528566e36065",
+      "executedSha256": "78125db40514063b6fdd84228d2b68c9efe0f635955833130dd5d158303ed8f1"
+    },
+    {
+      "source": "supabase/migrations/20261028063000_market_developer_tools.sql",
+      "name": "05-20261028063000_market_developer_tools.sql",
+      "rawSha256": "1ee92defff0a14fc60d9662ab2231d59b9dc3d331dc11518c09e2e7c12c5fae6",
+      "executedSha256": "1ee92defff0a14fc60d9662ab2231d59b9dc3d331dc11518c09e2e7c12c5fae6"
+    },
+    {
+      "source": "supabase/migrations/20261028070000_market_provider_accounting.sql",
+      "name": "06-20261028070000_market_provider_accounting.sql",
+      "rawSha256": "ae49add942988e7212d98020b99051db3162c27a10dc5585237754445a1b7f36",
+      "executedSha256": "ae49add942988e7212d98020b99051db3162c27a10dc5585237754445a1b7f36"
+    },
+    {
+      "source": "supabase/migrations/20261028210000_market_published_data.sql",
+      "name": "07-20261028210000_market_published_data.sql",
+      "rawSha256": "9c311423e6626502288af8ec36a4466a430fa4c91f346559425cfe3fc4cf97d9",
+      "executedSha256": "b65a1431caa7ff8c03896057805fa28fcaed0d1434bb8974a2de3ad3056fb0c6"
+    },
+    {
+      "source": "supabase/migrations/20261030041500_market_platform_refund_intents.sql",
+      "name": "08-20261030041500_market_platform_refund_intents.sql",
+      "rawSha256": "1d8ded3236c5a634cf8f031aa10b42a59112f5a47f53f991831cf492e8d7b3f4",
+      "executedSha256": "1253a1230fd67843f4a133294c0091a013b2ed3ccd5e7448277182c0706d9175"
+    },
+    {
+      "source": "examples/qr-menu/storage.sql",
+      "name": "09-storage.sql",
+      "rawSha256": "97350d781e0b7c15fd71383f5df97cdb0b0361482597b6ef78228fb9d605e025",
+      "executedSha256": "e86b444ec0581a42cd631003f3f2281549b7b5f23ebb3d1b7107acc8f6a9a2ab"
+    },
+    {
+      "source": "examples/market-qa-bootstrap/80-qr-role.sql",
+      "name": "10-80-qr-role.sql",
+      "rawSha256": "c21ed8d639de068bc659184af72a7f8bd1b12c3e558b2a322ca2a11ad1b84ae8",
+      "executedSha256": "5feea67d958b28626f72b4a75867d2a0e60420bc87576a44989f7951e8afa941"
+    },
+    {
+      "source": "examples/market-qa-bootstrap/90-synthetic-fixtures.sql",
+      "name": "11-90-synthetic-fixtures.sql",
+      "rawSha256": "d8f1a4de1c250f5664eacb51098f7db4f6c5af7d3c61db479ba0a1b1a45a63dd",
+      "executedSha256": "b62b95f3cd63fb6bc346a5cdf74ddc6a1dabd39f77efa7244d8cbf5bac44e87c"
+    }
+  ]
+}

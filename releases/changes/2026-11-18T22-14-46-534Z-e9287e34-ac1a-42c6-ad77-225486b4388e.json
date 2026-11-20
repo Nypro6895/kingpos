@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "ios-commerce-store-next-20261118",
+  "status": "working",
+  "summary": "Prepare source-backed US iOS Market/ad commerce disclosure and reviewer-note candidate against current Apple primary rules; documentation only",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "docs/ios-commerce-store-next-20261118.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "8a9d9335207db37969bff824e6ef3e55f37b6484"
+  },
+  "validation": [
+    {
+      "name": "Current source and official Apple rule review",
+      "result": "pending"
+    },
+    {
+      "name": "Source hash and local document link validation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-commerce-return-acceptance-20261118"
+  ],
+  "id": "e9287e34-ac1a-42c6-ad77-225486b4388e",
+  "recordedAt": "2026-11-18T22:14:46.534Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

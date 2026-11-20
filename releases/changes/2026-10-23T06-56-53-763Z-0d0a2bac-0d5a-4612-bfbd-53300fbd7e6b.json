@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "explore-remove-suggested-image-20261023",
+  "status": "ready",
+  "summary": "Remove visible Suggested image overlays from Explore salon and nail inspiration cards; preserve image provenance, lumiAi credit, and actions.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/explore/explore-salon-card.tsx",
+    "app/explore/nail-inspiration.tsx",
+    "tests/explore-unified-card-runtime.test.mjs",
+    "tests/nail-book-card-ui.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-remove-suggested-image-20261023\\source",
+    "baselineSnapshot": "work/explore-remove-suggested-image-20261023/before",
+    "patch": "work/explore-remove-suggested-image-20261023/change.patch",
+    "patchSha256": "ad344155428444d98fe1391e06ee4d508fa765eaccc1ddb78131b794b218b22d"
+  },
+  "validation": [
+    {
+      "name": "Focused Explore rendering, navigation, booking/contact and guest tests",
+      "result": "passed",
+      "evidence": "node scripts/test.mjs tests/explore-unified-card-runtime.test.mjs tests/nail-book-card-ui.test.mjs tests/nail-salon-navigation-runtime.test.mjs: 6/6 passed; browser viewports 320, 390 and 1440px."
+    },
+    {
+      "name": "ESLint on changed TSX components",
+      "result": "passed",
+      "evidence": "npx eslint app/explore/explore-salon-card.tsx app/explore/nail-inspiration.tsx: exit 0."
+    },
+    {
+      "name": "Narrow patch review and frozen source integrity",
+      "result": "passed",
+      "evidence": "Only two visible overlay spans removed and two existing assertions updated. Frozen files byte-identical to tested files."
+    }
+  ],
+  "integrationNotes": "Apply the narrow change.patch to the current production baseline; do not replace complete files from this dirty checkout wholesale. Alt image provenance, lumiAi credits, fallback ownership and actions are unchanged. Web UI only; no native bundle/bridge change. Not deployed.",
+  "id": "0d0a2bac-0d5a-4612-bfbd-53300fbd7e6b",
+  "recordedAt": "2026-10-23T06:56:53.763Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/explore/explore-salon-card.tsx": "f9a0cf2eeaccef3df67d0efef938dd01d4c0a8d0fc4e8a7a19df1c4e0eccf181",
+    "app/explore/nail-inspiration.tsx": "83aead1fb3b048aa764f19716cfdaa9bbc757a9166244da2a14245c5ed7f34f7",
+    "tests/explore-unified-card-runtime.test.mjs": "a58b98a0d14f42a838cdf570ad6847217a66b024bdac7dd91cc6252ba8b914b9",
+    "tests/nail-book-card-ui.test.mjs": "4d6ade7a46d11e0b6709d34f19930797ccdac78415f4d6a9c01b7abc26ccac0e"
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -32,6 +33,8 @@ export function BeforeAfterCompare({
   roundedClassName = "rounded-[1.15rem]",
   sizes,
 }: BeforeAfterCompareProps) {
+  const __vt = useWorkspaceTranslation();
+
   const [position, setPosition] = useState(50);
 
   if (!before?.url || !after?.url) {
@@ -53,7 +56,7 @@ export function BeforeAfterCompare({
           >
             {item.image?.url ? (
               <Image
-                alt={item.image.alt}
+                alt={__vt(item.image.alt)}
                 className="object-cover"
                 fill
                 loading={priority ? undefined : "lazy"}
@@ -63,7 +66,7 @@ export function BeforeAfterCompare({
               />
             ) : null}
             <span className="absolute left-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold uppercase text-white backdrop-blur">
-              {item.label}
+              <WorkspaceText text={item.label} />
             </span>
           </div>
         ))}
@@ -81,7 +84,7 @@ export function BeforeAfterCompare({
     >
       <div className={classes(["relative max-h-[42rem] w-full", aspectClassName])}>
         <Image
-          alt={after.alt}
+          alt={__vt(after.alt)}
           className="absolute inset-0 object-cover"
           fill
           loading={priority ? undefined : "lazy"}
@@ -94,7 +97,7 @@ export function BeforeAfterCompare({
           style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
         >
           <Image
-            alt={before.alt}
+            alt={__vt(before.alt)}
             className="object-cover"
             fill
             loading={priority ? undefined : "lazy"}
@@ -116,15 +119,15 @@ export function BeforeAfterCompare({
           <span className="h-4 w-0.5 rounded-full bg-text-primary/45" />
         </span>
         <span className="absolute left-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold uppercase text-white backdrop-blur">
-          Before
+          <WorkspaceText text="Before" />
         </span>
         <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold uppercase text-white backdrop-blur">
-          After
+          <WorkspaceText text="After" />
         </span>
         <label className="absolute inset-x-4 bottom-4 grid gap-1 rounded-full bg-white/88 px-4 py-2 shadow-sm ring-1 ring-divider-subtle/80 backdrop-blur">
-          <span className="sr-only">Compare before and after images</span>
+          <span className="sr-only"><WorkspaceText text="Compare before and after images" /></span>
           <input
-            aria-label="Compare before and after images"
+            aria-label={__vt("Compare before and after images")}
             className="h-5 w-full cursor-ew-resize"
             max={88}
             min={12}

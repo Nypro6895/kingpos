@@ -1,0 +1,90 @@
+{
+  "kind": "change",
+  "changeId": "gift-wallet-pos-recovery-20261113",
+  "status": "needs-integration",
+  "summary": "Fix gift artwork scrolling, compact focused Wallet/Transfer, paired accepted-Buy dismissal, next-customer lifecycle and original unclaimed Gift delivery from closed Tickets",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "app/api/gift-cards/ticket-delivery/route.ts",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "components/gift-card/card-design.tsx",
+    "components/gift-card/customer-gift-cards.tsx",
+    "components/gift-card/customer-wallet.css",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/ticket-gift-delivery.tsx",
+    "docs/gift-wallet-pos-recovery-20261113.md",
+    "supabase/migrations/20261113220000_gift_ticket_delivery_recovery.sql",
+    "tests/gift-screen-lifecycle-ui.test.mjs",
+    "tests/gift-ticket-actual-flow.test.mjs",
+    "tests/gift-ticket-delivery-api.test.mjs",
+    "tests/gift-ticket-delivery-ui.test.mjs",
+    "tests/gift-ticket-delivery.integration.test.mjs",
+    "tests/gift-wallet-actions-ui.test.mjs",
+    "tests/gift-wallet-scroll-ui.test.mjs",
+    "types/gift-card.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\gift-wallet-recovery-20261113\\artifacts\\gift-wallet-recovery\\frozen-d9c74eedc041",
+    "commit": "d9c74eedc0414f3ad3a7d75756a829ff4ad290c2"
+  },
+  "dependencies": [
+    "gift-ticket-unified-20261113",
+    "gift-ticket-qa-seller-20261113"
+  ],
+  "validation": [
+    {
+      "name": "Wallet actions, paid return, touch scrolling and designer dragging",
+      "result": "passed",
+      "evidence": "tests/gift-wallet-actions-ui.test.mjs; tests/gift-wallet-scroll-ui.test.mjs; tests/gift-paid-return-wallet.test.mjs; artifacts/gift-wallet-recovery/wallet-ui"
+    },
+    {
+      "name": "Paired editor lifecycle and failure handling",
+      "result": "passed",
+      "evidence": "tests/gift-screen-lifecycle-ui.test.mjs"
+    },
+    {
+      "name": "Delivery API permissions, no-store and dialog focus/Share/Copy",
+      "result": "passed",
+      "evidence": "tests/gift-ticket-delivery-api.test.mjs; tests/gift-ticket-delivery-ui.test.mjs; artifacts/gift-wallet-recovery/browser"
+    },
+    {
+      "name": "Complete isolated schema: same-card expiry recovery, replay, authorization, received/claimed/transferred/voided protections",
+      "result": "passed",
+      "evidence": "artifacts/gift-wallet-recovery/sql/gift-ticket-delivery-result.json"
+    },
+    {
+      "name": "Actual Next Owner/Portable/API/database: eleven checkout, next-customer, Ticket recovery and report journeys",
+      "result": "passed",
+      "evidence": "artifacts/gift-wallet-recovery/actual-app-final/results.json"
+    },
+    {
+      "name": "Financial, Ticket component, shared POS and public-link regressions",
+      "result": "passed",
+      "evidence": "artifacts/gift-wallet-recovery/regressions.log"
+    },
+    {
+      "name": "Combined production webpack/TypeScript build and offline asset budget",
+      "result": "passed",
+      "evidence": "artifacts/gift-wallet-recovery/build-combined.log; artifacts/gift-wallet-recovery/offline-combined.log"
+    },
+    {
+      "name": "Scoped ESLint and diff whitespace",
+      "result": "passed",
+      "evidence": "artifacts/gift-wallet-recovery/lint-final.log"
+    },
+    {
+      "name": "Hosted and installed-device acceptance",
+      "result": "pending",
+      "evidence": "No deployment, hosted schema changes, real transactions or installed binary updates were authorized in this task."
+    }
+  ],
+  "id": "4f5bf395-4d76-4493-be7b-8b6ade77c7cc",
+  "recordedAt": "2026-11-14T04:22:30.890Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-wallet-recovery-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "android-offline-recovery-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Android-only offline startup/loss retry fix; API36 emulator smoke passed. Physical/authenticated QA pending. ios compatibility channel only; no iOS change. Original handoff eb7289e6-6662-4471-b41f-9a74e638e1e0. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "android/README.md",
+    "android/app/src/main/AndroidManifest.xml",
+    "android/app/src/main/java/com/reylumi/android/MainActivity.java"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "android-ipad-store-20261105"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "81d73224-b0f0-4b96-ad10-61e929651870",
+  "recordedAt": "2026-11-12T02:06:25.142Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "android/README.md": "0c4846ebf74f224e89574eabe68b81305fc9f44abc1d62191dc1a0eac6b9b985",
+    "android/app/src/main/AndroidManifest.xml": "c5e63088b8a685545b735839c37e581725c6946c37d92c153333f22347985b95",
+    "android/app/src/main/java/com/reylumi/android/MainActivity.java": "dc44dc7b142cebfb18b413513d06b86ced2b1883a240546674a823b4a5b5db2c"
+  }
+}

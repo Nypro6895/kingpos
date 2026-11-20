@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { useRef, useState } from "react";
 import { useStaffConfirmation } from "./staff-schedule-interactions";
 
@@ -11,9 +12,9 @@ export function StaffNoShowButton({ bookingId, confirmed, eligible }: { bookingI
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const inFlight = useRef(false);
-  if (state?.noShows.has(bookingId)) return <p role="status">No-show reported.</p>;
+  if (state?.noShows.has(bookingId)) return <p role="status"><WorkspaceText text="No-show reported." /></p>;
   if (!eligible || !(confirmed || state?.confirmed.has(bookingId))) return null;
-  if (!open) return <button type="button" className="staff-appointments-secondary-button" onClick={() => setOpen(true)}>Report no-show</button>;
+  if (!open) return <button type="button" className="staff-appointments-secondary-button" onClick={() => setOpen(true)}><WorkspaceText text="Report no-show" /></button>;
   return <form className="staff-no-show-form" onSubmit={async event => {
     event.preventDefault();
     if (inFlight.current) return;
@@ -27,10 +28,10 @@ export function StaffNoShowButton({ bookingId, confirmed, eligible }: { bookingI
     } catch (error) { setError(error instanceof Error ? error.message : "Unable to report no-show. Please try again."); }
     finally { inFlight.current = false; setPending(false); }
   }}>
-    <p>Report that the customer did not arrive for this appointment.</p>
-    <label>No-show type<select value={kind} disabled={pending} onChange={event => setKind(event.target.value as typeof kind)}><option value="unexcused">Without a reason</option><option value="excused">Customer provided a reason</option></select></label>
-    <label>{kind === "excused" ? "Customer’s reason" : "Note (optional)"}<textarea value={reason} onChange={event => setReason(event.target.value)} required={kind === "excused"} maxLength={1000} disabled={pending} rows={2} /></label>
-    {error ? <p role="alert">{error}</p> : null}
-    <div><button className="staff-appointments-primary-button" disabled={pending} type="submit">{pending ? "Saving…" : "Save no-show"}</button><button className="staff-appointments-secondary-button" disabled={pending} type="button" onClick={() => setOpen(false)}>Cancel</button></div>
+    <p><WorkspaceText text="Report that the customer did not arrive for this appointment." /></p>
+    <label><WorkspaceText text="No-show type" /><select value={kind} disabled={pending} onChange={event => setKind(event.target.value as typeof kind)}><option value="unexcused"><WorkspaceText text="Without a reason" /></option><option value="excused"><WorkspaceText text="Customer provided a reason" /></option></select></label>
+    <label>{kind === "excused" ? "Customer’s reason" : <WorkspaceText text="Note (optional)" />}<textarea value={reason} onChange={event => setReason(event.target.value)} required={kind === "excused"} maxLength={1000} disabled={pending} rows={2} /></label>
+    {error ? <p role="alert"><WorkspaceText text={error} /></p> : null}
+    <div><button className="staff-appointments-primary-button" disabled={pending} type="submit">{pending ? <WorkspaceText text="Saving…" /> : "Save no-show"}</button><button className="staff-appointments-secondary-button" disabled={pending} type="button" onClick={() => setOpen(false)}><WorkspaceText text="Cancel" /></button></div>
   </form>;
 }

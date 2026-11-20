@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "cold-network-critical-resources-20261015",
+  "status": "ready",
+  "summary": "Defer unused fonts, optional Vietnamese copy and expired-only sign-in; avoid unrelated blocking CSS while preserving cacheable styles, auth and drafts. Exact latest live baseline integrated;222route production build,98web/cache checks and6layout comparisons passed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/fonts.ts",
+    "components/workspace-language.tsx",
+    "lib/workspace-translator-client.ts",
+    "tests/cold-network-startup-ui.test.mjs",
+    "next.config.ts",
+    "components/session-expiry-prompt.tsx",
+    "tests/lazy-session-sign-in-ui.test.mjs",
+    "docs/cold-network-critical-resources-20261015.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\cold-network-frozen-20261016",
+    "baseCommit": "305a33e12bea0c0f5c787d0a44fbb8c1cf5d8834",
+    "baselineDeploymentId": "dpl_7e8b3hzk36m7sS7CFa6io6svJsbF",
+    "validatedSourceSha256": "db3aa08542440cf8a6775b440e532b9a0007708df5944644d8460fcf44482234"
+  },
+  "dependencies": [
+    "performance-coldlaunch-feedback-completion-20261015"
+  ],
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript;222routes; preserves current shipped Daily Closing",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\production-build.log"
+    },
+    {
+      "name": "98 focused/cache/translation/hydration/session/POS checks,0skipped",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\final-tests.log"
+    },
+    {
+      "name": "6 actual mobile/desktop stable layout/typography comparisons; screenshots inspected",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\layout-comparison.json"
+    },
+    {
+      "name": "Actual Next initial assets: no dictionary; CSS8to2requests; JS bytes reduced",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\assembled-after-build-assets.json"
+    },
+    {
+      "name": "Local return route keeps same Market DOM/input/query;0document reloads; public smoke and weak readiness pass",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\local-final-browser-smoke.json"
+    }
+  ],
+  "id": "f9087825-7684-4619-b412-9b9f98a139f4",
+  "recordedAt": "2026-10-16T01:36:29.169Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/fonts.ts": "c595e849f2b57450da629665c0d8e38319d803fd9721b6252b644e8b5c089d9f",
+    "components/workspace-language.tsx": "5db40be3ca08d099fe41cfe072cf496eeac596745454372aa699695cdb25ecf4",
+    "lib/workspace-translator-client.ts": "24c80058baa69d02073bfe6987fa85baf0692f113ea0634eebd23c9fba5c5405",
+    "tests/cold-network-startup-ui.test.mjs": "b200c671f327c63cae34b146d6b6b3fe8d1dcb98f2ce02bc240efb193b5a46cf",
+    "next.config.ts": "980269ac19ba448cb8d1dfb3998fe19f2cf06332f3de8e12071a4b46e6c8c0de",
+    "components/session-expiry-prompt.tsx": "cfd400f1cf50af275e66c9a8dce567696debdbee538a65a6ab4efd599d826bd9",
+    "tests/lazy-session-sign-in-ui.test.mjs": "9468c3abff90b494d835c61b54e3e5fa1483abb0561e32ab14f95fdd20da1907",
+    "docs/cold-network-critical-resources-20261015.txt": "edca0d28300cb986a22841d4b31bf70fb3011efea7bf11285ea7939f2b23c804"
+  }
+}

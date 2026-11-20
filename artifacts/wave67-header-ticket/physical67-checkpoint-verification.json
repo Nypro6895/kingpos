@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-29T10:14:50.405Z",
+  "buildBefore": "67",
+  "buildAfter": "67",
+  "containerBefore": "9CEA46B7-78C0-43BF-8DDB-594686DE7834",
+  "containerAfter": "9CEA46B7-78C0-43BF-8DDB-594686DE7834",
+  "allAXPid": 6135,
+  "rawResults": 108,
+  "notPassedCaseCount": true,
+  "artifact": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/release67-323.zip",
+  "sha256": "d6d73f355bbb5d0f0f8f735c02f8c48c3ff933ee90c35f1262abddfd73220db4",
+  "source": "d20058a06c0c71a04830346b0ad444657bca2acd",
+  "twoOriginalRegressionsRetested": true,
+  "remainingFunctionalAndPerformance": "phase2 active, not overall app acceptance",
+  "report": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/physical67-checkpoint323.md"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "context": {
+    "scope": "v3:ee186805b0580fc519d843488aa4e47c6605780cd2f6ccfdfa05047ded1c6738",
+    "viewerId": null,
+    "workspaceId": "personal:personal",
+    "salonId": null,
+    "permissionRevision": "[null,[],null,null,null,null,null]",
+    "authenticated": false
+  },
+  "home": "/explore",
+  "grant": {
+    "version": 1,
+    "scope": "v3:ee186805b0580fc519d843488aa4e47c6605780cd2f6ccfdfa05047ded1c6738",
+    "scopes": [
+      "v3:ee186805b0580fc519d843488aa4e47c6605780cd2f6ccfdfa05047ded1c6738"
+    ],
+    "viewerId": null,
+    "workspaceId": "personal:personal",
+    "salonId": null,
+    "grantRevision": "77c4bef1ce73e558b0941bb06b7a46340cb660d709ccdd666de86a430d256adc",
+    "generation": "actual-route-contract-generation-20261019",
+    "issuedAt": 1792425071143,
+    "expiresAt": 1792511471143,
+    "path": "/explore",
+    "kind": "public"
+  },
+  "grantStatus": 200,
+  "display": {
+    "name": "",
+    "language": "en",
+    "role": "guest"
+  },
+  "access": {
+    "ownerWorkspace": false,
+    "staffWorkspace": false
+  },
+  "onlineValidatedAt": 1792425071143
+}

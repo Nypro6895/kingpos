@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "quality-combined-release-20261103",
+  "status": "working",
+  "summary": "Optimize verified remaining quality issues, reconcile all completed unpublished changes against exact live web and latest uploaded native source, validate and publish the combined release",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "baseCommit": "645d331af141ff7730f7e38258262ad8461cad75",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS"
+  },
+  "validation": [
+    {
+      "name": "Complete source assembly, functional/performance/security and physical-device gates",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "scope": "Preserve latest shipped behavior and all existing authorization boundaries; Beauty conflict guards only, no POS redesign and no Payroll Tools changes. No production test transactions, invitations, messages or additional sensitive permissions.",
+  "id": "8da0dd19-eeca-42bf-a3e5-5e693834e6e3",
+  "recordedAt": "2026-11-04T01:57:49.883Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

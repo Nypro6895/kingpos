@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { spawnSync } from "node:child_process";
+import { readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
 import test from "node:test";
 import ts from "typescript";
 
@@ -67,15 +67,12 @@ const TABLE_COLUMNS = {
 };
 
 function listSourceFiles() {
-  const result = spawnSync("rg", ["--files", "app", "lib"], {
-    encoding: "utf8",
-  });
-
-  assert.equal(result.status, 0, result.stderr);
-
-  return result.stdout
-    .split(/\r?\n/)
-    .filter((file) => /\.(ts|tsx)$/.test(file));
+  const walk = directory => readdirSync(directory, { withFileTypes: true })
+    .flatMap(entry => {
+      const file = path.join(directory, entry.name);
+      return entry.isDirectory() ? walk(file) : /\.(ts|tsx)$/.test(file) ? [file] : [];
+    });
+  return ["app", "lib"].flatMap(walk);
 }
 
 function tableFromExpression(expression) {

@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-01T20:26:27.888Z",
+  "verified": true,
+  "format": "Vercel direct source content hashes",
+  "mode": "live",
+  "deploymentId": "dpl_BQkiX3GLWa2YhsAMZ4UXzKi5Hdnb",
+  "url": "kingpos-5ycee0n4m-kingpos.vercel.app",
+  "aliasDeploymentId": "dpl_BQkiX3GLWa2YhsAMZ4UXzKi5Hdnb",
+  "commit": "42b48f0bdd75b0c93a698c5391481eb9d23d2fec",
+  "files": 3765,
+  "sourceSha256": "c34e50261ae2d0d9167cebdb784cabeeb2901d579d27f253640bd4ccae8a980f",
+  "overlaySha256": "4ddf62b2e46e343a66e1a9a9ac7b9a7ab56037eb49072ca0773d93cc4e94b999",
+  "baselineDeploymentId": "dpl_Dkt56igv5fjsTWHpiJFEcqfRRLki"
+}

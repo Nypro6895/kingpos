@@ -3,6 +3,7 @@
 import {createClient} from '@supabase/supabase-js';
 import {randomUUID} from 'node:crypto';
 import {revalidatePath} from 'next/cache';
+import {withBusinessClaimLookupDiagnostics} from '@/lib/business-claim-diagnostics';
 import {createAuthenticatedSupabaseServerClient} from '@/lib/supabase/server';
 import {getCurrentKingUser} from '@/lib/users/current-user';
 import {setCurrentManageSalonCookie} from '@/lib/current-context';
@@ -28,7 +29,7 @@ function refreshClaim(salonId:string) {
 export async function findBusinessClaimMatchesAction(input:BusinessClaimInput) {
  try {
  const {client}=await actor();
- const {data,error}=await client.rpc('find_business_claim_matches',{p_name:input.name,p_phone:input.phone,p_address:input.address,p_unit:input.unit,p_city:input.city,p_state:input.state});
+ const {data,error}=await withBusinessClaimLookupDiagnostics('suggestions',()=>client.rpc('find_business_claim_matches',{p_name:input.name,p_phone:input.phone,p_address:input.address,p_unit:input.unit,p_city:input.city,p_state:input.state}));
  if (error) throw new Error('Could not check existing salons. Please try again.');
  return {matches:(data??[]) as BusinessClaimMatch[],error:null};
  } catch(error) {return {matches:[] as BusinessClaimMatch[],error:errorMessage(error)};}
@@ -40,6 +41,7 @@ export async function beginBusinessClaimAction(salonId:string,channel:'sms'|'cal
  if (!await businessClaimMessagingReady()) throw new Error('Phone verification is not available yet. Request support below.');
  const service=serviceClient();
  const {data,error}=await service.rpc('begin_business_claim',{p_salon:salonId,p_user:user.id,p_channel:channel});
+ if (error?.code==='PCL01') return {requestId:null,error:null,supportRequired:true};
  if (error) throw new Error(error.message);
  const reserved=data as {id:string;phone:string;last_sent_at:string};
  const sid=await sendBusinessClaimCode(reserved.phone,channel);
@@ -55,10 +57,12 @@ export async function confirmBusinessClaimAction(requestId:string,code:string) {
  if (!/^\d{6}$/.test(code)) throw new Error('Enter the six-digit code.');
  const service=serviceClient();
  const reserved=await service.rpc('reserve_business_claim_check',{p_request:requestId,p_user:user.id});
+ if (reserved.error?.code==='PCL01') return {status:null,error:null,supportRequired:true};
  if (reserved.error) throw new Error(reserved.error.message);
  const challenge=reserved.data as {provider_sid:string;salon_id:string};
  if (!await checkBusinessClaimCode(challenge.provider_sid,code)) throw new Error('Incorrect code. Please try again.');
  const {data,error}=await service.rpc('confirm_business_claim',{p_request:requestId,p_user:user.id,p_sid:challenge.provider_sid});
+ if (error?.code==='PCL01') return {status:null,error:null,supportRequired:true};
  if(error) throw new Error(error.message);
  const result=data as {status:'approved'|'waiting';salon_id:string};
  if(result.status==='approved') await setCurrentManageSalonCookie(result.salon_id);
@@ -74,7 +78,7 @@ export async function requestBusinessClaimSupportAction(salonId:string,form:Form
  const files=form.getAll('attachments').filter((f):f is File=>typeof f!=='string' && f.size>0);
  if(files.length>3) throw new Error('Attach up to three files.');
  const reason=String(form.get('reason')??'').trim();
- if(reason.length<10 || reason.length>2000) throw new Error('Explain your connection to the salon and the phone issue (10–2000 characters).');
+ if(reason.length<10 || reason.length>2000) throw new Error('Explain your connection to the salon and your ownership claim (10–2000 characters).');
  const attachments:{path:string;name:string}[]=[];
  for(const file of files) {
  service??=serviceClient();
@@ -105,7 +109,7 @@ export async function reviewBusinessClaimAction(form:FormData) {
  const requestId=String(form.get('request_id')??'');
  const {data}=await client.rpc('get_business_claim_requests',{});
  const row=(data as BusinessClaimRequest[]|null)?.find(r=>r.id===requestId);
- const {error}=await client.rpc('review_business_claim',{p_request:requestId,p_decision:String(form.get('decision')??''),p_reason:String(form.get('reason')??'')});
+ const {error}=await client.rpc('review_business_claim_with_message',{p_request:requestId,p_decision:String(form.get('decision')??''),p_reason:String(form.get('reason')??''),p_internal_note:String(form.get('internal_note')??'')});
  if(error)return {error:error.message};
  if(row)refreshClaim(row.salon_id);
  return {error:null};

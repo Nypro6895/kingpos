@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "exit-pos-layout-20261106",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Exit POS uses a dedicated flex row instead of the 20px settings icon grid; booking audit documents overdue RPC and missing layout styling Original handoff b129c914-2eba-420e-a69e-f1616db8dad2. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/role-more-content.tsx",
+    "components/role-more-content.css"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "7461e42a-bc4f-4b79-a790-ae9ea17045a9",
+  "recordedAt": "2026-11-12T02:06:20.749Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "components/role-more-content.tsx": "0df072c28b68f1bfefff8245f604da226b992c385338d283a0dc00f0bc4ba124",
+    "components/role-more-content.css": "23e2b0e25a4ad47e70252276ea8c50b7a621389230ae14079779fb95c372db69"
+  }
+}

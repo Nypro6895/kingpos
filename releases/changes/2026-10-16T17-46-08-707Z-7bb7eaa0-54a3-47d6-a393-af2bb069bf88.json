@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "web-resource-view-retention-20261016",
+  "status": "ready",
+  "summary": "Avoid duplicate whole-route refresh for three existing scoped live-resource views on web Activity return",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/experience-page-boundary.tsx",
+    "tests/web-resource-view-retention.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\web-resource-retention-frozen-source"
+  },
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "validation": [
+    {
+      "name": "12 scoped live/read/authorization and actual Chromium Activity tests; clean lint",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/web-resource-retention-validation.json"
+    }
+  ],
+  "id": "7bb7eaa0-54a3-47d6-a393-af2bb069bf88",
+  "recordedAt": "2026-10-16T17:46:08.707Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/experience-page-boundary.tsx": "6ac68f4f4632c44735797070b7a2aba4d6165baa3c8da4852b1120399020df47",
+    "tests/web-resource-view-retention.test.mjs": "feeab9237c669af2f0495031b3683f995ca1b0478cb75ab358c3316f2e5f10a8"
+  }
+}

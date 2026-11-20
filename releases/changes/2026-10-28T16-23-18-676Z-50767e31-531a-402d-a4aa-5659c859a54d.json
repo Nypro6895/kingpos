@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "iphone-booking-plugin-read-scope-20261028",
+  "status": "working",
+  "summary": "Request-scoped validation only inside three original read-only booking plugin getters; preserve fresh mutation/session/Owner/target-salon gates. Physical cold latency and actual backend-call reduction pending.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/settings/plugin-settings-actions.ts",
+    "app/market/booking-deposit-actions.ts",
+    "tests/booking-plugin-read-scope.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "Getter Owner/target/session denial and subsequent save isolation tests",
+      "result": "passed",
+      "evidence": "artifacts/iphone-cold-release-20261028/plugin-read111-tests.log"
+    },
+    {
+      "name": "Physical first-load comparison",
+      "result": "pending"
+    }
+  ],
+  "id": "50767e31-531a-402d-a4aa-5659c859a54d",
+  "recordedAt": "2026-10-28T16:23:18.676Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

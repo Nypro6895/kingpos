@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-29T09:35:36.470Z",
+  "status": "partial-needs-pos-header-patch",
+  "source": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+  "passed": [
+    "Authenticated Owner Settings new compact section labels",
+    "Personal profile card and Edit/Cancel without saves",
+    "Salon info contact/opening-hours read",
+    "No-map-provider saved address fallback",
+    "POS new receipt Add line visible after one reload"
+  ],
+  "issues": [
+    {
+      "severity": "P2",
+      "surface": "POS shared global header",
+      "evidence": "globals.css residual line578 hides header wrapper; screenshot shows absent global role/logo notifications header"
+    },
+    {
+      "surface": "First POS navigation after deployment",
+      "evidence": "Old Add another initially visible; one reload showed new Add line. Cause not proven, retain as cache transition QA observation."
+    }
+  ],
+  "writes": 0,
+  "screenshot": "artifacts/wave66-owner-layout/settings-live.png"
+}

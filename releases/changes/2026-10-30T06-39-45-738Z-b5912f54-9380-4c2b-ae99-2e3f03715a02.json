@@ -1,0 +1,79 @@
+{
+  "kind": "change",
+  "changeId": "personal-qr-camera-20261029",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Validated release integration: Basic account QR independent of Staff Scan, strict iOS Camera links, and install/login landing continuation; local DB18 and native9 cases pass; hosted/native physical acceptance pending",
+  "files": [
+    ".env.example",
+    "app/api/service-relay/entry/route.ts",
+    "app/check-in/[entry]/page.tsx",
+    "app/qr/actions.ts",
+    "app/.well-known/apple-app-site-association/route.ts",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Reylumi.entitlements",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "ios/project.yml",
+    "proxy.ts",
+    "supabase/migrations/20261030041000_basic_personal_camera_checkin.sql",
+    "tests/basic-personal-camera-checkin.integration.test.mjs",
+    "tests/personal-camera-landing.test.mjs",
+    "docs/implementation/personal-camera-qr-20261029.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\frozen-source"
+  },
+  "dependencies": [
+    "customer-display-qr-fallback-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/build-final.log"
+    },
+    {
+      "name": "6 profile/layout,22 regression and isolated QR/Auth/PostgREST integration",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/profile-tests-final-4.log; artifacts/release-20261030/regression.log; artifacts/release-20261030/qr-db.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/lint.log"
+    }
+  ],
+  "integratesEvent": "85779a9e-64b8-47c3-bb00-5be0f159b095",
+  "releaseLimits": [
+    "Universal Links native signing remains pending; current binary supports explicit reylumi scheme and web fallback"
+  ],
+  "id": "b5912f54-9380-4c2b-ae99-2e3f03715a02",
+  "recordedAt": "2026-10-30T06:39:45.738Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    ".env.example": "ad3962af13711f8ad8d7e11c26758fcf0183b14d3ccde29164138ef1e9cd4031",
+    "app/api/service-relay/entry/route.ts": "12222aa01932a0df212f8f7f49f341237813b2654054296970117e9e597cafbf",
+    "app/check-in/[entry]/page.tsx": "7c37e26fc717e51d2ed2232eb21f3449ad7dd8a03e31d5442e73393ea81a4330",
+    "app/qr/actions.ts": "109dad1d03c2aa7c6200f71025ad5fc6c923f2b1f6f113669300fd63e0970592",
+    "app/.well-known/apple-app-site-association/route.ts": "4a33182a4f79895586c8691542b9a56d07cbb1dd479ac40b1fbe8cdb169afa95",
+    "ios/Reylumi/NavigationPolicy.swift": "c4a6ff998104280143e5819e9593ff3c753499403c0964f0564a623ac1e5a324",
+    "ios/Reylumi/ReylumiApp.swift": "2e4d1993940a3033add3a0cbc6c1ffdf740028fe84df123904adedcac0e1d044",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "fefb01dec1fe5909c7aa12eef546241b37f182c356741aed3666f166288bfdf4",
+    "ios/Reylumi/ReylumiViewController.swift": "b5475231f41f05d32af3a2f7e640c00b823b155e1735616ac4dccec3aa8a6a3e",
+    "ios/Reylumi/Reylumi.entitlements": "89065321e45a32835d2707b62aa01f9a07d0c1efda7a45a9992144a9f951457d",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "a53f816a1910466e7a95d8534b7ac3020af8ea80ea19493b5c79416d0ffe52f5",
+    "ios/project.yml": "934b624b4b941fa1029960dc347b8431a361e3305ce125f291ab7a570dde6885",
+    "proxy.ts": "6cd0012448b5a0b1e69efeed42ca3b891f6650f41e756de3a0d275415d078a14",
+    "supabase/migrations/20261030041000_basic_personal_camera_checkin.sql": "44f78d70b39b4b7ddb18e21a30c55f2c9c49fa088259ab9beef0f0fcf5829f32",
+    "tests/basic-personal-camera-checkin.integration.test.mjs": "b01d106937b9370de4c0745380e12a96231b5637b096cbe7a882dd761afcd93d",
+    "tests/personal-camera-landing.test.mjs": "c80a56dcd04e18fe93132fb09746f826f9392e55b83d83b3b1896d6c10aa2d44",
+    "docs/implementation/personal-camera-qr-20261029.md": "a686593c621f45dc3fcfacb01a46ebe2009fb3c5209507090a398c2bac8f87b7"
+  }
+}

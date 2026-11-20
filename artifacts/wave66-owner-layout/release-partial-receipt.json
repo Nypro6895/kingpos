@@ -1,0 +1,64 @@
+{
+  "kind": "release",
+  "summary": "Intermediate combined web/sourcea9a7ac1 and TestFlight66 actually published; overall functional acceptance PARTIAL because live and physical QA found shared POS header hidden and duplicate native Ticket toolbar. Followup patch coordinated, no claim of overall acceptance.",
+  "changes": [
+    "c3abe2ef-2c34-46ca-a1ad-98d66d282ac1",
+    "45c66e66-fea4-48de-bf21-4ad1db8683ac",
+    "d335a046-c9c3-4b0c-84b4-c8b5a31eab95",
+    "3efd8a3b-9f90-4c50-92b4-d4dc522d9e0e",
+    "bb3456b8-8b66-4a0f-80ef-0fbdcdb33037",
+    "4dd0acc9-c1bc-4b82-bcfc-a02f1ea29589",
+    "9da1d904-6c4c-4509-9175-cd2d5f2c1dfb",
+    "8fbbe92f-f1b8-4ecc-bac5-504b81351d8c",
+    "c84379a7-3168-4058-8b68-b3fd3855c7d5",
+    "08e308fd-0719-41f3-b029-95fd3d308320",
+    "852836e7-48c6-42dd-9917-0cc8690b84e8"
+  ],
+  "targets": {
+    "web": {
+      "status": "partial",
+      "verified": false,
+      "deploymentId": "dpl_5vw2D8Xji2ZxMmKmakWmdcj8mxdb",
+      "baselineDeploymentId": "dpl_Gv64Dt919UZ5Pf76BwSerpqTqpAj",
+      "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+      "sourceSha256": "eb7119531065b6f155d60e4cb1e9541069e16342c2fd1de6813243df4f703ec5",
+      "overlaySha256": "c0888c1ec6748a63aafd6c67a7637db95c01b9d27586a65f7b5a12e49391bce2",
+      "evidence": "artifacts/wave66-owner-layout/web-live-source-verified.json"
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "version": "1.0.0",
+      "build": "66",
+      "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+      "evidence": "artifacts/wave66-owner-layout/availability-verified.json"
+    }
+  },
+  "publicationEvidence": {
+    "nativeTests": 235,
+    "failures": 0,
+    "upload": "accepted",
+    "Apple": "VALID",
+    "twoExistingGroups": true,
+    "http16Passed": true
+  },
+  "functionalAcceptance": {
+    "status": "partial",
+    "evidence": "artifacts/wave66-owner-layout/live-browser-smoke.json",
+    "physical": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/ticket66-322.png",
+    "issues": [
+      "Shared global POS header hidden by residual globals.css selector",
+      "Legacy native Ticket filter plus new toolbar both visible"
+    ]
+  },
+  "deferred": {
+    "checkWriter": "Sales closed, no production SQL/key/flag, module activation events remain pending",
+    "payrollHistory": "Unfinished original filter not shipped",
+    "developerMarket": "Excluded"
+  },
+  "next": "Fix five scoped UI/viewport paths, wait finite worker66 findings before freeze; one source-bound coordinated followup, retest exact newbuild.",
+  "id": "8a1f2460-f938-4790-9c68-0853dffda3fe",
+  "recordedAt": "2026-10-29T09:42:47.070Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\history\\2026-10-29T09-42-47-070Z-8a1f2460-f938-4790-9c68-0853dffda3fe.json"
+}

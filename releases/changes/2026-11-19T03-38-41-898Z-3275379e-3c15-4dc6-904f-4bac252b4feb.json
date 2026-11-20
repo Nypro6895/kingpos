@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "admin-exact-text-moderation-20261118",
+  "status": "working",
+  "summary": "Case-authorized exact-text Hide/Restore backend with evidence revisions, independent holds and immutable decision receipts; no support/POS/financial status mutation.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261118230000_admin_exact_text_moderation.sql",
+    "types/admin-exact-text-moderation.ts",
+    "lib/platform-admin/exact-text-moderation.ts",
+    "app/(app)/admin/reports/exact-text-actions.ts",
+    "lib/platform-admin/report-context.ts",
+    "tests/admin-exact-text-moderation.integration.test.mjs",
+    "docs/admin-exact-text-moderation-20261118.md"
+  ],
+  "source": {
+    "commit": "40b1b6e7909f6e50e3372dbf873b814ab4eb1f66"
+  },
+  "validation": [
+    {
+      "name": "Compiled projection/RLS inventory and isolated security/concurrency acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "3275379e-3c15-4dc6-904f-4bac252b4feb",
+  "recordedAt": "2026-11-19T03:38:41.898Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

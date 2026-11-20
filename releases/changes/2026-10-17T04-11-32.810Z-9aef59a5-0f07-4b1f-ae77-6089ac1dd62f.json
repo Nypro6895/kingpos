@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "release-explore-query-performance-20261017",
+  "status": "working",
+  "summary": "Resolve a production-scale timeout found in final 1.1.0 candidate search verification before promotion.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261017040000_explore_unified_query_performance.sql"
+  ],
+  "dependencies": [
+    "explore-unified-salon-search-20261016",
+    "explore-address-priority-20261016"
+  ],
+  "source": {
+    "commit": "d302fc8c587e13850306ccb67da351e3109f7036"
+  },
+  "validation": [
+    {
+      "name": "Production candidate public search",
+      "result": "failed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/candidate-search-smoke-r2.log"
+    }
+  ],
+  "id": "9aef59a5-0f07-4b1f-ae77-6089ac1dd62f",
+  "recordedAt": "2026-10-17T04:11:32.810Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

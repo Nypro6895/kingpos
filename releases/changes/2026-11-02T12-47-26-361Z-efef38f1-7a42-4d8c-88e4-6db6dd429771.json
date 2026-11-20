@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "today-ticket-compact-20261101",
+  "status": "ready",
+  "summary": "Integrated authorized queued change with daily Reports on current baseline: Compact Today date/Updated row; unified POS Tickets title/date/staff filter/support header and full-width search",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/today/today-layout.module.css",
+    "app/pos/owner-local-panels.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\reports-overview-20261102\\artifacts\\release\\frozen"
+  },
+  "validation": [
+    {
+      "name": "Daily overview and owner-report access regressions",
+      "result": "passed",
+      "evidence": "25 tests; artifacts/release/regression.txt"
+    },
+    {
+      "name": "Responsive actual component fixture",
+      "result": "passed",
+      "evidence": "320/390/430/768/1280; staff filter, Ticket link and Daily Report link; artifacts/release/report-browser-results.json"
+    },
+    {
+      "name": "TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release/typecheck.txt"
+    },
+    {
+      "name": "Installed Safari16 bundle compilation",
+      "result": "passed",
+      "evidence": "artifacts/release/bundle-check.txt"
+    }
+  ],
+  "id": "efef38f1-7a42-4d8c-88e4-6db6dd429771",
+  "recordedAt": "2026-11-02T12:47:26.361Z",
+  "worktree": "C:\\Reylumi-worktrees\\reports-overview-20261102",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/staff/today/today-layout.module.css": "7af0463a8113e49a43b635340e39c2cb472a1fbfa1ad11ed7c747c093dad4729",
+    "app/pos/owner-local-panels.tsx": "0f50f99cfe608e0078644f48e06dc130de57da778ce02a686a83d560577d6a10",
+    "app/pos-tickets/owner-live-tickets.tsx": "5701c047adfdbe80822dfb6f760d9aeca17bbb1e409dfcbc4e7098936f0ab3db",
+    "app/pos-tickets/ticket-filters.tsx": "3670e7f4bf0c420447305bfe41d9b43753dcd5c180418627d197a3b064ab1aad",
+    "app/pos-tickets/ticket-filters.module.css": "d7d60078c19311252f9650ca0cdbf929a635f6cf0b97c130ec07de3e0ae27310"
+  }
+}

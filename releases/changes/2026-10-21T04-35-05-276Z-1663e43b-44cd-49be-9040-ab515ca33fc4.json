@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "ios-private-business-cache-admission-20261020",
+  "status": "working",
+  "summary": "Select cached private business context only for its existing page capability and established current scope; otherwise await original fresh context without changing read, command or grant authority.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/BusinessContextCacheAdmissionTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos-business-cache-admission-20261020",
+    "commit": "555a650a1162fa65ef762b116e4f154421fe14ca"
+  },
+  "validation": [
+    {
+      "name": "Actual unchanged-native baseline regression run",
+      "result": "pending"
+    },
+    {
+      "name": "Focused native cache capability and current-scope contracts",
+      "result": "pending"
+    },
+    {
+      "name": "Native compile and full regression suite",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-background-cookie-authority-20261020",
+    "help-account-switcher-dismiss-20261020"
+  ],
+  "id": "1663e43b-44cd-49be-9040-ab515ca33fc4",
+  "recordedAt": "2026-10-21T04:35:05.276Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-business-cache-admission-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

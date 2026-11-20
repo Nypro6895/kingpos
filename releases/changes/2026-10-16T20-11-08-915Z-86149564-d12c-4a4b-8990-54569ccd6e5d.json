@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [],
+  "changeId": "reylumi-glass-app-logo-20261016",
+  "files": [
+    "app/icon.png",
+    "app/apple-icon.png",
+    "public/brand/reylumi-favicon.png",
+    "public/brand/reylumi-app-192.png",
+    "public/brand/reylumi-app-512.png",
+    "ios/Reylumi/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+    "ios/Reylumi/Assets.xcassets/LoadingLogo.imageset/LoadingLogo.png",
+    "app/favicon.ico"
+  ],
+  "summary": "Previously completed glass logo assets verified and integrated into the current web and native release source.",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-setup-release-20261016\\frozen-source-r2",
+    "commit": "e376723c94082de7a8984f5acd64f068d8f53f8e"
+  },
+  "validation": [
+    {
+      "name": "50 settings, lifecycle, booking and app-local authorization/public-link tests",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/integration-tests.log"
+    },
+    {
+      "name": "Production webpack build including TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/integration-build-final.log"
+    },
+    {
+      "name": "Lint of integration and new components",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/integration-lint.log"
+    },
+    {
+      "name": "344 native bundled resources match manifest byte lengths and hashes",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/frozen-selection.json"
+    }
+  ],
+  "id": "86149564-d12c-4a4b-8990-54569ccd6e5d",
+  "recordedAt": "2026-10-16T20:11:08.915Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/icon.png": "5b0e664fd83473b099ee9bb6f8e8f6547afa31209e1ea0ae2ea798c6184d4a71",
+    "app/apple-icon.png": "5b0e664fd83473b099ee9bb6f8e8f6547afa31209e1ea0ae2ea798c6184d4a71",
+    "public/brand/reylumi-favicon.png": "5b0e664fd83473b099ee9bb6f8e8f6547afa31209e1ea0ae2ea798c6184d4a71",
+    "public/brand/reylumi-app-192.png": "affae267c226c80f087c20e137a92471c111e2bbd5dcc307a9dd4f38e40b7843",
+    "public/brand/reylumi-app-512.png": "812acf9e4257ae833fb3d093e5ff19a63f2c78db565a8efaffb485e4b472b397",
+    "ios/Reylumi/Assets.xcassets/AppIcon.appiconset/AppIcon.png": "438fedba0b4a1e4ecb92a7afc5a521ac7b380b3bc5913c69e6dbe9ad0342ec94",
+    "ios/Reylumi/Assets.xcassets/LoadingLogo.imageset/LoadingLogo.png": "438fedba0b4a1e4ecb92a7afc5a521ac7b380b3bc5913c69e6dbe9ad0342ec94",
+    "app/favicon.ico": "85d3f8e6aaceccd37e2b9d0996bcd809efc08d2a3742328ad5d550f3f73b3909"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "ios-auto-credit-first-release-20261120",
+  "status": "needs-integration",
+  "summary": "Implemented approved option A for native Reylumi iOS: read-only automatic-credit setup with existing state and Stop retained; manual purchases, card/payment controls, web setup, history, reminders and server billing unchanged.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/credit-panel.tsx",
+    "lib/vietnamese-campaign-copy.json",
+    "tests/campaign-ios-auto-credit-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261120-ios-final-r1/billing/frozen-source-r1",
+    "baseCommit": "5b84d3d3236bbae4d682a69f1b5f6e75282d8b34",
+    "manifestSha256": "1e6e2da43a77df59ff77d33663e489334df18c280f4cbf4bcc38f7308ae10386"
+  },
+  "validation": [
+    {
+      "name": "Actual CreditPanel/CSS isolated browser tests",
+      "result": "passed",
+      "evidence": "7/7, 0 skipped: native iPhone/iPad markers and hydration, existing/pending Stop, manual/card payment bridge, Block/Unblock/reminders/history/scoped target, Safari/Android/web affirmative consent and retained drafts, stale-event guards, Vietnamese copy. No external traffic."
+    },
+    {
+      "name": "Retained CampaignWorkspace regression",
+      "result": "passed",
+      "evidence": "Canonical existing expired/rerun/funding/history/new-campaign suite passed."
+    },
+    {
+      "name": "Retained Settings target fixture diagnosis",
+      "result": "passed",
+      "evidence": "Original unrelated fixture failed before mount with process is not defined; preserved raw diagnostic. An owned artifact-only copy defining empty process.env passed all original assertions. No canonical Settings test or product source edited; not claimed as an original-suite pass."
+    },
+    {
+      "name": "Scoped lint, syntax, whitespace and four screenshots",
+      "result": "passed",
+      "evidence": "Two ESLint files, 0 errors/warnings; Node syntax and whitespace pass. Four synthetic actual-component screenshots inspected. No Live Preview viewer was running or opened."
+    },
+    {
+      "name": "Frozen source and unchanged billing/server primitives",
+      "result": "passed",
+      "evidence": "Three exact snapshot files; nine existing server/payment/format/CSS/native-detector boundaries match base byte-for-byte. FROZEN-SOURCE.json SHA 1e6e2da43a77df59ff77d33663e489334df18c280f4cbf4bcc38f7308ae10386."
+    },
+    {
+      "name": "Final integrated native build and real-device acceptance",
+      "result": "pending",
+      "evidence": "New native-bundled client component requires source-bound final native build and integration QA; no provider, push, deployment or real charge in this task."
+    }
+  ],
+  "dependencies": [
+    "store-operator-contact-20261120"
+  ],
+  "id": "1cc47f2a-e7a1-49b0-87e2-e9fbf7eae109",
+  "recordedAt": "2026-11-20T16:47:29.588Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-auto-credit-first-release-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

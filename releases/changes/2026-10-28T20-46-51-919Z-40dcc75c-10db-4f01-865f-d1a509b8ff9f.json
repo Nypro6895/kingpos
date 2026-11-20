@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "iphone-single-post-audited-getter-admission-20261028",
+  "status": "working",
+  "summary": "Negotiate single POST admission for three audited pure Booking getters. Native binds the gesture to the displayed viewer/scope/epoch; server freshly authenticates and checks current scope and original handler target/Owner permissions. Old server and every write retain full native preflight. Real iPhone identified redundant preflight cost.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/context/route.ts",
+    "lib/app-local-host.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/SinglePostGetterTests.swift"
+  ],
+  "dependencies": [
+    "iphone-original-getter-transport-read-scope-20261028"
+  ],
+  "validation": [
+    {
+      "name": "Actual iPhone still needs 0.98-1.16s with one Auth/two REST per POST because a separate preflight remains",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/released56-physical/booking164-after.json"
+    },
+    {
+      "name": "Native transport denial/reset/old-server/write regressions",
+      "result": "pending"
+    }
+  ],
+  "id": "40dcc75c-10db-4f01-865f-d1a509b8ff9f",
+  "recordedAt": "2026-10-28T20:46:51.919Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

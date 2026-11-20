@@ -1,3 +1,7 @@
+
+import { SalonName } from "@/components/salon-member-badge";
+import { SalonAddressLink } from "@/components/salon-address-link";
+import { withExperiencePage } from "@/components/experience-page";
 import {
   getCustomerActivityReceipt,
   type CustomerActivityReceipt,
@@ -101,7 +105,7 @@ function SalonHeader({ receipt }: { receipt: CustomerActivityReceipt }) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-extrabold leading-tight text-text-primary">
-              {receipt.salon.name}
+              <SalonName name={receipt.salon.name} salonId={receipt.salon.id}/>
             </h1>
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">
               Paid at salon
@@ -112,7 +116,7 @@ function SalonHeader({ receipt }: { receipt: CustomerActivityReceipt }) {
           </p>
           {place || receipt.salon.phone ? (
             <p className="mt-2 text-sm leading-6 text-text-secondary">
-              {[place, receipt.salon.phone].filter(Boolean).join(" / ")}
+              {place ? <SalonAddressLink address={place} /> : null}{place && receipt.salon.phone ? " / " : ""}{receipt.salon.phone}
             </p>
           ) : null}
         </div>
@@ -188,7 +192,7 @@ function TotalsRow({
   );
 }
 
-export default async function ActivityReceiptPage({
+async function ActivityReceiptPage({
   params,
 }: ActivityReceiptPageProps) {
   const { ticketId } = await params;
@@ -271,7 +275,7 @@ export default async function ActivityReceiptPage({
                 <TotalsRow
                   label="Discount"
                   value={formatMoney(
-                    receipt.totals.discount_amount,
+                    Math.max(0,receipt.totals.discount_amount-(receipt.rewardDiscount??0)),
                     receipt.currency,
                   )}
                 />
@@ -282,6 +286,7 @@ export default async function ActivityReceiptPage({
                     receipt.currency,
                   )}
                 />
+                {!!receipt.rewardDiscount&&<TotalsRow label="Reward used" value={formatMoney(receipt.rewardDiscount,receipt.currency)}/>}
                 <TotalsRow
                   label="Tip"
                   value={formatMoney(
@@ -342,3 +347,5 @@ export default async function ActivityReceiptPage({
     </main>
   );
 }
+
+export default withExperiencePage(ActivityReceiptPage);

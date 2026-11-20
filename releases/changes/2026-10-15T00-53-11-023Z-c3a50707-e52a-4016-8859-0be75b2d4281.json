@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "booking-concurrency-cache-review-20261015",
+  "status": "working",
+  "summary": "Isolated concurrent booking and rescheduling verification, backend E2E feasibility, and cache-scope review. No production changes.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/book/[salonId]/public-booking-client.tsx",
+    "tests/public-booking-cache-scope-ui.test.mjs",
+    "tests/booking-concurrency.integration.test.mjs"
+  ],
+  "dependencies": [
+    "booking-flow-local-audit-20261015"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase2-before",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+  },
+  "validation": [
+    {
+      "name": "Concurrency and cache review",
+      "result": "pending"
+    }
+  ],
+  "id": "c3a50707-e52a-4016-8859-0be75b2d4281",
+  "recordedAt": "2026-10-15T00:53:11.023Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

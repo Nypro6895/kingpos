@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "native-ci-exact-branch-preview-suppression-20261120",
+  "status": "ready",
+  "summary": "Prevent the existing native CI trigger branch from creating automatic Vercel deployments while retaining combined release sequencing",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "vercel.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-ios-final-r1\\root\\ci-branch-suppression-r1\\snapshot",
+    "commit": "3c41100dd26ace91a8141f3ae312a4e8b5578e80"
+  },
+  "validation": [
+    {
+      "name": "Exact branch only JSON deep-scope guard; legacy disable, defaults, build/regions/crons preserved",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-ios-final-r1\\root\\ci-branch-suppression-r1\\review.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "6935843f-9d22-472d-99be-cb631e17a947",
+  "recordedAt": "2026-11-20T16:54:33.710Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-followup-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "vercel.json": "029ed0664a690f1ec0ffaed71a168760f8f1053c24fb9b107ffc2365e6ee3302"
+  }
+}

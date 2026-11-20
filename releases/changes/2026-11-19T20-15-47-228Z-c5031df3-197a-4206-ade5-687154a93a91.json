@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "session-denial-account-erasure-20261119",
+  "status": "needs-integration",
+  "summary": "Validated account-erasure cleanup for private session denials using an Auth-user cascading foreign key; existing revocations stay enforced until actual Auth hard deletion",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119203000_session_denial_account_erasure.sql",
+    "tests/session-denial-account-erasure.full-schema.test.mjs",
+    "docs/session-denial-account-erasure-20261119.md",
+    "releases/changes/2026-11-19T20-10-47-887Z-ea60f7c6-dc90-4112-a8c6-e797e57d9c4b.json"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\session-denial-erasure-r1\\frozen",
+    "baseCommit": "dfb18cb05ecfbfa2b8f825c88f600658c1806d9e"
+  },
+  "fileHashes": {
+    "supabase/migrations/20261119203000_session_denial_account_erasure.sql": "e45f10ef38ec433d12995cd8b97837d7fc565c2aa89169e43eedfaf5f2d06e2c",
+    "tests/session-denial-account-erasure.full-schema.test.mjs": "fb8a730b091b10ec72bfc893014472a470552054ed56dd86d3209167d10ec51b",
+    "docs/session-denial-account-erasure-20261119.md": "00814f5226e31f46cfc86a15a4993f4964f5f86b78bda586ab1d5bdb815689dd",
+    "releases/changes/2026-11-19T20-10-47-887Z-ea60f7c6-dc90-4112-a8c6-e797e57d9c4b.json": "993dd198d4105d7a611e3e5c94f995d95756449151881e2436bbf25f4e48c84a"
+  },
+  "dependencies": [
+    "security-hardening-20261119"
+  ],
+  "validation": [
+    {
+      "name": "Owned real Auth/PostgREST/Storage 452-to-453 upgrade, scoped actual hard-delete and revocation retention",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\session-denial-erasure-r1\\run-r1\\session-denial-erasure-acceptance.json",
+      "result": "passed"
+    },
+    {
+      "name": "All inherited452 migration hashes and private ACLs preserved; only four owned containers removed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\session-denial-erasure-r1\\run-r1\\session-denial-erasure-fixture.json",
+      "result": "passed"
+    },
+    {
+      "name": "JavaScript syntax",
+      "evidence": "node --check tests/session-denial-account-erasure.full-schema.test.mjs",
+      "result": "passed"
+    },
+    {
+      "name": "Combined-source final453 migration wrapper/rehearsal, production baseline and provider hook/session acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Signed native/physical upgrade and Store publication",
+      "result": "pending"
+    }
+  ],
+  "notes": [
+    "First run passed:1test,12assertions,0skips; cached images only, no egress or host ports, two synthetic accounts.",
+    "Migration has no DML, grant, UI, dependency or provider-configuration change; existing orphan references fail validation without deletion.",
+    "Source-only completion; no production/provider/customer/device actions were taken. Earlier22/24 receipts retain their original bounds."
+  ],
+  "id": "c5031df3-197a-4206-ade5-687154a93a91",
+  "recordedAt": "2026-11-19T20:15:47.228Z",
+  "worktree": "C:\\Reylumi-worktrees\\session-denial-erasure-20261119-r1",
+  "supersedesEvents": []
+}

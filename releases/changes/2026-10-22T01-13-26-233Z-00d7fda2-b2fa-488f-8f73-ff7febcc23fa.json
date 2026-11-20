@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "services-cache-realm-guards-r6",
+  "status": "needs-integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Frozen tests-only realm delta: real shared-IDB browser guards survive delayed observe and failed purge; no product bypass reproduced; bounded unnotified sibling admission documented.",
+  "files": [
+    "docs/services-catalog-realm-guards.txt",
+    "releases/changes/2026-10-22T00-58-21-154Z-377f0c45-abe5-4269-aafc-1d96594e3358.json",
+    "tests/services-catalog-realm-guards.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-realm-guards-r6\\source",
+    "commit": "2033e78995dba9d318d2c2339052197b4b970aaf",
+    "manifestSha256": "a231c161e7bc7b264c68b3c8318bc502a48a300695443082bb3c0447f9d50ff4"
+  },
+  "dependencies": [
+    "Frozen Services invariants metadata38b1d123 / functional2d0b2619",
+    "Coordinator assembled auth+pilot candidate with original30s admission and production disabled",
+    "Authenticated Simulator acceptance, real Services measurements and operational rollback"
+  ],
+  "validation": [
+    {
+      "name": "129 selected assertions:12realms78controller29reset10admissionUI; no skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-realm-guards-r6\\evidence\\final-validation.json"
+    },
+    {
+      "name": "Topology source and four installed QA bundle metadata; provenance limits recorded",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-realm-guards-r6\\evidence\\native-topology.json"
+    },
+    {
+      "name": "Forward/inverse exact Git trees and prior frozen SHA256 verification",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-realm-guards-r6\\rollback-proof.json"
+    },
+    {
+      "name": "Authenticated integrated Simulator transport/backend acceptance and measurements",
+      "result": "pending"
+    }
+  ],
+  "knownLimits": [
+    "Direct Services403 does not notify sibling tabs; an uninformed realm can retain only its own original<=30s admission",
+    "Disk deletion is best effort; denied or unknown admission cannot authorize reading residue",
+    "Native runtime simultaneous scene count and covered-editor Services timing not measured"
+  ],
+  "releaseHeld": true,
+  "productionFlagEnabled": false,
+  "physicalIPhoneReleaseBlocker": false,
+  "id": "00d7fda2-b2fa-488f-8f73-ff7febcc23fa",
+  "recordedAt": "2026-10-22T01:13:26.233Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\services-realm-delta",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

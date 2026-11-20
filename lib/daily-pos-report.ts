@@ -1,14 +1,18 @@
 import { getContextBusinessTimezone, getContextBusinessDate } from "@/lib/salon-business-clock";
+import { withDashboardDeadline } from "./dashboard-deadline";
 import { zonedDateTimeToUtcIso } from "@/lib/bookings";
 import {
   recentComparisonDates,
   sameTimeSalesComparison,
 } from "@/lib/today-metric-assessment";
 import "server-only";
+import { giftCashflow } from "@/lib/gift-card-cashflow";
+import type { DailyInputReconciliation } from "@/lib/daily-input-reconciliation";
 
 import {
   getCurrentBusinessContext,
   isSalonManageContext,
+  isOwnerMembership,
 } from "@/lib/current-context";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
@@ -19,7 +23,10 @@ import {
   type SalonActivityBucketSource,
   type SalonBusinessHoursWindow,
 } from "@/lib/salon-business-hours";
-import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createAuthenticatedSupabaseServerClient,
+  getAuthenticatedReadAuthority,
+} from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
@@ -57,7 +64,7 @@ export const FINANCIAL_CORRECTION_PERMISSIONS = {
 } as const;
 
 export const POS_DAILY_CLOSING_SELECT =
-  "id, salon_id, report_date, cash_amount, credit_card_amount, other_amount, note, status, closed_at, closed_by, approved_at, approved_by, locked_at, locked_by, lock_type, lock_reason, note_snapshot, staff_earned_snapshot, tip_snapshot, discount_snapshot, gift_card_snapshot, expected_total_snapshot, actual_total_snapshot, difference_snapshot, cash_amount_snapshot, credit_card_amount_snapshot, other_amount_snapshot, ticket_count_snapshot, finalized_ticket_count_snapshot, snapshot_created_at, created_by, updated_by, created_at, updated_at";
+  "id, salon_id, report_date, cash_amount, credit_card_amount, other_amount, tip_input, live_report_entered_at, note, status, closed_at, closed_by, approved_at, approved_by, locked_at, locked_by, lock_type, lock_reason, note_snapshot, staff_earned_snapshot, tip_snapshot, discount_snapshot, gift_card_snapshot, expected_total_snapshot, actual_total_snapshot, difference_snapshot, cash_amount_snapshot, credit_card_amount_snapshot, other_amount_snapshot, ticket_count_snapshot, finalized_ticket_count_snapshot, snapshot_created_at, created_by, updated_by, created_at, updated_at";
 
 const FINANCIAL_DATE_LOCKED_MESSAGE =
   "This business date is locked. Please submit a correction request.";
@@ -70,12 +77,7 @@ const LOCKED_DAILY_CLOSING_STATUSES = new Set([
   "approved",
   "payroll_locked",
 ]);
-const DAILY_CLOSING_CORRECTION_FIELDS = new Set<DailyClosingCorrectionField>([
-  "cash_amount",
-  "credit_card_amount",
-  "other_amount",
-  "note",
-]);
+
 
 type SupabaseServerClient = NonNullable<
   Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -89,6 +91,58 @@ type ReportAuthContext = {
   user: NonNullable<CurrentBusinessContext["user"]>;
 };
 
+export type DailyPosReadContext = {
+  read<T>(auth: ReportAuthContext, query: readonly unknown[], read: () => PromiseLike<T>): Promise<T>;
+};
+
+function reportContextIdentity(context: CurrentBusinessContext) {
+  return JSON.stringify([
+    context.user?.id,
+    context.currentAccount?.id,
+    context.currentSalon?.id,
+    context.currentMembership,
+    context.currentWorkspace,
+    context.activeRole,
+    context.permissionCodes,
+    context.permissions,
+    context.salonMode,
+    context.businessMode,
+  ]);
+}
+
+// The caller owns this collector for a single Today financial read. It joins
+// only pending identical raw SELECTs, after each helper's own admission gates.
+// Settled values are discarded so subsequent reads still observe live writes.
+export function createDailyPosReadContext(context: CurrentBusinessContext): DailyPosReadContext {
+  const identity = reportContextIdentity(context);
+  const pending = new Map<string, Promise<unknown>>();
+  return {
+    read<T>(auth: ReportAuthContext, query: readonly unknown[], read: () => PromiseLike<T>): Promise<T> {
+      const authority = getAuthenticatedReadAuthority(auth.supabase);
+      if (!authority || auth.context !== context || reportContextIdentity(auth.context) !== identity) {
+        return Promise.resolve(read());
+      }
+      const key = JSON.stringify([authority, query]);
+      const existing = pending.get(key);
+      if (existing) return existing as Promise<T>;
+      const result = Promise.resolve(read());
+      pending.set(key, result);
+      const clear = () => { if (pending.get(key) === result) pending.delete(key); };
+      void result.then(clear, clear);
+      return result;
+    },
+  };
+}
+
+function readDailyPos<T>(
+  auth: ReportAuthContext,
+  readContext: DailyPosReadContext | undefined,
+  query: readonly unknown[],
+  read: () => PromiseLike<T>,
+): Promise<T> {
+  return readContext ? readContext.read(auth, query, read) : Promise.resolve(read());
+}
+
 type ReportTicketItemTurnPart = {
   amount: number;
   staff_id: string | null;
@@ -97,7 +151,7 @@ type ReportTicketItemTurnPart = {
 };
 
 type ReportTicketItem = {
-  assigned_staff: { display_name: string; id: string } | null;
+  assigned_staff?: { display_name: string; id: string } | null;
   assigned_staff_id: string | null;
   id: string;
   is_removed?: boolean;
@@ -129,7 +183,7 @@ type StaffEarningRow = {
   big_turn_count: number;
   service_total: number;
   small_turn_count: number;
-  staff: { display_name: string; id: string } | null;
+  staff?: { display_name: string; id: string } | null;
   staff_id: string;
   tip_amount: number;
 };
@@ -183,6 +237,7 @@ type FinancialAdjustmentRow = {
 };
 
 export type SaveDailyPosClosingInput = {
+  expectedScope?: string;
   expectedClosing: DailyPosClosingInputs;
   cashAmount: string;
   creditCardAmount: string;
@@ -413,6 +468,8 @@ function getClosingInputs(
   closing: PosDailyClosing | null | undefined,
 ): DailyPosClosingInputs {
   return {
+    tipInput: closing?.tip_input == null ? null : numeric(closing.tip_input),
+    entered: Boolean(closing?.live_report_entered_at),
     approvedAt: closing?.approved_at ?? null,
     cashAmount: numeric(closing?.cash_amount),
     closedAt: closing?.closed_at ?? null,
@@ -756,10 +813,35 @@ function buildHourlyActivityPoints(input: {
   return points;
 }
 
+type DailyPosComparisonInputs={tickets:ReportTicketRow[];earnings:Array<StaffEarningRow&{ticket_id:string;work_date:string}>};
+async function loadDailyPosComparisonInputs(auth:ReportAuthContext,dates:string[],timeZone:string) {
+  const bounds=dates.map(date=>({date,...getUtcBoundsForLocalDate(date,timeZone)}));
+  const result=new Map<string,DailyPosComparisonInputs>(dates.map(date=>[date,{tickets:[],earnings:[]}]));
+  if(!bounds.length)return result;
+  const from=bounds.map(row=>row.openedFrom).sort()[0],to=bounds.map(row=>row.openedTo).sort().at(-1)!;
+  type Row=ReportTicketRow&{earnings:Array<StaffEarningRow&{work_date:string}>};
+  for(let offset=0;;offset+=500) {
+    const {data,error}=await auth.supabase.from("pos_tickets")
+      .select("id,opened_at,closed_at,status,discount_type,discount_value,tax_rate,tip_type,tip_value,ticket_items:pos_ticket_items(id,assigned_staff_id,quantity,line_total,is_removed,turn_parts:pos_ticket_item_turn_parts(amount,staff_id,turn_index,turn_type)),earnings:pos_ticket_staff_earnings(staff_id,work_date,service_total,tip_amount,big_turn_count,small_turn_count)")
+      .eq("salon_id",auth.salon.id).gte("opened_at",from).lte("opened_at",to)
+      .order("opened_at",{ascending:true}).order("id",{ascending:true}).range(offset,offset+499).returns<Row[]>();
+    if(error)throw new Error(error.message);
+    for(const row of data??[]) {
+      if(!Array.isArray(row.earnings))throw new Error("Comparison earnings are unavailable.");
+      const instant=Date.parse(row.opened_at);
+      const day=bounds.find(bound=>instant>=Date.parse(bound.openedFrom)&&instant<=Date.parse(bound.openedTo));
+      if(!day)continue;
+      const group=result.get(day.date)!;group.tickets.push(row);
+      group.earnings.push(...row.earnings.filter(earning=>earning.work_date===day.date).map(earning=>({...earning,ticket_id:row.id})));
+    }
+    if(!data||data.length<500)break;
+  }
+  return result;
+}
 async function buildSalesComparison(input: {
   auth: ReportAuthContext;
   reportDate: string;
-  selectedTotal: number;
+  selectedTotal: number | (() => Promise<number>);
   timeZone: string;
 }): Promise<DailyPosSalesComparison> {
   const now = new Date();
@@ -776,8 +858,10 @@ async function buildSalesComparison(input: {
     parts.find((item) => item.type === key)?.value ?? "00";
   const currentDate = `${part("year")}-${part("month")}-${part("day")}`;
   const sameTime = currentDate === input.reportDate;
+  const dates=recentComparisonDates(input.reportDate);
+  const prepared=await loadDailyPosComparisonInputs(input.auth,dates,input.timeZone);
   const cores = await Promise.all(
-    recentComparisonDates(input.reportDate).map((date) => {
+    dates.map((date) => {
       const cutoff = sameTime
         ? zonedDateTimeToUtcIso({
             date,
@@ -788,7 +872,10 @@ async function buildSalesComparison(input: {
       if (sameTime && !cutoff)
         throw new Error("Sales comparison is temporarily unavailable.");
       return loadLiveDailyPosReport(date, input.auth, {
+        comparisonOnly: true,
+        comparisonInputs:prepared.get(date),
         includeActivityPoints: false,
+        includeClosing: false,
         timeZone: input.timeZone,
         closedBefore: cutoff
           ? new Date(
@@ -810,9 +897,9 @@ async function buildSalesComparison(input: {
       )
         ? []
         : cores.map((core) => core.totals.expectedTotal),
-    selectedTotal: input.selectedTotal,
+    selectedTotal: typeof input.selectedTotal === "function" ? await input.selectedTotal() : input.selectedTotal,
     historyDays: cores.filter((core) =>
-      core.allTickets.some((ticket) => ticket.status === "closed"),
+      core.allTickets.some((ticket) => ticket.status === "closed") || core.totals.totalStaffEarned !== 0 || core.totals.totalTip !== 0,
     ).length,
     sameTime,
   });
@@ -949,35 +1036,17 @@ async function requireFinancialContext(context?: CurrentBusinessContext) {
 }
 
 export async function canEditDailyPosClosing(context: CurrentBusinessContext) {
-  return hasPermission(DAILY_POS_REPORT_PERMISSIONS.edit, context);
+  return isSalonManageContext(context) && isOwnerMembership(context.currentMembership);
 }
 
-export async function canApplyFinancialCorrections(
-  context: CurrentBusinessContext,
-) {
-  return (
-    (await hasPermission(
-      DAILY_POS_REPORT_PERMISSIONS.applyCorrection,
-      context,
-    )) || (await hasPermission(FINANCIAL_CORRECTION_PERMISSIONS.apply, context))
-  );
-}
+export async function canApplyFinancialCorrections(context: CurrentBusinessContext) { void context; return false; }
 
-export async function canRequestFinancialCorrections(
-  context: CurrentBusinessContext,
-) {
-  return (
-    (await hasPermission(
-      DAILY_POS_REPORT_PERMISSIONS.requestCorrection,
-      context,
-    )) ||
-    (await hasPermission(FINANCIAL_CORRECTION_PERMISSIONS.request, context))
-  );
-}
+export async function canRequestFinancialCorrections(context: CurrentBusinessContext) { void context; return false; }
 
 export async function getDailyPosTodayFinancialData(input: {
-  businessHours?: SalonBusinessHoursWindow | null;
+  businessHours?: SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null>;
   context?: CurrentBusinessContext;
+  readContext?: DailyPosReadContext;
   reportDate: string;
   timeZone: string;
 }): Promise<DailyPosTodayFinancialData> {
@@ -991,14 +1060,17 @@ export async function getDailyPosTodayFinancialData(input: {
     ],
     input.context,
   );
-  const core = await loadLiveDailyPosReport(input.reportDate, auth, {
+  const coreRead = loadLiveDailyPosReport(input.reportDate, auth, {
     businessHours: input.businessHours,
+    readContext: input.readContext,
     timeZone: input.timeZone,
   });
-  const salesComparison = await buildSalesComparison({
+  // Start history alongside the selected day, but do not spend its optional
+  // wait budget while it is waiting for that same authoritative day's total.
+  const comparisonRead = buildSalesComparison({
     auth,
     reportDate: input.reportDate,
-    selectedTotal: core.totals.expectedTotal,
+    selectedTotal: () => coreRead.then(core=>core.totals.expectedTotal),
     timeZone: input.timeZone,
   }).catch((error) => {
     console.error("Today sales comparison unavailable", {
@@ -1008,9 +1080,12 @@ export async function getDailyPosTodayFinancialData(input: {
     return null;
   });
 
+  const core = await coreRead;
+  const salesComparison = await withDashboardDeadline(comparisonRead, 1500).catch(() => null);
+
   return {
     activityPoints: core.activityPoints,
-    businessHours: input.businessHours ?? null,
+    businessHours: await input.businessHours ?? null,
     salesComparison,
     staffAttributionSource: core.staffAttributionSource,
     staffRows: core.staffRows,
@@ -1022,9 +1097,13 @@ async function loadLiveDailyPosReport(
   reportDate: string,
   auth: ReportAuthContext,
   options: {
-    businessHours?: SalonBusinessHoursWindow | null;
+    businessHours?: SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null>;
+    comparisonOnly?: boolean;
+    comparisonInputs?: DailyPosComparisonInputs;
     includeActivityPoints?: boolean;
+    includeClosing?: boolean;
     closedBefore?: string;
+    readContext?: DailyPosReadContext;
     timeZone?: string;
   } = {},
 ): Promise<DailyReportCore> {
@@ -1033,27 +1112,42 @@ async function loadLiveDailyPosReport(
     reportDate,
     options.timeZone ?? await getContextBusinessTimezone(auth.context),
   );
+  // Historical comparison consumes totals, not payment breakdowns or display
+  // names. Keep tax/tip/item/turn and earning inputs exactly as the live report.
+  const ticketSelection: string = options.comparisonOnly
+    ? "id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))"
+    : "id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))";
+  const earningsSelection: string = options.comparisonOnly
+    ? "staff_id, service_total, tip_amount, big_turn_count, small_turn_count"
+    : "staff_id, service_total, tip_amount, big_turn_count, small_turn_count, staff:staff(id, display_name)";
 
   const [
     { data: closing, error: closingError },
     { data: tickets, error: ticketsError },
   ] = await Promise.all([
-    supabase
-      .from("pos_daily_closings")
-      .select(POS_DAILY_CLOSING_SELECT)
-      .eq("salon_id", salon.id)
-      .eq("report_date", reportDate)
-      .maybeSingle<PosDailyClosing>(),
-    supabase
+    // Historical sales comparison uses expected totals from tickets/earnings.
+    // Actual closing inputs are not consumed, and must remain live reads for
+    // the full report and every financial write/lock path.
+    options.includeClosing === false
+      ? Promise.resolve({ data: null, error: null })
+      : readDailyPos(auth, options.readContext,
+          ["pos_daily_closings", POS_DAILY_CLOSING_SELECT, salon.id, reportDate],
+          () => supabase
+          .from("pos_daily_closings")
+          .select(POS_DAILY_CLOSING_SELECT)
+          .eq("salon_id", salon.id)
+          .eq("report_date", reportDate)
+          .maybeSingle<PosDailyClosing>()),
+    options.comparisonInputs?Promise.resolve({data:options.comparisonInputs.tickets,error:null}):readDailyPos(auth, options.readContext,
+      ["pos_tickets", ticketSelection, salon.id, bounds.openedFrom, bounds.openedTo, "opened_at.asc"],
+      () => supabase
       .from("pos_tickets")
-      .select(
-        "id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))",
-      )
+      .select(ticketSelection)
       .eq("salon_id", salon.id)
       .gte("opened_at", bounds.openedFrom)
       .lte("opened_at", bounds.openedTo)
       .order("opened_at", { ascending: true })
-      .returns<ReportTicketRow[]>(),
+      .returns<ReportTicketRow[]>()),
   ]);
 
   if (closingError) {
@@ -1098,15 +1192,17 @@ async function loadLiveDailyPosReport(
   let tipAttributionSource: DailyPosTipAttributionSource = "none";
 
   if (finalizedTicketIds.length > 0) {
-    const { data: earnings, error: earningsError } = await supabase
+    const { data: earnings, error: earningsError } = options.comparisonInputs
+      ? {data:options.comparisonInputs.earnings.filter(row=>finalizedTicketIds.includes(row.ticket_id)&&row.work_date===reportDate),error:null}
+      : await readDailyPos(auth, options.readContext,
+      ["pos_ticket_staff_earnings", earningsSelection, salon.id, reportDate, finalizedTicketIds],
+      () => supabase
       .from("pos_ticket_staff_earnings")
-      .select(
-        "staff_id, service_total, tip_amount, big_turn_count, small_turn_count, staff:staff(id, display_name)",
-      )
+      .select(earningsSelection)
       .eq("salon_id", salon.id)
       .eq("work_date", reportDate)
       .in("ticket_id", finalizedTicketIds)
-      .returns<StaffEarningRow[]>();
+      .returns<StaffEarningRow[]>());
 
     if (earningsError) {
       console.error("Supabase load daily POS staff earnings failed", {
@@ -1133,8 +1229,8 @@ async function loadLiveDailyPosReport(
     }
   }
 
-  const closingInputs = getClosingInputs(closing);
-  const actualTotalCents = getActualTotalCents(closingInputs);
+  let closingInputs = getClosingInputs(closing);
+  let actualTotalCents = getActualTotalCents(closingInputs);
   const {
     totalDiscountCents,
     totalGiftCardPaymentCents,
@@ -1151,20 +1247,41 @@ async function loadLiveDailyPosReport(
   ) {
     tipAttributionSource = "unallocated";
   }
-  const totalGiftCardCents = 0;
-  const expectedTotalCents =
-    totalStaffEarnedCents +
-    totalTipCents -
-    totalDiscountCents -
-    totalGiftCardCents;
-  const differenceCents = actualTotalCents - expectedTotalCents;
+  // A partial-day comparison has only ticket-time facts. Whole-day comparisons
+  // use the same effective Staff/day authority as Reports and Payroll.
+  const usesTicketCutoff = options.comparisonOnly && Boolean(options.closedBefore);
+  const {data: reconciliationData, error: reconciliationError} = usesTicketCutoff
+    ? {data: {grossService: totalStaffEarnedCents / 100, expectedService: (totalStaffEarnedCents-totalDiscountCents)/100, expectedTip: totalTipCents/100, serviceDifference: null, tipDifference: null, staffInputs: null}, error: null}
+    : await supabase.rpc("get_daily_input_reconciliation", {p_salon: salon.id, p_date: reportDate});
+  if (reconciliationError || !reconciliationData) throw new Error("Daily input reconciliation could not be loaded. Please retry.");
+  const reconciliation = reconciliationData as DailyInputReconciliation;
+  if (!options.comparisonOnly) {
+    // Use the same admitted statement for entered values and their balances.
+    // An edit between the earlier metadata reads must not mix two revisions.
+    closingInputs = {...closingInputs, ...reconciliation.closingInputs};
+    actualTotalCents = getActualTotalCents(closingInputs);
+  }
+  const previousByStaff = new Map(staffRows.map(row => [row.staffId, row]));
+  if (reconciliation.staffInputs) staffRows = reconciliation.staffInputs.map(row => ({
+    bigTurnCount: previousByStaff.get(row.staff_id)?.bigTurnCount ?? 0,
+    smallTurnCount: previousByStaff.get(row.staff_id)?.smallTurnCount ?? 0,
+    totalTurns: previousByStaff.get(row.staff_id)?.totalTurns ?? 0,
+    staffId: row.staff_id, staffName: row.staff_name || previousByStaff.get(row.staff_id)?.staffName || "Staff",
+    totalEarned: Number(row.service_total), tipAmount: Number(row.tip_amount),
+  }));
+  const giftFlowResult = await supabase.rpc("gift_card_day_cashflow", {p_salon:salon.id,p_date:reportDate,p_before:options.closedBefore??null});
+  if(giftFlowResult.error) throw new Error("Gift card source report could not load. Retry before closing the day.");
+  const giftFlow = giftCashflow(giftFlowResult.data);
+  const totalGiftCardCents = giftFlow.redeemed;
+  const expectedTotalCents = toCents(reconciliation.expectedService) + (usesTicketCutoff ? giftFlow.counterSales - giftFlow.serviceRedeemed : 0);
+  const differenceCents = reconciliation.serviceDifference === null ? 0 : toCents(reconciliation.serviceDifference);
 
   return {
     activityPoints:
       options.includeActivityPoints === false
         ? []
         : buildHourlyActivityPoints({
-            businessHours: options.businessHours,
+            businessHours: await options.businessHours,
             reportDate,
             tickets: finalizedTickets,
             timeZone: options.timeZone ?? await getContextBusinessTimezone(auth.context),
@@ -1193,11 +1310,19 @@ async function loadLiveDailyPosReport(
       expectedTotal: fromCents(expectedTotalCents),
       giftCardPaymentTotal: fromCents(totalGiftCardPaymentCents),
       reconciliationStatus: getReconciliationStatus(differenceCents),
-      totalDiscount: fromCents(totalDiscountCents),
+      totalDiscount: usesTicketCutoff ? fromCents(totalDiscountCents) : Number(reconciliation.discount),
+      giftSales: fromCents(giftFlow.counterSales),
+      giftServicePaid: fromCents(giftFlow.serviceRedeemed),
+      giftTipPaid: fromCents(giftFlow.tipRedeemed),
+      rewardDiscount: Number(reconciliation.rewardDiscount ?? 0),
+      ordinaryDiscount: Number(reconciliation.ordinaryDiscount ?? reconciliation.discount ?? fromCents(totalDiscountCents)),
       totalGiftCard: fromCents(totalGiftCardCents),
-      totalStaffEarned: fromCents(totalStaffEarnedCents),
+      totalStaffEarned: Number(reconciliation.grossService),
       totalTax: fromCents(totalTaxCents),
-      totalTip: fromCents(totalTipCents),
+      totalTip: Number(reconciliation.earnedTip ?? reconciliation.expectedTip),
+      expectedTip: usesTicketCutoff ? Math.max(0, Number(reconciliation.expectedTip)-fromCents(giftFlow.tipRedeemed)) : Number(reconciliation.expectedTip),
+      serviceDifference: reconciliation.serviceDifference,
+      tipDifference: reconciliation.tipDifference,
     },
   };
 }
@@ -1207,17 +1332,16 @@ async function getLockInfo(
   context: CurrentBusinessContext,
   closing: PosDailyClosing | null,
   liveTotalsDifferFromSnapshot = false,
+  knownBusinessDate?: string,
 ): Promise<DailyClosingLockInfo> {
-  const currentBusinessDate = await getCurrentBusinessDate(context);
+  const currentBusinessDate = knownBusinessDate ?? await getCurrentBusinessDate(context);
   const status = closing?.status ?? "draft";
   const isPastDate = reportDate < currentBusinessDate;
 
   return {
     currentBusinessDate,
-    isLocked:
-      isPastDate ||
-      Boolean(closing?.locked_at) ||
-      LOCKED_DAILY_CLOSING_STATUSES.has(status),
+    isLocked: !isOwnerMembership(context.currentMembership) && (
+      isPastDate || Boolean(closing?.locked_at) || LOCKED_DAILY_CLOSING_STATUSES.has(status)),
     isPastDate,
     liveTotalsDifferFromSnapshot,
     lockedAt: closing?.locked_at ?? null,
@@ -1335,168 +1459,18 @@ async function insertStaffSnapshotRows(
   }
 }
 
-async function loadStaffAdjustmentTotals(
-  auth: ReportAuthContext,
-  reportDate: string,
-) {
-  const { salon, supabase } = auth;
-  const { data, error } = await supabase
-    .from("pos_financial_adjustments")
-    .select("staff_id, service_delta, tip_delta, turn_delta")
-    .eq("salon_id", salon.id)
-    .eq("business_date", reportDate)
-    .not("staff_id", "is", null)
-    .returns<
-      Array<{
-        service_delta: number;
-        staff_id: string | null;
-        tip_delta: number;
-        turn_delta: number;
-      }>
-    >();
 
-  if (error) {
-    throw new Error(error.message);
-  }
 
-  const totalsByStaffId = new Map<
-    string,
-    { serviceDelta: number; tipDelta: number; turnDelta: number }
-  >();
 
-  for (const row of data ?? []) {
-    if (!row.staff_id) {
-      continue;
-    }
 
-    const existing = totalsByStaffId.get(row.staff_id) ?? {
-      serviceDelta: 0,
-      tipDelta: 0,
-      turnDelta: 0,
-    };
 
-    existing.serviceDelta += numeric(row.service_delta);
-    existing.tipDelta += numeric(row.tip_delta);
-    existing.turnDelta += numeric(row.turn_delta);
-    totalsByStaffId.set(row.staff_id, existing);
-  }
-
-  return totalsByStaffId;
-}
-
-async function loadStaffNames(auth: ReportAuthContext, staffIds: string[]) {
-  const ids = Array.from(new Set(staffIds.filter(Boolean)));
-
-  if (ids.length === 0) {
-    return new Map<string, string>();
-  }
-
-  const { data, error } = await auth.supabase
-    .from("staff")
-    .select("id, display_name")
-    .eq("salon_id", auth.salon.id)
-    .in("id", ids)
-    .returns<Array<{ display_name: string; id: string }>>();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return new Map((data ?? []).map((row) => [row.id, row.display_name]));
-}
-
-async function loadStaffSnapshotRows(
-  auth: ReportAuthContext,
-  closingId: string | null,
-  reportDate: string,
-) {
-  const { salon, supabase } = auth;
-  const adjustmentTotals = await loadStaffAdjustmentTotals(auth, reportDate);
-  const snapshotRows = closingId
-    ? await supabase
-        .from("pos_daily_closing_staff_snapshots")
-        .select(
-          "id, staff_id, staff_name_snapshot, total_earned_snapshot, tip_snapshot, big_turn_count_snapshot, small_turn_count_snapshot, total_turns_snapshot",
-        )
-        .eq("salon_id", salon.id)
-        .eq("closing_id", closingId)
-        .order("staff_name_snapshot", { ascending: true })
-        .returns<
-          Array<{
-            big_turn_count_snapshot: number;
-            id: string;
-            small_turn_count_snapshot: number;
-            staff_id: string | null;
-            staff_name_snapshot: string;
-            tip_snapshot: number;
-            total_earned_snapshot: number;
-            total_turns_snapshot: number;
-          }>
-        >()
-    : { data: [], error: null };
-
-  if (snapshotRows.error) {
-    throw new Error(snapshotRows.error.message);
-  }
-
-  const rows = (snapshotRows.data ?? []).map<DailyPosReportStaffRow>((row) => {
-    const staffId = row.staff_id ?? row.id;
-    const adjustment = row.staff_id
-      ? adjustmentTotals.get(row.staff_id)
-      : undefined;
-
-    if (row.staff_id) {
-      adjustmentTotals.delete(row.staff_id);
-    }
-
-    return {
-      bigTurnCount: numeric(row.big_turn_count_snapshot),
-      smallTurnCount: numeric(row.small_turn_count_snapshot),
-      staffId,
-      staffName: row.staff_name_snapshot,
-      tipAmount: roundMoney(
-        numeric(row.tip_snapshot) + (adjustment?.tipDelta ?? 0),
-      ),
-      totalEarned: roundMoney(
-        numeric(row.total_earned_snapshot) + (adjustment?.serviceDelta ?? 0),
-      ),
-      totalTurns: roundMoney(
-        numeric(row.total_turns_snapshot) + (adjustment?.turnDelta ?? 0),
-      ),
-    };
-  });
-
-  if (adjustmentTotals.size === 0) {
-    return rows;
-  }
-
-  const staffNames = await loadStaffNames(
-    auth,
-    Array.from(adjustmentTotals.keys()),
-  );
-
-  for (const [staffId, adjustment] of adjustmentTotals.entries()) {
-    rows.push({
-      bigTurnCount: 0,
-      smallTurnCount: 0,
-      staffId,
-      staffName: staffNames.get(staffId) ?? `Staff ${staffId.slice(0, 8)}`,
-      tipAmount: roundMoney(adjustment.tipDelta),
-      totalEarned: roundMoney(adjustment.serviceDelta),
-      totalTurns: roundMoney(adjustment.turnDelta),
-    });
-  }
-
-  return rows.sort((left, right) =>
-    left.staffName.localeCompare(right.staffName),
-  );
-}
 
 async function ensureDailyClosingSnapshotFromCore(
   auth: ReportAuthContext,
   core: DailyReportCore,
+  knownBusinessDate?: string,
 ) {
-  const currentBusinessDate = await getCurrentBusinessDate(auth.context);
+  const currentBusinessDate = knownBusinessDate ?? await getCurrentBusinessDate(auth.context);
 
   if (core.reportDate >= currentBusinessDate) {
     return core.closing;
@@ -1945,7 +1919,7 @@ export async function getDailyClosingEffectiveTotals(
     context,
   );
   const core = await loadLiveDailyPosReport(reportDateInput, auth);
-  const ensuredClosing = await ensureDailyClosingSnapshotFromCore(auth, core);
+  const ensuredClosing = core.closing;
   const snapshot = getSnapshotTotalsFromClosing(ensuredClosing);
   const rows = await loadDailyClosingCorrectionRows(auth, reportDateInput);
   const lock = await getLockInfo(
@@ -1955,13 +1929,14 @@ export async function getDailyClosingEffectiveTotals(
     snapshotDiffersFromLive(snapshot, core),
   );
 
-  return buildEffectiveTotalsResult({
+  const effective = buildEffectiveTotalsResult({
     adjustmentRows: rows.adjustments,
     closing: ensuredClosing,
     core,
-    lock,
+    lock: {...lock, isLocked: false},
     requestRows: rows.requests,
   });
+  return {...effective, lock};
 }
 
 export async function isDailyClosingLocked(
@@ -2105,6 +2080,8 @@ export async function assertTicketFinancialDateMutable(
 export async function getDailyPosReport(
   reportDateInput: string,
   context?: CurrentBusinessContext,
+  readContext?: DailyPosReadContext,
+  options: { includeCorrectionDetails?: boolean; timeZone?: string; businessHours?: SalonBusinessHoursWindow | null | Promise<SalonBusinessHoursWindow | null> } = {},
 ): Promise<DailyPosReport> {
   const auth = await requireReportContext(
     DAILY_POS_REPORT_PERMISSIONS.view,
@@ -2113,49 +2090,43 @@ export async function getDailyPosReport(
   const reportDate = isDateInputValue(reportDateInput)
     ? reportDateInput
     : getTodayDate(await getContextBusinessTimezone(auth.context));
-  const core = await loadLiveDailyPosReport(reportDate, auth);
-  const ensuredClosing = await ensureDailyClosingSnapshotFromCore(auth, core);
-  const correctionRows = await loadDailyClosingCorrectionRows(auth, reportDate);
+  // Independent reads share this request's already verified authority. Never
+  // serialize the clock/corrections behind loading all ticket rows.
+  const [core, correctionRows, businessDate] = await Promise.all([
+    loadLiveDailyPosReport(reportDate, auth, { readContext, timeZone:options.timeZone, businessHours:options.businessHours }),
+    loadDailyClosingCorrectionRows(auth, reportDate),
+    getCurrentBusinessDate(auth.context),
+  ]);
+  const ensuredClosing = core.closing;
   const snapshot = getSnapshotTotalsFromClosing(ensuredClosing);
   const lock = await getLockInfo(
     reportDate,
     auth.context,
     ensuredClosing,
     snapshotDiffersFromLive(snapshot, core),
+    businessDate,
   );
   const effective = buildEffectiveTotalsResult({
     adjustmentRows: correctionRows.adjustments,
     closing: ensuredClosing,
     core,
-    lock,
+    lock: {...lock, isLocked: false},
     requestRows: correctionRows.requests,
   });
-  const corrections = await decorateDailyClosingCorrections(
-    auth,
-    correctionRows,
-  );
-  const staffSnapshotRows = lock.isLocked
-    ? await loadStaffSnapshotRows(auth, ensuredClosing?.id ?? null, reportDate)
-    : [];
+  const corrections = options.includeCorrectionDetails === false
+    ? {requests: [], adjustments: []}
+    : await decorateDailyClosingCorrections(auth, correctionRows);
 
   return {
     adjustmentTotals: effective.adjustmentTotals,
     closingInputs: effective.closingInputs,
     corrections,
     lock,
-    metadata:
-      lock.isLocked && effective.snapshotTotals
-        ? {
-            ...core.metadata,
-            finalizedTicketCount: effective.snapshotTotals.finalizedTicketCount,
-            ticketCount: effective.snapshotTotals.ticketCount,
-          }
-        : core.metadata,
+    metadata: core.metadata,
     pendingCorrectionCount: effective.pendingCorrectionCount,
     reportDate,
     snapshotTotals: effective.snapshotTotals,
-    staffRows:
-      staffSnapshotRows.length > 0 ? staffSnapshotRows : core.staffRows,
+    staffRows: core.staffRows,
     totals: effective.totals,
   };
 }
@@ -2205,6 +2176,10 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
 
   const { context, Account, salon, supabase, user } =
     await requireReportContext(DAILY_POS_REPORT_PERMISSIONS.edit);
+
+  if (input.expectedScope && input.expectedScope !== `${salon.id}:${user.id}`) {
+    throw new Error("The selected salon or account changed. Reopen this report before saving.");
+  }
 
   await assertFinancialDateMutable(input.reportDate, context, {
     requireEditPermission: false,
@@ -2272,293 +2247,24 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
   return getClosingInputs(data);
 }
 
-function assertCorrectionField(
-  field: string,
-): asserts field is DailyClosingCorrectionField {
-  if (
-    !DAILY_CLOSING_CORRECTION_FIELDS.has(field as DailyClosingCorrectionField)
-  ) {
-    throw new Error("Correction field is not supported.");
-  }
+
+
+
+
+
+
+
+
+
+
+export async function createDailyClosingCorrectionRequest(_input: DailyClosingCorrectionInput, _context?: CurrentBusinessContext): Promise<FinancialCorrectionRequestRow> {
+  void [_input, _context];
+  throw new Error("Use Staff daily inputs or Daily Report to edit the recorded inputs. Legacy correction requests are read-only history.");
 }
 
-function parseRequestedCorrectionValue(
-  field: DailyClosingCorrectionField,
-  requestedValue: string,
-) {
-  if (field === "note") {
-    return requestedValue.trim() || null;
-  }
-
-  return fromCents(parseCurrencyToCents(requestedValue, "Requested value"));
-}
-
-function getEffectiveFieldValue(
-  field: DailyClosingCorrectionField,
-  effective: DailyClosingEffectiveTotalsResult,
-) {
-  switch (field) {
-    case "cash_amount":
-      return effective.closingInputs.cashAmount;
-    case "credit_card_amount":
-      return effective.closingInputs.creditCardAmount;
-    case "other_amount":
-      return effective.closingInputs.otherAmount;
-    case "note":
-      return effective.closingInputs.note;
-  }
-}
-
-function getAdjustmentPayloadForCorrection(input: {
-  effective: DailyClosingEffectiveTotalsResult;
-  field: DailyClosingCorrectionField;
-  requestedValue: number | string | null;
-}) {
-  const payload = {
-    actual_total_delta: 0,
-    cash_delta: 0,
-    credit_card_delta: 0,
-    expected_total_delta: 0,
-    note: null as string | null,
-    other_delta: 0,
-  };
-
-  if (input.field === "note") {
-    payload.note =
-      typeof input.requestedValue === "string" ? input.requestedValue : null;
-    return payload;
-  }
-
-  const requestedAmount = Number(input.requestedValue);
-  const currentAmount = Number(
-    getEffectiveFieldValue(input.field, input.effective),
-  );
-  const delta = roundMoney(requestedAmount - currentAmount);
-
-  if (input.field === "cash_amount") {
-    payload.cash_delta = delta;
-  }
-
-  if (input.field === "credit_card_amount") {
-    payload.credit_card_delta = delta;
-  }
-
-  if (input.field === "other_amount") {
-    payload.other_delta = delta;
-  }
-
-  payload.actual_total_delta = delta;
-
-  return payload;
-}
-
-function getMoneyDeltaForCorrection(input: {
-  effective: DailyClosingEffectiveTotalsResult;
-  field: DailyClosingCorrectionField;
-  requestedValue: number | string | null;
-}) {
-  if (input.field === "note") {
-    return 0;
-  }
-
-  return roundMoney(
-    Number(input.requestedValue) -
-      Number(getEffectiveFieldValue(input.field, input.effective)),
-  );
-}
-
-export async function createDailyClosingCorrectionRequest(
-  input: DailyClosingCorrectionInput,
-  context?: CurrentBusinessContext,
-) {
-  if (!isDateInputValue(input.reportDate)) {
-    throw new Error("Report date is required.");
-  }
-
-  assertCorrectionField(input.field);
-
-  const reason = input.reason.trim();
-
-  if (!reason) {
-    throw new Error("Correction reason is required.");
-  }
-
-  const auth = await requireReportContext(
-    DAILY_POS_REPORT_PERMISSIONS.requestCorrection,
-    context,
-  );
-  await ensureDailyClosingSnapshot(input.reportDate, auth.context);
-  const effective = await getDailyClosingEffectiveTotals(
-    input.reportDate,
-    auth.context,
-  );
-
-  if (!effective.lock.isLocked) {
-    throw new Error(
-      "Corrections are only available for locked business dates.",
-    );
-  }
-
-  const requestedValue = parseRequestedCorrectionValue(
-    input.field,
-    input.requestedValue,
-  );
-  const oldValue = getEffectiveFieldValue(input.field, effective);
-  const moneyDelta = getMoneyDeltaForCorrection({
-    effective,
-    field: input.field,
-    requestedValue,
-  });
-  const { data, error } = await auth.supabase
-    .from("pos_financial_correction_requests")
-    .insert({
-      business_date: input.reportDate,
-      correction_type: input.field,
-      money_delta: moneyDelta,
-      old_value_json: {
-        field: input.field,
-        value: oldValue,
-      },
-      reason,
-      requested_by: auth.user.id,
-      requested_value_json: {
-        field: input.field,
-        value: requestedValue,
-      },
-      salon_id: auth.salon.id,
-      status: "pending",
-      target_id: effective.closingId,
-      target_type: "daily_closing",
-    })
-    .select(
-      "id, business_date, correction_type, old_value_json, requested_value_json, money_delta, reason, status, requested_by, requested_at, approved_by, approved_at, admin_note",
-    )
-    .single<FinancialCorrectionRequestRow>();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
-export async function applyDailyClosingCorrection(
-  input: ApplyDailyClosingCorrectionInput,
-  context?: CurrentBusinessContext,
-) {
-  if (!input.correctionRequestId) {
-    throw new Error("Correction request is required.");
-  }
-
-  const auth = await requireReportContext(
-    DAILY_POS_REPORT_PERMISSIONS.view,
-    context,
-  );
-
-  if (!(await canApplyFinancialCorrections(auth.context))) {
-    throw new Error(
-      "You do not have permission to apply financial corrections.",
-    );
-  }
-  const { data: request, error: requestError } = await auth.supabase
-    .from("pos_financial_correction_requests")
-    .select(
-      "id, business_date, correction_type, old_value_json, requested_value_json, money_delta, reason, status, requested_by, requested_at, approved_by, approved_at, admin_note",
-    )
-    .eq("id", input.correctionRequestId)
-    .eq("salon_id", auth.salon.id)
-    .maybeSingle<FinancialCorrectionRequestRow>();
-
-  if (requestError) {
-    throw new Error(requestError.message);
-  }
-
-  if (!request) {
-    throw new Error("Correction request is required.");
-  }
-
-  if (request.status !== "pending" && request.status !== "approved") {
-    throw new Error("Only pending or approved corrections can be applied.");
-  }
-
-  assertCorrectionField(request.correction_type);
-
-  const effective = await getDailyClosingEffectiveTotals(
-    request.business_date,
-    auth.context,
-  );
-
-  if (!effective.lock.isLocked) {
-    throw new Error(
-      "Corrections are only available for locked business dates.",
-    );
-  }
-
-  const requestedValue = readCorrectionJsonValue(request.requested_value_json);
-  const normalizedRequestedValue =
-    request.correction_type === "note"
-      ? typeof requestedValue === "string"
-        ? requestedValue
-        : null
-      : Number(requestedValue);
-
-  if (
-    request.correction_type !== "note" &&
-    (!Number.isFinite(normalizedRequestedValue) ||
-      Number(normalizedRequestedValue) < 0)
-  ) {
-    throw new Error("Requested correction value is invalid.");
-  }
-
-  const adjustmentPayload = getAdjustmentPayloadForCorrection({
-    effective,
-    field: request.correction_type,
-    requestedValue: normalizedRequestedValue,
-  });
-  const moneyDelta = getMoneyDeltaForCorrection({
-    effective,
-    field: request.correction_type,
-    requestedValue: normalizedRequestedValue,
-  });
-  const now = new Date().toISOString();
-  const { error: adjustmentError } = await auth.supabase
-    .from("pos_financial_adjustments")
-    .insert({
-      ...adjustmentPayload,
-      business_date: request.business_date,
-      correction_request_id: request.id,
-      created_by: auth.user.id,
-      salon_id: auth.salon.id,
-      target_id: effective.closingId,
-      target_type: "daily_closing",
-    });
-
-  if (adjustmentError) {
-    throw new Error(adjustmentError.message);
-  }
-
-  const { data, error } = await auth.supabase
-    .from("pos_financial_correction_requests")
-    .update({
-      admin_note: input.adminNote?.trim() || request.admin_note,
-      applied_at: now,
-      approved_at: request.approved_at ?? now,
-      approved_by: request.approved_by ?? auth.user.id,
-      money_delta: moneyDelta,
-      status: "applied",
-    })
-    .eq("id", request.id)
-    .eq("salon_id", auth.salon.id)
-    .select(
-      "id, business_date, correction_type, old_value_json, requested_value_json, money_delta, reason, status, requested_by, requested_at, approved_by, approved_at, admin_note",
-    )
-    .single<FinancialCorrectionRequestRow>();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
+export async function applyDailyClosingCorrection(_input: ApplyDailyClosingCorrectionInput, _context?: CurrentBusinessContext): Promise<FinancialCorrectionRequestRow> {
+  void [_input, _context];
+  throw new Error("Use Staff daily inputs or Daily Report to edit the recorded inputs. Legacy correction requests are read-only history.");
 }
 
 export async function submitDailyClosingCorrection(
@@ -2621,4 +2327,15 @@ export async function getPayrollReadyDailyFinancials(
   }
 
   return rows;
+}
+
+export async function loadPayrollReportExpected(auth: ReportAuthContext, start: string, end: string): Promise<Map<string, number>> {
+  const result = new Map<string, number>();
+  for (let day = start; day <= end; ) {
+    const {data, error} = await auth.supabase.rpc("get_daily_input_reconciliation", {p_salon: auth.salon.id, p_date: day});
+    if (error || !data) throw new Error("Daily Report reconciliation could not be loaded.");
+    result.set(day, Number(data.expectedService));
+    const next = new Date(day + "T12:00:00Z"); next.setUTCDate(next.getUTCDate() + 1); day = next.toISOString().slice(0, 10);
+  }
+  return result;
 }

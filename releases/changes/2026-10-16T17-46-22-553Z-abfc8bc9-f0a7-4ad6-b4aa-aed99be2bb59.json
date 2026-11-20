@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "app-local-native-foundation",
+  "status": "needs-integration",
+  "summary": "Preserve permitted unsupported cold hints through HTTPS and return usable ordinary hosted login destinations to installed UI only after fresh matching context; preserve sensitive flows and stale navigation guards.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/.gitattributes",
+    "ios/Reylumi/NativeBridge.js",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Native bridge VM12 + hosted return VM11",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-js-verification.json"
+    },
+    {
+      "name": "Owned source diff/LF manifest",
+      "result": "passed"
+    },
+    {
+      "name": "Full actual macOS XCTest37 and unsigned archive for r7",
+      "result": "pending"
+    },
+    {
+      "name": "Parent actual generated bundle with final route adapters",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\native-frozen-r8"
+  },
+  "id": "abfc8bc9-f0a7-4ad6-b4aa-aed99be2bb59",
+  "recordedAt": "2026-10-16T17:46:22.553Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

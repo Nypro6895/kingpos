@@ -10,6 +10,16 @@ export type Service = {
   online_booking_enabled: boolean;
   created_at: string;
   updated_at: string;
+  booking_parent_service_id?: string | null;
+  booking_add_on_group?: "one" | "many" | null;
+};
+
+export type ServiceOwnedAddOn = {
+  serviceId?: string | null;
+  name: string;
+  durationMinutes: number;
+  basePrice: number;
+  group: "one" | "many";
 };
 
 export type ServiceAddOnLink = {
@@ -48,6 +58,7 @@ export type ServiceBookingReadiness = {
 };
 
 export type ServiceWorkspaceService = Service & {
+  bookingAddOns?: ServiceOwnedAddOn[];
   addOnServiceIds: string[];
   bookingStaffIds: string[];
   readiness: ServiceBookingReadiness;
@@ -61,6 +72,7 @@ export type ServicesWorkspaceData = {
 };
 
 export type ServiceConfigInput = {
+  bookingAddOns?: ServiceOwnedAddOn[];
   addOnServiceIds: string[];
   basePrice: number;
   bookingStaffIds: string[];

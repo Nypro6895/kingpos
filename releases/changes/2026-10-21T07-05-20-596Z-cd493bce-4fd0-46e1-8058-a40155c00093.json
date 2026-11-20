@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "refresh-session-availability-tests-20261021",
+  "status": "working",
+  "summary": "Add isolated regression for refresh availability classification without modifying session lifetime or credentials",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/refresh-session-availability.test.mjs"
+  ],
+  "source": {
+    "commit": "8b4748e34be818c8d7ea27650616ab3dfd73b8a6"
+  },
+  "validation": [
+    {
+      "name": "Actual refresh module unknown400/408 baseline and confirmed rejection controls",
+      "result": "pending"
+    }
+  ],
+  "id": "cd493bce-4fd0-46e1-8058-a40155c00093",
+  "recordedAt": "2026-10-21T07:05:20.596Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-pc-reliability-20261021",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

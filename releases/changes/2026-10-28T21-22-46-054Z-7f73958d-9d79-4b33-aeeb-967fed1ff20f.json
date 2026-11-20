@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "iphone-help-expired-presentation-return-20261028",
+  "status": "ready",
+  "summary": "Neutral native Help chrome offers bilingual Back to app after decorative Staff presentation expires, without claiming logout or retaining authority. Home navigation re-enters the original admission gate. Original web guest/legal login controls and zero public-Help private reads verified; native build/retest still required.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/app-local-shell.tsx",
+    "app/guest-navigation-shell.tsx",
+    "tests/app-local-help-return.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\help175-selected-frozen"
+  },
+  "validation": [
+    {
+      "name": "3 browser regressions mounting actual AppLocalShell and GuestNavigationShell",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit incremental false",
+      "result": "passed"
+    }
+  ],
+  "id": "7f73958d-9d79-4b33-aeeb-967fed1ff20f",
+  "recordedAt": "2026-10-28T21:22:46.054Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/app-local-shell.tsx": "93a4489214aa5ec0ab4ac867e322ad25c47baaf5d9aa7bd17a706436cd29afcb",
+    "app/guest-navigation-shell.tsx": "61a2bc51acf1bfe779b2c5df5dc782d14abc0bd103401988e85482a8c0230241",
+    "tests/app-local-help-return.test.mjs": "b107dc10c523c73fa0f0dbbdbaa2471da310db7135588acaae8cbd1320917b42"
+  }
+}

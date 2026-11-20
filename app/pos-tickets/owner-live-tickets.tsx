@@ -1,10 +1,18 @@
 "use client";
-import Form from "next/form";
-import {useState,useEffect,useRef} from 'react';import Link from 'next/link';
+import { WorkspaceText } from "@/components/workspace-language";
+import { ContextualSupport } from "@/components/contextual-support";
+
+import { useSearchParams } from "next/navigation";
+import { TicketFilters } from "./ticket-filters";
+
+import {useState,useEffect,useRef} from 'react';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 import {DailyPosTicketCard} from './closed-ticket-correction-form';
+import {FinancialHistoryProvider} from '@/app/payroll/inline-financial-history';
 import {calculateTicketTotals} from '@/lib/pos-ticket-calculations';
 import {searchTextMatches} from '@/lib/search-normalization';
+import {ticketGiftSearchValues} from '@/lib/pos-ticket-financial-view';
+import {buildTicketDetailHref} from '@/lib/pos-ticket-navigation';
 import type {PosTicketWithRelations} from '@/types/pos-ticket';import type {Staff} from '@/types/staff';import type {Service} from '@/types/service';
 type DateGroup = {
   dateKey: string;
@@ -27,124 +35,13 @@ function formatDateKey(value: string) {
   return `${year}-${month}-${day}`;
 }
 
-function parseLocalDateParts(value: string) {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
-  if (!match) {
-    return null;
-  }
 
-  const [, year, month, day] = match;
 
-  return {
-    day: Number(day),
-    month: Number(month),
-    year: Number(year),
-  };
-}
 
-function getLocalDateString(timeZone: string) {
-  return new Intl.DateTimeFormat('en-CA',{timeZone}).format(new Date());
-}
 
-function getTimeZoneOffsetMs(date: Date, timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    hour: "2-digit",
-    hourCycle: "h23",
-    minute: "2-digit",
-    month: "2-digit",
-    second: "2-digit",
-    timeZone,
-    year: "numeric",
-  }).formatToParts(date);
-  const getPart = (type: string) =>
-    Number(parts.find((part) => part.type === type)?.value ?? 0);
-  const zonedTimeAsUtc = Date.UTC(
-    getPart("year"),
-    getPart("month") - 1,
-    getPart("day"),
-    getPart("hour"),
-    getPart("minute"),
-    getPart("second"),
-    date.getUTCMilliseconds(),
-  );
 
-  return zonedTimeAsUtc - date.getTime();
-}
 
-function getUtcInstantForLocalDateTime(
-  dateString: string,
-  timeZone: string,
-  hour: number,
-) {
-  const parts = parseLocalDateParts(dateString);
-
-  if (!parts) {
-    throw new Error("Invalid POS work log date.");
-  }
-
-  const localTimeAsUtc = Date.UTC(parts.year, parts.month - 1, parts.day, hour);
-  const offset = getTimeZoneOffsetMs(new Date(localTimeAsUtc), timeZone);
-  const firstPass = localTimeAsUtc - offset;
-  const verifiedOffset = getTimeZoneOffsetMs(new Date(firstPass), timeZone);
-
-  return new Date(localTimeAsUtc - verifiedOffset);
-}
-
-function getNextLocalDateString(dateString: string) {
-  const parts = parseLocalDateParts(dateString);
-
-  if (!parts) {
-    throw new Error("Invalid POS work log date.");
-  }
-
-  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day + 1))
-    .toISOString()
-    .slice(0, 10);
-}
-
-function getUtcBoundsForLocalDate(dateString: string, timeZone: string) {
-  const start = getUtcInstantForLocalDateTime(dateString, timeZone, 0);
-  const nextDate = getNextLocalDateString(dateString);
-  const nextStart = getUtcInstantForLocalDateTime(nextDate, timeZone, 0);
-
-  return {
-    openedFrom: start.toISOString(),
-    openedTo: new Date(nextStart.getTime() - 1).toISOString(),
-  };
-}
-
-function formatLocalDateHeader(dateString: string, timeZone: string) {
-  const parts = parseLocalDateParts(dateString);
-
-  if (!parts) {
-    return dateString;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    timeZone,
-    year: "numeric",
-  }).format(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)));
-}
-
-function formatLocalDateCompact(dateString: string, timeZone: string) {
-  const parts = parseLocalDateParts(dateString);
-
-  if (!parts) {
-    return dateString;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    timeZone,
-    year: "numeric",
-  }).format(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)));
-}
 
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -153,22 +50,22 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
-function isDateInputValue(value: string | undefined) {
-  return Boolean(value?.match(/^\d{4}-\d{2}-\d{2}$/));
-}
 
 function getTicketFilterHref({
   date,
   q,
+  staff,
 }: {
   date: string;
   q?: string;
+  staff?: string;
 }) {
   const params = new URLSearchParams({ date });
 
   if (q) {
     params.set("q", q);
   }
+
 
   return `/pos-tickets?${params.toString()}`;
 }
@@ -213,10 +110,12 @@ function ticketMatchesSearch(
   const searchableValues = [
     String(dailyNumber),
     `#${dailyNumber}`,
+    ticket.ticket_number,
     ticket.source_booking_id ? "from appointment" : "",
     ticket.source_booking_id ?? "",
     ticket.customer?.name ?? "",
     formatTime(ticket.opened_at),
+    ...ticketGiftSearchValues(ticket.financial_sources),
     ...(ticket.ticket_items ?? []).flatMap((item) => [
       item.assigned_staff?.display_name ?? "",
       item.service?.name ?? "",
@@ -272,64 +171,15 @@ function groupTicketsByDate(tickets: PosTicketWithRelations[]) {
     }));
 }
 
-function WorkLogFilters({
-  query,
-  selectedDate,
-  todayHref,
-}: {
-  query: string;
-  selectedDate: string;
-  todayHref: string;
-}) {
-  return (
-    <Form
-      action="/pos-tickets"
-      className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(260px,1fr)_auto_auto]"
-    >
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Date</span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={selectedDate}
-          name="date"
-          type="date"
-        />
-      </label>
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Search</span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={query}
-          name="q"
-          placeholder="Search customer, staff, service, ticket #"
-          type="search"
-        />
-      </label>
-      <button
-        className="h-10 self-end rounded bg-zinc-950 px-4 text-sm font-medium text-white"
-        type="submit"
-      >
-        Search
-      </button>
-      <Link
-        className="inline-flex h-10 items-center self-end rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
-        href={todayHref}
-      >
-        Today
-      </Link>
-    </Form>
-  );
-}
-
 function DailyWorkLog({
   canApplyFinancialCorrection,
   canEdit,
   dailyNumbers,
   groups,
+  focusTicketId,
   isBusinessDateLocked,
   returnTo,
   selectedDateCompactLabel,
-  selectedDateLabel,
   services,
   staff,
 }: {
@@ -337,6 +187,7 @@ function DailyWorkLog({
   canEdit: boolean;
   dailyNumbers: Map<string, number>;
   groups: DateGroup[];
+  focusTicketId?: string;
   isBusinessDateLocked: boolean;
   returnTo: string;
   selectedDateCompactLabel: string;
@@ -344,17 +195,18 @@ function DailyWorkLog({
   services: Service[];
   staff: Staff[];
 }) {
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!focusTicketId) return;
+    const card = listRef.current?.querySelector<HTMLElement>(`[data-pos-ticket-id="${focusTicketId}"]`);
+    card?.scrollIntoView({ block: "center", behavior: "instant" });
+  }, [focusTicketId]);
   if (groups.length === 0) {
     return (
-      <section className="mt-6">
-        <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
-          <h2 className="text-lg font-semibold text-zinc-950">
-            {selectedDateLabel}
-          </h2>
-        </div>
+      <section className="mt-1">
         <div className="rounded border border-dashed border-zinc-300 bg-zinc-50 p-6">
           <h2 className="text-lg font-semibold text-zinc-950">
-            No POS work log for this date.
+            <WorkspaceText text="No POS work log for this date." />
           </h2>
         </div>
       </section>
@@ -362,21 +214,20 @@ function DailyWorkLog({
   }
 
   return (
-    <div className="mt-6 space-y-8">
+    <div className="mt-1" ref={listRef}>
       {groups.map((dateGroup) => (
         <section key={dateGroup.dateKey}>
-          <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
-            <h2 className="text-lg font-semibold text-zinc-950">
-              {selectedDateLabel}
-            </h2>
-          </div>
-          <div className="overflow-hidden rounded border border-zinc-200 bg-white">
+            <div className="bg-white">
             {dateGroup.tickets.map((ticket) => (
               <DailyPosTicketCard
                 businessDateCompactLabel={selectedDateCompactLabel}
                 canApplyFinancialCorrection={canApplyFinancialCorrection}
                 canEdit={canEdit}
                 dailyNumber={dailyNumbers.get(ticket.id) ?? 0}
+                editHref={buildTicketDetailHref(ticket.id, {
+                  edit: true,
+                  returnTo: `${returnTo}&ticketId=${encodeURIComponent(ticket.id)}`,
+                })}
                 isBusinessDateLocked={isBusinessDateLocked}
                 key={ticket.id}
                 returnTo={returnTo}
@@ -393,8 +244,10 @@ function DailyWorkLog({
 }
 
 
-type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{snapshotAt?:number;salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string};
-export function OwnerLiveTickets({snapshotAt,salonId,initialTickets,bounds,searchQuery,...props}:Props){
+type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{selectedDate:string;snapshotAt?:number;managedRead?:boolean;salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string};
+export function OwnerLiveTickets({selectedDate,snapshotAt,salonId,initialTickets,bounds,searchQuery,managedRead=false,...props}:Props){
+
+ const [query,setQuery]=useState(searchQuery);
  const [live,setLive]=useState<{base:PosTicketWithRelations[];tickets:PosTicketWithRelations[]}|null>(null);
  const tickets=live?.base===initialTickets?live.tickets:initialTickets;
  const generation=useRef(0);
@@ -408,7 +261,11 @@ export function OwnerLiveTickets({snapshotAt,salonId,initialTickets,bounds,searc
      const current=previous?.base===initialTickets?previous.tickets:initialTickets;
      return {base:initialTickets,tickets:(ids?.length?[...current.filter(t=>!ids.includes(t.id)),...next.tickets]:next.tickets).sort((a:PosTicketWithRelations,b:PosTicketWithRelations)=>b.opened_at.localeCompare(a.opened_at))};
    });
- },{initialReconcile:false,snapshotAt});
- const dailyNumbers=buildDailyTicketNumbers(tickets);const groups=groupTicketsByDate(filterTicketsBySearch(tickets,searchQuery,dailyNumbers));
- return <DailyWorkLog {...props} groups={groups} dailyNumbers={dailyNumbers}/>;
+ },{enabled:!managedRead,initialReconcile:false,snapshotAt});
+ const dailyNumbers=buildDailyTicketNumbers(tickets);
+ const selectedStatus=useSearchParams().get("status");
+ const groups=groupTicketsByDate(filterTicketsBySearch(selectedStatus==="closed"?tickets.filter(ticket=>ticket.status==="closed"):tickets,query,dailyNumbers));
+ return <FinancialHistoryProvider salonId={salonId} surface="today" start={selectedDate} end={selectedDate} refreshKey={tickets.map(ticket=>`${ticket.id}:${ticket.workspace_revision}:${ticket.updated_at}`).join(",")}><TicketFilters title="POS Tickets" actions={<ContextualSupport />} date={selectedDate} query={query} onQueryChange={setQuery}/><DailyWorkLog {...props} returnTo={getTicketFilterHref({date:selectedDate,q:query})} groups={groups} dailyNumbers={dailyNumbers}/></FinancialHistoryProvider>;
 }
+
+

@@ -1,0 +1,735 @@
+{
+  "at": "2026-10-29T09:46:22.334Z",
+  "events": [
+    {
+      "kind": "change",
+      "changeId": "settings-consistent-layout-20261029",
+      "status": "ready",
+      "summary": "Queued cumulative Personal + Salon Settings: all 22 destinations audited, responsive iPhone/Windows layout, draft-safe editors, phone verification and existing permission/closure safeguards. Build blocker fixed; not deployed.",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/settings/settings-hub-client.tsx",
+        "app/settings/settings-hub.css",
+        "app/settings/direct-settings-ui.tsx",
+        "app/settings/direct-settings-panel.tsx",
+        "app/settings/notification-preferences-panel.tsx",
+        "app/settings/salon-settings-panels.tsx",
+        "app/settings/team-payroll-panels.tsx",
+        "app/settings/plugin-settings-row.tsx",
+        "lib/vietnamese-dictionary.ts",
+        "tests/settings-hub-ui.test.mjs",
+        "app/settings/settings-navigation.ts",
+        "app/settings/settings-icon.tsx",
+        "app/settings/settings-controls.css",
+        "lib/vietnamese-settings-copy.json",
+        "tests/settings-grouped-editors.test.mjs",
+        "app/account/account-profile-editor.tsx",
+        "app/account/actions.ts",
+        "app/account/phone-change-actions.ts",
+        "lib/account-phone-change.ts",
+        "app/settings/personal-public-profile-panel.tsx",
+        "app/settings/blocked-users-panel.tsx",
+        "app/settings/deferred-personal-section.tsx",
+        "app/settings/login-security/login-security-panel.tsx",
+        "app/settings/login-security/login-security-quick-editor.tsx",
+        "tests/login-security-contract.test.mjs",
+        "tests/ios-personal-settings.test.mjs",
+        "tests/account-phone-change.test.mjs",
+        "app/settings/pos-settings-panel.tsx",
+        "app/settings/ownership-lifecycle-panels.tsx",
+        "app/settings/shortcuts-settings-panel.tsx",
+        "app/settings/salon-profile-preferences-panel.tsx",
+        "app/pos/settings/settings-group-form.tsx",
+        "tests/settings-owner-closure-ui.test.mjs",
+        "tests/settings-consistent-layout.test.mjs"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+        "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+      },
+      "validation": [
+        {
+          "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/preservation.json"
+        },
+        {
+          "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+        },
+        {
+          "name": "Exact-source native simulator/archive/upload and Apple VALID",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+        },
+        {
+          "name": "Production candidate READY and complete uploaded source manifest verified",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+        }
+      ],
+      "dependencies": [
+        "settings-image-runtime-build-fix-20261029"
+      ],
+      "supersedesEvents": [
+        "007ad3f4-b8fa-4f41-86e6-47a860987a1d"
+      ],
+      "integration": {
+        "originalEvents": [
+          "007ad3f4-b8fa-4f41-86e6-47a860987a1d"
+        ],
+        "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+      },
+      "id": "c3abe2ef-2c34-46ca-a1ad-98d66d282ac1",
+      "recordedAt": "2026-10-29T09:30:47.864Z",
+      "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+      "deletedFiles": [],
+      "fileHashes": {
+        "app/settings/settings-hub-client.tsx": "6ee5950b3f5358d168756d170665608558b18664eeec391b18b42489e7385211",
+        "app/settings/settings-hub.css": "bb8b42bf70fa5705de12c5e3f339eb534086aecfcb09453b3fd357261dec23e2",
+        "app/settings/direct-settings-ui.tsx": "f90aa5141512cabe758f884b87b37d4740abd8863e260c0ca1c8ec6b3feb5834",
+        "app/settings/direct-settings-panel.tsx": "13f3015f987be23343741378c5bae8530031f4db088960b6f9ed0a1a94e527b0",
+        "app/settings/notification-preferences-panel.tsx": "efaff29cf74d07a4d02f59ecb049520d90212f342b4a1a73977de962f1a8fbd5",
+        "app/settings/salon-settings-panels.tsx": "1a0299d522c28a7844e93b25e4a9326a5043760b63c8a43d53eb9ce8ceb6730e",
+        "app/settings/team-payroll-panels.tsx": "6ace7ad9ce568cafd68900335f8d2257b9030ad8fe9cfe8e7dd15fccc659c390",
+        "app/settings/plugin-settings-row.tsx": "ff40ea8b8914750322d440e25c44a613686feca0b29a2e0ff5cf00401db64e1f",
+        "lib/vietnamese-dictionary.ts": "481c4d73d8275be5fd4aedb13b6b9ba3a813892d3323be2eff1d189ef86537f0",
+        "tests/settings-hub-ui.test.mjs": "67e4aa14d2e2857669fd7582e1d183004aabaaa03bf9ec8b0294a050532aa948",
+        "app/settings/settings-navigation.ts": "6178e7639dc4d77a5ed4ffdd8b199148231a9c56f0c763de89d095ded52becf5",
+        "app/settings/settings-icon.tsx": "1e0096d88375f137ec19ceb9ed3004cfca5c93b27dd011065b30a17ad6ba08e3",
+        "app/settings/settings-controls.css": "a63c6a85613e1b0afebc367240b51fff3943a1ee99586bfacb3c09b404eed3f6",
+        "lib/vietnamese-settings-copy.json": "f8cbd2a8a5c258b26e1215f7d539d850ba157e214362ea2363d12d3c7c650b6e",
+        "tests/settings-grouped-editors.test.mjs": "90d37c16d87da3d8c6799981a2866e1df86c7136f76c79e1c2ebf027cb7a98a6",
+        "app/account/account-profile-editor.tsx": "cea6f038f65eba28ecc095e7c87f9c8d9f5ac8cc74ba01e331aedff38be3fb23",
+        "app/account/actions.ts": "eef210c32fdc2e2ddddc31f364d174e79ce5ec054d473eb92a7fc3ca1b61d0de",
+        "app/account/phone-change-actions.ts": "55d70d3a368ae3c684f19ba03367da285685b968fb0de4d015f14282414608b5",
+        "lib/account-phone-change.ts": "0ea8ff3963191eeeb39ec0b8bec4d5d731833c7ed1ead744f25672d1b4cb1702",
+        "app/settings/personal-public-profile-panel.tsx": "1df5f522ce619ba765577ccf3211047153be0dc3cf140fee1cb7b45a27afc601",
+        "app/settings/blocked-users-panel.tsx": "ae44579f18b37624caf81154960e39770c1b9de454d4fa2e72f8bcf1d553ca01",
+        "app/settings/deferred-personal-section.tsx": "1b90d60dbf44b0ef1aacd4a021800db0fc485432993f7d0461ec14838d118caa",
+        "app/settings/login-security/login-security-panel.tsx": "7550f81465774f99eae7d873839eac5a750317e4abce05d707a1333eb13b7d66",
+        "app/settings/login-security/login-security-quick-editor.tsx": "85d51f3215b27152242d14b9cc5ecb5d3737ea984c402444ce6911bd3541cc1d",
+        "tests/login-security-contract.test.mjs": "4617b6eb38517ad041e7f6ba910ebe37ca17b035cb6b5ba4cb2371e7eba7a760",
+        "tests/ios-personal-settings.test.mjs": "18281ad209305f97f2131bbfc878eacc904a77ff1ad34dbc30cb54f42bc2bfd7",
+        "tests/account-phone-change.test.mjs": "4a0c23e6c8fb799e6df45a9f27242608a0de036a4c29a26bd3d9091c333886b8",
+        "app/settings/pos-settings-panel.tsx": "20758078fe1b702649e2e6dc3a1aaebf0f164c27634897cc5d19d20877d4e3fa",
+        "app/settings/ownership-lifecycle-panels.tsx": "967d05f9e022e1be3b6bbe2ddac171c532b7dc509cbceaa0ce91c41c25820585",
+        "app/settings/shortcuts-settings-panel.tsx": "276fcaaf3e91070a1608000323e71b8d22176a302c67b81e8aac329bf95b7385",
+        "app/settings/salon-profile-preferences-panel.tsx": "23002e4615ff931774c4647c631c6d40a01cc86e4f81d25ba5e8fef7250d7863",
+        "app/pos/settings/settings-group-form.tsx": "0adcc92fabecd52ebfb680ed168acf83fd3abee3f10d72742b4fa5c6b001426e",
+        "tests/settings-owner-closure-ui.test.mjs": "04604dae547b37d7fbaa66a750ab18f925d69a1584e68ae17b4d5f078893f118",
+        "tests/settings-consistent-layout.test.mjs": "3fceeaf6d359898b6069082217475cd80b4c64fcb1a73f4f3b1a97cfc0fe1f85"
+      },
+      "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T09-30-47-864Z-c3abe2ef-2c34-46ca-a1ad-98d66d282ac1.json"
+    },
+    {
+      "kind": "change",
+      "changeId": "ios-personal-settings-20261029",
+      "status": "ready",
+      "summary": "Personal iOS Settings: streamlined identity and editors, single-tap navigation, compact security rows, email authorization before replacing/removing an existing phone, public media controls and tested blocking.",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/settings/settings-hub-client.tsx",
+        "app/settings/settings-hub.css",
+        "app/account/account-profile-editor.tsx",
+        "app/account/actions.ts",
+        "app/account/phone-change-actions.ts",
+        "lib/account-phone-change.ts",
+        "app/settings/personal-public-profile-panel.tsx",
+        "app/settings/blocked-users-panel.tsx",
+        "app/settings/notification-preferences-panel.tsx",
+        "app/settings/deferred-personal-section.tsx",
+        "app/settings/login-security/login-security-panel.tsx",
+        "app/settings/login-security/login-security-quick-editor.tsx",
+        "lib/vietnamese-settings-copy.json",
+        "tests/settings-hub-ui.test.mjs",
+        "tests/login-security-contract.test.mjs",
+        "tests/ios-personal-settings.test.mjs",
+        "tests/account-phone-change.test.mjs"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+        "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+      },
+      "validation": [
+        {
+          "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/preservation.json"
+        },
+        {
+          "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+        },
+        {
+          "name": "Exact-source native simulator/archive/upload and Apple VALID",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+        },
+        {
+          "name": "Production candidate READY and complete uploaded source manifest verified",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "integration": {
+        "originalEvents": [
+          "f49dc3d4-407a-4b42-aa19-a7defb34b7cd"
+        ],
+        "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+      },
+      "id": "45c66e66-fea4-48de-bf21-4ad1db8683ac",
+      "recordedAt": "2026-10-29T09:30:59.389Z",
+      "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+      "deletedFiles": [],
+      "fileHashes": {
+        "app/settings/settings-hub-client.tsx": "6ee5950b3f5358d168756d170665608558b18664eeec391b18b42489e7385211",
+        "app/settings/settings-hub.css": "bb8b42bf70fa5705de12c5e3f339eb534086aecfcb09453b3fd357261dec23e2",
+        "app/account/account-profile-editor.tsx": "cea6f038f65eba28ecc095e7c87f9c8d9f5ac8cc74ba01e331aedff38be3fb23",
+        "app/account/actions.ts": "eef210c32fdc2e2ddddc31f364d174e79ce5ec054d473eb92a7fc3ca1b61d0de",
+        "app/account/phone-change-actions.ts": "55d70d3a368ae3c684f19ba03367da285685b968fb0de4d015f14282414608b5",
+        "lib/account-phone-change.ts": "0ea8ff3963191eeeb39ec0b8bec4d5d731833c7ed1ead744f25672d1b4cb1702",
+        "app/settings/personal-public-profile-panel.tsx": "1df5f522ce619ba765577ccf3211047153be0dc3cf140fee1cb7b45a27afc601",
+        "app/settings/blocked-users-panel.tsx": "ae44579f18b37624caf81154960e39770c1b9de454d4fa2e72f8bcf1d553ca01",
+        "app/settings/notification-preferences-panel.tsx": "efaff29cf74d07a4d02f59ecb049520d90212f342b4a1a73977de962f1a8fbd5",
+        "app/settings/deferred-personal-section.tsx": "1b90d60dbf44b0ef1aacd4a021800db0fc485432993f7d0461ec14838d118caa",
+        "app/settings/login-security/login-security-panel.tsx": "7550f81465774f99eae7d873839eac5a750317e4abce05d707a1333eb13b7d66",
+        "app/settings/login-security/login-security-quick-editor.tsx": "85d51f3215b27152242d14b9cc5ecb5d3737ea984c402444ce6911bd3541cc1d",
+        "lib/vietnamese-settings-copy.json": "f8cbd2a8a5c258b26e1215f7d539d850ba157e214362ea2363d12d3c7c650b6e",
+        "tests/settings-hub-ui.test.mjs": "67e4aa14d2e2857669fd7582e1d183004aabaaa03bf9ec8b0294a050532aa948",
+        "tests/login-security-contract.test.mjs": "4617b6eb38517ad041e7f6ba910ebe37ca17b035cb6b5ba4cb2371e7eba7a760",
+        "tests/ios-personal-settings.test.mjs": "18281ad209305f97f2131bbfc878eacc904a77ff1ad34dbc30cb54f42bc2bfd7",
+        "tests/account-phone-change.test.mjs": "4a0c23e6c8fb799e6df45a9f27242608a0de036a4c29a26bd3d9091c333886b8"
+      },
+      "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T09-30-59-389Z-45c66e66-fea4-48de-bf21-4ad1db8683ac.json"
+    },
+    {
+      "kind": "change",
+      "changeId": "settings-image-runtime-build-fix-20261029",
+      "status": "ready",
+      "summary": "Remove redundant Node.js route config that conflicts with Cache Components; production build and image/Safari security regressions pass. Queue only, not deployed.",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/api/images/normalize/route.ts"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+        "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+      },
+      "validation": [
+        {
+          "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/preservation.json"
+        },
+        {
+          "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+        },
+        {
+          "name": "Exact-source native simulator/archive/upload and Apple VALID",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+        },
+        {
+          "name": "Production candidate READY and complete uploaded source manifest verified",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [
+        "4145c173-b4c8-4db1-bb30-1c8d337a083a"
+      ],
+      "integration": {
+        "originalEvents": [
+          "4145c173-b4c8-4db1-bb30-1c8d337a083a"
+        ],
+        "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+      },
+      "id": "d335a046-c9c3-4b0c-84b4-c8b5a31eab95",
+      "recordedAt": "2026-10-29T09:30:59.528Z",
+      "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+      "deletedFiles": [],
+      "fileHashes": {
+        "app/api/images/normalize/route.ts": "216561f248d8682adfbe4a61f97ec7b0e4084258c2378d3183c7b18bc9a22d8d"
+      },
+      "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T09-30-59-528Z-d335a046-c9c3-4b0c-84b4-c8b5a31eab95.json"
+    },
+    {
+      "kind": "change",
+      "changeId": "iphone-ui-audit-20261029",
+      "status": "ready",
+      "summary": "Three isolated UI corrections after physical iPhone audit: report SVG viewport height, booking time separator, and standalone mobile Services canvas. Major layout proposals remain unapproved.",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/reports/reports.module.css",
+        "app/services/services.css",
+        "app/(app)/my-bookings/page.tsx"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+        "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+      },
+      "validation": [
+        {
+          "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/preservation.json"
+        },
+        {
+          "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+        },
+        {
+          "name": "Exact-source native simulator/archive/upload and Apple VALID",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+        },
+        {
+          "name": "Production candidate READY and complete uploaded source manifest verified",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "integration": {
+        "originalEvents": [
+          "5a4f7522-2a1c-410b-ae67-c681d9bbc69d"
+        ],
+        "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+      },
+      "id": "bb3456b8-8b66-4a0f-80ef-0fbdcdb33037",
+      "recordedAt": "2026-10-29T09:31:09.726Z",
+      "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+      "deletedFiles": [],
+      "fileHashes": {
+        "app/reports/reports.module.css": "c93bdba806023599f91b986fefcc55af7c8c9bce96b5927446f06081bf946058",
+        "app/services/services.css": "d4bd95b1ffb2122bb8e0ebf3977075edaf165cc47cde51d0e681be61a344cae4",
+        "app/(app)/my-bookings/page.tsx": "35b4e3c8d5a7e91bcf37da84f5f8b8e112fdf018693e716ae54e8787dfaadb08"
+      },
+      "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T09-31-09-726Z-bb3456b8-8b66-4a0f-80ef-0fbdcdb33037.json"
+    },
+    {
+      "kind": "change",
+      "changeId": "iphone-ui-proposals-20261029",
+      "status": "ready",
+      "summary": "Approved A1–A4 presentation: numbered booking progress, one-row Ticket calendar/Today and icon search, compact Today header/aligned KPI cards, grouped More list. Settings excluded; no business logic or loading/animation changes.",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/pos-tickets/ticket-filters.tsx",
+        "app/pos-tickets/ticket-filters.module.css",
+        "app/bookings/booking-workspace-client.tsx",
+        "app/bookings/appointment-progress.module.css",
+        "app/(app)/more/page.tsx",
+        "app/(app)/more/more-layout.module.css",
+        "app/staff/today/today-dashboard-view.tsx",
+        "app/staff/today/today-layout.module.css"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+        "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+      },
+      "validation": [
+        {
+          "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/preservation.json"
+        },
+        {
+          "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+        },
+        {
+          "name": "Exact-source native simulator/archive/upload and Apple VALID",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+        },
+        {
+          "name": "Production candidate READY and complete uploaded source manifest verified",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "integration": {
+        "originalEvents": [
+          "a8e889be-eedf-49ca-921e-4182ad1c0137"
+        ],
+        "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+      },
+      "id": "4dd0acc9-c1bc-4b82-bcfc-a02f1ea29589",
+      "recordedAt": "2026-10-29T09:31:09.857Z",
+      "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+      "deletedFiles": [],
+      "fileHashes": {
+        "app/pos-tickets/ticket-filters.tsx": "caee309f98d69780c3689c7373e7cdddba8354b7d37bc7e39bf217807bc9de1c",
+        "app/pos-tickets/ticket-filters.module.css": "f9ffb5098172bf0af8879f6752447b17a70764aa04c789429dd26fe3875211ed",
+        "app/bookings/booking-workspace-client.tsx": "ff4be14319ff70205f14ff34cba961244a7199a90fdbd28851ad2cde2d39418b",
+        "app/bookings/appointment-progress.module.css": "82eb40de841c9fd6942881f4dec60fa51d93a2ce5b80b034ade998bf10c5eec4",
+        "app/(app)/more/page.tsx": "eb3b90c6802370b4c5917cf6492cbf6c6e18893ed0099ff5031dfcdae12f9697",
+        "app/(app)/more/more-layout.module.css": "b23fb6db90690d5a0e677bd4e4bb1315dc7e518155e5962a7b3e69c7ffd41705",
+        "app/staff/today/today-dashboard-view.tsx": "8a6edc5a44c252a574de38a41e55b1247f67fef4224084842353ac9a30640e4d",
+        "app/staff/today/today-layout.module.css": "4c0dac886febe324ab540e1817a4fc47ac59c61f1ce5e3b32865e8c69b142392"
+      },
+      "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T09-31-09-857Z-4dd0acc9-c1bc-4b82-bcfc-a02f1ea29589.json"
+    },
+    {
+      "kind": "change",
+      "changeId": "iphone-ui-followup-20261029",
+      "status": "ready",
+      "summary": "Physical iPhone follow-up: prevent Searching label wrapping in My Place ApplyPanel; flex sizing and nowrap only. Four additional public routes audited; remaining access/data gaps documented.",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/my-place/place-panels.tsx"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+        "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+      },
+      "validation": [
+        {
+          "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/preservation.json"
+        },
+        {
+          "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+        },
+        {
+          "name": "Exact-source native simulator/archive/upload and Apple VALID",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+        },
+        {
+          "name": "Production candidate READY and complete uploaded source manifest verified",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "integration": {
+        "originalEvents": [
+          "be11f919-1158-4b6b-b5fe-dec93e1fd394"
+        ],
+        "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+      },
+      "id": "9da1d904-6c4c-4509-9175-cd2d5f2c1dfb",
+      "recordedAt": "2026-10-29T09:31:09.996Z",
+      "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+      "deletedFiles": [],
+      "fileHashes": {
+        "app/my-place/place-panels.tsx": "3f54a08e95acb9448ac04206fb675424b4bcf4ef7a563a92f4229f4316681328"
+      },
+      "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T09-31-09-996Z-9da1d904-6c4c-4509-9175-cd2d5f2c1dfb.json"
+    },
+    {
+      "kind": "change",
+      "changeId": "ios-explore-comments-transport",
+      "status": "ready",
+      "summary": "Physical iPhone acceptance passed for Nene quick comment and post preview; queue validated read transport fix for a later coordinated web+iOS release only.",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "lib/app-local-explore-http-client.ts",
+        "lib/app-local-explore-metadata.ts",
+        "lib/app-local-explore-server.ts",
+        "tests/app-local-comments-transport.test.mjs"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+        "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+      },
+      "validation": [
+        {
+          "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/preservation.json"
+        },
+        {
+          "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+        },
+        {
+          "name": "Exact-source native simulator/archive/upload and Apple VALID",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+        },
+        {
+          "name": "Production candidate READY and complete uploaded source manifest verified",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "integration": {
+        "originalEvents": [
+          "d5a9b81c-796c-42d0-9181-811904a337fb"
+        ],
+        "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+      },
+      "id": "8fbbe92f-f1b8-4ecc-bac5-504b81351d8c",
+      "recordedAt": "2026-10-29T09:31:10.126Z",
+      "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+      "deletedFiles": [],
+      "fileHashes": {
+        "lib/app-local-explore-http-client.ts": "0c563de2cd017a8d1eb30f3d6efd744d9df265b711da6f03c242916eac72e207",
+        "lib/app-local-explore-metadata.ts": "1398a0fefeb8ba25e6c6d3814062bee096a2c999cee0e0fade7c8889d0879ef8",
+        "lib/app-local-explore-server.ts": "50d1f41b8f48e40207547c4dd3b99f684a3842e2fb39407c3b15571c82cdcecf",
+        "tests/app-local-comments-transport.test.mjs": "21142212d10bce7d955ee7f8e75ded86cac60c6c30a05fdc20977be7260f80b7"
+      },
+      "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T09-31-10-126Z-8fbbe92f-f1b8-4ecc-bac5-504b81351d8c.json"
+    },
+    {
+      "kind": "change",
+      "changeId": "payroll-compact-display-only-20261029",
+      "status": "ready",
+      "summary": "Display-only compact Payroll period rail and Date/Gross/Tip listing on web/native; preserve all history, calculations and actions. Original partial history event remains pending.",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/(app)/payroll/page.tsx",
+        "app/payroll/payroll-daily-listing.tsx",
+        "app/payroll/payroll-period-rail.tsx",
+        "app/payroll/payroll-mobile.module.css",
+        "lib/app-local-owner-payroll-view.tsx"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+        "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+      },
+      "validation": [
+        {
+          "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/preservation.json"
+        },
+        {
+          "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+        },
+        {
+          "name": "Exact-source native simulator/archive/upload and Apple VALID",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+        },
+        {
+          "name": "Production candidate READY and complete uploaded source manifest verified",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "integration": {
+        "originalEvents": [
+          "2a895c72-1390-4570-8108-d0d0ad55a012"
+        ],
+        "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+      },
+      "id": "c84379a7-3168-4058-8b68-b3fd3855c7d5",
+      "recordedAt": "2026-10-29T09:31:10.256Z",
+      "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+      "deletedFiles": [],
+      "fileHashes": {
+        "app/(app)/payroll/page.tsx": "ba908a7156fac930640cd03e19b82c938f965b9041edff8cda2f310b13e1f8aa",
+        "app/payroll/payroll-daily-listing.tsx": "e817427979d896b7e346b60c13a4aa8e3f63def14232786b97c2eceefae0838c",
+        "app/payroll/payroll-period-rail.tsx": "71203687190e5a368c699c6587a09c93364fa40ad0c500db730edaf31a625800",
+        "app/payroll/payroll-mobile.module.css": "66f8e79cbea4e3cf05a7c09317c25e0933cbc45df48735ec825f8873a8df8a4e",
+        "lib/app-local-owner-payroll-view.tsx": "36853592bf70c1368787466fa7568179f1edd059eb2a46e90b9a2ff47b550460"
+      },
+      "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T09-31-10-256Z-c84379a7-3168-4058-8b68-b3fd3855c7d5.json"
+    },
+    {
+      "kind": "change",
+      "changeId": "check-writer-disabled-code-integration-20261029",
+      "status": "ready",
+      "summary": "First-party Check Writer compatible code and print bridge only; sales disabled, no production SQL/key/flag/billing activation; original module activation events remain pending. Developer Market excluded.",
+      "channels": [
+        "web",
+        "ios"
+      ],
+      "files": [
+        "app/market/sample-apps.ts",
+        "lib/market-card-rules.ts",
+        "lib/market-commerce.ts",
+        "lib/market-catalog-view.ts",
+        "lib/market-experience-data.ts",
+        "app/market/market-client.tsx",
+        "app/(app)/payroll/page.tsx",
+        "next.config.ts",
+        "ios/Reylumi/NativeBridge.js",
+        "ios/Reylumi/ReylumiViewController.swift",
+        ".env.example",
+        "package.json",
+        "package-lock.json",
+        "lib/vietnamese-dictionary.ts",
+        "lib/experience-route-policies.ts",
+        "types/check-writer.ts",
+        "docs/check-writer.md",
+        "app/(app)/check-writer/page.tsx",
+        "app/check-writer/check-writer.tsx",
+        "app/check-writer/check-writer.module.css",
+        "app/api/check-writer/route.ts",
+        "app/api/check-writer/pdf/route.ts",
+        "lib/check-writer-server.ts",
+        "lib/check-writer-rules.ts",
+        "lib/check-writer-crypto.ts",
+        "lib/check-writer-request.ts",
+        "lib/check-writer-pdf.ts",
+        "lib/check-writer-market.ts",
+        "app/market/check-writer-panel.tsx",
+        "app/market/check-writer-actions.ts",
+        "lib/vietnamese-check-writer.json",
+        "assets/check-writer/NotoSans-Regular.ttf",
+        "assets/check-writer/OFL.txt",
+        "assets/check-writer/micr-e13b.ttf",
+        "tests/check-writer-runtime.test.mjs",
+        "tests/check-writer-api.test.mjs",
+        "tests/check-writer.integration.test.mjs",
+        "tests/check-writer-ui.test.mjs",
+        "tests/check-writer-payroll-read.test.mjs",
+        "app/market/card-payment-actions.ts",
+        "lib/check-writer-subscription.ts",
+        "tests/check-writer-market.test.mjs",
+        "docs/check-writer-audit-20261028.md",
+        "lib/check-writer-readiness.ts",
+        "docs/check-writer-readiness.md",
+        "tests/check-writer-sales-hold.test.mjs",
+        "tests/check-writer-preflight.test.mjs",
+        "tests/check-writer-provider-contract.test.mjs",
+        "scripts/check-writer-preflight.mjs"
+      ],
+      "source": {
+        "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+        "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+      },
+      "validation": [
+        {
+          "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/preservation.json"
+        },
+        {
+          "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+        },
+        {
+          "name": "Exact-source native simulator/archive/upload and Apple VALID",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+        },
+        {
+          "name": "Production candidate READY and complete uploaded source manifest verified",
+          "result": "passed",
+          "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+        }
+      ],
+      "dependencies": [],
+      "supersedesEvents": [],
+      "integration": {
+        "originalEvents": [
+          "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+          "a487d2ab-008b-41c0-9699-c4107a62c95e",
+          "6db51b3f-1463-4749-93e9-bae876ed2f68"
+        ],
+        "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+      },
+      "id": "08e308fd-0719-41f3-b029-95fd3d308320",
+      "recordedAt": "2026-10-29T09:31:10.392Z",
+      "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+      "deletedFiles": [],
+      "fileHashes": {
+        "app/market/sample-apps.ts": "7d05bb996fe7263c31aa6bdd2df9a42a1783b44fa941a0cfd184c0ab88c28536",
+        "lib/market-card-rules.ts": "f1441cb436b81cfa4d3ec5b92bcc6aed4fe142a7d39fbc1004cf9d45eed12536",
+        "lib/market-commerce.ts": "3d4d0379fd1f4638429d3a635f63a85a5e40c8ad9560938940d38ded3394e39b",
+        "lib/market-catalog-view.ts": "b8deb93a50a243692169c594ce54a3fbe90ae63d192f8888d6f20303eb9bfbfc",
+        "lib/market-experience-data.ts": "c67374550ca2ff408fabb73a92208c5418c656af65c72845ea6d06e1ba927405",
+        "app/market/market-client.tsx": "274f0fc02d557a14de78d29c9dae307cd5bf3942f1c8e534e2512677ecf0e9a5",
+        "app/(app)/payroll/page.tsx": "ba908a7156fac930640cd03e19b82c938f965b9041edff8cda2f310b13e1f8aa",
+        "next.config.ts": "550a98e92ecc39f28ec94fc01b10aa67d708ab4dad01997319b5899604fa9908",
+        "ios/Reylumi/NativeBridge.js": "343246b639c3baf54e65c0187e423b9ff4143e5d9f5c95ff37523e09463e198e",
+        "ios/Reylumi/ReylumiViewController.swift": "da6529a707cafc2ed23f72666aa7208e8aacddffe48c72873b0818f3969e9b24",
+        ".env.example": "fecc371d15467f1c55b36e5c560e25e78e8435bf1d11bb51e6724ac446936938",
+        "package.json": "a6813aacbc67878d931d65a6f030cf5af8b1c54cddcb91e84c3a64a8878bc7d3",
+        "package-lock.json": "a681a400dfe35791fd0adf9cbc4142668848f94922823a12b812f95ea10d3a8b",
+        "lib/vietnamese-dictionary.ts": "481c4d73d8275be5fd4aedb13b6b9ba3a813892d3323be2eff1d189ef86537f0",
+        "lib/experience-route-policies.ts": "483fcc87de3867352dcd9dc5916675c78767adfc2d4c4d28c6c7d91ceb4892b7",
+        "types/check-writer.ts": "c03692ecedbb060a721899aca76fa4fe78035052ac54f9b275b6c136e97b594e",
+        "docs/check-writer.md": "44a8b75400428d128b5acc14ef62c2959316e45c39fbd6784e98f0295fe86a9a",
+        "app/(app)/check-writer/page.tsx": "75b2f99e7b621820892061cdbd811c97dd2815e37d330c9d8a24947e78991ae4",
+        "app/check-writer/check-writer.tsx": "43b7d9d747660d1c015834e9b337ec12cfeca3725383c0075ecc4cc1f9b2113c",
+        "app/check-writer/check-writer.module.css": "bd9652bfff5bee6ad12df7c5fbdc22129e3a6953a6a6a3ff98bbe91a38bc29df",
+        "app/api/check-writer/route.ts": "c6ff9cfa603da290e1e6fd66c68dcd21235a0b62b9f57277918c4bee2544f254",
+        "app/api/check-writer/pdf/route.ts": "71b42e53a6591373c4ec56e7b6e4eefaaebea19c93a7f7405f3d56a3b9eb784c",
+        "lib/check-writer-server.ts": "613f8238fb006148685f678eaf5039d7b9aeba026f95ba13f68f7501f1a7efeb",
+        "lib/check-writer-rules.ts": "7f514bfaf1ca679a5d32116eb7cd4e3c47e8f26ea0b7ac893adc71919edb78cc",
+        "lib/check-writer-crypto.ts": "b9981a4487ceca0675ddffb8b27ad5c2934eb3f644ec47e651ca92a2c38a91fe",
+        "lib/check-writer-request.ts": "dbf30ba671196c69d284adef831768b2f81d91ed3650827b7e84809ac82560af",
+        "lib/check-writer-pdf.ts": "e914d8d38e76a1a2a0c3dac0be395740868ff9ae97f2d33fdc536af6afe25455",
+        "lib/check-writer-market.ts": "e6b1df7840a04fc11e6af6342d9b0794d54f786c180ef71c644b31079c393459",
+        "app/market/check-writer-panel.tsx": "102708e6bfefc90cbd89d6a68a6dc6003b0284f857623150932560cf61543cf4",
+        "app/market/check-writer-actions.ts": "363a26151ddc5436b3972fc9add215aaca2c2735a622640e76169c20f641bb9b",
+        "lib/vietnamese-check-writer.json": "3ce420c093092b5ac3c71eec69baf603ff19fb446bb1fe68d55b06e753f4d138",
+        "assets/check-writer/NotoSans-Regular.ttf": "b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5",
+        "assets/check-writer/OFL.txt": "0dab92d0544f7b233403f14b84a663bdbfa746982eda629e7f4f9ffe1b036feb",
+        "assets/check-writer/micr-e13b.ttf": "00c256967d2374fe187776ba4f8efb28c3a46cbcb25fc1869b8838dd9c9db4d3",
+        "tests/check-writer-runtime.test.mjs": "97081a64d885f6cbbd3a5d7a53eb41c6b9220a078151792b4d296cbf4b474048",
+        "tests/check-writer-api.test.mjs": "d85d384265b9af09ab3ef10c6cfa5cf7e58cfbbb8ce92a69a98e3a48d03ce993",
+        "tests/check-writer.integration.test.mjs": "70e5b57f3f9dc3ee77f28e45efc93d553bb79f0723433cc34487a44023517376",
+        "tests/check-writer-ui.test.mjs": "67a94718196a3b31188dc4b3ae1d4a325ca90d69d6cb91afc89bcb1117729f66",
+        "tests/check-writer-payroll-read.test.mjs": "461916390d21b80a70c34d287c9cdd2a213f3a626a43bb4aa99e90da3c65a4f4",
+        "app/market/card-payment-actions.ts": "9e1dad29702b265c3296c152e7622bbcc7ecf49c2b21ed6837c52eca62c87525",
+        "lib/check-writer-subscription.ts": "a8c69ad31ee9fb57c67c3b2b8c77fb8babdb9c13c3d7a20221a1bbf24370efe0",
+        "tests/check-writer-market.test.mjs": "71c6b402eb03253e0fec46e6b0a626ede1a4a1b7e1f05d5dfcf21c0fd52f00fc",
+        "docs/check-writer-audit-20261028.md": "2b95a52a8d8963ef416c1e6a24edb2f290314277d9f4ebb7b6a59dba497ca710",
+        "lib/check-writer-readiness.ts": "29bfb0f80d939354661f8ab6965778ff800f6c6cc2a1491fb9454704ce6c17b9",
+        "docs/check-writer-readiness.md": "25d625f3595b98b3f2157811c628f7badad94aa094a6e3b3bb9066a261d1293d",
+        "tests/check-writer-sales-hold.test.mjs": "771cdb58d062140724916110f7d6fb25cdb4ede13412c3239f4b531fa066d1e5",
+        "tests/check-writer-preflight.test.mjs": "a2d03291a5a4005fa33b9a58ab943eeec2f917b5ef75a85d4727d442a2e5f11b",
+        "tests/check-writer-provider-contract.test.mjs": "2d61fa5a767e0d57b9a8ef3a66ecef1eb77dbcb29670d5280f8419a88f39250d",
+        "scripts/check-writer-preflight.mjs": "c1a4e4380c22cabc1460e16a5b74875cf3c2470bf8bc525cbb7b79dc8038a72e"
+      },
+      "filePath": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\releases\\changes\\2026-10-29T09-31-10-392Z-08e308fd-0719-41f3-b029-95fd3d308320.json"
+    }
+  ],
+  "reason": "Exact source bytes unchanged in patch67; retain validated ready revisions instead of inventing duplicate code changes. Final receipt also includes3newscopedready revisions."
+}

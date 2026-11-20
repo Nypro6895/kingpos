@@ -1,0 +1,103 @@
+Workspace switching regression — 2026-10-15
+
+Implementation and release integration verified. This report does not establish
+publication; the release coordinator records the actual deployment separately.
+Change: workspace-switch-navigation-20261015
+Depends on: salon-claim-create-fix-20261015.
+Original patch base: 282bf429a4c9869b2f66e862a3194372e5c4c11d.
+Release baseline: dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6.
+
+Problem and fix
+Earlier real-auth salon QA observed switching from /salon-profile to personal
+unexpectedly returning to My Place with a workspace error. The previous Server
+Action changed workspace cookies while the old salon page remained mounted.
+Its mutation notification could refresh experience scope before the client
+router reached the destination, exposing the old route to the new context.
+
+Desktop/mobile account menus, My Place, QuickWorkspacePanel and legacy workspace
+forms now open the existing /workspace/open handoff as a document navigation.
+The server route checks current membership and the allowed destination, writes
+context, then redirects. Account rows use each workspace's canonical home;
+shortcuts retain their explicit destination. Same-workspace navigation remains.
+No auth, membership, cache-isolation, database or native bridge rules changed.
+
+Source integration
+The original source-v1 snapshot and manifest remain unchanged. Comparison
+confirmed that the three existing product files in its base match the exact
+production baseline and assembled release; the navigation helper is new.
+All four product files and two contract tests in source-v2 are byte-for-byte
+identical to source-v1. Only this report and two stale My Place browser-test
+label assertions changed during integration: Businesses replaces Salon /
+Business, and Shared access & invitations replaces Business accounts & access.
+All functional, draft-retention, workspace-isolation and mobile assertions remain.
+
+Verification on the assembled release
+- Workspace/navigation-shell contract suites: 15 passed, 0 failed/skipped.
+  Coverage includes authorized personal/owner/staff handoffs, shortcut query and
+  fragment preservation, foreign/removed membership, forbidden destinations,
+  expired login return paths and failed context writes. These unit dependencies
+  are stubbed and are separate from the real-auth checks below.
+- Full My Place browser suite: 1 passed, 0 failed/skipped. Inline operations,
+  retained drafts, workspace isolation and mobile layout all passed.
+- Local production build with TypeScript and all 220 routes passed. The clone
+  used only disposable local Supabase configuration; background dispatch was
+  disabled and outbound provider credentials removed.
+- The coordinator's final production assembly build and normal browser suite
+  passed: Chromium 3/3 and WebKit 3/3. Evidence separately records the existing
+  incomplete-HTTP startup stress limitation; it is not an all-stress-tests pass.
+
+Real authentication and authorization smoke: 10/10 passed
+An isolated, internally networked, disposable Supabase backend replayed all 262
+assembled migrations. Authentication used actual GoTrue password login through
+the application's login UI. Membership/context checks used actual PostgREST,
+RLS and the built Next.js application, without auth or membership mocks.
+
+1. Real password login returned to owner /salon-profile with the correct user,
+   workspace and salon context.
+2. Desktop owner salon-profile -> personal /explore passed.
+3. Desktop personal -> owner canonical home /staff/today passed.
+4. Desktop owner -> staff canonical home /staff/my-work passed.
+5. Mobile staff -> personal /explore passed at 390 x 844.
+6. My Place personal -> owner /staff/today passed.
+7. QuickWorkspacePanel owner -> staff /staff/my-work passed.
+8. A foreign workspace and a personal-workspace /pos destination were denied.
+9. Revoking the synthetic staff link and membership denied the staff handoff.
+10. Actual logout cleared the session; the protected handoff required login and
+    preserved its return path.
+
+All six workspace switches above were GET document handoffs, with the expected
+authenticated workspace/salon context after redirect. No workspace-switch
+Server Action was used and no page exceptions occurred. The initial login
+return may use a framework RSC request; it is not counted among those six.
+The earlier simulated fixture used hardcoded owner /pos and staff /staff/today
+homes; the real assembled app's canonical homes are /staff/today and
+/staff/my-work respectively. The assertions now reflect the actual homes.
+
+Fixture safety and cleanup
+No production data, accounts, schemas or configuration were accessed or changed.
+Only synthetic accounts in the isolated backend were created/revoked. The owned
+app/gateway processes stopped; all four owned containers and their internal
+network were removed. The tmpfs database, synthetic data and private fixture
+files were removed, and unrelated existing containers were preserved.
+
+Scope and limitations
+Real-auth smoke used desktop Chromium and its mobile viewport, not a physical
+iPhone. Existing native and reload regression evidence is recorded by the
+coordinator. This web-compatible navigation change requires no new iOS binary.
+No payment or external message-delivery claim is made by these checks.
+
+Evidence
+C:/Users/giuse/kingpos/artifacts/reload-fix-20261015/
+  workspace-switch-comparison.json, workspace-switch-overlay.json,
+  final-build-browser-validation.json,
+  workspace-switch-validation/workspace-unit-final.log,
+  workspace-switch-validation/my-place-tests.log,
+  workspace-switch-validation/build-local.log,
+  workspace-switch-validation/runtime-evidence.json,
+  workspace-switch-validation/real-auth-smoke.json,
+  workspace-switch-validation/real-auth-smoke.log,
+  workspace-switch-validation/cleanup.json,
+  workspace-switch-validation/verification.json.
+The immutable final overlay is artifacts/workspace-switch-navigation-20261015/
+source-v2, with source-manifest-v2.json. It is not a complete release baseline.
+Before deployment, follow docs/release-policy.txt and verify the production alias.

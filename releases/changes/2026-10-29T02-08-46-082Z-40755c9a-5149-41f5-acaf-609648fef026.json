@@ -1,0 +1,23 @@
+{
+  "kind": "change",
+  "changeId": "payroll-remove-source-notice-native-20261029",
+  "status": "working",
+  "summary": "Apply validated owner Payroll notice removal to the source of uploaded native build 62",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-owner-payroll-view.tsx"
+  ],
+  "validation": [
+    {
+      "name": "native archive and TestFlight",
+      "result": "pending"
+    }
+  ],
+  "id": "40755c9a-5149-41f5-acaf-609648fef026",
+  "recordedAt": "2026-10-29T02:08:46.082Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-native-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

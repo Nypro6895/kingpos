@@ -257,6 +257,10 @@ function getInviteDeliveryNotice(
     return `${message} Email delivery failed: ${delivery.reason}`;
   }
 
+  if (delivery.status === "unknown") {
+    return `${message} Email delivery is unconfirmed. Check delivery before resending.`;
+  }
+
   return `${message} Email not sent: ${delivery.reason}`;
 }
 
@@ -373,7 +377,7 @@ function getStaffDirectoryRedirectHref(
   return `/staff?${params.toString()}`;
 }
 
-export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
+async function saveStaffDirectoryBatch(formData: FormData) {
   const staffIds = Array.from(
     new Set(
       formData
@@ -389,14 +393,14 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
     city: readBatchOptionalString(formData, "city", staffId),
     display_name: readBatchRequiredString(formData, "display_name", staffId),
     email: readBatchOptionalString(formData, "email", staffId),
-    first_name: splitFullName(
-      readBatchOptionalString(formData, "full_name", staffId),
-    ).firstName,
+    first_name: formData.has(`first_name_${staffId}`)
+      ? readBatchOptionalString(formData, "first_name", staffId)
+      : splitFullName(readBatchOptionalString(formData, "full_name", staffId)).firstName,
     is_active: readBatchBoolean(formData, "is_active", staffId),
     job_title: readBatchOptionalString(formData, "job_title", staffId),
-    last_name: splitFullName(
-      readBatchOptionalString(formData, "full_name", staffId),
-    ).lastName,
+    last_name: formData.has(`last_name_${staffId}`)
+      ? readBatchOptionalString(formData, "last_name", staffId)
+      : splitFullName(readBatchOptionalString(formData, "full_name", staffId)).lastName,
     online_booking_enabled: readBatchBoolean(
       formData,
       "online_booking_enabled",
@@ -417,13 +421,7 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
   try {
     await updateStaffDirectoryBatchInService({ changes });
   } catch (error) {
-    redirect(
-      getStaffDirectoryRedirectHref(
-        formData,
-        "connection_error",
-        error instanceof Error ? error.message : "Staff changes could not be saved.",
-      ),
-    );
+    return { ok: false as const, message: error instanceof Error ? error.message : "Staff changes could not be saved." };
   }
 
   const context = await getCurrentBusinessContext();
@@ -446,13 +444,18 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
     await broadcastPosStaffChange(context.currentSalon.id, "staff");
   }
 
-  redirect(
-    getStaffDirectoryRedirectHref(
-      formData,
-      "connection_notice",
-      "Staff changes saved.",
-    ),
-  );
+  return { ok: true as const };
+}
+
+export async function saveStaffDirectoryEntryAction(formData: FormData) {
+  return saveStaffDirectoryBatch(formData);
+}
+
+export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
+  const result = await saveStaffDirectoryBatch(formData);
+  redirect(getStaffDirectoryRedirectHref(formData,
+    result.ok ? "connection_notice" : "connection_error",
+    result.ok ? "Staff changes saved." : result.message));
 }
 
 export async function resetStaffPasscodeFormAction(formData: FormData) {

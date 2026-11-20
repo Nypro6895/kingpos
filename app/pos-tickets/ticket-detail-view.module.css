@@ -1,0 +1,103 @@
+.page {
+  --ticket-ink: var(--text-primary, #202b29);
+  --ticket-muted: var(--text-secondary, #64716d);
+  --ticket-line: var(--border-color, #e3e9e6);
+  --ticket-surface: var(--surface, #fff);
+  --ticket-accent: #26695b;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 14px 22px 28px;
+  color: var(--ticket-ink);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.page * { box-sizing: border-box; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--ticket-muted); font-size: 13px; text-decoration: none; }
+.toolbarEnd { display: flex; align-items: center; gap: 8px; }
+.edit { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 8px; color: var(--ticket-accent); font-size: 13px; font-weight: 600; text-decoration: none; }
+.icon { flex: none; width: 18px; height: 18px; }
+.hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; padding: 14px 0 20px; border-bottom: 1px solid var(--ticket-line); }
+.eyebrow { color: var(--ticket-muted); font-size: 12px; }
+.number { margin: 2px 0 9px; font-size: 25px; line-height: 1.2; font-weight: 650; letter-spacing: -.6px; overflow-wrap: anywhere; }
+.badges { display: flex; flex-wrap: wrap; gap: 5px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--ticket-line); border-radius: 5px; padding: 3px 7px; color: var(--ticket-muted); font-size: 11px; font-weight: 500; }
+.paid { background: #edf5f0; border-color: #edf5f0; color: var(--ticket-accent); }
+.money { text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.total { margin: 1px 0 2px; font-size: 29px; line-height: 1.25; font-weight: 650; letter-spacing: -.9px; }
+.balance { color: var(--ticket-muted); font-size: 12px; }
+.customer { display: flex; align-items: flex-start; gap: 11px; padding: 18px 0 21px; }
+.avatar { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #edf5f0; color: var(--ticket-accent); font-weight: 600; }
+.customerName { font-size: 15px; font-weight: 600; }
+.customer > div:nth-child(2) { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.small { color: var(--ticket-muted); font-size: 12px; overflow-wrap: anywhere; }
+.customerContact { margin-left: auto; text-align: right; min-width: 0; }
+.contactDetails summary { color: var(--ticket-accent); cursor: pointer; min-height: 36px; display: flex; align-items: center; justify-content: flex-end; font-size: 12px; list-style: none; }
+.contactDetails summary::-webkit-details-marker { display: none; }
+.contactDetails p { max-width: 240px; margin: 2px 0; overflow-wrap: anywhere; font-size: 12px; color: var(--ticket-muted); }
+.sectionHeading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 0; font-size: 14px; font-weight: 600; }
+.count { color: var(--ticket-muted); font-size: 12px; font-weight: 400; }
+.services { list-style: none; padding: 0; margin: 0; }
+.service { padding: 12px 0; border-bottom: 1px solid var(--ticket-line); }
+.row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.serviceName { font-weight: 500; overflow-wrap: anywhere; }
+.amount { flex: none; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.meta { margin-top: 3px; display: flex; flex-wrap: wrap; gap: 3px 5px; color: var(--ticket-muted); font-size: 12px; }
+.payment { margin-top: 21px; }
+.payments { margin: 0; padding: 0; list-style: none; }
+.paymentRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--ticket-line); }
+.paymentInfo { display: flex; align-items: center; gap: 10px; }
+.paymentIcon { color: var(--ticket-muted); }
+.paymentEnd { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 10px; }
+.disclosures { margin-top: 8px; }
+.disclosure { border-bottom: 1px solid var(--ticket-line); font-size: 13px; }
+.disclosure > summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; color: var(--ticket-muted); list-style: none; }
+.disclosure > summary::-webkit-details-marker { display: none; }
+.summaryEnd { display: flex; align-items: center; gap: 8px; color: var(--ticket-ink); font-size: 12px; }
+.chevron { width: 16px; height: 16px; transition: transform .15s; }
+.disclosure[open] > summary .chevron { transform: rotate(180deg); }
+.disclosureBody { padding: 0 0 16px; }
+.facts { display: grid; gap: 7px; margin: 0; color: var(--ticket-muted); font-size: 12px; }
+.facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.facts dd { min-width: 0; max-width: 70%; text-align: right; margin: 0; color: var(--ticket-ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.facts .factTotal { margin-top: 3px; padding-top: 9px; border-top: 1px solid var(--ticket-line); color: var(--ticket-ink); font-weight: 600; }
+.bookingLink { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; color: var(--ticket-accent); font-size: 13px; text-decoration: none; }
+.history { padding: 0; margin: 14px 0 0; list-style: none; }
+.history li { padding: 9px 0; border-top: 1px solid var(--ticket-line); }
+.historyTitle { font-size: 12px; font-weight: 600; }
+.historyNote { margin: 4px 0 0; color: var(--ticket-muted); font-size: 12px; overflow-wrap: anywhere; }
+.receipt { margin-top: 4px; padding: 16px; border: 1px solid var(--ticket-line); border-radius: 9px; }
+.receiptHeader { text-align: center; margin-bottom: 14px; }
+.receiptName { margin: 0; font-size: 16px; font-weight: 600; }
+.receiptItems { list-style: none; margin: 12px 0; padding: 0; border-block: 1px solid var(--ticket-line); }
+.receiptItems li { padding: 10px 0; }
+.receiptThanks { text-align: center; margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--ticket-line); color: var(--ticket-muted); font-size: 12px; }
+.empty { padding: 16px 0; color: var(--ticket-muted); font-size: 13px; }
+.error { margin: 12px 0; border: 1px solid #fecaca; border-radius: 7px; background: #fef2f2; padding: 10px 12px; color: #991b1b; font-size: 13px; }
+.editor { margin-top: 12px; }
+.editor form { margin-top: 0; }
+.editor select, .editor input, .editor textarea { min-height: 42px; }
+.itemEditor { margin-top: 10px; display: grid; gap: 10px; }
+.actions { margin-top: 16px; }
+.actions > summary { color: var(--ticket-ink); font-weight: 500; }
+.actionForms { display: grid; gap: 10px; padding-bottom: 2px; }
+.actionForms > details { border: 1px solid var(--ticket-line); border-radius: 7px; padding: 0 12px; }
+.actionForms > details > summary { min-height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; list-style: none; font-size: 13px; }
+.actionForms > details > summary::-webkit-details-marker { display: none; }
+.actionForms form { padding: 0 0 12px; border: 0; border-radius: 0; }
+.notice { margin: 0 0 10px; color: var(--ticket-muted); font-size: 12px; }
+@media (min-width: 640px) {
+  .page { padding: 22px 30px 40px; }
+  .hero { padding-bottom: 24px; }
+  .total { font-size: 34px; }
+  .number { font-size: 28px; }
+  .actionForms { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+@media (max-width: 360px) {
+  .page { padding-inline: 16px; }
+  .hero { gap: 10px; }
+  .total { font-size: 26px; }
+  .number { font-size: 23px; }
+  .customerContact p { max-width: 140px; }
+}

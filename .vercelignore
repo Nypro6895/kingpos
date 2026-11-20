@@ -20,3 +20,4 @@ supabase/.temp/
 .agents/
 public/desktop-updates/*.exe
 public/desktop-updates/*.blockmap
+public/experience-build-assets.json

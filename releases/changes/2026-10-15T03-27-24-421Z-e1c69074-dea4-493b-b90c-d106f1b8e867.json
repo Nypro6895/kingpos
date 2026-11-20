@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "coordinated-integration-20261015",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Release integration: opaque lowered mobile navigation, landscape spacing, payroll output flow, sensitive-route reset coverage, local dispatch suppression and preserved deployed Explore/Safari/privacy features.",
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/globals.css",
+    "app/payroll/payroll-mobile.module.css",
+    "lib/experience-route-policies.ts",
+    "instrumentation.ts",
+    "app/explore/explore-salon-card.tsx",
+    "app/explore/explore-editorial-sections.tsx",
+    "app/explore/explore-editorial.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\release"
+  },
+  "validation": [
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\production-build.log"
+    },
+    {
+      "name": "main: 195 tests, zero skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-main.json"
+    },
+    {
+      "name": "built: 4 tests, zero skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-built.json"
+    },
+    {
+      "name": "regression: 59 tests, zero skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\validation-regression.json"
+    }
+  ],
+  "dependencies": [
+    "whole-site-progressive-cache",
+    "project-release-coordination"
+  ],
+  "id": "e1c69074-dea4-493b-b90c-d106f1b8e867",
+  "recordedAt": "2026-10-15T03:27:24.421Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/navigation-shell.tsx": "212ba00a3fb796598b7d4bca25d102f34acf02419a93acc8c291bad882f64e9b",
+    "app/globals.css": "cd32b5e681c8c392a3b4cb36ddc38677bcf0ad4455053d96c71b50ebec94766d",
+    "app/payroll/payroll-mobile.module.css": "2eb028211ed6cbbbac6ae4fd6c92beecff72c00c41cb4fb669fd1986fc3938a7",
+    "lib/experience-route-policies.ts": "59ad125441cfcf2b2be2309cea2250346b4177d46ad3f54058f51c6a903279ad",
+    "instrumentation.ts": "af6d71383e816ce3154a7d5175f453525af9835e6cd36cbdafeed4ea9d8bf16f",
+    "app/explore/explore-salon-card.tsx": "079bf5294c80aa5b76e4a550da9d605c2481709ae0d846883a889a5c2b8d471a",
+    "app/explore/explore-editorial-sections.tsx": "7d1d7b0a9ee5ea14cc732de4e72714ff92feeaee60e8c0a21bde884220af1908",
+    "app/explore/explore-editorial.tsx": "2f7a25cd29c75dc3aaa50229fe2cafc54e058f2898c38e705d68451034a9381a"
+  }
+}

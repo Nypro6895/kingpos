@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "pos-ios-custom-service-20261028",
+  "status": "ready",
+  "summary": "Owner explicitly approved top Add/Reset and pencil Services below; named custom entry without catalog writes",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-notebook-menu.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028\\artifacts\\wave65-audit\\frozen-v2"
+  },
+  "supersedesEvents": [],
+  "integratesEvents": [
+    "204750d6-d9f5-4df8-80d0-ba56345b22c9"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "19 Payroll Node tests,12 shared UI and12 native Payroll-view fixture observations",
+      "result": "passed"
+    },
+    {
+      "name": "13 actual workspace/portal observations;3 compact Windows portal checks;9 checkout/name/captured receipt observations",
+      "result": "passed"
+    },
+    {
+      "name": "Windows1440/820 actual64 fixture screenshot equality",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped lint/TypeScript and final production build459assets",
+      "result": "passed",
+      "evidence": "artifacts/wave65-audit/build-owner-approved-complete.log"
+    }
+  ],
+  "limitations": [
+    "Rebuilt native archive, Apple availability and exact-installed physical acceptance remain pending; local source-ready is not those outcomes.",
+    "Only inert fixtures and captured fake receipts; no production financial/social/data writes.",
+    "Native Payroll integration preserves actual64 wrapper/DTO/actions; two pre-existing unused-symbol lint warnings retained."
+  ],
+  "id": "8057e995-936c-461d-8aac-b4247c4ad4c4",
+  "recordedAt": "2026-10-29T04:59:30.931Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-pos-client.tsx": "a9088df365d9dfe541a24d15ce2a69df3937fee55c0d859977eebcde3ef08aea",
+    "app/pos/owner-notebook-menu.css": "f1b0e26bc4fde50ff46d2d79125f00c0073ff719df72621d1e27c7b6cfe0d8b4"
+  }
+}

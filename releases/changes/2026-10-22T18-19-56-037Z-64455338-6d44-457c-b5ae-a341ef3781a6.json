@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-core-r11-integration-20261022",
+  "status": "ready",
+  "summary": "Frozen core auth integration with preserved native packaging; local combined browser regression and web build verified. Native CI/runtime and deployment remain separate release gates. Market work excluded.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/login/login-form.tsx",
+    "app/local-app/entry.tsx",
+    "tests/auth-request-deadline.test.mjs",
+    "tests/app-local-entry-recovery-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\frozen-core-inputs",
+    "commit": "48134c9339f455065885bc4cd63e953997c84668"
+  },
+  "dependencies": [
+    "r10-native-bundle-provenance-20261022",
+    "auth-request-finite-deadline-20261022",
+    "r10-native-reset-pending-20261022"
+  ],
+  "validation": [
+    {
+      "name": "Combined auth/recovery Chromium63 and WebKit63; exact source inputs",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\validation\\DELIVERY.json"
+    },
+    {
+      "name": "Production web build and offline assets431, including TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\web-quality\\build\\attempt-3\\receipt.json"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\resume-release-20261022\\web-quality\\lint\\attempt-1\\receipt.json"
+    }
+  ],
+  "releaseGateStatus": {
+    "nativeCI": "pending",
+    "actualCombinedAuthenticatedNative": "pending; inherited current-backend auth on7faa only",
+    "databaseCutover": "pending",
+    "publication": "not attempted"
+  },
+  "integrationCorrection": "Two preexisting ellipsis strings restored; no behavior change.",
+  "id": "64455338-6d44-457c-b5ae-a341ef3781a6",
+  "recordedAt": "2026-10-22T18:19:56.037Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\release-candidate-r11-core",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/login/login-form.tsx": "22c90f6407d1de7e08058861b9dbf77daa143524bcd6e231097aa118f70bfc1e",
+    "app/local-app/entry.tsx": "82d77477de1c0f2f9e3130306788179fb8a51ba11a76949902d378e2a5a4cc4e",
+    "tests/auth-request-deadline.test.mjs": "eec7366a2f6ef45a2e37204f8e78f45d83c7f7777fb3881af3f8eba2ae8dd5e1",
+    "tests/app-local-entry-recovery-ui.test.mjs": "a2dfd62bc120ed5f36708da232b78492be5fd0cafb4125546c0daf1e81550a28"
+  }
+}

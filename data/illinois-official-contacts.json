@@ -1,0 +1,26 @@
+{
+  "collectedOn": "2026-10-08",
+  "businesses": [
+    {"name":"Esthetic Haus","address":"829 N California Ave, Suite 1","city":"Chicago","postalCode":"60622","phone":"773-799-8834","email":"bookings@esthetichaus.com","categories":["Skin Care","Brows","Waxing","Spa"],"sourceUrl":"https://esthetichaus.com/contact-us/"},
+    {"name":"APBrows","address":"1554 N Larrabee","city":"Chicago","postalCode":"60610","phone":"815-621-5370","email":"abipiezbrowz@gmail.com","categories":["Brows","Waxing"],"sourceUrl":"https://www.apbrows.com/contact"},
+    {"name":"1845 Esthetics","address":"6780 N Northwest Highway","city":"Chicago","postalCode":"60631","phone":"872-243-6301","email":"hello@1845esthetics.com","categories":["Waxing","Brows","Lashes"],"sourceUrl":"https://www.1845esthetics.com/"},
+    {"name":"The Threading Salon","address":"1109 W Taylor Street","city":"Chicago","postalCode":"60607","phone":"312-666-5153","email":"neelu@neelus.com","categories":["Brows","Waxing","Skin Care"],"sourceUrl":"https://thethreadingsalon.com/"},
+    {"name":"Sphynx Spa Suite","address":"233 E Erie St, Suite 613","city":"Chicago","postalCode":"60611","phone":"773-441-1312","email":"sphynxspasuite@gmail.com","categories":["Spa","Waxing","Skin Care","Brows","Lashes"],"sourceUrl":"https://www.sphynxspasuite.com/"},
+    {"name":"Sphynx Chicago","address":"1411 W 111th Street","city":"Chicago","postalCode":"60643","phone":"312-774-4303","email":"sphynxchicago@gmail.com","categories":["Waxing","Brows","Skin Care"],"sourceUrl":"https://sphynxchicago.com/"},
+    {"name":"Sugar Pop Salon","address":"1243 W Madison St","city":"Chicago","postalCode":"60607","phone":"312-248-8993","email":"heysugar@sugarpopsalon.com","categories":["Waxing","Brows","Lashes"],"sourceUrl":"https://www.sugarpopsalon.com/about"},
+    {"name":"Dynamic Salon & Spa","address":"1754 W Division Street","city":"Chicago","postalCode":"60622","phone":"773-772-3772","email":"dynamicsalonspa@gmail.com","categories":["Hair","Nails","Spa","Brows","Waxing","Skin Care"],"sourceUrl":"https://www.dynamicsalon.com/contact"},
+    {"name":"Mr. Brows","address":"2154 W Roscoe St","city":"Chicago","postalCode":"60618","phone":"312-619-7503","email":"","categories":["Brows","Waxing","Skin Care"],"sourceUrl":"https://www.mrbrowschicago.com/contact"},
+    {"name":"Thairapy Plus Salon & Spa","address":"4247 N Lincoln Ave","city":"Chicago","postalCode":"60618","phone":"773-248-5353","email":"","categories":["Hair","Nails","Spa","Skin Care","Waxing","Brows","Lashes"],"sourceUrl":"https://thairapyplus.com/"},
+    {"name":"Ann's Beauty House LLC","address":"2248 S Canal St, 1st floor","city":"Chicago","postalCode":"60616","phone":"312-598-8878","email":"","categories":["Nails","Lashes","Massage","Spa","Waxing"],"sourceUrl":"https://www.annsbeautyhousellc.com/"},
+    {"name":"DLUXESPA LLC","address":"3443 W Irving Park Rd","city":"Chicago","postalCode":"60618","phone":"773-886-0925","email":"thedluxespa@gmail.com","categories":["Massage","Spa","Lashes","Skin Care"],"sourceUrl":"https://www.dluxespallc.com/"},
+    {"name":"WM DaySpa Salon - Rockford","address":"6555 Lexus Drive","city":"Rockford","postalCode":"61108","phone":"815-398-4000","email":"","categories":["Spa","Massage","Hair","Nails","Lashes","Waxing","Skin Care"],"sourceUrl":"https://wmdayspa.com/services"},
+    {"name":"Occhi Lash & Brow Studio","address":"17W580 Butterfield Rd","city":"Oakbrook Terrace","postalCode":"60181","phone":"630-785-6668","email":"info@occhilashes.com","categories":["Lashes","Brows"],"sourceUrl":"https://occhilashes.com/contact/"},
+    {"name":"Emerald Lash Studio - Chicago","address":"2041 W Belmont Ave","city":"Chicago","postalCode":"60618","phone":"224-423-6743","email":"","categories":["Lashes"],"sourceUrl":"https://emeraldlasheschicago.com/contact-us/"},
+    {"name":"Emerald Lash Studio - Highland Park","address":"502 Central Ave","city":"Highland Park","postalCode":"60035","phone":"224-423-6743","email":"","categories":["Lashes"],"sourceUrl":"https://emeraldlasheschicago.com/contact-us/"},
+    {"name":"Summit Spa & Salon","address":"648 Maine St","city":"Quincy","postalCode":"62301","phone":"573-719-1674","email":"","categories":["Spa","Massage","Skin Care","Nails","Waxing","Lashes","Brows"],"sourceUrl":"https://www.summitspaandfitness.com/"},
+    {"name":"Lidia's Skin Boutique","address":"220 South Cook Street, Suite 105","city":"Barrington","postalCode":"60010","phone":"224-500-5568","email":"","categories":["Skin Care","Lashes","Waxing"],"sourceUrl":"https://www.lidiasskinboutique.com/"},
+    {"name":"Next Man Up","address":"946 E 43rd St","city":"Chicago","postalCode":"60653","phone":"773-966-5268","email":"","categories":["Massage","Spa"],"sourceUrl":"https://nextmanupspa.com/mens-massage/"},
+    {"name":"L. Lash Room LLC","address":"601 N Martingale Rd, Unit 100, Studio 16","city":"Schaumburg","postalCode":"60173","phone":"224-622-0988","email":"","categories":["Lashes"],"sourceUrl":"https://app.acuityscheduling.com/schedule.php?owner=12796435"},
+    {"name":"Nene's Lashes Spa LLC","address":"135 N Greenleaf St","city":"Gurnee","postalCode":"60031","phone":"224-221-0962","email":"nenehernandez1@hotmail.com","categories":["Lashes","Brows","Spa"],"sourceUrl":"https://www.neneslashesspa.com/"}
+  ]
+}

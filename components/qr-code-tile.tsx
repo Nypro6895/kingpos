@@ -1,5 +1,8 @@
 "use client";
+import { WorkspaceText } from "@/components/workspace-language";
 
+
+import { useWorkspaceTranslation } from "@/components/workspace-language";
 import { useMemo } from "react";
 
 type QrCode = {
@@ -249,7 +252,7 @@ function createQrMatrix(codewords: number[]): QrCode {
   };
 }
 
-function createQrCode(valueToEncode: string) {
+export function createQrCode(valueToEncode: string) {
   const data = new TextEncoder().encode(valueToEncode);
 
   if (data.length > QR_MAX_BYTES) {
@@ -290,6 +293,8 @@ export function QrCodeTile({
   fallbackMessage,
   valueToEncode,
 }: QrCodeTileProps) {
+  const __vt = useWorkspaceTranslation();
+
   const qr = useMemo(() => createQrCode(valueToEncode), [valueToEncode]);
   const dataProps =
     dataKind === "setup"
@@ -301,12 +306,12 @@ export function QrCodeTile({
           : {};
 
   if (!qr) {
-    return <div className={fallbackClassName}>{fallbackMessage}</div>;
+    return <div className={fallbackClassName}><WorkspaceText text={fallbackMessage} /></div>;
   }
 
   return (
     <svg
-      aria-label={ariaLabel}
+      aria-label={__vt(ariaLabel)}
       className={className}
       role="img"
       viewBox={`0 0 ${qr.size} ${qr.size}`}

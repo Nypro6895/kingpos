@@ -1,0 +1,113 @@
+{
+  "kind": "change",
+  "changeId": "explore-anywhere-search-20261017",
+  "status": "ready",
+  "summary": "Validated final Anywhere, typed ZIP/address/place, name/style and location search integrated onto exact d302fc8 release candidate while retaining its Explore optimizations. Web-only revision ready for the existing1.1.0 coordinator; not itself deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/explore/page.tsx",
+    "app/explore/explore-client.tsx",
+    "lib/explore-query-intent.ts",
+    "lib/explore-query-routing.ts",
+    "supabase/migrations/20261017030000_explore_anywhere_search.sql",
+    "tests/explore-address-search-flow.integration.test.mjs",
+    "tests/explore-anywhere-search.integration.test.mjs",
+    "tests/explore-anywhere-ui-runtime.test.mjs",
+    "tests/explore-gps-recovery-runtime.test.mjs",
+    "tests/explore-query-routing-runtime.test.mjs",
+    "tests/explore-query-ssr-runtime.test.mjs",
+    "tests/explore-query-ui-races-runtime.test.mjs",
+    "tests/explore-search-first-runtime.test.mjs",
+    "tests/explore-selected-area-ui-runtime.test.mjs",
+    "tests/fixtures/explore-unified-search-bootstrap.mjs",
+    "tests/explore-auto-load-runtime.test.mjs"
+  ],
+  "dependencies": [
+    "explore-address-priority-20261016"
+  ],
+  "dependencyEvents": [
+    "251c8338-9223-48f3-ad57-7c18a554e093"
+  ],
+  "supersedesEvents": [
+    "aa039e63-84b7-4225-a72a-d62f3c1fda22"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-anywhere-release-20261017\\completed-source",
+    "validationSnapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-anywhere-release-20261017\\validated-full-source",
+    "integratedFromEvent": "aa039e63-84b7-4225-a72a-d62f3c1fda22",
+    "integrationBaseCommit": "d302fc8c587e13850306ccb67da351e3109f7036",
+    "integrationBaseCandidate": "dpl_2LhcL2HbRFczip2YAaLQKufWbCQ2",
+    "hashManifest": "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/integrated-freeze-manifest.json",
+    "fullSourceSha256": "d1b9fa9e0e9a08c6b3c1b29b34fbc6fde0df28a625fd8424e2430335bd6ffb2f",
+    "overlaySha256": "c3dfd8d32af22533c65b689462ddc76e51ad096a336697c7a5dc272254e8b0e9"
+  },
+  "validation": [
+    {
+      "name": "149 passing runtime cases plus baseline-only missing-mock test repaired and passed;150 cases total",
+      "result": "passed",
+      "evidence": [
+        "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/provisional-runtime-tests.json",
+        "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/candidate-original-fixture-failure.log",
+        "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/provisional-fixture-test.json"
+      ]
+    },
+    {
+      "name": "51 SQL equivalence, address, style, privacy and continuation checks through030000",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/provisional-sql-tests.json"
+    },
+    {
+      "name": "Full production build, TypeScript, offline assets and restored build-input source integrity",
+      "result": "passed",
+      "evidence": [
+        "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/provisional-build-result.json",
+        "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/provisional-build-source-restored.json",
+        "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/integrated-freeze-manifest.json"
+      ]
+    },
+    {
+      "name": "15 preservation checks and clean patch application against exact release candidate",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/work/explore-anywhere-release-20261017/provisional-preservation-review.json"
+    }
+  ],
+  "nativeAssessment": {
+    "required": false,
+    "reason": "Web UI/search and compatible function replacements only; no native assets, config or bridge changes in this event."
+  },
+  "releaseNotes": {
+    "deployed": false,
+    "publisher": "Existing full-release-1-1-0-20261016 coordinator; user authorized handoff to merge this revision into the same release.",
+    "exclusions": [
+      "Preview-only logo/gateway event493385b7-012b-4d66-a589-5790acf7018a must not enter shipped app."
+    ],
+    "laterWork": [
+      "supabase/migrations/20261017040000_explore_unified_query_performance.sql is not in this source; evidence validates migrations through 030000. Coordinator is composing 040000 from 030000 and must verify that final combination."
+    ],
+    "baseline": "Integration base is a captured candidate, not a production baseline claim. Coordinator must preserve the exact then-current production baseline and verify all final assembled source before promotion."
+  },
+  "id": "679ae167-0da6-48d3-9cd0-c6b467e6dc3b",
+  "recordedAt": "2026-10-17T04:26:39.473Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/explore/page.tsx": "48140c62812c99cd604b4888eabf86153836e130e16347c4f92711554ef481cb",
+    "app/explore/explore-client.tsx": "d4111f79265d52e4fb77109961ecade586de60e0e423b6668976b5427bf2cc04",
+    "lib/explore-query-intent.ts": "862e79b6a1bd3d2929ba5359694ff981871a3aa248c24f2aa73c6d7492e769f0",
+    "lib/explore-query-routing.ts": "4d252536483fb88b69cf3c05a60698cb4692c1e6f664591172f5438ad858199f",
+    "supabase/migrations/20261017030000_explore_anywhere_search.sql": "74e0a1365f02b9779046028f423400fd745c35038eb46f14dd4ea5b50f9d513f",
+    "tests/explore-address-search-flow.integration.test.mjs": "71b5a8b12f5a0a298e3d6091eb06cbcb163e9af357e1bd697d2ca70f5d0d47ac",
+    "tests/explore-anywhere-search.integration.test.mjs": "92f2f661dfa577a959a81375cdd8166ed7661d1bb740e63a0cc2d0059ae80335",
+    "tests/explore-anywhere-ui-runtime.test.mjs": "5470ebc5c749517508929a09bc9b592837cb238feadfa9ec29372c3387b7c0fe",
+    "tests/explore-gps-recovery-runtime.test.mjs": "abd3d9b57d78b49629e0e7190b8b663fb703aac72a9e6e4f17950c5c15b0f516",
+    "tests/explore-query-routing-runtime.test.mjs": "c8ddbe0640a0f588d49ea8789c88e3ef36ffee58e4af1e7622471daa3102e547",
+    "tests/explore-query-ssr-runtime.test.mjs": "4f6bd12b6afa50c298937bef090d9e84e178e79298e1f4c2e62b331e1e236c5d",
+    "tests/explore-query-ui-races-runtime.test.mjs": "140671b79b297b11c9aabb2d409cc248aa27be1bf1512ff096ea61e15b4b016a",
+    "tests/explore-search-first-runtime.test.mjs": "7be9828078579f0badf8031209271ab4b12b4e05e27626f128f88121affad781",
+    "tests/explore-selected-area-ui-runtime.test.mjs": "275a7d7223376ec1ed6287ff7c8c62eb159b36a6045b1f7a08075ebb5363d4c9",
+    "tests/fixtures/explore-unified-search-bootstrap.mjs": "5c0c98df06ed24555b31522cdc5b79d240c944b7d44c851839bb3b76e873af68",
+    "tests/explore-auto-load-runtime.test.mjs": "259f393726925e4b39b9d57465c54473234dc2c327f69ddf200151960e3b942a"
+  }
+}

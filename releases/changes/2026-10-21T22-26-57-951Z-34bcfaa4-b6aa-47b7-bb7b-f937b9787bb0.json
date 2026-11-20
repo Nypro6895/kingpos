@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "ios-same-tenant-role-dto-reuse-20261021",
+  "status": "working",
+  "summary": "Bounded memory-only settled DTO reuse for freshly reauthorized same-principal same-salon role returns. Unknown tenant, security changes and business mutations purge; DOM/drafts and command admission remain withdrawn. Isolated implementation; no release or current Mac QA source changes.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-role-read-cache.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos-role-read-reuse-20261021",
+    "commit": "c7016e00d12b39a9cdbeb4bb67fdb380870acdf9"
+  },
+  "dependencies": [
+    "ios-my-work-critical-path-20261021"
+  ],
+  "validation": [
+    {
+      "name": "Implementation and negative security controls",
+      "result": "pending"
+    }
+  ],
+  "id": "34bcfaa4-b6aa-47b7-bb7b-f937b9787bb0",
+  "recordedAt": "2026-10-21T22:26:57.951Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

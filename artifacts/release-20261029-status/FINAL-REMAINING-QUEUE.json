@@ -1,0 +1,872 @@
+{
+  "at": "2026-10-29T21:07:14.345Z",
+  "finalReceipt": "1ccb10a6-36a9-407b-844d-85e39941a608",
+  "completedProductPackages": 13,
+  "finalSelectedEventsPending": 0,
+  "remainingJournalRows": 92,
+  "wholeBacklogClaimedCleared": false,
+  "rows": [
+    {
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "status": "blocked",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Independent tooling outside Reylumi app"
+    },
+    {
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "status": "blocked",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Independent tooling outside Reylumi app"
+    },
+    {
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Independent tooling outside Reylumi app"
+    },
+    {
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Independent tooling outside Reylumi app"
+    },
+    {
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "changeId": "explore-preview-logos-20261017",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "f1a21743-b245-433f-bc2f-03a61fa05495",
+      "changeId": "ios-workspace-cookie-deletion-20261020",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+      "changeId": "auth-session-missing-rejection-20261020",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "bca89a39-186f-412a-81bd-b76075e4d5da",
+      "changeId": "ios-background-cookie-authority-20261020",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "4cff2fad-08e3-42d0-9b22-623957e87395",
+      "changeId": "help-context-dismiss-20261020",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "a6e019d5-eb71-449b-af1d-2a07e8b81773",
+      "changeId": "macqa-help-background-integration-20261020",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "2e3da0c8-11ab-4282-8957-1f6f01dc2219",
+      "changeId": "ios-private-business-cache-admission-20261020",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "62f208d8-136e-439b-bba2-23a9ec001f43",
+      "changeId": "online-authority-refresh-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "06a4700d-0a01-40b1-a412-332e6c74a7ca",
+      "changeId": "refresh-session-availability-tests-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "16970911-3725-403f-a83f-915be4271914",
+      "changeId": "pc-ios-today-session-reliability-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "1ca50962-b8fe-4056-96dd-57b527a66e2e",
+      "changeId": "payroll-hide-review-notices-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "a88bc104-8a6e-4cab-b465-99463332dec3",
+      "changeId": "daily-closing-conflict-notice-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "b2617811-8752-4582-bc3a-244b701326d9",
+      "changeId": "pc-ios-causal-contracts-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "755e9867-d53e-45ff-bfa8-e8f2cd44a9e8",
+      "changeId": "campaign-pc-common-integration-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "8f00e8c6-13c7-4ed8-a178-18c874b86e01",
+      "changeId": "flat-section-canvas-20261021",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "279874eb-b273-4373-a124-1dc6ce64bfe8",
+      "changeId": "combined-ui-payroll-daily-local-20261021",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "b0bc46c0-2477-4bb5-bfe3-91e1757a372b",
+      "changeId": "pc-campaign-common-candidate-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "23ccd32b-8260-4b62-8016-44d4a25832b8",
+      "changeId": "pc-ios-explicit-guest-continuation-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+      "changeId": "campaign-causal-settlement-reporting-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "a397b292-7798-4ba5-b16a-71673c11da76",
+      "changeId": "windows-portable-startup-offline-admission-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "2cc61e55-3a1b-447f-80c3-090aefa53dce",
+      "changeId": "campaign-pending-claim-demand-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "d0d6e90a-6bb0-4c15-a385-b14a4c63af2b",
+      "changeId": "unified-windows-portable-integration-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "698b4fd6-b20e-4fc5-b615-58e704e3b712",
+      "changeId": "windows-portable-owner-startup-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "a7a35dda-1fd4-4100-aff3-5fb5d4a02128",
+      "changeId": "unified-owner-guest-integration-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "df7e32b3-7171-47d3-86c6-2335990a478f",
+      "changeId": "campaign-credit-lifecycle-r5-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "2b98a9a6-5815-4b55-9ba0-8a2fb7b48555",
+      "changeId": "reylumi-final-r5-integration-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "a2210a7d-025e-405d-89e2-b1b3d64d9aa7",
+      "changeId": "ios-production-path-qa-20261021",
+      "status": "working",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "9de557d7-150e-4c41-b3d6-9d6452a4927f",
+      "changeId": "ios-my-work-critical-path-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "70864f50-ebc7-42ce-9e4e-dbfeb086fa0e",
+      "changeId": "claude-project-review-setup-20261021",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "2c7095a1-ddda-4da3-b58d-4ec622162af9",
+      "changeId": "staff-my-work-verified-read-identity-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "812ce8f9-478b-4396-89bc-35d0fa622ceb",
+      "changeId": "ios-same-tenant-role-dto-reuse-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "2bc7cc1d-07d7-470e-be1b-d685431fc37a",
+      "changeId": "claude-pc-mac-simulator-review-20261021",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "e32efba9-d661-4558-8f11-9e605b2383f1",
+      "changeId": "reylumi-final-r6-integration-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "15938439-7e97-493e-b874-fe42810e2ce4",
+      "changeId": "local-first-services-pilot-r6",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "94ea46f7-b835-42c7-be0e-4f80878ebf25",
+      "changeId": "r6-confirmed-auth-rejection-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "5b41dd44-3397-4098-9235-ee3e693ee515",
+      "changeId": "local-first-services-native-delta-r6",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "7f040796-abfc-4ea5-8e68-4c71f3e3e757",
+      "changeId": "reylumi-final-r7-auth-integration-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "307e1495-41a4-4e91-8f0b-ad5fca46a89a",
+      "changeId": "reylumi-final-r8-pilot-off-integration-20261022",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "099d6700-7e5b-46a9-9f7f-9241f1aa92cd",
+      "changeId": "services-cache-invariants-r6",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "ec9d2bfd-6f3c-465a-b9d9-1ca3f26c2764",
+      "changeId": "ios-auth-observability-qa-20261021",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "00d7fda2-b2fa-488f-8f73-ff7febcc23fa",
+      "changeId": "services-cache-realm-guards-r6",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "04ee32a6-3687-4b77-affc-8058500c0f23",
+      "changeId": "reylumi-final-r9-observability-integration-20261022",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "eba0fd1b-873c-43ea-9d6f-4d79d6a1880c",
+      "changeId": "reylumi-final-r10-services-invariants-integration-20261022",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "13608576-db78-4312-9445-5d173e04315e",
+      "changeId": "r10-native-bundle-provenance-20261022",
+      "status": "ready",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "93859166-e3ea-4656-92df-3b78c7a2a327",
+      "changeId": "ios-hosted-login-actual-trace-20261022",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "4072b660-7b05-4d67-81bf-43561df0cd04",
+      "changeId": "auth-request-finite-deadline-20261022",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "4e03d52a-13c1-4830-b01d-71a869fbd826",
+      "changeId": "r10-native-reset-pending-20261022",
+      "status": "ready",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "014d1e2b-713b-4368-925c-6fe55451770d",
+      "changeId": "market-authenticated-browser-qa-20261023",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "52577e6e-7f30-4838-b20a-e72b2d09eb50",
+      "changeId": "market-browser-timeout-investigation-20261023",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "d764f9b0-775e-40e1-8487-439ea9df0a9f",
+      "changeId": "market-first-slice-acceptance-closure-20261023",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "d6af2c7e-85c2-4307-a45e-d1f637eaca7b",
+      "changeId": "ios-readiness-bundle-xcresult-20261023",
+      "status": "ready",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "d71a3e3d-4761-459e-baee-29f19edd8729",
+      "changeId": "main-app-qa-20261024-task4",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "49dff70c-9008-4332-bcc7-f33e0e84972c",
+      "changeId": "campaign-run-again-investigation-20261025",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "de4c9fe9-cb2e-4156-b09e-587571ef4fc0",
+      "changeId": "claude-simulator-20261025",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "740d1552-bbbd-4289-aeef-8485cf7c966f",
+      "changeId": "campaign-product-audit-20261025",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical QA/audit journal; no new publication inferred"
+    },
+    {
+      "eventId": "c72be571-5b9a-48c3-bfc3-85f02ed8b810",
+      "changeId": "combined-drako-integration-20261026",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "cd1e2ab6-490b-427f-ba74-3168ef59417d",
+      "changeId": "windows-production-guard-command-20261026",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "c9cd3897-34eb-417b-81a7-9865c2e94121",
+      "changeId": "iphone-real-performance-fixes-20261027",
+      "status": "ready",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "c597eda1-4b8f-4126-b9c2-16b0832466f5",
+      "changeId": "iphone-first-load-dal-rpc-20261027",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+      "changeId": "check-writer-secure-addon-20261027",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Disabled-compatible code retained; sales/provider/printing gates deferred"
+    },
+    {
+      "eventId": "ca6faf53-6bc9-4c7a-b37e-d845f88a8b22",
+      "changeId": "iphone-batched-handoff-release-20261028",
+      "status": "working",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "9eb068ff-dbb6-4df2-8db2-a8d9772ab04b",
+      "changeId": "market-real-developer-platform-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "6f7f69b4-8cd7-4c41-bd5a-331e79daee40",
+      "changeId": "market-owner-integration-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "8764fb61-1b14-4c63-a1a6-2116d9567582",
+      "changeId": "market-developer-journey-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "6030270a-ae7a-43d7-a554-fae70218a27b",
+      "changeId": "market-developer-journey-qa-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "1b533658-b422-4d65-bde1-9bb0d1ab1a3a",
+      "changeId": "iphone-route-bootstrap-module-loading-20261028",
+      "status": "working",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "d8e2b3a1-a136-4f59-bfa7-8c842cfc6e11",
+      "changeId": "iphone-bounded-comment-count-read-batch-20261028",
+      "status": "working",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "39e90f2a-2bce-401c-9068-f900a6a6007b",
+      "changeId": "market-self-hosted-design-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "a487d2ab-008b-41c0-9699-c4107a62c95e",
+      "changeId": "check-writer-audit-price-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Disabled-compatible code retained; sales/provider/printing gates deferred"
+    },
+    {
+      "eventId": "1cab2786-2f31-43b8-93dc-132c5371d5b4",
+      "changeId": "check-writer-wait-combined-deploy-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Disabled-compatible code retained; sales/provider/printing gates deferred"
+    },
+    {
+      "eventId": "c7565d1b-1af2-4637-ba0a-57884ff8ccb6",
+      "changeId": "market-published-data-qr-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "eff1f7c2-ef17-49ee-8d81-5956a3b3ecc1",
+      "changeId": "market-published-qa-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "220c0bc8-a5da-4c23-a9b0-6f337009c61e",
+      "changeId": "social-abuse-relaxed-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    },
+    {
+      "eventId": "98110f68-e929-4630-83de-e4bceca6c10e",
+      "changeId": "market-qa-controller-repair-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "008f1df1-4d6a-49f6-95f0-fd4abcb51476",
+      "changeId": "market-qr-replacement-qa-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "b1a9039d-101a-41dc-963a-0e5f90ddb0d2",
+      "changeId": "market-developer-read-recovery-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "813ab0b0-6f04-44bf-9a0b-fb76fce59fb7",
+      "changeId": "market-p0-reproduction-plan-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "63c375d1-982e-44b5-ae7f-4116ebc0e1eb",
+      "changeId": "market-p0-zero-key-real-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "088c1cc5-9a5d-4178-91b8-b9ed5ae9e8cd",
+      "changeId": "market-https-transport-preflight-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "33074a54-b79f-42a7-a6c5-2229c49ec7d2",
+      "changeId": "market-https-transport-clarification-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "9c6f5390-d3cf-4d67-bdc7-f70724dc0c34",
+      "changeId": "market-qa-hosting-options-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "a0d4e8c8-f861-4f30-8411-bd2787500cf9",
+      "changeId": "market-consent-version-reset-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "6db51b3f-1463-4749-93e9-bae876ed2f68",
+      "changeId": "check-writer-release-gates-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Disabled-compatible code retained; sales/provider/printing gates deferred"
+    },
+    {
+      "eventId": "38a1918e-9db2-4be0-bead-7892aeb06b15",
+      "changeId": "market-account-owner-polish-20261028",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "dc61732c-cfdf-42a4-a2e3-4d3e1bc1aef0",
+      "changeId": "check-writer-next-combined-release-20261029",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web",
+        "ios"
+      ],
+      "disposition": "Disabled-compatible code retained; sales/provider/printing gates deferred"
+    },
+    {
+      "eventId": "8440f0d3-3379-4671-ba85-9c29f97a7654",
+      "changeId": "market-publishers-20261029",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Deferred Developer Market dependency and provider gates"
+    },
+    {
+      "eventId": "2a895c72-1390-4570-8108-d0d0ad55a012",
+      "changeId": "payroll-compact-income-20261029",
+      "status": "needs-integration",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "History logic audit awaiting owner decision; display portions previously shipped"
+    },
+    {
+      "eventId": "61a9a430-1afd-478b-bc54-0a383a997a1f",
+      "changeId": "staff-my-pay-remove-evidence-20261029",
+      "status": "ready",
+      "pendingChannels": [
+        "web"
+      ],
+      "disposition": "Historical unclosed revision; production/native baselines preserved; no blanket closure asserted"
+    }
+  ]
+}

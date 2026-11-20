@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "personal-camera-qr-next-combined-20261029",
+  "status": "blocked",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Original salon QR queue partly fulfilled: hosted QR/catalog and compatible explicit-app TestFlight73 released;only HTTPS Universal Links signing/physical Camera acceptance remains blocked by unavailable compatible provisioning",
+  "files": [],
+  "dependencies": [
+    "personal-qr-universal-links-provisioning-20261030"
+  ],
+  "validation": [
+    {
+      "name": "Web/Portable actual QR and catalog;TestFlight73 source/runtime/Apple/existing groups",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/web-receipt.json; artifacts/release-20261030/portable-live-qa.json; artifacts/release-20261030/availability-verified.json"
+    },
+    {
+      "name": "Associated Domains signed profile and physical Camera acceptance",
+      "result": "pending",
+      "evidence": "artifacts/release-20261030/native-link-gate.json"
+    }
+  ],
+  "source": {
+    "commit": "7f5b4d81f6f9c58385d38db3a3b9c9f741b45993"
+  },
+  "priorQueueEvent": "ff0916b0-a60b-4361-8bfa-a2210eb8f5fe",
+  "standingDeployAuthority": "Latest direct owner command replaces queue-only hold; this record is a remaining technical gate, not a global deployment hold",
+  "id": "fe67808b-ad4b-4f2a-b260-a76d3d36ab79",
+  "recordedAt": "2026-10-30T07:08:37.771Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "native-wk-fixture-bootstrap-budget-20261029",
+  "status": "ready",
+  "summary": "Bound fixture-only blank-document startup at45s before either caller seeds cookies;235 test method bodies, assertions and functional/authority timing remain unchanged; production app code unchanged",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029-fixture-startup\\frozen",
+    "commit": "65efdc09e6e855fa03d5cc87498801fae37cff16",
+    "productSourceCommit": "c976282fc1bc33b0545f4e0356668e67e6c18485"
+  },
+  "dependencies": [
+    "native-suite-host-isolation-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Exact stripped-code diff is only fixture startup5s to45s; other changes are explanatory comments",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-fixture-startup/review.json"
+    },
+    {
+      "name": "Both real WK fixture callers prepare before cookie seeding; native/background cookie assertions and behavior deadlines untouched",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-fixture-startup/review.json"
+    },
+    {
+      "name": "Full235 runtime inventory retained and prior strict14-host coverage gate still mandatory",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-suite-isolation/runner-validation.json"
+    }
+  ],
+  "notes": "This explicitly increases only fixture setup budget from5s to45s, not any application or security behavior deadline. Full exact-source235 runtime/archive/sign/upload/readback remain required before publication.",
+  "id": "bb980f4e-efe5-4360-95d4-c79b5156d3fa",
+  "recordedAt": "2026-10-29T21:58:44.091Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift": "fac7a2622d5540beed3c3749aa9ce292fadb078234da73b7af7d3961b5543492"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "ios-rights-operations-next-20261118",
+  "status": "working",
+  "summary": "Read-only rights/copyright and private-evidence removal audit; prepare concrete least-privilege operational/implementation design without product changes.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ios-rights-operations-next-20261118.md"
+  ],
+  "source": {
+    "commit": "8a9d9335207db37969bff824e6ef3e55f37b6484"
+  },
+  "validation": [
+    {
+      "name": "Current source trace, primary legal/platform sources, consistency review and frozen docs",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "scopeBoundary": "Only own documentation/journal/artifacts. No UI/schema/code changes, secret access, real data, messages to customers/others, provider calls or moderation decisions. No DMCA registration/safe-harbor/ops or hosted activation inferred.",
+  "id": "8dbc5c32-c3b7-4af3-b7db-083c595a11c9",
+  "recordedAt": "2026-11-18T22:14:49.408Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,135 @@
+{
+  "kind": "change",
+  "changeId": "data-loading-unification-20261018",
+  "status": "ready",
+  "summary": "Share scoped read engine and lifecycle scheduler across web and installed iOS, retain warm views without duplicate automatic GETs, reduce report read projections, and add bounded anonymous local diagnostics; preserve authorization and financial writes",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/read/route.ts",
+    "app/api/pos/owner/bookings/route.ts",
+    "app/api/pos/owner/reports/route.ts",
+    "app/api/salon-profile/content/route.ts",
+    "app/market/market-experience-client.tsx",
+    "app/staff/my-work/staff-my-work-client.tsx",
+    "app/staff/today/today-dashboard-client.tsx",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "lib/app-local-resource.ts",
+    "lib/daily-pos-report.ts",
+    "lib/experience-resource-cache.ts",
+    "lib/fetch-workspace-resource.ts",
+    "lib/operational-report.ts",
+    "lib/pos-workspace-sync.ts",
+    "lib/read-refresh-scheduler.ts",
+    "lib/read-request-metrics.ts",
+    "lib/read-request-timing.ts",
+    "lib/use-experience-resource.ts",
+    "lib/use-live-experience-refresh.ts",
+    "lib/use-staff-read-resource.ts",
+    "lib/workspace-resource-response.ts",
+    "tests/app-local-resource-races.test.mjs",
+    "tests/app-local-resource-refresh.test.mjs",
+    "tests/app-local-shared-read-ui.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/experience-resource-cache.test.mjs",
+    "tests/live-workspace-experience.test.mjs",
+    "tests/navigation-cache-reliability.test.mjs",
+    "tests/read-refresh-runtime-ui.test.mjs",
+    "tests/read-refresh-scheduler.test.mjs",
+    "tests/read-request-observability.test.mjs",
+    "tests/report-read-optimization.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\data-loading-unification-20261018\\source",
+    "baselineCommit": "cbaaa48c524c870888cebf80b5f1f0c83aeadc53",
+    "overlaySha256": "fcfc76b99c15de92c0253a560dd510d3f5155b3a33251e5f3af32b332ecaad34"
+  },
+  "dependencies": [
+    "navigation-cache-release-integration-20261018"
+  ],
+  "validation": [
+    {
+      "name": "Chrome regression suite: 73 passed; two production-server cases subsequently passed separately",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/data-loading-unification-20261018/regressions-complete.log"
+    },
+    {
+      "name": "Production Next.js navigation: 2/2 passed, retained DOM/assets and sensitive-form credential clearing",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/data-loading-unification-20261018/production-navigation.log"
+    },
+    {
+      "name": "WebKit: 6/6 lifecycle, weak-network, revisit, scope and progressive-loading cases passed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/data-loading-unification-20261018/webkit-complete.log"
+    },
+    {
+      "name": "Operational/Today report baseline-output differential checks: 7/7 passed within regression suite",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/data-loading-unification-20261018/regressions-complete.log"
+    },
+    {
+      "name": "Next.js production build including TypeScript passed; background dispatch disabled",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/data-loading-unification-20261018/web-build-result.json"
+    },
+    {
+      "name": "Targeted ESLint and source whitespace check passed; generated third-party JS template whitespace excluded",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/data-loading-unification-20261018/lint-final.log"
+    },
+    {
+      "name": "Local iOS bundle generated, 344 file hashes verified, 96 routes and 322 commands, shipped CSS/HTML/assets retained",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/data-loading-unification-20261018/native-bundle-verification.json"
+    }
+  ],
+  "limitations": [
+    "Not deployed or uploaded. No new physical-iPhone or native XCTest/archive run. Future release must integrate against exact then-live web and last-uploaded iOS baselines.",
+    "No persistent server-side report-result cache or database migration introduced. Existing 5000-row source limits and truncation warnings retained.",
+    "Measured query-count reductions do not establish production latency or prove the reported live timeout is resolved."
+  ],
+  "id": "cc26a072-17b4-4834-af6e-74000a2c1d0c",
+  "recordedAt": "2026-10-18T18:33:39.210Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\data-loading-unification-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/app-local/read/route.ts": "f58b58ed799955a020fb8f959a2faf3f4a3d1ac59e65fa6069fb78e40f8485c1",
+    "app/api/pos/owner/bookings/route.ts": "64f72774d1824c2af1661102f5477fa997f341b2c4bea6595f34a25275106fde",
+    "app/api/pos/owner/reports/route.ts": "45bd5a126a5afd5abddb89349d014a17c07dec7b5f486f015ba7cfb8f64f2b64",
+    "app/api/salon-profile/content/route.ts": "8012198c1ec582d5ac4168c0e95f14160589eb5a373f006e4aad877a507dcdf8",
+    "app/market/market-experience-client.tsx": "f6df11ee4e9a91b4d187c9eb249211025438efa77d41c7d4f9573bbbf7281db1",
+    "app/staff/my-work/staff-my-work-client.tsx": "60dc389edf356f75af0a6caf060e5e2c830054293431f6b58f35c86ad98413c5",
+    "app/staff/today/today-dashboard-client.tsx": "8f92419b880b5611d22086f6c31035a32b0fd92232448aab074376a8d044bbbe",
+    "ios/Reylumi/LocalAppBundle/app.js": "c9ab7b554a10617a940d434a0aaf5578e1a560e7aa917f2d6f9a44f00b112e49",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "14f3399729c5ab2e6e4e901ddeea0f1c53e7968f46be4e5013b29d391d6037e4",
+    "lib/app-local-resource.ts": "eeffc34a9cf6f817921baa1f106f193334d35395fe1c0bdedf9f3c7a251d3cf7",
+    "lib/daily-pos-report.ts": "145d1431ed785c76e70b3649005c6179b981b51a7eaa7b3b7644deddef440991",
+    "lib/experience-resource-cache.ts": "cfbe5784cce673823cec45b90dbe6dbe57ac8a9b026ec2d654b206b9eedb5400",
+    "lib/fetch-workspace-resource.ts": "b4cb4451963a7bb2fccbae0cd5ada528e15636de9903c86d915b87f97831438e",
+    "lib/operational-report.ts": "8156361e3a0bbf7108ea03d7af83c02c966a4a9a3e790cb8a8ed8066657c255c",
+    "lib/pos-workspace-sync.ts": "2928aee5c6fa9b79432ca82f1281cb295740cefeb1e061e759fba33a5ed9a319",
+    "lib/read-refresh-scheduler.ts": "7c327c55083c54dc095ce5a5d1143c60b03fd488870ee821e8b786a390f1f6e5",
+    "lib/read-request-metrics.ts": "e0273a69e04ff2939290e7b838cbe59c0116c8f2e144a82b8f121dbfa46eb44f",
+    "lib/read-request-timing.ts": "466406392efc5e06396bd46169320322ef9929de4df4d63ec4fb6205a3a6702d",
+    "lib/use-experience-resource.ts": "43ee64631469544d2dfd53cfcd33b57ccdf34f95c87cf90ab241a6aa437ee178",
+    "lib/use-live-experience-refresh.ts": "8e48a856feaf680224699970c621e9950c5b20ab023dfb067eacccfcf218c20a",
+    "lib/use-staff-read-resource.ts": "600440cf3632b00e54a866747dae87a87b79a092aa63b31e4b0af19569205f51",
+    "lib/workspace-resource-response.ts": "902cd9274982e9672c4fdc157f726819faa96e35ee28754c99ca733c5a1d6a07",
+    "tests/app-local-resource-races.test.mjs": "f62d93851bbc70c2f689fd487afd4dd8d746d7a75e11f3f6920e6afb69ed942a",
+    "tests/app-local-resource-refresh.test.mjs": "a3df55e0b27010f487e72e527f78199c28ed804f62ffe31bdf70b252afe4e225",
+    "tests/app-local-shared-read-ui.test.mjs": "701f6a19c3180d514eba8f65f415c7f207b1957a98300e004ba2470839e6f0bd",
+    "tests/experience-auth-availability.test.mjs": "613230287c5ae14594feea151f47fbe8de912ee630afd19f3739863af8403acf",
+    "tests/experience-resource-cache.test.mjs": "81304a6ded26632b991200190f6eeab065d647e41929541b42c10cc656f04da3",
+    "tests/live-workspace-experience.test.mjs": "c6ac62da28ecfaa58b128e8829cee4e50df83065abdba463965937499d6342b5",
+    "tests/navigation-cache-reliability.test.mjs": "1717c3d1e2bb2edabf32594f4aa16e5caf6a48d12fc19b7d33743f2f2d2cab44",
+    "tests/read-refresh-runtime-ui.test.mjs": "b4b9f2e1514151feafe95a12efe293aee72bdd448e7097032b6bae9abfee09b0",
+    "tests/read-refresh-scheduler.test.mjs": "ae7ffa0b4f7fe20a218457316debe82390c7df05210b55563cac4edf17068fb0",
+    "tests/read-request-observability.test.mjs": "00bad509b38168ad0e7a0a5ebaa86e6e8c77730b78e16767427149bca90d34e9",
+    "tests/report-read-optimization.test.mjs": "bfef1f3ed2e93406e0ff0734a320c487052cb6490fd6d0ec91b0f287841ff9dd"
+  }
+}

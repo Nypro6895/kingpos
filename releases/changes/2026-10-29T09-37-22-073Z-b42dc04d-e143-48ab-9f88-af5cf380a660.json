@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "pos-shared-header-single-ticket-toolbar-20261029",
+  "status": "working",
+  "summary": "Live and real iPhone66 QA found residual global POS header hide rule and native Ticket duplicate legacy filters. Restore shared header, measure remaining viewport on all device layouts, retain single current native Ticket toolbar and original filtering/authority.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/globals.css",
+    "app/pos/owner-notebook-menu.css",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-local-panels.tsx"
+  ],
+  "source": {
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Browser live header issue and physical66 duplicate toolbar reproduced",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/live-browser-smoke.json"
+    },
+    {
+      "name": "Patch functional/viewport checks and final release",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "b42dc04d-e143-48ab-9f88-af5cf380a660",
+  "recordedAt": "2026-10-29T09:37:22.073Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

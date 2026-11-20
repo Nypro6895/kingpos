@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "cold-network-critical-resources-20261015",
+  "status": "working",
+  "summary": "Follow actual live weak-network profiling: blocking CSS competed with194KB globally preloaded unused fonts and160KB compressed eager Vietnamese dictionary. Defer unused fonts and load optional translation only when required; preserve auth, translations and retained drafts.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/fonts.ts",
+    "components/workspace-language.tsx",
+    "tests/cold-network-startup-ui.test.mjs"
+  ],
+  "source": {
+    "baseCommit": "7101aaba39c4d16c9ddc4f43450ce3621bb2ce93",
+    "observedDeploymentId": "dpl_DSMbriHBZG7KthtT1Cnqdcm3Jxkk"
+  },
+  "validation": [
+    {
+      "name": "Live CDP waterfall identifies exact resource competition",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/cold-network-20261015/live-waterfall.json"
+    },
+    {
+      "name": "New source build/browser guard/draft/language checks and live weak benchmark",
+      "result": "pending"
+    }
+  ],
+  "id": "f7d5d2f2-73d6-441d-a002-41cb5e9bc372",
+  "recordedAt": "2026-10-16T01:07:30.667Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

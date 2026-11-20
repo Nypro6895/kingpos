@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "quality-session-closing-integration-20261103",
+  "status": "ready",
+  "summary": "Integrate bounded native session reset recovery and neutral autosave Closing history into the current Reports and Expenses source",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "tests/app-local-session-reset-recovery.test.mjs",
+    "docs/ios-session-reset-recovery-20261103.txt",
+    "docs/ios-session-reset-deploy-queue-20261103.txt",
+    "app/reports/daily-input-inline-history.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "tests/inline-financial-history-browser.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\release-combined-20261103\\resumed-integration-validation\\frozen-session-closing",
+    "baselineDeploymentId": "dpl_7KPr3mYLqFKMBxdjXTTKNS7fm3rS",
+    "baselineCommit": "645d331af141ff7730f7e38258262ad8461cad75",
+    "sourceSha256": "c99fa6e66af62cccbbd4a6ae4448f854d069baa28e51f903b3adb6c6c8a1972a"
+  },
+  "validation": [
+    {
+      "name": "New assembled-source scoped regression and original owning browser fixtures",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\release-combined-20261103\\resumed-integration-validation\\completed-summary.json"
+    },
+    {
+      "name": "Affected TypeScript/TSX lint and whole-project no-emit TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\quality-combined-release-20261103\\artifacts\\release-combined-20261103\\resumed-integration-validation\\lint-diagnostics.json"
+    }
+  ],
+  "dependencies": [
+    "ios-session-reset-recovery-20261103",
+    "closing-save-history-20261103"
+  ],
+  "incorporatesEvents": [
+    "d10b98da-6364-43df-a0ea-95677ddd7e11",
+    "4f7877c9-3250-4ae0-8624-f08da4053cb5",
+    "7beda914-d92d-45de-8d6c-14183f940728"
+  ],
+  "previousWorkingEvent": "141ae6d4-dd33-4ed9-89f0-8d5a38cfea9a",
+  "acceptanceLimits": "Local integrated source only. No production SQL/env/provider operations or physical acceptance of a new binary; root owns final build, publication and device verification.",
+  "id": "c649701f-0231-4843-a19b-4819a3bc1ec9",
+  "recordedAt": "2026-11-04T02:56:11.795Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "20679b9e6546a5f3869ef2d53fa8bf3cf56d25fa44dcfc04de0e43594b8c1787",
+    "tests/app-local-session-reset-recovery.test.mjs": "c7e6c6714ad0bd79fd04b6d6d9c81e6aa3295fc1612ebac429a8b250ea5a34d4",
+    "docs/ios-session-reset-recovery-20261103.txt": "3d2d890bca1bebf8a975a5472a2581ca7f53b8a9b81bfdefc66938555e198e40",
+    "docs/ios-session-reset-deploy-queue-20261103.txt": "672132bb216f39a2fb724081ab92776d5d927551414897cc2ffb94daba41d922",
+    "app/reports/daily-input-inline-history.tsx": "2f13dbf8715811cd6b33a97aa6ef9f86b51349be787fd1551efdf525e3042d2d",
+    "app/reports/owner-live-reports.tsx": "b18e83ddff0bba09eb0570839cbe11f9a6daf642ebcc256aa090305b9bb8ae0b",
+    "tests/inline-financial-history-browser.mjs": "18ce14c9a0176e0f13d86af5babd18d0d644c4b86c08d64ae0542dd5d6233f2f"
+  }
+}

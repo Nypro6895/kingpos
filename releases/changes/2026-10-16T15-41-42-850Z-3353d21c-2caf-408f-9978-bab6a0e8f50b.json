@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "owner-pos-local-platform-20261016",
+  "status": "working",
+  "summary": "Retain actual owner POS panels locally with lease-scoped durable read models and narrow conditional Check-in reads; preserve existing financial and PIN actions.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/pos/(workspace)/layout.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-local-workspace.tsx",
+    "app/pos/owner-local-panels.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-check-in-actions.ts",
+    "app/pos/portable/check-in/portable-check-in-client.tsx",
+    "app/api/pos/owner/check-in/route.ts",
+    "app/api/pos/owner/panels/route.ts",
+    "app/api/pos/owner/workspace/route.ts",
+    "lib/owner-local-workspace.ts",
+    "lib/owner-pos-read-model.ts",
+    "lib/owner-workspace-client.ts",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/bookings/owner-live-booking-workspace.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "tests/owner-local-workspace-ui.test.mjs",
+    "tests/owner-check-in-readmodel.test.mjs"
+  ],
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "validation": [
+    {
+      "name": "Scoped owner read model, retained UI, authority and unchanged command regression tests",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "id": "3353d21c-2caf-408f-9978-bab6a0e8f50b",
+  "recordedAt": "2026-10-16T15:41:42.850Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

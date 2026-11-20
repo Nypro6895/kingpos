@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "combined-drako-integration-20261026",
+  "status": "working",
+  "summary": "Integrate authorized completed product deltas onto exact authenticated production source; preserve shipped Today phases/read authority/Explore and exclude Market/Pilot/Pet/QA runtime. No publication until full source/test/native gates.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "snapshot": "C:/Users/giuse/Documents/Codex/2026-10-25/task-2/candidate-drako-20261026",
+    "baselineDeploymentId": "dpl_DDAcofiK8S9XJZhfpZDGFzPGV92c",
+    "baselineSourceSha256": "dc9a63ddb0a53c24dcb9f99790e917bd81573ab4783e9f0e9c0a2fb611a0c86e",
+    "baselineCommit": "6e230018c44eab3a518725d1bf221c7157c471aa"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Fresh integrated lint/typecheck/build, isolated full backend workflow/concurrency and Simulator",
+      "result": "pending"
+    }
+  ],
+  "id": "c72be571-5b9a-48c3-bfc3-85f02ed8b810",
+  "recordedAt": "2026-10-26T02:42:50.589Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-25\\task-2\\candidate-drako-20261026",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

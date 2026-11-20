@@ -1,0 +1,50 @@
+{
+  "kind": "release",
+  "summary": "Publish profile defaults, Beauty Home/Library, guarded Quick QR read and salon basic Camera QR web fallback; Windows0.7.3 receives hosted update; Market/Gift/Reward excluded",
+  "changes": [
+    "43cf5a35-e8b6-48e1-a77d-266730a41876",
+    "f657fdfd-bb98-4f2a-93af-6b5100a5e6d1",
+    "b5912f54-9380-4c2b-ae99-2e3f03715a02",
+    "d5a0348e-d93b-4ce5-9ea4-a95505871cad",
+    "3fa27627-e468-4d69-96c5-b369038fb1cf"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_82omCD98ajxqjLMWRPtjyv2qRZV7",
+      "baselineDeploymentId": "dpl_8XRRsUnjuDvShkguZML5qagT2vFa",
+      "sourceSha256": "54c9c573a9f5696a464eab2f8cadd5757464c5a854043f1105219bd1f70ccc69",
+      "overlaySha256": "167e9876309a033797e69f9bf2ad84942f744cbfff0c4b2b5eac4b8f6478ec90",
+      "evidence": "artifacts/release-20261030/web-live-source-verified.json; artifacts/release-20261030/http-live.json; artifacts/release-20261030/portable-live-qa.json"
+    }
+  },
+  "sourceCommit": "7f5b4d81f6f9c58385d38db3a3b9c9f741b45993",
+  "windows": {
+    "version": "0.7.3",
+    "delivery": "hosted-web-update",
+    "newInstaller": false,
+    "downloadEvidence": "artifacts/release-20261030/portable-download-verified.json",
+    "liveEvidence": "artifacts/release-20261030/portable-live-qa.json"
+  },
+  "migration": {
+    "at": "2026-10-30T06:50:08.192Z",
+    "version": "20261030041000",
+    "name": "basic_personal_camera_checkin",
+    "entryRpc": "personal_checkin_entry(text)",
+    "remainingGateParts": 1,
+    "applied": true,
+    "transaction": true,
+    "evidence": "artifacts/release-20261030/hosted-qr-migration.png"
+  },
+  "held": [
+    "Market excluded by owner",
+    "Gift Card/Rewardlumi financial contract reconciliation",
+    "Universal Link signing/profile capability",
+    "Physical Camera and signed new native acceptance"
+  ],
+  "rollback": "Restore prior web alias only with current-alias guard; additive QR migration retained compatible and no data deleted",
+  "id": "d70f6e8b-e3b6-429c-b6e6-ce1c62450480",
+  "recordedAt": "2026-10-30T06:50:08.339Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030"
+}

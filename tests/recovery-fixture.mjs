@@ -1,0 +1,52 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {PGlite} from '@electric-sql/pglite';
+const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+async function setup(){
+ const db=new PGlite();
+ await db.exec(`create role anon;create role authenticated;create role service_role;
+ create schema auth;create schema storage;
+ create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,invited_at timestamptz,last_sign_in_at timestamptz,banned_until timestamptz);
+ create table auth.sessions(id uuid primary key,user_id uuid,created_at timestamptz default now(),updated_at timestamptz default now());
+ create table auth.refresh_tokens(id uuid primary key default gen_random_uuid(),session_id uuid);
+ create table auth.mfa_factors(id uuid primary key default gen_random_uuid(),user_id uuid,factor_type text,status text);
+ create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+ create table storage.objects(bucket_id text,name text);
+ create table users(id uuid primary key default gen_random_uuid(),auth_user_id uuid unique,email text,phone text,display_name text,first_name text,last_name text,status text default 'active',language text default 'en',timezone text default 'America/Chicago',created_at timestamptz default now(),updated_at timestamptz default now(),last_login_at timestamptz);
+ create table accounts(id uuid primary key,name text,status text default 'active');
+ create table locations(id uuid primary key,account_id uuid,name text,status text default 'active');
+ create table staff(id uuid primary key default gen_random_uuid(),salon_id uuid,account_user_id uuid,user_id uuid,is_active boolean default true);
+ create table roles(id uuid primary key,account_id uuid,code text);
+ create table account_memberships(id uuid primary key default gen_random_uuid(),account_id uuid,user_id uuid,role_id uuid,status text,joined_at timestamptz,unique(account_id,user_id));
+ create table salon_memberships(id uuid primary key default gen_random_uuid(),account_id uuid,salon_id uuid,user_id uuid,role_id uuid,status text,joined_at timestamptz,unique(salon_id,user_id));
+ create table platform_admin_roles(id uuid primary key,slug text,name text);
+ create table platform_admin_permissions(id uuid primary key default gen_random_uuid(),code text unique,name text,description text,category text,is_system boolean);
+ create table platform_admin_role_permissions(role_id uuid,permission_id uuid,unique(role_id,permission_id));
+ create table platform_admin_memberships(id uuid primary key,user_id uuid,role_id uuid,status text);
+ create table platform_admin_audit_logs(id uuid primary key default gen_random_uuid(),actor_user_id uuid,action text,target_type text,target_id uuid,reason text,metadata jsonb,before_data jsonb,after_data jsonb);
+ create table platform_reports(id uuid primary key default gen_random_uuid(),report_number text default 'CASE-TEST',subject_user_id uuid,category text,summary text,description text,source text,priority text,status text default 'new',assigned_membership_id uuid,created_by_user_id uuid,resolution text,resolved_at timestamptz,closed_at timestamptz,created_at timestamptz default now(),updated_at timestamptz default now());
+ alter table platform_reports add column reporter_user_id uuid,add column subject_organization_id uuid,add column subject_location_id uuid;
+ create table account_login_sessions(id uuid primary key default gen_random_uuid(),user_id uuid,revoked_at timestamptz,revoked_by_user_id uuid);
+ create table account_trusted_devices(id uuid primary key default gen_random_uuid(),user_id uuid);
+ create function current_public_user_id() returns uuid language sql stable as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
+ create function platform_admin_has_permission(text) returns boolean language sql stable as $$select $1=any(string_to_array(coalesce(current_setting('test.permissions',true),''),','))$$;
+ create function platform_admin_require_permission(text) returns void language plpgsql as $$begin if not platform_admin_has_permission($1) then raise exception 'Permission denied: %',$1;end if;end$$;
+ create function platform_admin_normalize_reason(text) returns text language plpgsql as $$begin if $1 is null or length(btrim($1))<3 then raise exception 'Reason required';end if;return btrim($1);end$$;
+ create function get_platform_admin_user_detail(uuid) returns jsonb language sql as $$select jsonb_build_object('user',jsonb_build_object('id',id),'organization_memberships','[]'::jsonb,'salon_memberships','[]'::jsonb) from users where id=$1$$;
+ create function admin_set_user_access(uuid,text,boolean) returns jsonb language plpgsql as $$begin perform platform_admin_require_permission(case when $3 then 'admin.users.suspend' else 'admin.users.restore' end);if $1=current_public_user_id() then raise exception 'Cannot change own access';end if;update users set status=case when $3 then 'suspended' else 'active' end where id=$1;return '{}';end$$;
+ `);
+ for(let n=1;n<=4;n++)await db.query('insert into users(id,auth_user_id,email,display_name)values($1,$1,$2,$3)',[id(n),`user${n}@example.test`,`User ${n}`]);
+ for(let n=1;n<=4;n++)await db.query('insert into auth.users(id,email)values($1,$2)',[id(n),`user${n}@example.test`]);
+ await db.query("insert into platform_admin_roles values($1,'platform_owner','Owner')",[id(10)]);
+ await db.query("insert into platform_admin_memberships values($1,$2,$3,'active')",[id(11),id(1),id(10)]);
+ await db.exec(fs.readFileSync('supabase/migrations/202610070018_admin_users_workspace.sql','utf8'));
+ await db.exec(fs.readFileSync('supabase/migrations/202610070020_admin_users_workspace_complete.sql','utf8'));
+ await db.exec(fs.readFileSync('supabase/migrations/202610070021_admin_store_presentation.sql','utf8'));
+ await db.query("select set_config('test.uid',$1,false),set_config('test.permissions',$2,false)",[id(1),'admin.locations.read,admin.users.read,admin.users.create,admin.users.auth.manage,admin.users.read_sensitive,admin.users.update,admin.recovery.read,admin.recovery.manage,admin.reports.create,admin.reports.read,admin.reports.update,admin.reports.assign,admin.reports.resolve,admin.users.memberships.manage,admin.team.manage,admin.users.suspend,admin.users.restore']);
+ return db;
+}
+const data={category:'account_takeover',description:'Unrecognized email change and login.',priority:'high',recovery_contact:'recovered@example.test',identity_verified:true,contact_verified:true,ownership_verified:true,verification_evidence:'Identity and recovery contact checked independently.'};
+async function makeCase(db,n=2){return (await db.query('select admin_user_case_save($1,$2,null,$3::jsonb,$4) id',[id(n),id(100+n),JSON.stringify(data),'Recovery review'])).rows[0].id;}
+
+export {setup,id,data,makeCase};

@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "app-local-link-navigation-20261016",
+  "status": "ready",
+  "summary": "Route original raw links safely and show signed Help full images locally with navigation/Activity/scope cleanup",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-link-navigation.ts",
+    "tests/app-local-link-navigation.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\links-frozen-source"
+  },
+  "validation": [
+    {
+      "name": "2 actual raw-anchor and Help/image browser cases; clean lint",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/links-validation.json"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "id": "2bf07c7b-cb67-4ded-808a-c57f917ebbcf",
+  "recordedAt": "2026-10-16T16:50:56.027Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-link-navigation.ts": "52e636fe6c787b83c71f6de35a97fa18eb069c7e1233127545391066afbe5d85",
+    "tests/app-local-link-navigation.test.mjs": "bd2815dd9ef9a10b262410d11529c21d8ba0afce5d2241f35879900e2d6d0600"
+  }
+}

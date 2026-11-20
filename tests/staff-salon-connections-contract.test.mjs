@@ -198,7 +198,7 @@ test("staff-linked accounts remain available after staff salon hydration", () =>
     "async function setPersistentCookie",
   );
   const staffLoadIndex = contextBlock.indexOf(
-    "const staffLinkedContext = await loadStaffSalons",
+    "    loadStaffSalons({ accountsById, supabase, user })",
   );
   const availableAccountsIndex = contextBlock.indexOf(
     "const availableAccounts = dedupeById([...accountsById.values()])",
@@ -214,7 +214,7 @@ test("staff-linked accounts remain available after staff salon hydration", () =>
 
   const staffContextBlock = sourceBlock(
     currentContext,
-    "export async function getCurrentStaffBusinessContext",
+    "async function loadCurrentStaffBusinessContext",
     "async function getCurrentBusinessContextAuth",
   );
 

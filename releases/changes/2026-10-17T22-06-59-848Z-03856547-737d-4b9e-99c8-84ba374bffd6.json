@@ -1,0 +1,124 @@
+{
+  "kind": "change",
+  "changeId": "owner-campaign-workspace-20261017",
+  "status": "ready",
+  "summary": "Approved borderless owner Campaigns workspace with compact two-row history, live result charts, credit limits and payments; owner More ordered by daily operations, management, growth and support Integrated and validated against dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ with iOS 1.0.0 package parity.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/campaigns/page.tsx",
+    "app/campaigns/actions.ts",
+    "app/campaigns/campaign-entry.tsx",
+    "app/campaigns/campaign-modal.tsx",
+    "app/campaigns/campaign-results.tsx",
+    "app/campaigns/campaign-ui.module.css",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/credit-actions.ts",
+    "app/campaigns/credit-panel.tsx",
+    "components/owner-campaign-dialog.tsx",
+    "components/owner-campaign.module.css",
+    "components/owner-campaign-runtime.tsx",
+    "types/owner-campaign.ts",
+    "lib/campaign-credit-display.ts",
+    "lib/campaign-payments.ts",
+    "lib/market-card.ts",
+    "lib/notification-feed-items.ts",
+    "lib/vietnamese-campaign-copy.json",
+    "lib/vietnamese-dictionary.ts",
+    "app/market/market-client.tsx",
+    "app/market/sample-apps.ts",
+    "app/role-navigation.ts",
+    "app/(app)/more/page.tsx",
+    "app/api/campaigns/payment-webhook/route.ts",
+    "supabase/migrations/20261017210000_owner_campaign_workspace.sql",
+    "tests/campaign-market-credits.integration.test.mjs",
+    "tests/campaign-card-setup.test.mjs",
+    "tests/campaign-credit-display.test.mjs",
+    "tests/campaign-workspace-runtime.test.mjs",
+    "tests/owner-campaigns-runtime.test.mjs",
+    "tests/plugin-navigation-ui.test.mjs",
+    "tests/fixtures/plugin-navigation-preview.mjs",
+    "tests/navigation-shell-route-context.test.mjs",
+    "tests/unified-notification-feed.test.mjs",
+    "docs/owner-campaign-workspace-20261017.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "sourceEventId": "8019fdf7-8361-4d63-957b-8dd5c79b44ee"
+  },
+  "supersedesEvents": [
+    "8019fdf7-8361-4d63-957b-8dd5c79b44ee"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/web-build.log"
+    },
+    {
+      "name": "277 integration/browser regression cases; initial five fixture failures repaired and rerun, two Chrome-only tests explicitly executed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/validation-summary.json"
+    },
+    {
+      "name": "Actual native package and four version-preflight checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/final-package-tests.log"
+    },
+    {
+      "name": "Rollback-only actual-schema rehearsal, 16 functions and seven preserved authorities",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/database-rehearse.json"
+    },
+    {
+      "name": "Existing live Stripe webhook receives card setup event",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/payment-webhooks.json"
+    }
+  ],
+  "id": "03856547-737d-4b9e-99c8-84ba374bffd6",
+  "recordedAt": "2026-10-17T22:06:59.848Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\release-audit-ios-1-0-0-20261017",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/campaigns/page.tsx": "9bdb230e59dbb01c572bc4ff41c60b2aa0ba2b9c061789e9df4474442673cc91",
+    "app/campaigns/actions.ts": "33ea411aa87ab37869552ddcca4e5dd021215c684890e1c58f06be7a0cf88f32",
+    "app/campaigns/campaign-entry.tsx": "1b9bc33bc73502e16222d325a89d82cb9cc408d1d19140e80cc3df559b2cef42",
+    "app/campaigns/campaign-modal.tsx": "3480f0a031ddef5ae4a3aebfa98e7b2a26ddaa7ded45d1a877399b8c6dd347e0",
+    "app/campaigns/campaign-results.tsx": "7529bf08dba24b06bed3d35d150080b762fb06b0b3e48042385f0f321c7fea8d",
+    "app/campaigns/campaign-ui.module.css": "e1013712de4dd7d938c5ee7e41cdea663c32a86df8a0d4a4dff46f4e1f64ecda",
+    "app/campaigns/campaign-workspace.tsx": "3bdbb0aa077fe9758c5dbb339f6e09b402155501483d59c9505831311bba4770",
+    "app/campaigns/credit-actions.ts": "b7a010d1122b2cf8d6e64c9a29f5a5716ee174fe6408e09672bfd6e81ffaa17e",
+    "app/campaigns/credit-panel.tsx": "f5f1bec686d0ad9a68ca5bcec06b9f040acc1c351ffd58766328a80d19a858fa",
+    "components/owner-campaign-dialog.tsx": "61828cbf1b19ee93a8759c869eee2c3446aa4c4cf123bf3cd063688bc317badf",
+    "components/owner-campaign.module.css": "331fa129676e7e1476ff09087117e461f4bc475e006cce1c0cb3ab2442eca0d0",
+    "components/owner-campaign-runtime.tsx": "27d5ef8785a8d17fb04b956359c155be042e9334bc05ac660a6da46fa91cf2f5",
+    "types/owner-campaign.ts": "8cdde54f7500427f3760c84b4f5c5010009902f4dbd5d5af8547329ddabe0bdb",
+    "lib/campaign-credit-display.ts": "b5774c16e0d572cff00be37a021b54417ad4c9184c99971b13b07fb7c4bc53ea",
+    "lib/campaign-payments.ts": "b6492d41180ec3969824046936a5f0ca20096a7f17923d73175022196733e68e",
+    "lib/market-card.ts": "ed24b514fcee4851c7d17e3d422167ea8f96bc24574294059db195bc541fbe7a",
+    "lib/notification-feed-items.ts": "f9f82897ca33bf3036d3d4d51f9cf9bb9972fcd8bd2b10fb759bcea86b841048",
+    "lib/vietnamese-campaign-copy.json": "74085edfa2056b2c97ed12cd5f2d26945c18fb4e7f2e6f81b668208aec40f5c3",
+    "lib/vietnamese-dictionary.ts": "ffafefbb94869adc0f697ae90490a34f36711448bfc6d2e3bfcd666e4509cac3",
+    "app/market/market-client.tsx": "70a2afde786fd39fb1c0d17bbc7994cb8c86af9f53a65415729e1b60a72389d5",
+    "app/market/sample-apps.ts": "a0ba718fd55754d8e8b7ec6cd98cfdbb6786e0938c4a716e7d65fa635b53ef97",
+    "app/role-navigation.ts": "9a3dc3f87d9a3a0cfd98ede58ec3bbf65d6fb7cf7f37ca654a1e949427c2817c",
+    "app/(app)/more/page.tsx": "a6ea017977bfeef9f0412cf47ab21ebbd662780f7e92bc1be87b5af9052c88f1",
+    "app/api/campaigns/payment-webhook/route.ts": "99bf5b8127c9ed36f3a1aae536096d3202a89b78d6b26106766f102e15c153cf",
+    "supabase/migrations/20261017210000_owner_campaign_workspace.sql": "74ecb57bb27afcf4e302e2d5645ee2b702b4e14b05470077279018659aa762f3",
+    "tests/campaign-market-credits.integration.test.mjs": "e398e88829fa60af37ac1787542e3ddce569969da6a7319ac430e2e321594857",
+    "tests/campaign-card-setup.test.mjs": "a8bb64d672c51759b3faa149c9681b9a36a6194a782d12a4b244c890efa6548c",
+    "tests/campaign-credit-display.test.mjs": "4a967f8c97b8d2819f45b6ba4107d8a3fd443e548976a6fd11024b06b98d902e",
+    "tests/campaign-workspace-runtime.test.mjs": "0c7fb4afa254e4c3f34f1eaec4474f5c6388a7f874b1ce8443d0b037a7f10ad1",
+    "tests/owner-campaigns-runtime.test.mjs": "e7f37b6af09c2f7a4c3578e75c1eb028e3f994995c04191c7cfc255e703d567b",
+    "tests/plugin-navigation-ui.test.mjs": "7bf30ef504dd2836b3a698412bdc9def42cbfe6fccdd889cc1d5c4d6d8625e6b",
+    "tests/fixtures/plugin-navigation-preview.mjs": "899016a5c6ce4bfaf7a51a69ee85e213256a755d29e69159ab6ce3f0244dc8ad",
+    "tests/navigation-shell-route-context.test.mjs": "4674c2d3fef3ee95c9542e5df27cebad39306ab8a6c562a8c4f25fc4b93d5a4b",
+    "tests/unified-notification-feed.test.mjs": "cba3dcbfce36d5034aa97c6311f90b9de1e12826a29d78ce2ecf9c79df309b72",
+    "docs/owner-campaign-workspace-20261017.txt": "c370114179ca457c66ac6a05591443a9feabb17dabb65e6a42db7540d47b0aad"
+  }
+}

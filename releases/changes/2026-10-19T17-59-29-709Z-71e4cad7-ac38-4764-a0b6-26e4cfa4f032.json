@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "ios-server-command-503-trace-20261019",
+  "status": "working",
+  "summary": "Add bounded private-safe per-command iPhone/proxy/server correlation, failure branch codes and observational timing for unexplained503; integrate on validated pending guest/Owner fixes; no deploy.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "proxy.ts",
+    "app/api/app-local/command/route.ts",
+    "lib/app-local-command-trace.ts",
+    "lib/supabase/auth-rest.ts",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift"
+  ],
+  "source": {
+    "commit": "24ae6e9b3c6f40414842e8ae69383a37d8f9e61a"
+  },
+  "dependencies": [
+    "ios-device-report-handoff-20261019"
+  ],
+  "validation": [
+    {
+      "name": "pending-candidate-baseline",
+      "result": "passed",
+      "evidence": "Includes immutable ready event86cf513c-aa88-4b79-86de-5eee4fae3964; prior CI39295504978 on functional6b662672."
+    },
+    {
+      "name": "trace-privacy-regressions-and-cross-platform-validation",
+      "result": "pending"
+    }
+  ],
+  "id": "71e4cad7-ac38-4764-a0b6-26e4cfa4f032",
+  "recordedAt": "2026-10-19T17:59:29.709Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-503-trace-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

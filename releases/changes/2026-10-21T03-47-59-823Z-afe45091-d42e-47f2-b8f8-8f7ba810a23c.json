@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "auth-session-missing-rejection-20261020",
+  "status": "working",
+  "summary": "Recognize the Supabase SDK's confirmed missing-session error while keeping unknown authentication failures unavailable and denied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/supabase/auth-rest.ts",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/read-backend-profile.test.mjs",
+    "tests/read-deadline-sdk-contract.test.mjs",
+    "tests/app-local-command-backend-trace.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos-auth-rejection-20261020",
+    "commit": "87d0791c4c8b107bdfc34bbff884338b2451b6d1"
+  },
+  "validation": [
+    {
+      "name": "Real SDK typed missing-session regression and server/session denial paths",
+      "result": "pending"
+    },
+    {
+      "name": "Unknown400 and unavailable503 remain failed closed",
+      "result": "pending"
+    },
+    {
+      "name": "Focused auth/read/trace regressions and changed-file lint",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "afe45091-d42e-47f2-b8f8-8f7ba810a23c",
+  "recordedAt": "2026-10-21T03:47:59.823Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-auth-rejection-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,81 @@
+{
+  "kind": "release",
+  "summary": "Final remaining-chat release complete: latest main-POS-only status on web and exact-source TestFlight, inheriting12 previously verified Settings typography/gutters Legal-name customer merge and POS picker/Check In changes",
+  "changes": [
+    "4c5e1651-5a06-44dc-ab48-959d2bf3cff2",
+    "3d8fa869-b8fd-4c64-af8f-b8d6ec7dffe8"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_2y9eNg7nYiVU5pSx1zBLZ5PM7EvE",
+      "baselineDeploymentId": "dpl_8BiU47gGHzC16dZR7tpKXtupmWMY",
+      "sourceSha256": "910687df7f57a69abcefa142f7ffe0b356b555e3fa69ddf8ffb24ca15ec01d6e",
+      "overlaySha256": "b1513d3b1702d9e2ef4d3dbb56df829ed299d49321a9d7ef9c71338936165349",
+      "evidence": "artifacts/release-20261029-status/web-live-source-verified.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "70",
+      "commit": "3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631",
+      "evidence": "artifacts/release-20261029-wk-cleanup/availability-verified.json"
+    }
+  },
+  "preservedRelease": "cf7b3391-cb83-4468-a120-5cb7b4c4ece6",
+  "sourceSnapshotCorrection": "76f7ed11-9339-4e33-92b2-f4d5507c86ad",
+  "sourceProof": {
+    "nativeSourceSha256": "646bf46e2e52b5875cd7d46794f48b54ee037cab94219d281144f1c98ae55b95",
+    "bundleSha256": "5ccbbd178b3dc7190fde0765bb80eff3827cb03a71f233cd0ad8238d35dfdcac",
+    "sourceFiles": 2771,
+    "bundleFiles": 346,
+    "run": 40952198217,
+    "tests": 235,
+    "failures": 0
+  },
+  "attempts": {
+    "first": {
+      "status": "failed",
+      "receipt": "0d5d3435-726d-437d-ac94-188636501026",
+      "reason": "One isolated WebKit offline fixture timeout; no upload"
+    },
+    "second": {
+      "status": "failed",
+      "sameCommit": true,
+      "receipt": "86e6ce47-cf8b-4c8f-accd-b3a46c4e4fd9"
+    },
+    "cleanupSource": {
+      "status": "passed",
+      "productCodeUnchanged": true,
+      "assertionsAndBudgetsUnchanged": true,
+      "run": 40952198217
+    }
+  },
+  "deferred": [
+    {
+      "changeId": "market-publishers-20261029",
+      "reason": "Underlying independent Developer Market platform not present in production; required older chain remains needs-integration with commerce/provider acceptance pending. Never overlay publisher-only files."
+    },
+    {
+      "changeId": "payroll-compact-income-20261029",
+      "reason": "Owner explicitly requires history audit and logic agreement before implementation/publication; display-only portions already shipped."
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "reason": "Disabled-compatible code already live; sales activation/financial keys/provider readiness not part of this release."
+    }
+  ],
+  "limitations": {
+    "physicalAcceptance": false,
+    "physicalReason": "Prior iPhone automation enablement blocker retained; no new physical controller run",
+    "appStorePublished": false,
+    "productionCustomerMergeInvokedByQA": false,
+    "realFinancialTransactions": false
+  },
+  "id": "1ccb10a6-36a9-407b-844d-85e39941a608",
+  "recordedAt": "2026-10-29T21:06:46.699Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "filePath": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\releases\\history\\2026-10-29T21-06-46-699Z-1ccb10a6-36a9-407b-844d-85e39941a608.json"
+}

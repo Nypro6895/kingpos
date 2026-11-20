@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "changeId": "campaign-delivery-fix-20261019",
+  "status": "ready",
+  "summary": "Unblock campaign delivery with verified GPS ZIP areas, normalized location labels and one independent Explore ad placement even while organic content is empty/loading. Preserve admission, credits, historical targeting, approval and dates.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/campaigns/delivery/route.ts",
+    "components/owner-sponsored-post.tsx",
+    "app/explore/explore-feed.tsx",
+    "app/explore/explore-discovery-feed.tsx",
+    "lib/campaign-delivery-area.ts",
+    "lib/location/explore-gps-area-data.ts",
+    "lib/location/providers/census-area-reverse.ts",
+    "tests/campaign-delivery-area.test.mjs",
+    "tests/campaign-delivery-route.test.mjs",
+    "tests/campaign-delivery-placement-ui.test.mjs",
+    "tests/explore-gps-area.test.mjs",
+    "tests/explore-gps-area-api.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-delivery-fix-20261019\\snapshot"
+  },
+  "validation": [
+    {
+      "name": "Final production build with unchanged source hashes",
+      "result": "passed",
+      "evidence": "artifacts/campaign-delivery-fix-20261019/build-source.json"
+    },
+    {
+      "name": "19 targeting, route and GPS provider checks",
+      "result": "passed",
+      "evidence": "artifacts/campaign-delivery-fix-20261019/tests.log"
+    },
+    {
+      "name": "Browser pending/empty content, rapid GPS changes, stale responses, single view and 320/390/1280 layouts",
+      "result": "passed",
+      "evidence": "artifacts/campaign-delivery-fix-20261019/ui-tests.log"
+    },
+    {
+      "name": "Current Census and production candidates in read-only transaction: 53218 selected, 53202 excluded, no campaign mutation",
+      "result": "passed",
+      "evidence": "artifacts/campaign-delivery-fix-20261019/live-readonly-check.json"
+    },
+    {
+      "name": "Scoped ESLint; existing ExploreFeed warnings unchanged, no errors",
+      "result": "passed"
+    },
+    {
+      "name": "Existing view/click admission suffix preserved verbatim; no SQL, credit, payment or admin-review changes",
+      "result": "passed"
+    }
+  ],
+  "nativeAssessment": {
+    "required": false,
+    "reason": "Web-compatible changes; existing GET and impression endpoints preserved. No native bridge, Swift, permissions or bundled native asset changes."
+  },
+  "notes": [
+    "No production deploy or business-data writes in this task. GPS coordinates use a private POST body and ephemeral memory only. ZIPs are not inferred from a city or nearest salon."
+  ],
+  "id": "4bab1b7b-ead7-4efd-b90a-3eac2b17d8bc",
+  "recordedAt": "2026-10-19T06:29:28.216Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/campaigns/delivery/route.ts": "1db66d6ed8495369be16038355652724dea8e56d2de0b70101bacaca39851769",
+    "components/owner-sponsored-post.tsx": "46d2788aa1dd77dbba3096559edfb7ed2c8cd3a28e68e8c373d8a2b689632815",
+    "app/explore/explore-feed.tsx": "01d9ebbe8a32d268e652ad00cacea0dfe068c93ad66b4f0ca36cc6d4c77760df",
+    "app/explore/explore-discovery-feed.tsx": "986174ad0648f37deea57d1cf4b3228dda30131cb08e0c56202dc53971e1d304",
+    "lib/campaign-delivery-area.ts": "47cfe2602923b91242b4284f23d1ab8ea97a63100c4dcbddfe5d801017cc606e",
+    "lib/location/explore-gps-area-data.ts": "52c621f1a8168e36524349bace65f6efe9fd0c8626ce0ac67cbd52068981f3ce",
+    "lib/location/providers/census-area-reverse.ts": "3f3c39fc6f82553e94f157d100e0a2605c97ce1ce087845e2c9f5fa847b38dfc",
+    "tests/campaign-delivery-area.test.mjs": "0b26814f1a68af0b4111b2f5ea474634cfd1dac77991630c7381523059c32700",
+    "tests/campaign-delivery-route.test.mjs": "3b9f7084776e0f91c1e5de7f5dce1e368a82842af849df19071cfe5c842d6792",
+    "tests/campaign-delivery-placement-ui.test.mjs": "2ce1de2d6e902a398e0f712b28721f122728b95a4c015650e150d7831bae6670",
+    "tests/explore-gps-area.test.mjs": "96a2959498a45d1f330270e63fefb2186598c86c2777c9206d7a14c52450db17",
+    "tests/explore-gps-area-api.test.mjs": "22f38868b11d0979d007931057b19496683f0b62b6acfa0bb7f4388365a8f19f"
+  }
+}

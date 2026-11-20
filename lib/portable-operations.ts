@@ -1,5 +1,5 @@
 "use client";
-import { desktopDevice } from "./portable-device-storage";
+import { portableDevice, nativePortableDevice } from "./portable-device-storage";
 
 export type PortableOperation = {
   sequence?: number; id: string; scope: string; kind: "receipt" | "attendance" | "booking" | "visit";
@@ -29,8 +29,43 @@ function complete(tx: IDBTransaction) {
   });
 }
 function changed() { window.dispatchEvent(new Event(PORTABLE_OPERATIONS_CHANGED)); }
+/** Copy legacy browser outbox entries before native POS editors can mount.
+ * IDs, payloads and ordering stay unchanged, including uncertain upload outcomes.
+ * The source remains intact and a native terminal record always wins on retry.
+ */
+export async function migratePortableOperationsToNative(scope: string): Promise<void> {
+  const native = nativePortableDevice();
+  if (!native || typeof indexedDB === "undefined") return;
+  if (typeof indexedDB.databases === "function") {
+    const databases = await indexedDB.databases();
+    if (!databases.some(item => item.name === "kingpos-portable-operations")) return;
+  }
+  const source = await db();
+  const legacy = await new Promise<PortableOperation[]>((resolve, reject) => {
+    const request = source.transaction("operations").objectStore("operations").getAll();
+    request.onsuccess = () => resolve(request.result.filter((operation: PortableOperation) => operation.scope === scope));
+    request.onerror = () => reject(request.error);
+  });
+  if (!legacy.length) return;
+  const existing = await native.request<PortableOperation[]>({ action: "operations.list", scope });
+  const ids = new Set(existing.map(operation => operation.id.toLowerCase()));
+  for (const operation of legacy.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0))) {
+    if (ids.has(operation.id.toLowerCase())) continue;
+    let checkpointAt: number | undefined;
+    if (operation.kind === "receipt" && typeof operation.payload.localDraftKey === "string") {
+      checkpointAt = await new Promise<number | undefined>((resolve, reject) => {
+        const request = source.transaction("meta").objectStore("meta").get(`receipt:${scope}:${operation.payload.localDraftKey}`);
+        request.onsuccess = () => resolve(typeof request.result === "number" ? request.result : undefined);
+        request.onerror = () => reject(request.error);
+      });
+    }
+    const result = await native.request<{ ok: boolean }>({ action: "operations.import", scope, operation, ...(checkpointAt === undefined ? {} : { checkpointAt }) });
+    if (result?.ok !== true) throw new Error(native.platform === "ios" ? "Could not preserve this iPad's saved tickets. Please try again." : "Could not preserve this device's saved tickets. Please try again.");
+    ids.add(operation.id.toLowerCase());
+  }
+}
 export async function listPortableOperations(scope: string): Promise<PortableOperation[]> {
-  const device = desktopDevice();
+  const device = portableDevice();
   if (device) return device.operations.list(scope);
   const database = await db();
   return new Promise((resolve, reject) => {
@@ -40,7 +75,7 @@ export async function listPortableOperations(scope: string): Promise<PortableOpe
   });
 }
 export async function portableCheckpoint(scope: string, draftKey: string): Promise<number> {
-  const device = desktopDevice();
+  const device = portableDevice();
   if (device) return device.operations.checkpoint(scope, draftKey);
   const database = await db();
   return new Promise((resolve, reject) => {
@@ -52,7 +87,7 @@ export async function portableCheckpoint(scope: string, draftKey: string): Promi
 export async function savePortableOperation(scope: string, kind: PortableOperation["kind"], payload: Record<string, unknown>) {
   const operation: PortableOperation = { id: crypto.randomUUID(), scope, kind,
     occurredAt: new Date().toISOString(), payload: structuredClone(payload), state: "pending" };
-  const device = desktopDevice();
+  const device = portableDevice();
   if (device) {
     await device.operations.save(operation);
     changed();
@@ -72,10 +107,17 @@ export async function savePortableOperation(scope: string, kind: PortableOperati
   return operation;
 }
 async function update(operation: PortableOperation) {
-  const device = desktopDevice();
+  const device = portableDevice();
   if (device) { await device.operations.save(operation); changed(); return; }
   const database = await db(); const tx = database.transaction("operations", "readwrite");
   const done = complete(tx); tx.objectStore("operations").put(operation); await done; changed();
+}
+function replayInput(operation: PortableOperation) {
+  if (operation.kind !== "receipt" || !Object.hasOwn(operation.payload, "printSnapshot")) return operation;
+  // Device-only display metadata is not a financial command or its idempotency
+  // input. Keep the original durable receipt intact for provisional reprints.
+  const payload = { ...operation.payload }; delete payload.printSnapshot;
+  return { ...operation, payload };
 }
 export async function syncPortableOperations(scope: string): Promise<void> {
   if (!navigator.onLine) return;
@@ -96,7 +138,7 @@ export async function syncPortableOperations(scope: string): Promise<void> {
       try {
         const response = await fetch(scope.startsWith("owner:") ? "/api/pos/owner/operations" : "/api/pos/portable/operations", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(operation), signal: AbortSignal.timeout(15_000), cache: "no-store",
+          body: JSON.stringify(replayInput(operation)), signal: AbortSignal.timeout(15_000), cache: "no-store",
         });
         if (response.status >= 500 || response.status === 429 || response.status === 401) break;
         if (!response.ok) { await update({ ...operation, state: "attention", error: "Unable to upload this item." }); if (operation.kind === "attendance") blockedStaff.add(String(operation.payload.staffId)); continue; }

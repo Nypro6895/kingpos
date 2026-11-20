@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "iphone-booking-plugin-read-scope-20261028",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/settings/plugin-settings-actions.ts",
+    "app/market/booking-deposit-actions.ts",
+    "tests/booking-plugin-read-scope.test.mjs"
+  ],
+  "summary": "Share validation only within each original read-only Booking Rules, BookSMS and Deposit getter; keep save actions outside read scope and preserve owner/target/session guards.",
+  "status": "ready",
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\dal144-selected-frozen",
+    "commit": "cbc5d02df52c54ab9b6d82eab268e132c28b2a09"
+  },
+  "validation": [
+    {
+      "name": "23 focused regressions passed on assembled live-based source: permission denial, target salon, fresh revocation, no partial failures, write separation, first reader sharing, hidden-section lifecycle and draft retention",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit incremental false passed on assembled source",
+      "result": "passed"
+    }
+  ],
+  "id": "09e4c6c1-53fe-458a-8b02-c20152601f59",
+  "recordedAt": "2026-10-28T20:13:23.063Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-dal-webrelease-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/plugin-settings-actions.ts": "5b21aedb90a7080419619deb5167906c3d00271c28094e8c2f3d15e86f79c4ff",
+    "app/market/booking-deposit-actions.ts": "5ca69ee721671e571a46a49abfa72d47d73845ea4fdfb250c5ab95c685529eb7",
+    "tests/booking-plugin-read-scope.test.mjs": "c7b9d9759a336af22d2b0a467259068590e694ae49fc910d4ed6c4771fd6ad3d"
+  }
+}

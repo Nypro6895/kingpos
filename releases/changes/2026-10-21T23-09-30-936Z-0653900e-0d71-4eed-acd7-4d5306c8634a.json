@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "local-first-services-pilot-r6",
+  "status": "working",
+  "summary": "Local-only durable Services catalog pilot after fresh services.view admission; isolated from R6 auth and native transport.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/services/page.tsx",
+    "app/api/services/catalog-pilot/route.ts",
+    "app/services/services-catalog-pilot.tsx",
+    "lib/services-catalog-cache.ts",
+    "lib/services-catalog-controller.ts",
+    "lib/services-catalog-pilot-flag.ts",
+    "tests/services-catalog-cache.test.mjs",
+    "tests/services-catalog-controller.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\local-first-pilot",
+    "baseCommit": "6e0a61bd5f1469c2ba79514f70f4b649a35619b8"
+  },
+  "dependencies": [
+    "R6 baseline; auth revocation response review remains independent; native parity not claimed"
+  ],
+  "validation": [
+    {
+      "name": "R6 source hashes",
+      "result": "passed",
+      "evidence": "../baseline-verification.json"
+    },
+    {
+      "name": "pilot tests",
+      "result": "pending"
+    }
+  ],
+  "id": "0653900e-0d71-4eed-acd7-4d5306c8634a",
+  "recordedAt": "2026-10-21T23:09:30.936Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\local-first-pilot",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

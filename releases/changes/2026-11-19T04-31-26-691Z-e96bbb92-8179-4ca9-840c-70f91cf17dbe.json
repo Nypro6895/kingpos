@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-completion-20261118",
+  "status": "working",
+  "summary": "Complete verified ad-report database intake, owner-approved policy copy and current Apple submission packet without publication",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119020000_ad_reporting_transparency.sql",
+    "tests/ad-reporting-database.integration.test.mjs",
+    "lib/legal-policies.ts",
+    "docs/ios-store-completion-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "ads-reporting-transparency-20261118",
+    "rights-image-evidence-backend-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Exact source and current Apple readback",
+      "result": "pending"
+    }
+  ],
+  "id": "e96bbb92-8179-4ca9-840c-70f91cf17dbe",
+  "recordedAt": "2026-11-19T04:31:26.691Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

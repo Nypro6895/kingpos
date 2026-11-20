@@ -18,11 +18,12 @@ test('compact POS keeps Submit visible and edits adjustments with a touch dialog
       import React from 'react';
       import {createRoot} from 'react-dom/client';
       import {PosDeskClient} from './app/pos/pos-desk-client';
+      import {setSupplementalKeyboard} from './lib/portable-keyboard-preference';window.setSupplementalKeyboard=setSupplementalKeyboard;
       createRoot(document.getElementById('root')).render(
         <main className="portable-kiosk-surface flex h-dvh flex-col overflow-hidden bg-zinc-100">
           <header style={{height:80,flexShrink:0}}>POS test</header>
           <div className="min-h-0 flex-1 p-2">
-            <PosDeskClient surface="portable" activeSession={{id:'fixture',status:'active',lines:[{id:'line',staff_id:'staff',staff_name:'Alex',service_id:'service',service_label:'Manicure',sort_order:1,amount:100,amount_input:'100',amount_parts:[100],turn_large_count:1,turn_small_count:0}]}} liveDraft={null} salonName="Test salon" services={[]} staff={[]}
+            <PosDeskClient surface="portable" actions={{searchPosDeskCustomers:async()=>[]}} activeSession={{id:'fixture',status:'active',lines:[{id:'line',staff_id:'staff',staff_name:'Alex',service_id:'service',service_label:'Manicure',sort_order:1,amount:100,amount_input:'100',amount_parts:[100],turn_large_count:1,turn_small_count:0}]}} liveDraft={null} salonName="Test salon" services={[]} staff={[]}
               defaults={{tipSuggestions:[5,10,15,20],largeTurnThreshold:25,showServiceName:true,showStaffName:true,staffCheckInEnabled:false}} />
           </div>
         </main>);
@@ -33,7 +34,7 @@ test('compact POS keeps Submit visible and edits adjustments with a touch dialog
       build.onResolve({ filter: /^next\/navigation$/ }, () => ({ path: 'navigation', namespace: 'fixture' }));
       build.onResolve({ filter: /supabase\/browser$/ }, () => ({ path: 'supabase', namespace: 'fixture' }));
       build.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path }) => ({ contents: path === 'navigation'
-        ? 'const router={refresh(){},push(){},replace(){}}; export const useRouter=()=>router; export const usePathname=()=>"/pos/portable";'
+        ? 'const router={refresh(){},push(){},replace(){}}; export const useRouter=()=>router; export const useSearchParams=()=>new URLSearchParams();export const usePathname=()=>"/pos/portable";'
         : 'export const createSupabaseBrowserClient=()=>null;' }));
       build.onResolve({ filter: /\/actions$/ }, ({ path, importer }) => ({
         path: resolve(path.startsWith('@/') ? path.slice(2) : join(dirname(importer), path)) + '.ts', namespace: 'actions',
@@ -47,7 +48,10 @@ test('compact POS keeps Submit visible and edits adjustments with a touch dialog
   });
   const js = built.outputFiles.find(file => file.path.endsWith('.js')).text;
   const moduleCss = built.outputFiles.find(file => file.path.endsWith('.css'))?.text || '';
-  const globalCss = await postcss([tailwindcss()]).process(await readFile('app/globals.css', 'utf8'), { from: resolve('app/globals.css') });
+  const sources='@source "'+resolve('app').split(String.fromCharCode(92)).join('/')+'";';
+  const globals = (await readFile('app/globals.css', 'utf8')).replace('@import "tailwindcss";', '@import "tailwindcss" source(none);\n'+sources);
+  const globalCss = await postcss([tailwindcss()]).process(globals, { from: resolve('app/globals.css') });
+  assert.ok(globalCss.css.includes('.h-dvh'),'Render the real portable layout utilities');
   const css = globalCss.css + '\n' + moduleCss;
   const server = createServer((req, res) => {
     res.setHeader('Content-Type', req.url === '/app.js' ? 'text/javascript' : req.url === '/app.css' ? 'text/css' : 'text/html');
@@ -60,6 +64,24 @@ test('compact POS keeps Submit visible and edits adjustments with a touch dialog
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}`);
+    // Actual portable POS wiring: supplemental customer/service keyboards follow
+    // this device, while the price keypad stays in place in both modes.
+    for (const enabled of [false,true]) {
+      await page.evaluate(value=>window.setSupplementalKeyboard(value),enabled);
+      await page.locator('[data-pos-custom-service]').click();
+      const service=page.getByRole('dialog',{name:'Custom service',exact:true});
+      assert.equal(await service.getByLabel('Service keyboard').count(),enabled?1:0);
+      assert.equal(await service.getByLabel('Service name',{exact:true}).getAttribute('inputmode'),enabled?'none':'text');
+      await service.getByRole('button',{name:'Cancel',exact:true}).click();
+      await page.getByPlaceholder('Phone, email, account, name',{exact:true}).fill('Maya Smith');
+      await page.getByRole('button',{name:'Create new customer',exact:true}).click();
+      const customer=page.getByRole('heading',{name:'New Customer',exact:true}).locator('../..');
+      assert.equal(await customer.getByRole('button',{name:'A',exact:true}).count(),enabled?1:0);
+      assert.equal(await customer.getByLabel('Name',{exact:true}).getAttribute('inputmode'),enabled?'none':'text');
+      await customer.getByRole('button',{name:'Cancel',exact:true}).click();
+      await page.getByPlaceholder('Phone, email, account, name',{exact:true}).fill('');
+      assert.equal(await page.locator('[data-pos-amount-panel]').getByRole('button',{name:'7',exact:true}).isVisible(),true);
+    }
     const panel = page.locator('[data-pos-amount-panel]');
     await panel.waitFor();
     assert.equal(await panel.locator('[data-pos-adjustments]').isVisible(), true);
@@ -102,6 +124,10 @@ test('compact POS keeps Submit visible and edits adjustments with a touch dialog
     await compact.getByRole('button',{name:'Tip: $10.00',exact:true}).tap();
     await page.getByLabel('Tip amount',{exact:true}).fill('99');
     await dialog.getByRole('button',{name:'Cancel',exact:true}).tap();
+    await compact.getByRole('button',{name:'Tip: $10.00',exact:true}).waitFor();
+    await compact.getByRole('button',{name:'Tip: $10.00',exact:true}).tap();
+    await page.getByLabel('Tip amount',{exact:true}).fill('99');
+    await page.mouse.click(2,2);await dialog.waitFor({state:'hidden'});
     await compact.getByRole('button',{name:'Tip: $10.00',exact:true}).waitFor();
     await compact.getByRole('button',{name:'Tip: $10.00',exact:true}).tap();
     await dialog.getByRole('button',{name:'Clear',exact:true}).tap();

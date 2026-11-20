@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "app-local-explore-20261016",
+  "status": "ready",
+  "summary": "Reuse original full Explore client and unchanged page helpers through scoped startup DTO and exact original read transports",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/explore/page.tsx",
+    "lib/explore-page-resource-server.ts",
+    "lib/app-local-explore-registry.tsx",
+    "lib/app-local-explore-server.ts",
+    "lib/app-local-explore-http-client.ts",
+    "lib/app-local-explore-metadata.ts",
+    "tests/app-local-explore.test.mjs",
+    "tests/app-local-explore-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\explore-frozen-source"
+  },
+  "validation": [
+    {
+      "name": "6 controlled Explore transport/authority/equivalence and actual browser control tests; clean lint",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/explore-validation.json"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "id": "0fbb820b-0c2d-45b6-8c8b-b342f02b39c5",
+  "recordedAt": "2026-10-16T16:30:54.551Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/explore/page.tsx": "1e92f834db4923c00aca02088b27e766d71c49122c6ec1e9e81b2bb2c3838010",
+    "lib/explore-page-resource-server.ts": "f3fdef3e358f48fbf1375bd0a904c7199eca9ff357408a3db4b90114477b1cb2",
+    "lib/app-local-explore-registry.tsx": "67955c143c182156bb09b2524fe0deb9d8597d3744adf6d4d63bf3ec96c665d1",
+    "lib/app-local-explore-server.ts": "f9f02629ed11d6d1c7ad2f68bd43fc72fd264a0a3ac323abbd702a4eac9d7bc8",
+    "lib/app-local-explore-http-client.ts": "95424e6de57960d5d081487abb66515b93e958d4cd7a70dcdb17192a28a8c711",
+    "lib/app-local-explore-metadata.ts": "f235a1ad7583713e322969b4a9d9197df00d4ae91421fa62e012b8b77445e6ec",
+    "tests/app-local-explore.test.mjs": "36ab0b5b03b527af571a0241a05682a18a6e980443521dc5c0bb3033ff1b64a5",
+    "tests/app-local-explore-ui.test.mjs": "a4141f339a3e2da3c47d40d1c16f7358b5457fd84d0a04d979fc0438052790c7"
+  }
+}

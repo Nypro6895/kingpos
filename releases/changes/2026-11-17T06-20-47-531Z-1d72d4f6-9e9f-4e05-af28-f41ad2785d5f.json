@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "combined-final-push-preflight-20261117",
+  "status": "working",
+  "summary": "Prepare a fail-closed final-push reconciliation check for all pending changes and worktree work; no push or publication.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "scripts/verify-final-release-plan.mjs",
+    "tests/final-release-plan.test.mjs",
+    "docs/ios-final-next-steps-20261117.md",
+    "docs/ios-final-release-inventory-20261117.md",
+    "docs/ios-final-baseline-20261117.md",
+    "docs/ios-provider-preflight-20261117.md"
+  ],
+  "validation": [
+    {
+      "name": "Pending work inventory, source verification, channel decisions and conflict checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "1d72d4f6-9e9f-4e05-af28-f41ad2785d5f",
+  "recordedAt": "2026-11-17T06:20:47.531Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

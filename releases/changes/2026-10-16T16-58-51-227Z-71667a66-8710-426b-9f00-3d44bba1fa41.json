@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "app-local-payroll-tax-reference-20261016",
+  "status": "ready",
+  "summary": "Exact original Payroll Tax Company report and owner connection settings local UI; original saved-statement getters, credential/revocation/upload confirmations preserved. Both resources explicitly retention:none. Final integrated build belongs to coordinator.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-payroll-tax-registry.tsx",
+    "lib/app-local-payroll-tax-server.ts",
+    "lib/app-local-payroll-tax-metadata.ts",
+    "components/app-local-payroll-tax.tsx",
+    "components/app-local-payroll-tax-settings.tsx",
+    "tests/app-local-payroll-tax-server.test.mjs",
+    "tests/app-local-payroll-tax-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\frozen-payroll-tax-20261016T1750"
+  },
+  "validation": [
+    {
+      "name": "5 scoped read and full original UI browser regressions",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/payroll-tax-tests.json"
+    },
+    {
+      "name": "targeted eslint7files",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/payroll-tax-tests.json"
+    }
+  ],
+  "id": "71667a66-8710-426b-9f00-3d44bba1fa41",
+  "recordedAt": "2026-10-16T16:58:51.227Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-payroll-tax-registry.tsx": "57e77a5ab193d8cd55515f195b74de2c99247a13f3d26611db7c702ed2c1d147",
+    "lib/app-local-payroll-tax-server.ts": "507b56159609bbf52ca06639224786f1f2f7dec89f1d4aec2b2d684b66bfe530",
+    "lib/app-local-payroll-tax-metadata.ts": "b1b4c32a06a2b5abf380fe5049675d82a1dbe3317f3cbfbb9537be0c850ca49a",
+    "components/app-local-payroll-tax.tsx": "1489f86536444e1addb73d1a76bf165a3c89e86072ea8ad210a0bf47cf749ace",
+    "components/app-local-payroll-tax-settings.tsx": "b0b80f9143a9a94773e4790495a4c2f59a6c0a90bee69a5ba0e5fdf166d7f04c",
+    "tests/app-local-payroll-tax-server.test.mjs": "f479bb8abb7a56c8bcb54ccdf596ce1277da607c5971cea07263a0ac9bfcb91a",
+    "tests/app-local-payroll-tax-ui.test.mjs": "8ac32f6e86d9809700a96d03d512965ff5b5d0c8c03422e075a2f50935f3dde2"
+  }
+}

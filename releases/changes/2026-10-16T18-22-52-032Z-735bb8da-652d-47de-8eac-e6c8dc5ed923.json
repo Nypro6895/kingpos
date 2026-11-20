@@ -1,0 +1,73 @@
+{
+  "kind": "change",
+  "changeId": "app-local-platform-native-foundation",
+  "status": "ready",
+  "summary": "Bundle native host with same-viewer scoped encrypted read leases; fix XCTest Swift overlay compatibility, exact404 eviction, bounded named read POST, original blob previews and narrow existing MapTiler worker CSP. Integrated with the complete validated application source.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\integrated-frozen-r3",
+    "commit": "260e26849b807f841046edef634246aeec49ff84"
+  },
+  "validation": [
+    {
+      "name": "173 isolated integration behavior/authority/offline tests, zero failures/skips",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/final-validation.json"
+    },
+    {
+      "name": "Assembled production Next build and 411 offline web assets",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/next-production-final.log"
+    },
+    {
+      "name": "81 actual iOS XCTest cases and unsigned archive at exact source",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/38945864401"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "supersedesEvents": [],
+  "integratedFromEvent": "06a11d98-c88a-47f4-871b-02dfefbdbafb",
+  "id": "735bb8da-652d-47de-8eac-e6c8dc5ed923",
+  "recordedAt": "2026-10-16T18:22:52.032Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "fileHashes": {
+    "ios/Reylumi/ReylumiLocalBundle.swift": "ff901099bf51cc34625bc2639b0604561a4474d6c83d21a93d1b2d270499b101",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "849e1bd32a9dcec7f47467335ec1667e15fb8a5a31b8e1e264db87b0743c9004",
+    "ios/Reylumi/ReylumiLocalReadStore.swift": "e511ce597416763b6700b616b90c8815e578f88e202e6bbd02ac1fe579d12c2d",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "1886ff9b3162cf663e92d9005c2cc57f3ae1138671efc53d0889ac4043c949e3",
+    "ios/Reylumi/AppLocalBridge.js": "853c08413657ba16fc0fd653a1ef29a6749fdab2a55901e409ce92d96806d4b0",
+    "ios/Reylumi/ReylumiApp.swift": "36076e94ec0d7ab895ec505086d9e7704233d412551ef1b968a50bc5652037c6",
+    "ios/Reylumi/ReylumiViewController.swift": "070542b93c1d3312f27833e9ac26b09b552a4fbd765017a5d01a6a2d6fc6e93c",
+    "ios/Reylumi/Info.plist": "0019752ae493f6be3f0b0d27cdb92a4df1ebe255b016d042975c992d9b968d59",
+    "ios/Reylumi/Info-Debug.plist": "d10e4d1b24f85a2c815f57117ab9fca0466073c694229f62c95ccc7f788066ee",
+    "ios/project.yml": "ed0a80996b4b6bd0b3079017439fb4790ff7315486a1db1332cfbf1380175354",
+    "ios/ReylumiTests/LocalBundleTests.swift": "fb29a877822f0c4e3c1161ef4b5d43361190023e89c57f77f9e13855b3ba9290",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "a19d20f16bbdabf7880e8ec072f68686f258c7d2c84ab8bcbea5805a8e83e654",
+    "ios/ReylumiTests/LocalReadStoreTests.swift": "140b99015e78487f59729b7533079f76d4b1f08a5d1ec0b35743b6a84fadf8d9",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "2558a70be6ef0dbe8f08e7c5cdacd447bfd410cea37478e7627bd2ca2cbc0102",
+    "ios/scripts/check-build.sh": "98ca602a21a6003620ecc0920a22983bea79160bc0108fb54d3c28e6808dda66"
+  }
+}

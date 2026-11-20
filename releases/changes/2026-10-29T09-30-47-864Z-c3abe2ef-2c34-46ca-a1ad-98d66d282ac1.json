@@ -1,0 +1,124 @@
+{
+  "kind": "change",
+  "changeId": "settings-consistent-layout-20261029",
+  "status": "ready",
+  "summary": "Queued cumulative Personal + Salon Settings: all 22 destinations audited, responsive iPhone/Windows layout, draft-safe editors, phone verification and existing permission/closure safeguards. Build blocker fixed; not deployed.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/settings-hub.css",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/notification-preferences-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/settings/plugin-settings-row.tsx",
+    "lib/vietnamese-dictionary.ts",
+    "tests/settings-hub-ui.test.mjs",
+    "app/settings/settings-navigation.ts",
+    "app/settings/settings-icon.tsx",
+    "app/settings/settings-controls.css",
+    "lib/vietnamese-settings-copy.json",
+    "tests/settings-grouped-editors.test.mjs",
+    "app/account/account-profile-editor.tsx",
+    "app/account/actions.ts",
+    "app/account/phone-change-actions.ts",
+    "lib/account-phone-change.ts",
+    "app/settings/personal-public-profile-panel.tsx",
+    "app/settings/blocked-users-panel.tsx",
+    "app/settings/deferred-personal-section.tsx",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/login-security/login-security-quick-editor.tsx",
+    "tests/login-security-contract.test.mjs",
+    "tests/ios-personal-settings.test.mjs",
+    "tests/account-phone-change.test.mjs",
+    "app/settings/pos-settings-panel.tsx",
+    "app/settings/ownership-lifecycle-panels.tsx",
+    "app/settings/shortcuts-settings-panel.tsx",
+    "app/settings/salon-profile-preferences-panel.tsx",
+    "app/pos/settings/settings-group-form.tsx",
+    "tests/settings-owner-closure-ui.test.mjs",
+    "tests/settings-consistent-layout.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [
+    "settings-image-runtime-build-fix-20261029"
+  ],
+  "supersedesEvents": [
+    "007ad3f4-b8fa-4f41-86e6-47a860987a1d"
+  ],
+  "integration": {
+    "originalEvents": [
+      "007ad3f4-b8fa-4f41-86e6-47a860987a1d"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "c3abe2ef-2c34-46ca-a1ad-98d66d282ac1",
+  "recordedAt": "2026-10-29T09:30:47.864Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/settings/settings-hub-client.tsx": "6ee5950b3f5358d168756d170665608558b18664eeec391b18b42489e7385211",
+    "app/settings/settings-hub.css": "bb8b42bf70fa5705de12c5e3f339eb534086aecfcb09453b3fd357261dec23e2",
+    "app/settings/direct-settings-ui.tsx": "f90aa5141512cabe758f884b87b37d4740abd8863e260c0ca1c8ec6b3feb5834",
+    "app/settings/direct-settings-panel.tsx": "13f3015f987be23343741378c5bae8530031f4db088960b6f9ed0a1a94e527b0",
+    "app/settings/notification-preferences-panel.tsx": "efaff29cf74d07a4d02f59ecb049520d90212f342b4a1a73977de962f1a8fbd5",
+    "app/settings/salon-settings-panels.tsx": "1a0299d522c28a7844e93b25e4a9326a5043760b63c8a43d53eb9ce8ceb6730e",
+    "app/settings/team-payroll-panels.tsx": "6ace7ad9ce568cafd68900335f8d2257b9030ad8fe9cfe8e7dd15fccc659c390",
+    "app/settings/plugin-settings-row.tsx": "ff40ea8b8914750322d440e25c44a613686feca0b29a2e0ff5cf00401db64e1f",
+    "lib/vietnamese-dictionary.ts": "481c4d73d8275be5fd4aedb13b6b9ba3a813892d3323be2eff1d189ef86537f0",
+    "tests/settings-hub-ui.test.mjs": "67e4aa14d2e2857669fd7582e1d183004aabaaa03bf9ec8b0294a050532aa948",
+    "app/settings/settings-navigation.ts": "6178e7639dc4d77a5ed4ffdd8b199148231a9c56f0c763de89d095ded52becf5",
+    "app/settings/settings-icon.tsx": "1e0096d88375f137ec19ceb9ed3004cfca5c93b27dd011065b30a17ad6ba08e3",
+    "app/settings/settings-controls.css": "a63c6a85613e1b0afebc367240b51fff3943a1ee99586bfacb3c09b404eed3f6",
+    "lib/vietnamese-settings-copy.json": "f8cbd2a8a5c258b26e1215f7d539d850ba157e214362ea2363d12d3c7c650b6e",
+    "tests/settings-grouped-editors.test.mjs": "90d37c16d87da3d8c6799981a2866e1df86c7136f76c79e1c2ebf027cb7a98a6",
+    "app/account/account-profile-editor.tsx": "cea6f038f65eba28ecc095e7c87f9c8d9f5ac8cc74ba01e331aedff38be3fb23",
+    "app/account/actions.ts": "eef210c32fdc2e2ddddc31f364d174e79ce5ec054d473eb92a7fc3ca1b61d0de",
+    "app/account/phone-change-actions.ts": "55d70d3a368ae3c684f19ba03367da285685b968fb0de4d015f14282414608b5",
+    "lib/account-phone-change.ts": "0ea8ff3963191eeeb39ec0b8bec4d5d731833c7ed1ead744f25672d1b4cb1702",
+    "app/settings/personal-public-profile-panel.tsx": "1df5f522ce619ba765577ccf3211047153be0dc3cf140fee1cb7b45a27afc601",
+    "app/settings/blocked-users-panel.tsx": "ae44579f18b37624caf81154960e39770c1b9de454d4fa2e72f8bcf1d553ca01",
+    "app/settings/deferred-personal-section.tsx": "1b90d60dbf44b0ef1aacd4a021800db0fc485432993f7d0461ec14838d118caa",
+    "app/settings/login-security/login-security-panel.tsx": "7550f81465774f99eae7d873839eac5a750317e4abce05d707a1333eb13b7d66",
+    "app/settings/login-security/login-security-quick-editor.tsx": "85d51f3215b27152242d14b9cc5ecb5d3737ea984c402444ce6911bd3541cc1d",
+    "tests/login-security-contract.test.mjs": "4617b6eb38517ad041e7f6ba910ebe37ca17b035cb6b5ba4cb2371e7eba7a760",
+    "tests/ios-personal-settings.test.mjs": "18281ad209305f97f2131bbfc878eacc904a77ff1ad34dbc30cb54f42bc2bfd7",
+    "tests/account-phone-change.test.mjs": "4a0c23e6c8fb799e6df45a9f27242608a0de036a4c29a26bd3d9091c333886b8",
+    "app/settings/pos-settings-panel.tsx": "20758078fe1b702649e2e6dc3a1aaebf0f164c27634897cc5d19d20877d4e3fa",
+    "app/settings/ownership-lifecycle-panels.tsx": "967d05f9e022e1be3b6bbe2ddac171c532b7dc509cbceaa0ce91c41c25820585",
+    "app/settings/shortcuts-settings-panel.tsx": "276fcaaf3e91070a1608000323e71b8d22176a302c67b81e8aac329bf95b7385",
+    "app/settings/salon-profile-preferences-panel.tsx": "23002e4615ff931774c4647c631c6d40a01cc86e4f81d25ba5e8fef7250d7863",
+    "app/pos/settings/settings-group-form.tsx": "0adcc92fabecd52ebfb680ed168acf83fd3abee3f10d72742b4fa5c6b001426e",
+    "tests/settings-owner-closure-ui.test.mjs": "04604dae547b37d7fbaa66a750ab18f925d69a1584e68ae17b4d5f078893f118",
+    "tests/settings-consistent-layout.test.mjs": "3fceeaf6d359898b6069082217475cd80b4c64fcb1a73f4f3b1a97cfc0fe1f85"
+  }
+}

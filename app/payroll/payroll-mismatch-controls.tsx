@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 export function DismissPayrollMismatchButton({ targetId }: { targetId: string }) {
   return (
     <button
@@ -12,7 +13,7 @@ export function DismissPayrollMismatchButton({ targetId }: { targetId: string })
       }}
       type="button"
     >
-      Dismiss
+      <WorkspaceText text="Dismiss" />
     </button>
   );
 }
@@ -34,7 +35,7 @@ export function OpenPayrollDifferenceDetailsButton({
       }}
       type="button"
     >
-      View Difference
+      <WorkspaceText text="View Difference" />
     </button>
   );
 }
@@ -48,6 +49,8 @@ export function MarkPaidButton({
   canMarkPaid: boolean;
   hasLiveDifference: boolean;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <button
       className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400"
@@ -56,14 +59,16 @@ export function MarkPaidButton({
         hasLiveDifference
           ? () => {
               window.alert(
-                "This payroll has changed since the last printed statement. Review Staff Income or print a new statement before marking paid.",
+                __vt("This payroll has changed since the last printed statement. Review Staff Income or print a new statement before marking paid."),
               );
             }
-          : undefined
+          : canMarkPaid ? (event) => {
+              if (!window.confirm(__vt("Mark this saved payroll statement as paid? This records payment; it does not transfer money."))) event.preventDefault();
+            } : undefined
       }
       type={hasLiveDifference ? "button" : "submit"}
     >
-      Mark Paid
+      <WorkspaceText text="Mark Paid" />
     </button>
   );
 }

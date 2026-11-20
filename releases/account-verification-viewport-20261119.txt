@@ -1,0 +1,33 @@
+Account verification layout repair - 2026-11-19
+
+Scope
+- Extend the existing phone-verification-dialog-layer-20261114 body-portal repair.
+- Fit phone OTP and email authorization layers to visualViewport height/offsetTop.
+- Bound nested panels to that layer and scroll only their focused input into view.
+- Keep OTP actions, email proof gate, profile drafts, focus and navigation/Activity cleanup.
+
+Source
+- Worktree: C:/Reylumi-worktrees/account-verification-viewport-20261119
+- Base: 9859afb (combined-store-release-20261119 source; not a live-source claim).
+- Product delta: app/account/account-profile-editor.tsx
+- Regression delta: tests/account-verification-dialog-layer.test.mjs
+- Requires prior portal fix event 4ad0f9d9-225c-49eb-9b6b-267819f499ea.
+- Existing components/use-dialog-viewport.ts is reused without modification.
+
+Evidence
+- artifacts/account-verification-viewport-20261119/baseline-keyboard-test.log
+  reproduces both hidden code fields against frozen 9859afb source.
+- artifacts/account-verification-viewport-20261119/all-tests-final.log
+  covers dialog layout, personal settings, phone authorization and signed SMS hook.
+- Final dialog checks cover six window sizes; independent visualViewport height
+  360 with offsetTop 0/60 and height 220; automatic focus reveal; input/action
+  hit testing; restoration; real LegalFooter; preserved drafts and page position.
+- ESLint, TypeScript and git diff --check passed. Independent review found no
+  material issue. Screenshots and bounds are in the same artifact directory.
+
+Release boundary
+- Implementation only; queue for coordinated release, with web and bundled iOS
+  integration assessed against the then-current production/uploaded native source.
+- No production deployment, native archive/upload, real SMS or provider writes.
+- Chromium fixture/keyboard simulation is not Safari/WKWebView or physical-device
+  acceptance. A full production build was not rerun for this scoped follow-up.

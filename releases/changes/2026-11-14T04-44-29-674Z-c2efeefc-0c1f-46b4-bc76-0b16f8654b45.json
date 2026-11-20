@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "gift-action-hierarchy-20261113",
+  "status": "needs-integration",
+  "summary": "Use unboxed text for secondary Gift actions while retaining filled primary actions, selected-method underline and 44px accessible targets; remove duplicate Transfer beside Continue",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/gift-card/customer-gift-cards.tsx",
+    "components/gift-card/customer-wallet.css",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/ticket-gift-delivery.tsx",
+    "docs/gift-wallet-pos-recovery-20261113.md",
+    "tests/gift-wallet-actions-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "19a7f0a4440f3a7ff5ff34bca08c417a3da8d718",
+    "snapshot": "C:\\Reylumi-worktrees\\gift-wallet-recovery-20261113\\artifacts\\gift-action-hierarchy\\frozen-19a7f0a4440f"
+  },
+  "dependencies": [
+    "gift-wallet-pos-recovery-20261113"
+  ],
+  "validation": [
+    {
+      "name": "Wallet and Ticket delivery runtime regression",
+      "result": "passed",
+      "evidence": "artifacts/gift-action-hierarchy/runtime-final-accepted.log: 8 tests passed; existing focus expectation follows retained Continue transfer action"
+    },
+    {
+      "name": "Computed style and mobile layout",
+      "result": "passed",
+      "evidence": "320/390px: secondary actions transparent/borderless, primary actions filled, 44px targets, keyboard focus visible, Share/Copy single line and no horizontal overflow"
+    },
+    {
+      "name": "Scoped ESLint and whitespace",
+      "result": "passed",
+      "evidence": "artifacts/gift-action-hierarchy/lint-final.log; git diff --check"
+    },
+    {
+      "name": "Actual source HMR preview",
+      "result": "passed",
+      "evidence": "artifacts/gift-action-hierarchy/live-source-preview.json: HTTP200, unique current CSS verified, registered source route6145/gift-cards"
+    },
+    {
+      "name": "Publication",
+      "result": "pending",
+      "evidence": "Local presentation follow-up only; no deployment, hosted data or financial changes."
+    }
+  ],
+  "id": "c2efeefc-0c1f-46b4-bc76-0b16f8654b45",
+  "recordedAt": "2026-11-14T04:44:29.674Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-wallet-recovery-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

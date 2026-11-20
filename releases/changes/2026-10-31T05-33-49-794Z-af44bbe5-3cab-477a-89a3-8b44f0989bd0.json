@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "history-inline-clarity-20261031",
+  "status": "working",
+  "summary": "Implement owner-approved compact inline edit history on tickets, work days, staff payroll and shop reconciliation; preserve financial formulas, actual payments, existing permissions and unrelated released UI.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/shop-income-daily-table.tsx",
+    "app/payroll/payroll-employee-table.tsx",
+    "app/payroll/financial-input-history-panel.tsx",
+    "app/payroll/financial-input-history.module.css",
+    "app/staff/today/today-dashboard-client.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "app/staff/my-work/staff-my-work-view.tsx",
+    "app/reports/daily-reconciliation-cases.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/app-local-page-registry.tsx"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/history-inline-combined-20261031",
+    "baselineCommit": "bde768a12acaaf0ae1c762e8ba743b5c746ffba9",
+    "baselineDeploymentId": "dpl_Dkz9sFDas79W7zYD1H6S6UyLQop6"
+  },
+  "dependencies": [
+    "financial-history-notification-clarity-20261030"
+  ],
+  "validation": [
+    {
+      "name": "Approved interactive UI preview at 320,390,440,736 widths and both themes",
+      "result": "passed",
+      "evidence": "C:/Reylumi/work/shop-inline-preview-20261031/preview-checks.json"
+    },
+    {
+      "name": "Implementation and combined-release checks",
+      "result": "pending"
+    }
+  ],
+  "id": "af44bbe5-3cab-477a-89a3-8b44f0989bd0",
+  "recordedAt": "2026-10-31T05:33:49.794Z",
+  "worktree": "C:\\Reylumi-worktrees\\history-inline-combined-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

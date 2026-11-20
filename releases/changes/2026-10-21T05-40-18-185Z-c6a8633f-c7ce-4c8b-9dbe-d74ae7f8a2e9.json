@@ -1,0 +1,34 @@
+{
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/OnlineAuthorityRefreshTests.swift"
+  ],
+  "validation": [
+    {
+      "name": "Reproduce concurrent periodic Staff refresh and neutral workspace preflight",
+      "result": "pending"
+    },
+    {
+      "name": "Native regression and security controls",
+      "result": "pending"
+    }
+  ],
+  "status": "working",
+  "summary": "Preserve selected online authority across identical Staff refreshes while retaining strict workspace-command epoch and offline-lease fences",
+  "changeId": "online-authority-refresh-20261021",
+  "kind": "change",
+  "source": {
+    "commit": "b4d0b845ecd585841937cffde31fdc58e2162fb5"
+  },
+  "dependencies": [
+    "business-cache-admission-20261020"
+  ],
+  "id": "c6a8633f-c7ce-4c8b-9dbe-d74ae7f8a2e9",
+  "recordedAt": "2026-10-21T05:40:18.185Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-online-authority-refresh-20261021",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,22 +1,9 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { MAPLIBRE_ASSET_VERSION } from "@/lib/maplibre-assets";
+import { mapLibreVendorResponse } from "@/lib/maplibre-vendor";
 
-export const runtime = "nodejs";
 
 export async function GET() {
-  const filePath = path.join(
-    process.cwd(),
-    "node_modules",
-    "maplibre-gl",
-    "dist",
-    "maplibre-gl.js",
-  );
-  const body = await readFile(filePath);
-
-  return new Response(body, {
-    headers: {
-      "Cache-Control": "public, max-age=31536000, immutable",
-      "Content-Type": "text/javascript; charset=utf-8",
-    },
-  });
+  // Older/native clients still use this URL. New clients use a versioned URL;
+  // do not create another year-long cache entry at the compatibility endpoint.
+  return mapLibreVendorResponse(MAPLIBRE_ASSET_VERSION, false);
 }

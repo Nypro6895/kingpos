@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "pos-hide-green-check-20261029",
+  "status": "ready",
+  "summary": "Hide healthy green sync check across owner and Portable POS pages while retaining background sync and error indicators; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/portable/portable-sync-indicator.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "6a8c3b59-01c9-4df4-8afd-148c0ccce6eb"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "b362e119-e274-466c-97d7-8e6490cb1f03",
+  "recordedAt": "2026-10-29T20:15:14.543Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos/portable/portable-sync-indicator.tsx": "836b740c1898306f2983eeb46ef86a22ff8e9887f9e8d4c7ca20d26136e3a475"
+  }
+}

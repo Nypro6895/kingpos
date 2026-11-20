@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-29T09:46:53.176Z",
+  "commit": "d20058a06c0c71a04830346b0ad444657bca2acd",
+  "baselineWeb": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+  "baselineNative": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+  "selected": 116,
+  "webDelta": 5,
+  "nativeDelta": 5,
+  "preservedCompatibleWebSecurityFiles": [],
+  "canonicalFilesByteUnchanged": [
+    "lib/payroll.ts",
+    "app/payroll/actions.ts",
+    "types/payroll.ts",
+    "app/payroll/payroll-change-history.tsx",
+    "lib/payroll-live-history-presentation.ts",
+    "lib/abuse-server.ts",
+    "lib/post-comments.ts",
+    "app/(app)/admin/post-safety/spam/page.tsx",
+    "lib/vietnamese-workspace-copy.json"
+  ],
+  "unexpectedWeb": [],
+  "unexpectedNative": [],
+  "ownerLayout": {
+    "topAdd": true,
+    "topReset": true,
+    "bottomServicesPencil": true
+  },
+  "developerMarketExcluded": true,
+  "unfinishedPayrollHistoryExcluded": true
+}

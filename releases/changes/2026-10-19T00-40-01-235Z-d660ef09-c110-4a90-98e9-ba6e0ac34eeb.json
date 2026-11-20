@@ -1,0 +1,165 @@
+{
+  "kind": "change",
+  "changeId": "idle-cold-start-trace-20261018",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Ready diagnostics only: measured retained Auth gates, lifecycle lease request duplication and expiry reset cascade on web; verified installed iOS cold/cache/revisit/60.2s idle behavior. Preserve security/business logic; no deployment.",
+  "files": [
+    "app/api/app-local/context/route.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/experience/today/route.ts",
+    "app/local-app/entry.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "components/app-local-session-expiry-prompt.tsx",
+    "components/experience-scope.tsx",
+    "components/prepared-read-view-refresh.tsx",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "ios/ReylumiTests/OwnerTodayMeasurementFixture.json",
+    "lib/app-local-platform-resources-server.ts",
+    "lib/app-local-resource.ts",
+    "lib/app-local-role-resources-server.ts",
+    "lib/experience-offline-client.ts",
+    "lib/experience-resource-cache.ts",
+    "lib/experience-trace.ts",
+    "lib/read-refresh-scheduler.ts",
+    "lib/read-request-timing.ts",
+    "tests/context-today-timing.test.mjs",
+    "tests/experience-resource-cache.test.mjs",
+    "tests/experience-trace.test.mjs",
+    "tests/fixtures/generate-owner-today-measurement.mjs",
+    "tests/idle-web-trace-ui.test.mjs",
+    "tests/live-workspace-experience.test.mjs",
+    "tests/navigation-cache-reliability.test.mjs",
+    "tests/read-refresh-scheduler.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\idle-cold-start-trace-20261018\\artifacts\\idle-cold-start-trace-20261018\\frozen-source-v2",
+    "commit": "a4e98fbd055fa5f319fe3b90b723f801b28a5f8b",
+    "baseCommit": "866d8c6c08d0fd21d6a734de0207b93af26ed9cf",
+    "overlaySha256": "f8ae8e1a5f6a2cb5b9290349677a4be57aa922aa98be0bc7136fd9023ed07bbe",
+    "nativeSourceFilesVerified": 396,
+    "bundleFilesVerified": 344
+  },
+  "dependencies": [
+    "owner-today-auth-progressive-20261018",
+    "ios-today-startup-recovery-20261018"
+  ],
+  "dependencyEvents": [
+    "c69ac413-b7f2-4651-8ff2-8e76248298ab",
+    "dd1af9e6-7c50-4eed-b402-0073d1dcef2c"
+  ],
+  "validation": [
+    {
+      "name": "Unit and contract regression",
+      "result": "passed",
+      "tests": 91,
+      "evidence": "artifacts/idle-cold-start-trace-20261018/final-unit-regression-verified.log"
+    },
+    {
+      "name": "Browser regressions: admission, progressive Today, mutation, revisit, weak network",
+      "result": "passed",
+      "tests": 27,
+      "evidence": "artifacts/idle-cold-start-trace-20261018/final-browser-regression.log"
+    },
+    {
+      "name": "Idle/cold trace with actual Chromium/WebKit components",
+      "result": "passed",
+      "tests": 24,
+      "evidence": [
+        "artifacts/idle-cold-start-trace-20261018/web-measurements-chromium.json",
+        "artifacts/idle-cold-start-trace-20261018/web-measurements-webkit.json"
+      ]
+    },
+    {
+      "name": "Existing scope/reload UI regression",
+      "result": "passed",
+      "tests": 2
+    },
+    {
+      "name": "Production web build and complete offline asset budget",
+      "result": "passed",
+      "assets": 427,
+      "evidence": [
+        "artifacts/idle-cold-start-trace-20261018/production-build.json",
+        "artifacts/idle-cold-start-trace-20261018/offline-assets.json"
+      ]
+    },
+    {
+      "name": "All changed TypeScript/test modules ESLint",
+      "result": "passed",
+      "evidence": "artifacts/idle-cold-start-trace-20261018/final-lint.log"
+    },
+    {
+      "name": "iOS Simulator and unsigned device archive; exact source and bundle hashes",
+      "result": "passed",
+      "tests": 104,
+      "nativeSourceFiles": 396,
+      "bundleFiles": 344,
+      "runId": "39180892598",
+      "url": "https://github.com/Nypro6895/kingpos/actions/runs/39180892598",
+      "evidence": [
+        "artifacts/idle-cold-start-trace-20261018/native-final-verification.json",
+        "artifacts/idle-cold-start-trace-20261018/native-source-provenance.json"
+      ]
+    }
+  ],
+  "findings": "artifacts/idle-cold-start-trace-20261018/findings.json",
+  "limits": [
+    "Diagnostics default off; no identifiers/payloads/log export",
+    "Controlled synthetic HTTP and WebKit/Simulator results do not establish physical iPhone build37 latency/root cause",
+    "Native timers idle60.2s are real; synthetic touch and foreground handler are not actual OS suspend/resume",
+    "Production aggregate latency is full-handler time, not isolated Auth; Today only one sample",
+    "Context checks for neutral launch and Today are path-specific; not proven equivalent duplicates",
+    "No production deployment, TestFlight upload or business mutation performed"
+  ],
+  "supersedesEvents": [],
+  "id": "d660ef09-c110-4a90-98e9-ba6e0ac34eeb",
+  "recordedAt": "2026-10-19T00:40:01.235Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\idle-cold-start-trace-20261018",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/api/app-local/context/route.ts": "9943663aa817ea50a2128f50926a191b06669ba30f73cf9eb1de56ad1a9d6cdb",
+    "app/api/app-local/read/route.ts": "3eb212483c785a932993805ced17de7bfa732b862de28ac48c539fe22e334558",
+    "app/api/experience/today/route.ts": "25b8bfc79669ce8936ebc61db673d00acd4cabcabc6d2683221ff9ccf8d03ae4",
+    "app/local-app/entry.tsx": "7891e824c70c893e909b193c76caa106ce585efdd68ee114f3195efb571e0858",
+    "app/staff/today/today-progressive-client.tsx": "b7eeb835e6ac9ba1a14681c8945f9141db83f04aab29abe6f6fc8c2778aeedde",
+    "components/app-local-session-expiry-prompt.tsx": "8bbedd4b87db3f86cd1cf4deebfa6f55c9c9f29e8849d88f8647ee1ad35be52c",
+    "components/experience-scope.tsx": "e6b8240a48198da76b0471db6f73559891d91cae92bdd0837520e16de513fa60",
+    "components/prepared-read-view-refresh.tsx": "d80443f4d30326830bfb013859e26d26ab1f09faa9ff3d2d34c2f65c5908d2ba",
+    "ios/Reylumi/AppLocalBridge.js": "1105abbc0dfa668e3faff073ca0a70b5d7c0a7fe33f31cb4f587fe74f1606624",
+    "ios/Reylumi/LocalAppBundle/app.js": "d61b487b6f877b0d60b0725ebd5515f97cf91f40e6d5c6d7e2596d85227cfbac",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "b27085b663e49f741f11eb041e74aea1cea4b3b5a5440d815d4367797a33587a",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "f3e3b0a274905582c94ca53e1f12625273446824eab834a156c6812db3fe2050",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "6d9d1e1619a6728f5ca9b6eb41db6b970f0c9b9f33ac9d3a60ee39a1ea3bd2b0",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift": "2c82b2e0b0dc675ad7eda32456a1e6a6fb78d75b0b8f7249a3ca8b51eac56a3e",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift": "8e6270b2f2919b7739d67c4fae996d878e7e4470a55b5a4552b7a4c672bfdb87",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "4c998bff3e375c2bcacbfc7b0425ec8976542edce9795ccb760212668ccc607a",
+    "ios/ReylumiTests/OwnerTodayMeasurementFixture.json": "5619e7634cf6626c1610faf619bad82f66d5c0fbf389586a0d7ee2adb107552a",
+    "lib/app-local-platform-resources-server.ts": "743e893818e0aefb58229f70857c98176cb4447d4aead4a51415f4a284b127e8",
+    "lib/app-local-resource.ts": "cffe293e6a7bf7b9fc5d84f70b2f298f88b4aa1fbfba8a1224e585ca31ce9223",
+    "lib/app-local-role-resources-server.ts": "3efcc0fe28fa191c75dd0df8d70dd99c1514615bc414f5d9f48614fdbd455033",
+    "lib/experience-offline-client.ts": "f7474def39bbec8ddaf57fa620524ce2966f59100de64425cd52e756444dba81",
+    "lib/experience-resource-cache.ts": "7f5a9ace320798e1ef11c083410951382b016bb336b7974f2f00a3db39cc8957",
+    "lib/experience-trace.ts": "8ece24d7504d7097e57bb3cdab9d59471bfa49e757937ef85a28cd169c2a8268",
+    "lib/read-refresh-scheduler.ts": "f73761306c9e161279fa9fba190123be2ac9a7455aaf5066deb42e721228793e",
+    "lib/read-request-timing.ts": "790e4d051df7db6de342ae8d8f8cb2cd2d99666eae08e7a516a96d5de2b919c9",
+    "tests/context-today-timing.test.mjs": "182ff747cc42b5b54e2c3d09aefe124a6d9504142b9d8b13f7263fc3c8faa24c",
+    "tests/experience-resource-cache.test.mjs": "f6510ceab2037de8c3dd003d1c3f019a0edcff8a2822f511c26cdf41a3aa315b",
+    "tests/experience-trace.test.mjs": "0df4c14095e807b0e519ac958adb731e07ac16e36ad32d0e292d89bd1d4d4217",
+    "tests/fixtures/generate-owner-today-measurement.mjs": "91eb5a6d1c489adaa2aa1ab5403cdbfb37b0f1fcd483a55be281e7f2ed07a09c",
+    "tests/idle-web-trace-ui.test.mjs": "05cb67668ebbae502cd02aef5d8ef48864b4448ffde03fdb5ca2a51933242e9b",
+    "tests/live-workspace-experience.test.mjs": "df8a21e0b4688e79c0c7add71d460cc626fa66b9e2d82f8d2aa887a444516fbf",
+    "tests/navigation-cache-reliability.test.mjs": "ac285ab84ae4dd228d18b6356a5ba8320fafa12ee5c7dadb5de7425541ad4c37",
+    "tests/read-refresh-scheduler.test.mjs": "a00d086dc336478abeb9790143418aeea961d0b18bd6b2a7b480eb7ed46f6a7d"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "ios-testflight-readonly-availability-20261016",
+  "status": "working",
+  "summary": "Use the already registered TestFlight status workflow for an explicit GET-only exact-build availability audit; replace the mutating workflow step and remove its push trigger, with no dispatch or distribution changes.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/check-testflight-availability.mjs",
+    "ios/scripts/check-testflight-availability.test.mjs",
+    ".github/workflows/reylumi-testflight-status.yml"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "GET-only checker fixtures and workflow syntax/safety",
+      "result": "pending"
+    }
+  ],
+  "id": "d71cc8de-a6bf-478f-9108-32950a8888c8",
+  "recordedAt": "2026-10-16T19:33:28.783Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

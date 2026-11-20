@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "online-authority-refresh-20261021",
+  "status": "needs-integration",
+  "summary": "Keep identical online Staff refreshes from invalidating workspace preflight; retain only matching offline leases and invalidate pending gestures on explicit online denial",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/OnlineAuthorityRefreshTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\online-authority-refresh-final-source\\frozen-e8177a596060693fc2a23044247713c941fae035",
+    "commit": "e8177a596060693fc2a23044247713c941fae035"
+  },
+  "validation": [
+    {
+      "name": "Controlled baseline reproduces identical-refresh cancellation and no-store denial edge; seven tests, three expected failures, four controls pass",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\online-authority-refresh\\focused-1792561673291528000\\download-verification.json"
+    },
+    {
+      "name": "Fixed focused seven tests pass; test CRLF to rawGit LF body parity recorded",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\online-authority-refresh\\focused-1792561710388544000\\download-verification.json"
+    },
+    {
+      "name": "Exact rawGit417 sources full202 native tests, zero failures/skips/expected failures, and Release Simulator build",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\online-authority-refresh\\full-1792561901886977000\\download-verification.json"
+    },
+    {
+      "name": "Guarded QA composition build and three actual HTTP/WebKit guard controls",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\guarded-auth-build-r3\\1792562080271026000\\download-verification.json"
+    },
+    {
+      "name": "Authenticated candidate role navigation and integration against current shipped native/web baseline",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "business-cache-admission-20261020"
+  ],
+  "id": "62f208d8-136e-439b-bba2-23a9ec001f43",
+  "recordedAt": "2026-10-21T05:56:53.085Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-online-authority-refresh-20261021",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

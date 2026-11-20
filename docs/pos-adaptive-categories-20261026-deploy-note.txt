@@ -1,0 +1,17 @@
+POS adaptive categories - 2026-10-26
+
+Replaces the category-folder presentation from pos-service-categories-20261026.
+Services all remain visible: stable category order from first occurrence in catalog, services within a category contiguous, consistent category colors, uncategorized services last. Grouping can still be disabled and colors edited in POS Settings. No database migration.
+
+Portable Windows POS and desktop owner POS share an adaptive staff/service board. ResizeObserver measures the actual allocated board. Layout searches from comfortable tile dimensions down to minimum widths/heights and text size, wrapping both grids into multiple rows. Independent vertical scrolling is used only after minimum density cannot fit all items. Existing staff click/hold controls and service default-price/amount replacement behavior retained.
+
+Minimums: staff 68x80px, service 82x56px, labels 11px, turn count 22px. Maximum preferred staff 104x104, service 124x72. Header/control room reserved separately. Long labels wrap to two lines and retain full title. No horizontal page scrolling in checked Windows sizes.
+
+Evidence:
+- Live browser capture with exact frozen changed components/styles and synthetic data: preview/windows-grouped-services.png; preview/windows-18-staff-48-services.png; preview/windows-compact-1280.png; preview/windows-overflow-limit.png. Boundaries mock only local data/network APIs and Next routing/image wrappers; no production mutation.
+- preview/layout-checks.json: 18 staff + 48 services at 1440x900 fit with both scrollHeight==clientHeight; staff 9 columns / 2 rows; density .15. At 1280x720 same data reaches minimum density and scrolls. 80 staff + 240 services also scroll only at density 0.
+- 8 helper/browser tests passed: pos-adaptive-layout (1), pos-service-catalog-ui (2), portable-booking-pos-ui (1), pos-compact-checkout-ui (1), owner-workspace-ui (3). Owner tests use compiled real CSS including adaptive stylesheet.
+- Source TypeScript passed using the source-only config excluding pre-existing stale generated Help imports; scoped ESLint has no errors and one pre-existing unused suppression warning in settings page.
+
+Release:
+Not deployed. Web-only, no native or desktop shell/bridge change. Depends on prior pos-service-categories-20261026 price/default/compact-shortcut implementation, replacing only its folder design. Frozen source under artifacts/pos-adaptive-categories-20261026/source. Reconcile overlapping full files against current production baseline before release; checkout has unrelated pre-existing edits. Preview data and colors are illustrative fixture data, rendered by real components.

@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-next-acceptance-20261118",
+  "status": "working",
+  "summary": "Prepare concrete next iOS acceptance and submission handoff from the verified local source; retain UI approval, credential and runtime gates.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "docs/ios-store-next-20261118.md",
+    "docs/ios-store-next-20261118.json"
+  ],
+  "validation": [
+    {
+      "name": "Current native source inventory and official Apple required-reason review",
+      "result": "pending"
+    },
+    {
+      "name": "Cross-review current declarations commerce and rights operations",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-store-steps234-coordination-20261118"
+  ],
+  "id": "ef2da199-4ad6-4223-baa0-d9dedc897275",
+  "recordedAt": "2026-11-18T22:15:32.862Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

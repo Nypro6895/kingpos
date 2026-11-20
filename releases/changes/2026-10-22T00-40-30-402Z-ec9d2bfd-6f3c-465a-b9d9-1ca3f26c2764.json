@@ -1,0 +1,157 @@
+{
+  "kind": "change",
+  "changeId": "ios-auth-observability-qa-20261021",
+  "status": "needs-integration",
+  "summary": "Completed separate selected30-file auth/cache/observability/acceptance-report delta on frozen8776/f1 base.387 PC checks, full types/lint, production build238pages and private iOS compile pass. Exact integrated authenticated Simulator acceptance remains pending; conservative generic403/persistent/native invalidation boundaries remain documented. No publication.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-role-read-cache.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs",
+    "tests/app-local-scoped-invalidation-ui.test.mjs",
+    "scripts/ios/acceptance-report.mjs",
+    "tests/ios-acceptance-report.test.mjs",
+    "docs/ios-acceptance-measurement.md",
+    "lib/read-request-timing.ts",
+    "lib/supabase/server.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/app-local/context/route.ts",
+    "lib/read-request-trace-protocol.ts",
+    "lib/app-local-host.ts",
+    "lib/experience-trace.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "tests/context-today-timing.test.mjs",
+    "tests/app-local-read-correlation.test.mjs",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+    "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/app-local-read-cancellation.test.mjs",
+    "tests/app-local-staff-online-access.test.mjs",
+    "tests/owner-today-failure-causality.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\source",
+    "commit": "e00c62ea2b8fd428a5055cfd18a9d538d32db3dc",
+    "manifest": {
+      "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\delta-manifest.json",
+      "sha256": "1725b1593f119fff4fbcff5ed2c5851c44196b3c1fc563fb31bcdd718c8aeed0"
+    },
+    "functionalSourceManifest": {
+      "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\functional-source-manifest.json",
+      "sha256": "c39bbb50d0998e596c9d4642f2b2d915b2f0e59fb7afcdc42083fdb554e10216"
+    }
+  },
+  "fileHashes": {
+    "lib/app-local-role-read-cache.ts": "21e32c31422fdf57f9b70b8aeaba5740a670c186d3738ce69097e73b4b1733ab",
+    "lib/app-local-resource.ts": "b1b79ceca750eea123a19abd88a98acc27bdca778bc913da179c084a427d3cdb",
+    "app/local-app/entry.tsx": "5bec11ddfc01db1b81030b0fc6b60ed6cfa139fab20b5bd98825ef80012862a4",
+    "tests/app-local-role-read-cache.test.mjs": "a410e3d16742818756aaa252262864447244979135a360cb198fad0167842eae",
+    "tests/app-local-role-return-cache.test.mjs": "f20b3c27856519cccf33e3036721ee99420d7844fe5d1f16597de63b45073bb0",
+    "tests/app-local-scoped-invalidation-ui.test.mjs": "ce8c33efda46d7eede2a27bd8a1ad0e21e340bb621d621018ba78ed71e751802",
+    "scripts/ios/acceptance-report.mjs": "c6c994f3ed28a24a981a3c55312e9536b033e694c14fe70fd5b18a79ed131faf",
+    "tests/ios-acceptance-report.test.mjs": "acd4c64e504bb3fc43987825bb93a7e59abebead0f4d32a1a7951f3093eae428",
+    "docs/ios-acceptance-measurement.md": "6166b6f45f6fe10b82093ff1c5bf70e342c538fd5000c81c2237565690c9b649",
+    "lib/read-request-timing.ts": "a8c121956916c371d44c0e4722fec0d1275050a9672d1931214a11304689d704",
+    "lib/supabase/server.ts": "9eb866c3e77a3d87eb1ae562a02c44f574d18a27d944149a90548d41a396a7e5",
+    "lib/staff-portal-identity.ts": "e979f2c60e76a2c43d3aa84e41b8f339ff4d938df2a637bc9eb5bb6945f989c8",
+    "lib/staff-my-work-resource-server.ts": "e3b2ff98aeddd0d88055ad665f634fc58c90635b9485534678c07dd788c299f0",
+    "app/api/app-local/read/route.ts": "5b0ad3a1338d5c936a29c8079c8c3c8e7579cf7e0eb7155626a26dbb68be026b",
+    "app/api/app-local/context/route.ts": "a2cc1243d965276e7f87355f58aa2e09cd29f00c23460a721379ea32dab5a77e",
+    "lib/read-request-trace-protocol.ts": "4c00f252b3487a457b54208a92011c6be2b7431e4fd9cd8e1f4478b01d74b6bd",
+    "lib/app-local-host.ts": "ff6aa151d5a42e574b0ed572435343e2a2914d312c2f26f2c5e21334f40dab70",
+    "lib/experience-trace.ts": "1b678a5678e034989de84968a5640672e5724e31e5d874756fdd77f169ac018c",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "b8fe91505b33d958ce403e8dce3a728f95bbd16576c4114b9b7c74251b3de4c3",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift": "cd93e5300aa75b5e5c134643a7bd74f6fb7cc7b389b7aea90a7e8f14ef5b1355",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "306db3add662fd544998802f560f7210f9a0c3b459882b001a80ad00978cb045",
+    "tests/context-today-timing.test.mjs": "8440895f5a36b6162b7e28ccd1d62cf957b50078deaf21f08cdab98b24ba5236",
+    "tests/app-local-read-correlation.test.mjs": "5babf0fbf2ce72575a5f3b849c784a4edf05fd70c7d9c1092bc2b29dfe5b0216",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift": "b997eb5db503ab90730a707685ca4fcf1c3e354174cf4047f8e759aed05b1d5b",
+    "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift": "de8d25e69e6fe49da78ed0beb8d8774cb6420c1b30896fccd922c1ed51825f39",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "3e8288361a1f420599919d7f9cd20c0fabfce2c1a06bae514b21a1dd2ec34ab6",
+    "tests/staff-my-work-critical-path.test.mjs": "f6cf6e43dd6686484fa24076aa8e2664e062615a00c7b688f149020448eb6a01",
+    "tests/app-local-read-cancellation.test.mjs": "ef4b50d45996a764274afac4e70c6d560fc0af9b61540fe61e5d7273a30546d6",
+    "tests/app-local-staff-online-access.test.mjs": "66639cff8ad17e65198553a16ab9ec78bdcc8d11a2608efb6d99d6acabe21f62",
+    "tests/owner-today-failure-causality.test.mjs": "cc42e54e451740a9375eb2977e7d3f77e818f51fe01c186cacd88e58706bfc63"
+  },
+  "dependencies": [
+    "r6-confirmed-auth-rejection-20261021"
+  ],
+  "validation": [
+    {
+      "name": "387 canonical PC checks; full TypeScript/lint; phase bindings explicit",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\canonical-verification-combined.json"
+    },
+    {
+      "name": "Production build238/238; source30 unchanged; background dispatch disabled",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\production-build-20261022T002353941531Z\\result.json"
+    },
+    {
+      "name": "Exact selected-source forward/inverse patch roundtrip; six new paths",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\delivery-20261022T003320572705Z\\patch-roundtrip.json"
+    },
+    {
+      "name": "Private iOS Simulator build-for-testing compile, signatures/resources; tests not executed; old QA pins preserved",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\authorized-compile-only-20261022T003418202731Z\\DELIVERY.json"
+    },
+    {
+      "name": "Merge pilot and exact coordinator baseline; build/test combined candidate",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\PILOT-CONTRACT-NOTES.json"
+    },
+    {
+      "name": "Authenticated exact integrated candidate Simulator: roles/guest/lifecycle/cache/correct usable/fresh-ready/counts on real backend/transport",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\HANDOFF.md"
+    }
+  ],
+  "releaseHold": true,
+  "published": false,
+  "acceptancePolicy": {
+    "Simulator": "required before deployment, exact integrated source/hash and real authentication/backend/transport",
+    "physicalIPhone": "optional postdeploy follow-up; absence not a predeploy blocker"
+  },
+  "scopeLimitations": {
+    "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\PILOT-CONTRACT-NOTES.json",
+    "sha256": "6f67aa07fe30e74b84a9b8a9e59ce1d2f950a5e18c6512ee42065dcf21fbc05a"
+  },
+  "oldAuthDeliveryUnchanged": {
+    "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\DELIVERY.json",
+    "sha256": "1edfd7a78f86b7dd3b5a167f3eb87409e21bc694e7749bde8c8558ede969a214"
+  },
+  "nativeCompileEvidence": {
+    "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\authorized-compile-only-20261022T003418202731Z\\DELIVERY.json",
+    "sha256": "00d3c1f4df5c615c64f81ce2315c1d09fb40ef10a475c17afec3665c73f20198"
+  },
+  "nativeFrozenPacket": {
+    "path": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\native-input-20261022T003039673463Z\\packet-receipt.json",
+    "sha256": "7dfc001c5ffa840eadee22cb77460a254221614dd03a819a1d68949d4adef21d"
+  },
+  "noActions": [
+    "push",
+    "web deploy",
+    "archive",
+    "TestFlight upload",
+    "provider writes",
+    "business or account data mutation",
+    "existing QA app lifecycle"
+  ],
+  "id": "ec9d2bfd-6f3c-465a-b9d9-1ca3f26c2764",
+  "recordedAt": "2026-10-22T00:40:30.402Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

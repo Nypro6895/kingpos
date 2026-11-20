@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="400" viewBox="0 0 960 400" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="400" x2="960" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#F5F3E9"/><stop offset=".55" stop-color="#FFFCF3"/><stop offset="1" stop-color="#EEE6D1"/></linearGradient>
+    <radialGradient id="sage"><stop stop-color="#C1D5C8" stop-opacity=".55"/><stop offset="1" stop-color="#C1D5C8" stop-opacity="0"/></radialGradient>
+  </defs>
+  <path fill="url(#paper)" d="M0 0h960v400H0z"/>
+  <ellipse cx="94" cy="416" rx="410" ry="290" fill="url(#sage)"/>
+  <g stroke="#B99C5D" stroke-opacity=".21">
+    <ellipse cx="944" cy="211" rx="252" ry="304" transform="rotate(24 944 211)"/>
+    <ellipse cx="944" cy="211" rx="275" ry="327" transform="rotate(24 944 211)" stroke-opacity=".09"/>
+    <path d="M776 432c-78-184-16-322 134-387-4 192-49 285-134 387Z" fill="#DCC997" fill-opacity=".06"/>
+    <path d="M776 432c61-186 148-259 296-244-72 147-155 223-296 244Z" fill="#DCC997" fill-opacity=".04"/>
+  </g>
+</svg>

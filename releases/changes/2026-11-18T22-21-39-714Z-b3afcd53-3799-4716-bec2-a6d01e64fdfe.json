@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-declarations-next-20261118",
+  "status": "needs-integration",
+  "summary": "Source8a9d933 App Privacy/age/content draft with verified server-persisted search/rawGPS, linked Beauty socialgraph and explicit OpenAI delta; no Apple/provider writes.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "docs/ios-store-declarations-next-20261118.md",
+    "artifacts/ios-store-declarations-next-20261118/declarations.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-store-declarations-next-20261118\\frozen",
+    "commit": "8a9d9335207db37969bff824e6ef3e55f37b6484"
+  },
+  "validation": [
+    {
+      "name": "27 source references/ranges and raw/Git hashes verified against8a9d933",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-declarations-next-20261118/declarations.json"
+    },
+    {
+      "name": "JSON parse/evidence IDs, report hash, frozen2/2 and whitespace",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-declarations-next-20261118/frozen-manifest.json"
+    },
+    {
+      "name": "Current official Apple privacy/age/content documentation browsed and root draft reviewed",
+      "result": "passed",
+      "evidence": "docs/ios-store-declarations-next-20261118.md"
+    },
+    {
+      "name": "Runtime/provider/archive/physical evidence and final Apple readback/declarations",
+      "result": "pending"
+    }
+  ],
+  "id": "b3afcd53-3799-4716-bec2-a6d01e64fdfe",
+  "recordedAt": "2026-11-18T22:21:39.714Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "auth-request-finite-deadline-20261022",
+  "status": "working",
+  "summary": "Bound login and MFA client request waits even when a third-party preflight ignores AbortSignal; preserve payloads, BotID checks, Remember me and session fencing; no publication.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/login/login-form.tsx",
+    "lib/auth-request-deadline.ts",
+    "tests/auth-request-deadline.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos-r10-login-deadline-20261022",
+    "commit": "7e284b8749d79a990abedf8dade33c6909949903"
+  },
+  "validation": [
+    {
+      "name": "Two real Trace QA submits preserved without app lifecycle changes",
+      "result": "passed",
+      "evidence": "artifacts/pc-ios-reliability-20261021/r10-runtime/actual-auth-two-attempts-20261022T150724100220Z/result.json"
+    },
+    {
+      "name": "Exact BotID1.5.11 ignored-abort preflight reproduction",
+      "result": "passed",
+      "evidence": "artifacts/pc-ios-reliability-20261021/r10-runtime/botid-wrapper-repro-20261022T151502313536Z/proof.json"
+    },
+    {
+      "name": "Finite UI wait and request generation regression",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "bf4b3b25-f3cc-43b4-b5f4-2c2dd5b655c7",
+  "recordedAt": "2026-10-22T15:20:26.163Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

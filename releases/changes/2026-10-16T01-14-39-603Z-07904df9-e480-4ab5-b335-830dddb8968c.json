@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "cold-network-critical-resources-20261015",
+  "status": "working",
+  "summary": "Extend evidence-backed cold resource work: on-demand translation, unused font preload removal, cacheable CSS without unrelated route coalescing, and on-demand expired-session sign-in form while keeping the auth monitor and reset logic mounted.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/fonts.ts",
+    "components/workspace-language.tsx",
+    "lib/workspace-translator-client.ts",
+    "tests/cold-network-startup-ui.test.mjs",
+    "next.config.ts",
+    "components/session-expiry-prompt.tsx",
+    "tests/lazy-session-sign-in-ui.test.mjs"
+  ],
+  "source": {
+    "baseCommit": "7101aaba39c4d16c9ddc4f43450ce3621bb2ce93",
+    "observedDeploymentId": "dpl_DSMbriHBZG7KthtT1Cnqdcm3Jxkk"
+  },
+  "validation": [
+    {
+      "name": "Font delta lint/hash and10 translation/cold tests",
+      "result": "passed"
+    },
+    {
+      "name": "Assembled full build, CSS asset/visual checks and live benchmark",
+      "result": "pending"
+    }
+  ],
+  "id": "07904df9-e480-4ab5-b335-830dddb8968c",
+  "recordedAt": "2026-10-16T01:14:39.603Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "ticket-calendar-history-20261031",
+  "status": "needs-integration",
+  "summary": "Shared one-tap month calendar and single-row ticket search; prevent retained POS snapshots from labeling previous-day rows as newly selected day; visible reload failures and retry",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "tests/portable-ticket-live-sync.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/ticket-calendar-history-20261031/source"
+  },
+  "validation": [
+    {
+      "name": "Chrome fixture runtime: both toolbars at 320/390/430/768/1280; historical date navigation, query preservation, same-date refresh, midnight, retry and stale row suppression",
+      "result": "passed",
+      "evidence": "tests/portable-ticket-live-sync.test.mjs; artifacts/ticket-calendar-history-20261031/calendar-mobile.png"
+    },
+    {
+      "name": "Six existing ticket edit contracts",
+      "result": "passed"
+    },
+    {
+      "name": "Scoped TypeScript and ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Current release baseline integration, authenticated salon data and physical iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "b3cee028-f6a0-4fce-ac4c-03b7ab276c12",
+  "recordedAt": "2026-11-01T00:57:58.370Z",
+  "worktree": "C:\\Reylumi-worktrees\\ticket-calendar-history-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

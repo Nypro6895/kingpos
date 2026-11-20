@@ -1,0 +1,109 @@
+{
+  "kind": "change",
+  "changeId": "ios-server-command-503-trace-20261019",
+  "status": "ready",
+  "summary": "Integrated pending guest/Owner handoff fixes with bounded iPhone/proxy/server command UUID+UTC correlation, failure phases, backend timings/counts/statuses; security/business/transport behavior preserved; tests/build/archive verified; NO DEPLOY.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/command/route.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+    "lib/app-local-command-trace-names.generated.json",
+    "lib/app-local-command-trace-protocol.ts",
+    "lib/app-local-command-trace.ts",
+    "lib/supabase/auth-rest.ts",
+    "proxy.ts",
+    "scripts/build-app-local-bundle.mjs",
+    "tests/app-local-command-backend-trace.test.mjs",
+    "tests/app-local-command-trace.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/fixtures/app-local-command-trace.mjs",
+    "tests/post-safety-guest-ui.test.mjs",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/read-backend-profile.test.mjs",
+    "tests/read-deadline-sdk-contract.test.mjs",
+    "tests/saved-post-guest-ui.test.mjs",
+    "tests/workspace-selection-contract.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\ios-503-trace-20261019\\frozen-5d58255f",
+    "commit": "5d58255fc1c80e5807bc30e95248a4feec0cb828",
+    "sourceSha256": "fa5c62680dc065a508d429bfe71812c34c65866a9dde12820299279507fe3e43",
+    "overlaySha256": "8e988f283255620cc64e5544776c77c97be53c76d9f32714cb744a4ce30f69db"
+  },
+  "dependencies": [
+    "ios-device-report-handoff-20261019"
+  ],
+  "validation": [
+    {
+      "name": "integrated-contracts",
+      "result": "passed",
+      "evidence": "123/123; contracts-integrated-final.log; final backend classifier15/15 backend-classifier-final.log; HTTP-status/backend/auth55/55 backend-status-final-green.log"
+    },
+    {
+      "name": "browser-regressions",
+      "result": "passed",
+      "evidence": "Chrome58/58; WebKit58/58; affected guest/save/privacy11/11 each after source-confirmed fixture await correction. Logs under artifacts/ios-503-trace-20261019."
+    },
+    {
+      "name": "lint-production-build-typecheck",
+      "result": "passed",
+      "evidence": "lint-integrated-final.log exit0; production-build-final.log exit0, compile + TypeScript +238 pages +430 asset manifest."
+    },
+    {
+      "name": "native-tests-and-unsigned-archive",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/39300430468; actual CI commit fb3e308b816a8414a36fa784512decc041f6f2d3;152 tests zero failures/skips; unsigned archive.405 source hashes and345 bundle resources match final candidate 5d58255fc1c80e5807bc30e95248a4feec0cb828; native-ci-attestation.json. Physical iPhone not yet verified; no TestFlight upload."
+    },
+    {
+      "name": "privacy-transport-and-security-contract-review",
+      "result": "passed",
+      "evidence": "Independent read-only review found no blockers. Original POST fetch once and result/error/body/signal preserved; no new auth/cache/cancellation scope. Strict UUID/fixed metadata and bounded HTTP status counts; adversarial header/error/payload tests pass."
+    },
+    {
+      "name": "frozen-integration",
+      "result": "passed",
+      "evidence": "3075 raw Git blobs verified; source SHA256 fa5c62680dc065a508d429bfe71812c34c65866a9dde12820299279507fe3e43; overlay SHA256 8e988f283255620cc64e5544776c77c97be53c76d9f32714cb744a4ce30f69db; prior event 86cf513c-aa88-4b79-86de-5eee4fae3964 preserved; no production/TestFlight deployment."
+    }
+  ],
+  "nativeBuildRequired": true,
+  "verificationReport": "C:\\Users\\giuse\\kingpos\\work\\ios-503-trace-20261019\\artifacts\\ios-503-trace-20261019\\verification-report.md",
+  "limitations": [
+    "Historical503 root cause remains unconfirmed.",
+    "Physical iPhone reproduction after future web/native release remains necessary.",
+    "Native archive unsigned; no production or TestFlight publication."
+  ],
+  "id": "a85c2024-549d-48f2-a4c4-7a1f42f2414e",
+  "recordedAt": "2026-10-19T18:28:36.886Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-503-trace-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/app-local/command/route.ts": "1ccf6741a8ffd3d5c6d62204ead341d21111e214560944138866ed9e1ee97bfc",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "2e32a7a066ecd379f2c8ca9349295dcdf68223fb4ad91572d0a9638456fd4672",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift": "01b9fc16af8f7bc45d0aa01458defe77c3d8c06a48da2116b6d11ace2c56fa48",
+    "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift": "5dc61da7ff93fbf091356a66faf0bea1242cacb11d3d959bd31f8be06c98e715",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift": "a39f1d8c9b8c956c0c56a3c5bf3c23169785a7913d63b552e27d5dc125aeb3c5",
+    "lib/app-local-command-trace-names.generated.json": "0f35b073c7089289da949b47f8890b56ca812b9493f9be63a1bae6f897013b17",
+    "lib/app-local-command-trace-protocol.ts": "1187777fc6830ebaa10808111ddd8d6e7f6354baa180b86d73a7b9814b80110a",
+    "lib/app-local-command-trace.ts": "34186bdd9d16ce5148befdd1c2972d836beb3702b7c2ff48d6401deaa8b993a2",
+    "lib/supabase/auth-rest.ts": "b2fd14f0e190d373f48768294d427fa7b0b55197b784e624adbcdd23cc36da57",
+    "proxy.ts": "b4928e1cdf884fa37781a162e968633dbc3002546febe1384fc936b89797ceb2",
+    "scripts/build-app-local-bundle.mjs": "144e51b45913b64f08838e5e4d363c7813056100bea1ddb0010cb01e4a7b0f4f",
+    "tests/app-local-command-backend-trace.test.mjs": "24a814d309d66021866e2ba0c8865cd7930962337a63d2967be95826fd8d6c82",
+    "tests/app-local-command-trace.test.mjs": "4562c40305672f4a4122b8d9acd4935751897f2ee854248215f6e2126773420a",
+    "tests/experience-auth-availability.test.mjs": "af57cfb8f5cbaedbde0f5a24c37af5e827c507b4cd228bcb1ad89789c47e8732",
+    "tests/fixtures/app-local-command-trace.mjs": "d50692b511ecb6c67ec6547af57591845ab799b83e1501810af2c6d6540b49a1",
+    "tests/post-safety-guest-ui.test.mjs": "7acbdae412a94ff085b2d8f7309a48e94e7dc39debb4404516a2e91656d8a8b1",
+    "tests/read-auth-coalescing.test.mjs": "a3cc3bbe5884ba5739a5290947df109f421b1c17f9aea6a8587e4ff658d7fbae",
+    "tests/read-backend-profile.test.mjs": "bcd721295634254ca466ae5b287b4e1eae9b062d7c1edf8608ebe809ef2bb71e",
+    "tests/read-deadline-sdk-contract.test.mjs": "ed624afe12ff027a4c88504b6ef661094eaf53235c58928a6d6a06bdc67a63ec",
+    "tests/saved-post-guest-ui.test.mjs": "0f43055f121c49e8622f49ec2e746b490dc6203655fa66bb4090e61b09040763",
+    "tests/workspace-selection-contract.test.mjs": "e1f856b08b7f65a18d412794cd7b4b1835edd70f96981be8fc6e163eeee0ec7d"
+  }
+}

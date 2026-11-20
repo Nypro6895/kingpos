@@ -1,9 +1,11 @@
 import { getContextBusinessDate } from "@/lib/salon-business-clock";
 import "server-only";
+import {getReusableReadValidationToken,memoizeReadContext} from "@/lib/read-context-scope";
 
 import {
   getCurrentBusinessContext,
   getCurrentStaffBusinessContext,
+  isSalonStaffContext,
 } from "@/lib/current-context";
 import {
   CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE,
@@ -13,7 +15,7 @@ import {
 } from "@/lib/staff-account";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
-import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
+import { getStaffPortalIdentity, requireStaffPortalReadIdentity, type StaffPortalIdentity } from "@/lib/staff-portal-identity";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Staff } from "@/types/staff";
 import type {
@@ -62,6 +64,7 @@ export type StaffDailyActivitySummary = {
 type StaffResolutionOptions = {
   workDate?: string;
   allowEmailFallback?: boolean;
+  readIdentity?: StaffPortalIdentity;
 };
 type StaffWorkdaysSupabaseClient = NonNullable<
   Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -293,11 +296,20 @@ export async function getCurrentStaffForSalon(
   throw new Error(CURRENT_STAFF_NOT_FOUND_MESSAGE);
 }
 
-export async function getTodaysStaffWorkday(
+const staffTodayReadKey=Symbol("staff-attendance-today-read");
+export function getTodaysStaffWorkday(context?:CurrentBusinessContext,options:StaffResolutionOptions={}) {
+  // Identity bootstrap and the attendance DTO consume the same original read.
+  // Explicit identities, mutations outside read scope and final probes stay fresh.
+  return !context && Object.keys(options).length===0 && getReusableReadValidationToken()
+    ? memoizeReadContext(staffTodayReadKey,()=>loadTodaysStaffWorkday())
+    : loadTodaysStaffWorkday(context,options);
+}
+async function loadTodaysStaffWorkday(
   context?: CurrentBusinessContext,
   options: StaffResolutionOptions = {},
 ) {
-  const identity = !context && options.allowEmailFallback === false ? await getStaffPortalIdentity() : null;
+  const identity = options.readIdentity ? requireStaffPortalReadIdentity(options.readIdentity, context ?? options.readIdentity.context)
+    : !context && options.allowEmailFallback === false ? await getStaffPortalIdentity() : null;
   const resolvedContext = context ?? identity?.context ?? (await getCurrentStaffBusinessContext());
   const today = options.workDate ?? await getContextBusinessDate(resolvedContext);
 
@@ -467,7 +479,17 @@ export async function getCurrentSalonStaffActivitySummaries(
   }
 
   const today = options.workDate ?? await getContextBusinessDate(resolvedContext);
-  const { data, error } = await supabase
+  // Staff cannot read shared ticket headers. The admitted Staff snapshot exposes
+  // only that person's inputs and the minimal ticket status needed for counts.
+  const ownSnapshot = isSalonStaffContext(resolvedContext)
+    ? await supabase.rpc("get_my_staff_daily_snapshot", {p_salon_id: salon.id})
+    : null;
+  if (ownSnapshot && (ownSnapshot.error || !ownSnapshot.data || ownSnapshot.data.date !== today || !staffIds.includes(ownSnapshot.data.staff_id))) {
+    throw new Error("Staff daily activity could not be verified.");
+  }
+  const { data, error } = ownSnapshot
+    ? {data: (ownSnapshot.data.earnings as Array<{staff_id: string; service_total: number; tip_amount: number; total_earning: number; big_turn_count: number; small_turn_count: number; ticket: {status: string} | null}>).filter(row => row.staff_id === ownSnapshot.data.staff_id && isCountedDailyTicketStatus(row.ticket?.status)), error: null}
+    : await supabase
     .from("pos_ticket_staff_earnings")
     .select(
       "staff_id, service_total, tip_amount, total_earning, big_turn_count, small_turn_count, ticket:pos_tickets!inner(status)",
@@ -525,10 +547,18 @@ export async function getCurrentSalonStaffActivitySummaries(
 
 export async function getCurrentStaffAssignedWork(
   context?: CurrentBusinessContext,
+  options: { readIdentity?: StaffPortalIdentity } = {},
 ) {
-  const identity = context ? null : await getStaffPortalIdentity();
+  const identity = options.readIdentity ? requireStaffPortalReadIdentity(options.readIdentity, context ?? options.readIdentity.context)
+    : context ? null : await getStaffPortalIdentity();
   const resolvedContext = context ?? identity!.context;
-  let today = await getContextBusinessDate(resolvedContext);
+  // A branded read identity already binds this active Staff/salon. The self
+  // snapshot below supplies its authoritative date, so do not serialize a
+  // preliminary timezone RPC before it. Legacy/empty identity paths still
+  // need their original fallback date, and invalid snapshots still fail closed.
+  const snapshotSuppliesDate = Boolean(options.readIdentity && identity?.staff
+    && resolvedContext.user && resolvedContext.currentAccount && resolvedContext.currentSalon);
+  let today = snapshotSuppliesDate ? "" : await getContextBusinessDate(resolvedContext);
 
   if (!resolvedContext.user) {
     return {

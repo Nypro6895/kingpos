@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "owner-forum-20261103",
+  "status": "ready",
+  "summary": "Blue mobile-first Owner forum: sections/state filters, topics/replies/bookmarks, general chat, shared platform Mod/Admin, inline delete/restore/lock/pin/move/restrict and audit. Forum restrictions do not suspend salon/POS.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "types/platform-admin.ts",
+    "app/(app)/admin/_components/admin-ui.tsx",
+    "types/forum.ts",
+    "lib/forum/server.ts",
+    "app/(app)/forum/actions.ts",
+    "app/(app)/forum/page.tsx",
+    "app/(app)/forum/forum.tsx",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/admin/forum/page.tsx",
+    "supabase/migrations/20261103180000_owner_forum.sql",
+    "tests/forum-runtime.test.mjs",
+    "supabase/migrations/20261103181500_forum_feed_indexes.sql"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\owner-forum-20261103\\artifacts\\owner-forum\\frozen-ready",
+    "commit": "bf022064479e6e17745313ed0279c17f9a74a6a2"
+  },
+  "validation": [
+    {
+      "name": "Real PostgreSQL authorization/moderation/pagination/author actions: 14 tests",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/database-tests.txt"
+    },
+    {
+      "name": "Browser interactions on real migration fixture, 320/390/768/1280px",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/browser/result.json"
+    },
+    {
+      "name": "Focused ESLint",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/lint.txt"
+    },
+    {
+      "name": "Production source build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/build-final.txt"
+    },
+    {
+      "name": "Hosted migration and RLS verification",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/migration-proof.png"
+    }
+  ],
+  "dependencies": [],
+  "id": "396a523c-e44b-4208-849f-5ab2aa2b8d36",
+  "recordedAt": "2026-11-03T18:14:24.704Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/role-navigation.ts": "1ad362e07099a8ae3005df50127f41de3f8cdda1b8de919808998951c2a6994f",
+    "types/platform-admin.ts": "c924392729ca96da2f1bab12311f4d7aaf914b7da10e73f326d3cc8f9c9a4c25",
+    "app/(app)/admin/_components/admin-ui.tsx": "c63819f569b9556b16edc02d25a29f2672e594d875d42062df0333173a5d3cc5",
+    "types/forum.ts": "91158b2d2083ce205566e3e021fc8fa87a1c977467d18c116c9a13ce1d8b51c4",
+    "lib/forum/server.ts": "3a22f6e792827ae3020ab2c224c8692fc3a4da9e2455ab1d69095dd83b0ea825",
+    "app/(app)/forum/actions.ts": "57a8b4c2cb7c3747b0741472a77550c6bf9cce3adeaf0ac6a2f9d5195bc71e8a",
+    "app/(app)/forum/page.tsx": "05ac722dd47e1add26175c5dcb86485f8ce50ff5024348b1acdc0ca7962bc639",
+    "app/(app)/forum/forum.tsx": "ffda9155882db28436f908d4ff28fc56cd217ef57b4bddc72c74a2faed09cf03",
+    "app/(app)/forum/forum.module.css": "5b4697210106fe79a389c20866046c2fc46d60e3d15f2e671a4b5b5c00f635ff",
+    "app/(app)/admin/forum/page.tsx": "2145acddf30b52bf4bac46d627448d4068ad445cf5991ff21bf97ec98d99409e",
+    "supabase/migrations/20261103180000_owner_forum.sql": "7c34878bd6862dd2d61372828f2f6307d8fbff9842298ec82b279ec3b93f6d73",
+    "tests/forum-runtime.test.mjs": "c1648d8e5da7cd821e1e19064c9dac43b82a3f8e8a2c669b5f5a2d751b37ff21",
+    "supabase/migrations/20261103181500_forum_feed_indexes.sql": "e666c170458624debab1ad180b704919295c0fe84ace336f2252853ffe9efa3c"
+  }
+}

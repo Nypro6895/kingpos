@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "staff-profile-legal-name-20261029",
+  "status": "ready",
+  "summary": "Staff First/Last are canonical legal name for Payroll and Tax Company; preserve nickname and recorded statements; coordinator integrated and validated against exact live release68",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/staff-legal-name.ts",
+    "lib/payroll.ts",
+    "lib/vietnamese-dictionary.ts",
+    "app/staff/actions.ts",
+    "app/staff/staff-directory-editor.tsx",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/staff/page.tsx",
+    "tests/staff-profile-legal-name.test.mjs",
+    "tests/staff-profile-legal-name-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029\\frozen-overlay",
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+    "integratedFromEvent": "61ee93d3-94ba-47e0-98b8-3f70aedd936e"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Exact integrated production source build, targeted runtime/SQL/browser tests and source preservation",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029/selection.json"
+    }
+  ],
+  "id": "0278173d-321d-4a89-8e60-560f5a03e2fb",
+  "recordedAt": "2026-10-29T20:15:13.842Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/staff-legal-name.ts": "f9c72d91229f217c0a2909d9500c6916e4bfd652a2df0c0a47f47aece0c0a7d3",
+    "lib/payroll.ts": "1b16aba5fc706da01de505180eec3cc6d1f99e694d3baeca5377dc346cfb5906",
+    "lib/vietnamese-dictionary.ts": "324842a92fe1447629bc2de343bbbd2067ee752daf142ab6250a0f74faa526fd",
+    "app/staff/actions.ts": "5ddd6e4b78c1ac3eb6a20503cd3c36267c8fc4ed97361b3dc485c221883d5307",
+    "app/staff/staff-directory-editor.tsx": "68d29289663705c76b7a7c64d5ccc0ebaf4eb4de2e6e2dc0c2656297f3925688",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx": "26eaf6fdbf287305ab922047be6f6c77af18dff9ca700622fd9d04d9642b9aa9",
+    "app/settings/team-payroll-panels.tsx": "27c3acf7ecb5b6acbf91fa4688f1f32f82c4a1ea2279019de012ab1742dd5501",
+    "app/(app)/payroll/page.tsx": "40fb5d69f1094e54ed3cfb7eb9d49efc16c0be43bc50807b7da56c6d5941e128",
+    "app/(app)/staff/page.tsx": "e35433d71a21e31536989bf4af1b32913bdeefe73ddc0bf006eab2110fb45a2a",
+    "tests/staff-profile-legal-name.test.mjs": "1b10cb9a507f60964f05cbfba091c0a13f3c803382f43e6744b9788f96310340",
+    "tests/staff-profile-legal-name-ui.test.mjs": "3cf01fc3a22f960445c3daa4d40476706d528adb03405c528a39409352d25ea7"
+  }
+}

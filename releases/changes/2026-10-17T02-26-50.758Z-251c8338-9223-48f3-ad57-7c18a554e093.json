@@ -1,0 +1,131 @@
+{
+  "kind": "change",
+  "changeId": "explore-address-priority-20261016",
+  "status": "ready",
+  "summary": "Address-first salon search without Maps: selected area beats remote names, near-me aliases and stored street addresses work, profile/phone/title/body search and salon media retained, empty UI simplified. Local implementation only; no deployment.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-search-recommendations.tsx",
+    "lib/explore-query-intent.ts",
+    "lib/explore-query-routing.ts",
+    "lib/explore-search-recommendations.ts",
+    "lib/explore-search.ts",
+    "supabase/migrations/20261017020000_explore_address_priority.sql",
+    "tests/explore-address-priority.integration.test.mjs",
+    "tests/explore-address-search-flow.integration.test.mjs",
+    "tests/explore-auto-load-runtime.test.mjs",
+    "tests/explore-gps-recovery-runtime.test.mjs",
+    "tests/explore-progressive-startup-ui.test.mjs",
+    "tests/explore-query-intent.test.mjs",
+    "tests/explore-query-routing-runtime.test.mjs",
+    "tests/explore-search-context-ui-runtime.test.mjs",
+    "tests/explore-search-recommendations-runtime.test.mjs",
+    "tests/explore-search-service-runtime.test.mjs",
+    "tests/explore-selected-area-ui-runtime.test.mjs",
+    "tests/explore-unified-search.integration.test.mjs",
+    "tests/fixtures/explore-unified-search-bootstrap.mjs",
+    "types/explore.ts"
+  ],
+  "dependencies": [
+    "explore-unified-salon-search-20261016"
+  ],
+  "dependencyEvents": [
+    "65e3cb87-2481-443d-96b5-c8f1f0c39095"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-address-priority-20261016\\completed-source",
+    "hashManifest": "work/explore-address-priority-20261016/audit/frozen-source-hashes.json",
+    "preimplementationSnapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-address-priority-20261016\\preimplementation-source",
+    "validationSnapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-address-priority-20261016\\validation-source"
+  },
+  "validation": [
+    {
+      "name": "Runtime and browser checks across 24 files; stale startup fixture corrected and all 3 startup cases rerun",
+      "result": "passed",
+      "evidence": [
+        "work/explore-address-priority-20261016/audit/runtime-ui-tests.log",
+        "work/explore-address-priority-20261016/audit/progressive-startup-ui-resolution.json"
+      ]
+    },
+    {
+      "name": "119 broader local search/privacy/GPS/cache/cursor checks across25 files",
+      "result": "passed",
+      "evidence": "work/explore-address-priority-20261016/audit/broader-local-explore-regressions.json"
+    },
+    {
+      "name": "37 full SQL and parser-to-SQL flow checks, including final real-media ordering and legacy cursor continuity",
+      "result": "passed",
+      "evidence": "work/explore-address-priority-20261016/audit/final-sql-flow-tests-final.log"
+    },
+    {
+      "name": "10 local queries on107414 exported public salon records using final ranking function",
+      "result": "passed",
+      "evidence": "work/explore-address-priority-20261016/audit/real-public-search-validation-final.json"
+    },
+    {
+      "name": "Production build, TypeScript,222 page generation; changed app/lib/types source hashes match built copy",
+      "result": "passed",
+      "evidence": [
+        "work/explore-address-priority-20261016/audit/build.log",
+        "work/explore-address-priority-20261016/audit/frozen-source-hashes.json"
+      ]
+    },
+    {
+      "name": "Scoped lint: zero errors;23 unused-code warnings predate this change",
+      "result": "passed",
+      "evidence": "work/explore-address-priority-20261016/audit/eslint.log"
+    },
+    {
+      "name": "Independent read-only parser/router/service/SQL and cursor privacy review",
+      "result": "passed",
+      "evidence": "work/explore-address-priority-20261016/audit/independent-review.json"
+    }
+  ],
+  "nativeAssessment": {
+    "required": false,
+    "reason": "Web search, SQL, and UI behavior only; no native assets/configuration/bridge changed"
+  },
+  "releaseNotes": {
+    "deployed": false,
+    "productionWrites": false,
+    "pending": "Future release must integrate the pending unified-search dependency and this additive migration with the exact then-current production source; this snapshot is not a full release baseline.",
+    "localDataLimitations": [
+      "Frozen public snapshot, not a live production search or deployment.",
+      "Read-only exports use separate transactions/chunks; this is a documented capture window, not one atomic production snapshot.",
+      "Anonymous guest replay: no account sessions, private profiles, user block lists, tickets, payments, or bookings are imported.",
+      "Existing public eligibility/normalization helpers are captured from production; the new search RPC is the exact unshipped validated migration.",
+      "Non-search enrichment RPCs are outside this database replay; preview must not invent their signals."
+    ]
+  },
+  "id": "251c8338-9223-48f3-ad57-7c18a554e093",
+  "recordedAt": "2026-10-17T02:26:50.758Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/explore/explore-client.tsx": "f373c31351f29353cc1a736085830845297027e84be6ed445ac648a83364f5b3",
+    "app/explore/explore-search-recommendations.tsx": "32a989a610f1780bc346dbcd17ec9e67468dd5855894d076f598a3a2c7f973f2",
+    "lib/explore-query-intent.ts": "3a66478037a46fcb10177aa4334149c054aabc913316f5caf7f151dcfa64c9bd",
+    "lib/explore-query-routing.ts": "c76deb60718a87e535a6fac1fe40645756b48cd9cb42de629a0a4c32e4d9e25d",
+    "lib/explore-search-recommendations.ts": "0e86db30aa98ed39ee956b4e084620a96e4f1e8102fe7148c7a4c7e141525d33",
+    "lib/explore-search.ts": "ace4625f97499291c9fc40a36143239cb300dbd96e3f684ed36a0fa5cf44ef6f",
+    "supabase/migrations/20261017020000_explore_address_priority.sql": "7021d66a5ba06a2fa889eb7cef48423d47eb4e9010dbb36e3383b06ac7d1dcc7",
+    "tests/explore-address-priority.integration.test.mjs": "b5855e146c26c1c283b3c3058f4e470499e59118ec4dc083cac453602a4b4705",
+    "tests/explore-address-search-flow.integration.test.mjs": "f4e22f46b528b0f3b0fa1364ae22245dc0f1599a971b30eff4a75e2b781b8118",
+    "tests/explore-auto-load-runtime.test.mjs": "8f0324876ca0c0d387467e4140ab91aff74770f48fed6c97678c76b65b5e9fc2",
+    "tests/explore-gps-recovery-runtime.test.mjs": "c3860275762bfabdb544ebb949fa90565d5d3874f90e6888595c78ae59cfeafd",
+    "tests/explore-progressive-startup-ui.test.mjs": "0e657cb7232ecb79a1a10bb884df2ed386cf825685cecd937e681de5a8114a58",
+    "tests/explore-query-intent.test.mjs": "ecd1bcd0f2fd592a17496638d6583136d60e8c9cbebdad8782d752ebe622cf12",
+    "tests/explore-query-routing-runtime.test.mjs": "25404ea6532974bb11352c8c525ef39288986053d189b0aab6c1a547ea4e65f1",
+    "tests/explore-search-context-ui-runtime.test.mjs": "a2bfd42b284940c1ad32c8b1fb8a3edb89065a3dfb7f2cc412675b8a9b824993",
+    "tests/explore-search-recommendations-runtime.test.mjs": "6bd05e303afb71503a4f6f67fe67ba59530ba5471e2ef832773bb34e42c78090",
+    "tests/explore-search-service-runtime.test.mjs": "4982c59067325299cab8f2c90633aa80c7545a62eca650353c971e357bd7c670",
+    "tests/explore-selected-area-ui-runtime.test.mjs": "e0f151a9c7b272424a05c3a689bd3d9ec8e057a3453f599f2e89fd3ebb6c6dba",
+    "tests/explore-unified-search.integration.test.mjs": "46ad0b19b8cf0a122ffbd818efbe7e02cf6393df7823e06643e2144bf555c693",
+    "tests/fixtures/explore-unified-search-bootstrap.mjs": "5d7be3a09db999d634a0760b2b81fb45c60c3d28340b4cb4f336631f5076db54",
+    "types/explore.ts": "10c56a73f3f6817ba0225bbe1272551f87c0e7776d191886fdfadd02491c69a0"
+  }
+}

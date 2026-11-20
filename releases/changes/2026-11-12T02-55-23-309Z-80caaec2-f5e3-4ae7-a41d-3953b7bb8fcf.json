@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "after97-native-staff-scan-admission-20261111",
+  "status": "ready",
+  "summary": "Admit only the new owner-checked Staff Scan connect command to fresh online Staff transport; retain legacy command compatibility and verify the actual installed manifest against current active commands, including a registered forbidden owner mutation.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\complete-snapshot",
+    "commit": "4db7477d5b446bdf3cd113f61335df46a9123fb4"
+  },
+  "validation": [
+    {
+      "name": "Final production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-complete.txt"
+    },
+    {
+      "name": "26 final language, auxiliary, paired device and schema regression tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-regression.txt"
+    },
+    {
+      "name": "Actual generated installed root numeric and Help bundle tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/installed-complete-final.txt"
+    },
+    {
+      "name": "Exact 4257 deployed source files and seven public routes verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-release/live-source-verified.json"
+    },
+    {
+      "name": "248 native simulator cases on 14 hosts, archive, sign and upload verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/native-verified.json"
+    }
+  ],
+  "id": "80caaec2-f5e3-4ae7-a41d-3953b7bb8fcf",
+  "recordedAt": "2026-11-12T02:55:23.309Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "4e7675de0755878e6e23bfe195c5bb455a7be81e00d03cb4eafc9d4ecd8cf379",
+    "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift": "7db7932bcdcce05854f864cd24ce2098ded5edf92a9c08e27c0d95b56de493af"
+  }
+}

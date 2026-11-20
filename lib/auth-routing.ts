@@ -7,12 +7,13 @@ export type AuthRouteWorkspaceKind =
   | "personal"
   | "salon"
   | "shared"
-  | "staff";
+  | "staff"
+  | "tax";
 
 export type AuthWorkspaceSummary = {
   id: string;
   salonMode: "manage" | "staff" | null;
-  type: "account" | "personal" | "salon";
+  type: "account" | "personal" | "salon" | "tax";
 };
 
 export type PostAuthRouteDecision = {
@@ -29,11 +30,18 @@ const AUTH_FORM_PATHS = [
   "/login",
   "/reset-password",
   "/signup",
+  "/tax/login",
+  "/tax/signup",
+  "/tax/forgot-password",
 ] as const;
 const SHELLLESS_NEUTRAL_PREFIXES = [
+  "/tax",
+  "/tax-company",
   "/book",
   "/booking/manage",
   "/pos/customer-display",
+  "/check-in",
+  "/visit",
   "/pos/portable",
   "/staff/invite",
 ] as const;
@@ -44,6 +52,7 @@ const SHARED_CONTEXT_PREFIXES = [
   "/my-place",
   "/notifications",
   "/settings",
+  "/support",
 ] as const;
 const ACCOUNT_CONTEXT_PREFIXES = [
   "/permissions",
@@ -51,6 +60,8 @@ const ACCOUNT_CONTEXT_PREFIXES = [
   "/salons",
 ] as const;
 const PERSONAL_CONTEXT_PREFIXES = [
+  "/qr",
+  "/welcome/phone",
   "/activity",
   "/beauty",
   "/businesses",
@@ -62,6 +73,7 @@ const STAFF_CONTEXT_PREFIXES = [
   "/staff/appointments",
   "/staff/my-work",
   "/staff/workday",
+  "/staff/scan",
 ] as const;
 const MANAGE_CONTEXT_PREFIXES = [
   "/bookings",
@@ -122,11 +134,17 @@ export function sanitizeAuthReturnPath(
 }
 
 export function loginHrefForReturnPath(path: string) {
-  return `/login?next=${encodeURIComponent(sanitizeAuthReturnPath(path))}`;
+  const sanitized = sanitizeAuthReturnPath(path);
+  const gift = new URL(sanitized, INTERNAL_URL_ORIGIN);
+  if (gift.pathname === "/gift-cards" && /^#card=[a-f0-9]{64}$/.test(gift.hash)) {
+    return `/login?next=${encodeURIComponent(`${gift.pathname}${gift.search}`)}${gift.hash}`;
+  }
+  return `/login?next=${encodeURIComponent(sanitized)}`;
 }
 
 export function getAuthRouteWorkspaceKind(path: string): AuthRouteWorkspaceKind {
   const pathname = pathnameFromInternalPath(sanitizeAuthReturnPath(path));
+  if (matchesAuthPath(pathname,"/tax") || matchesAuthPath(pathname,"/tax-company")) return "tax";
 
   if (pathname === "/" || pathMatchesAny(pathname, SHARED_CONTEXT_PREFIXES)) {
     return "shared";
@@ -181,6 +199,7 @@ function workspaceCanRestoreRoute(
   workspace: AuthWorkspaceSummary,
   routeKind: AuthRouteWorkspaceKind,
 ) {
+  if (routeKind === "tax") return workspace.type === "tax";
   if (routeKind === "manage") {
     return workspace.type === "salon" && workspace.salonMode === "manage";
   }
@@ -247,7 +266,7 @@ export function resolvePostAuthRoute(input: {
   }
 
   return {
-    redirectTo: routeKind === "neutral" ? redirectTo : PERSONAL_HOME_PATH,
+    redirectTo: routeKind === "neutral" || routeKind === "tax" ? redirectTo : PERSONAL_HOME_PATH,
     routeKind,
     workspaceId: personal?.id ?? null,
   };

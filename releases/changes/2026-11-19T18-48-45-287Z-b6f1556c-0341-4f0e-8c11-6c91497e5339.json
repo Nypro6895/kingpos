@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "beauty-image-publication-gate-20261119-r1",
+  "status": "working",
+  "summary": "Fence Beauty profile/post transitions that would expose existing images without exact approved or published-legacy object pins.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119184500_beauty_image_publication_gate.sql",
+    "tests/beauty-image-publication-gate.integration.test.mjs",
+    "docs/beauty-image-publication-gate-20261119.md"
+  ],
+  "source": {
+    "commit": "2d6e967d05ff432814fea7355b1d3bfd30aa904b"
+  },
+  "validation": [
+    {
+      "name": "Confirmed private-profile publication regression in exact21 legacy upgrade",
+      "result": "failed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/production-legacy-ugc-upgrade-r2/review-summary.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "b6f1556c-0341-4f0e-8c11-6c91497e5339",
+  "recordedAt": "2026-11-19T18:48:45.287Z",
+  "worktree": "C:\\Reylumi-worktrees\\beauty-image-publication-gate-20261119-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

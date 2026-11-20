@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "ios-21-1-runtime-repairs-20261016",
+  "status": "needs-integration",
+  "summary": "Repair cached private-read authority ordering without weakening grants; restore installed confirm/Back parity; verify core assets off the UI actor within8MiB; coalesce encrypted read-store commits while preserving revoke/clear; add9 native regressions including actual installed POS cold draft/checkpoint/outbox initialization.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\experience-regression-21-1\\native-repair-source-r1",
+    "manifest": "artifacts\\experience-regression-21-1\\native-repair-source-manifest-r1.json",
+    "sha256": "73b25deaedef1d52a88d64e09a1bbe023917be9798921e7ee641d8ce3d7fe6d6"
+  },
+  "fileHashes": {
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "163e077aad9297968cefd1a847625f274283f78ef6acd2992ba76c4b52f21387",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "f7940b2398527c4fd4462521cc63d3ed807de6decd93e43f1e176c536b14a243",
+    "ios/Reylumi/ReylumiLocalBundle.swift": "3f2a59f299f402e0b9cf0452549535956a669bf07aa54327fdd928798f808b06",
+    "ios/Reylumi/ReylumiLocalReadStore.swift": "cd5cb51e9d1518a715d73695834f15239456bfeb827751484c9cb3f163487946",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "15bb5db91f70e53935360ee5c7e49efe77610f0b2a34a44dec9a129c1b32100b",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "e863fd9327af4a039eea26f6b78e23c136d02c0146b5042f17178c7d515e09fa",
+    "ios/ReylumiTests/LocalBundleTests.swift": "67c24b517f9202d52a9a59f591e336a61fd51478298cb62548324941515ce9c8",
+    "ios/ReylumiTests/LocalReadStoreTests.swift": "91f7d436e75f9a764e96f9195f92318cb5b479b42da35e07d98b152e2d6e452c"
+  },
+  "validation": [
+    {
+      "name": "Native bridge JavaScript syntax",
+      "result": "passed"
+    },
+    {
+      "name": "Native host/codec/epoch/one-attempt command regressions4 cases",
+      "result": "passed"
+    },
+    {
+      "name": "Named read API scope/304/failure regression1 case",
+      "result": "passed"
+    },
+    {
+      "name": "Independent native source security/concurrency review",
+      "result": "passed"
+    },
+    {
+      "name": "Actual90-case macOS Simulator XCTest and unsigned archive on assembled frozen native+updated bundle",
+      "result": "pending"
+    }
+  ],
+  "id": "b28575f3-e29f-4b56-afdc-d7c8582c2a06",
+  "recordedAt": "2026-10-16T20:51:00.399Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

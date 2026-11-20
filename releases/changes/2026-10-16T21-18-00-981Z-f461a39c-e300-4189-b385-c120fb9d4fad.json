@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "installed-owner-ticket-detail-navigation-20261016",
+  "status": "ready",
+  "summary": "Restore the original owner POS bar on canonical installed ticket-detail pages before the data read completes, retain it on error, and show exact owner-outbox sync status. Legacy detail keeps general role chrome and original ticket/business authority is unchanged.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-daily-registry.tsx",
+    "tests/app-local-daily-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-20261016\\ticket-detail-frozen-source-r1"
+  },
+  "validation": [
+    {
+      "name": "Original TicketPage and controls: pending/error/success, legacy shell, owner admission, original payment/draft guards",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-20261016\\ticket-detail-nav-tests.json"
+    },
+    {
+      "name": "Targeted ESLint and whitespace checks",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-20261016\\ticket-detail-nav-tests.json"
+    }
+  ],
+  "id": "f461a39c-e300-4189-b385-c120fb9d4fad",
+  "recordedAt": "2026-10-16T21:18:00.981Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-daily-registry.tsx": "d630d5e5ac382b81ce92fd68bc97fb1aa575d38851bf51ab2cf304edca67b55e",
+    "tests/app-local-daily-ui.test.mjs": "d596f7e7664c549bbf0b2db8dafc541ce20d929f8b7977e629035442aef4f40f"
+  }
+}

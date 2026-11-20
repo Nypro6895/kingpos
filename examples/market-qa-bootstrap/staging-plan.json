@@ -1,0 +1,22 @@
+{
+  "approval": false,
+  "scopeDecision": "pending-owner-review",
+  "sourceBaseline": "df46072",
+  "executionAllowed": false,
+  "resources": [
+    {"provider":"Vercel","team":"King","name":"reylumi-market-qa","id":null,"proposedOrigin":"https://reylumi-market-qa.vercel.app","region":"iad1","purpose":"Private nonfinancial Market QA; canonical Auth/context/Owner routes"},
+    {"provider":"Vercel","team":"King","name":"reylumi-qr-menu-qa","id":null,"proposedOrigin":"https://reylumi-qr-menu-qa.vercel.app","region":"iad1","purpose":"QR Node22 app, verified QA login and encrypted private store"},
+    {"provider":"Supabase","organization":"Kingpos","name":"reylumi-market-qa","id":null,"compute":"Micro","region":"us-east-1","purpose":"Separate QA Auth/SQL/synthetic data; no production connection"}
+  ],
+  "identities": {"proposedCount":4,"roles":["Owner A","developer","independent reviewer","Owner B"],"created":0,"publicSignupsForLimitedQa":"proposed disabled; full signup acceptance deferred","actualCredentials":false},
+  "permissionsVerified": false,
+  "credentialScopes": ["Market QA only Supabase public config and server service_role for mandatory abuse gate; not QR", "Optional separate ANTISPAM_SIGNING_KEY or canonical service-key derivation; no value supplied", "QR QA public Auth key, restricted SQL login approved separately, distinct session/grant encryption keys", "QA confidential app credentials on developer backend only; four published-data read scopes", "No Stripe/SMTP/SMS/bank/KYC/live keys requested for limited nonfinancial scope"],
+  "ttlHours":72,
+  "clockStarts":"First approved QA resource creation, including setup",
+  "createdAt":null,
+  "expiresAt":null,
+  "cleanupApproved":false,
+  "cleanup":"At approved expiry revoke QA app grants/sessions/keys, stop QR and Market QA traffic, then delete exactly approved newly created QA resources only with required explicit/provider confirmation; no automatic deletion or transfer of production resources",
+  "budget": {"approved":false,"proposedIncrementalCeilingUsd":20,"manualStopAndReviewUsd":10,"microHourlyUsd":0.01344,"micro72hUsd":0.96768,"assumedRemainingCreditUsd":0,"actualTeamCreditsVerified":false,"requiresExistingPaidOrganization":true,"hardCapGuaranteed":false,"changeSharedTeamBudget":false,"newRecurringPlanAuthorized":false},
+  "blocked": ["Exact QA resource IDs/origins and permissions are not verified", "Canonical nonfinancial Owner origin guard refuses proposed QA HTTPS origin; reviewed exact-origin source change required", "Full login-session/security/notification/booking bootstrap not supplied", "Abuse security-check/signup admission and whole app shell hosted acceptance incomplete", "QR SQL role intentionally NOLOGIN until separately approved credential setup", "No resource/credential/cloud/schema/deployment/cleanup authorization"]
+}

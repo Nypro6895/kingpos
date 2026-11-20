@@ -1,9 +1,12 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
+import { REMEMBER_LOGIN_SECONDS, writeLoginPolicy } from "@/lib/supabase/session-policy";
 import {
   ACCOUNT_LOGIN_SESSION_COOKIE,
   isAccountLoginSessionId,
 } from "@/lib/account-security-shared";
 import { recordAccountLoginForSession } from "@/lib/account-security";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
+import { resumeSignupPhonePath } from "@/lib/signup-phone-routing";
 import {
   clearWorkspaceContextCookies,
   writeNormalizedWorkspaceContextCookies,
@@ -14,7 +17,11 @@ import {
   clearPendingMfaSessionCookieWriter,
   createPendingMfaSupabaseAuthSessionServerClient,
   getSupabaseCookieOptions,
+  validateSupabaseAppSession,
 } from "@/lib/supabase/server";
+import { readMfaAssurance } from "@/lib/supabase/mfa-assurance";
+import { splitGiftAuthReturn } from "@/lib/auth-return-fragment";
+import { AuthRejectionError } from "@/lib/supabase/auth-rejection";
 import {
   fallbackPostAuthWorkspaceNavigation,
   getPostAuthWorkspaceNavigation,
@@ -22,7 +29,7 @@ import {
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 
-const REMEMBERED_LOGIN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const REMEMBERED_LOGIN_MAX_AGE_SECONDS = REMEMBER_LOGIN_SECONDS;
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -30,15 +37,16 @@ function readString(formData: FormData, key: string) {
 }
 
 function errorResponse(message: string, status = 400) {
-  return NextResponse.json({ error: message }, { status });
+  return NextResponse.json({ error: message }, { status, headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Invalid request origin. Reload the page and try again." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const formData = await request.formData();
   const factorId = readString(formData, "factor_id");
   const challengeId = readString(formData, "challenge_id");
   const code = readString(formData, "code").replace(/\s+/g, "");
-  const requestedPath = readString(formData, "next");
+  const requestedPath = splitGiftAuthReturn(readString(formData, "next")).serverPath;
   const nextPath = sanitizeAuthReturnPath(requestedPath);
 
   if (!factorId || !challengeId || !code) {
@@ -49,7 +57,9 @@ export async function POST(request: Request) {
     return errorResponse("Two-factor verification could not be found.");
   }
 
-  const pending = await createPendingMfaSupabaseAuthSessionServerClient();
+  let pending;
+  try { pending = await createPendingMfaSupabaseAuthSessionServerClient({ throwOnUnavailable: true }); }
+  catch { return errorResponse("Your sign-in could not be checked. Please try again later.", 503); }
 
   if (!pending) {
     return errorResponse("Two-factor verification expired. Log in again.", 401);
@@ -61,7 +71,7 @@ export async function POST(request: Request) {
     factorId,
   });
 
-  if (verification.error || !verification.data?.access_token) {
+  if (verification.error || !verification.data?.access_token || !verification.data?.refresh_token) {
     return errorResponse(
       verification.error?.message ||
         "The two-factor verification code could not be verified.",
@@ -69,31 +79,42 @@ export async function POST(request: Request) {
     );
   }
 
-  const navigation = await getPostAuthWorkspaceNavigation({
-    accessToken: verification.data.access_token,
-    requestedPath: nextPath,
-  }).catch((error: unknown) => {
-    console.error("Unable to resolve post-MFA workspace navigation", {
-      message: error instanceof Error ? error.message : String(error),
-    });
+  const assurance = await readMfaAssurance(pending.supabase, verification.data.access_token);
+  // A successful verify response alone must never promote an AAL1 session.
+  if (assurance === "unavailable") return errorResponse("Two-factor authentication status could not be checked. Please try again later.", 503);
+  if (assurance !== "verified") return errorResponse("Two-factor verification is required.", 403);
+  try {
+    if (!await validateSupabaseAppSession(verification.data.access_token)) return errorResponse("Your session is no longer available. Log in again.", 401);
+  } catch (error) {
+    return errorResponse(error instanceof AuthRejectionError ? "Your session is no longer available. Log in again." : "Your account could not be checked. Please try again later.", error instanceof AuthRejectionError ? 401 : 503);
+  }
 
-    return fallbackPostAuthWorkspaceNavigation();
-  });
   const loginSessionId = randomUUID();
+  const [navigation] = await Promise.all([
+    getPostAuthWorkspaceNavigation({
+      accessToken: verification.data.access_token,
+      requestedPath: resumeSignupPhonePath(verification.data.user, nextPath),
+    }).catch((error: unknown) => {
+      console.error("Unable to resolve post-MFA workspace navigation", {
+        message: error instanceof Error ? error.message : String(error),
+      });
 
-  await recordAccountLoginForSession({
-    accessToken: verification.data.access_token,
-    requestHeaders: request.headers,
-    sessionId: loginSessionId,
-  }).catch((error: unknown) => {
-    console.error("Unable to record MFA login security session", {
-      message: error instanceof Error ? error.message : String(error),
-    });
-  });
+      return fallbackPostAuthWorkspaceNavigation();
+    }),
+    recordAccountLoginForSession({
+      accessToken: verification.data.access_token,
+      requestHeaders: request.headers,
+      sessionId: loginSessionId,
+    }).catch((error: unknown) => {
+      console.error("Unable to record MFA login security session", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }),
+  ]);
 
-  const response = NextResponse.json({ redirectTo: navigation.redirectTo });
+  const response = NextResponse.json({ redirectTo: navigation.redirectTo }, { headers: { "Cache-Control": "private, no-store" } });
   const accessTokenMaxAge = pending.rememberLogin
-    ? verification.data.expires_in
+    ? REMEMBERED_LOGIN_MAX_AGE_SECONDS
     : undefined;
   const sessionMaxAge = pending.rememberLogin
     ? REMEMBERED_LOGIN_MAX_AGE_SECONDS
@@ -114,6 +135,7 @@ export async function POST(request: Request) {
     loginSessionId,
     getSupabaseCookieOptions(sessionMaxAge),
   );
+  writeLoginPolicy(response.cookies, verification.data.access_token, pending.rememberLogin);
   clearPendingMfaSessionCookieWriter(response.cookies);
   clearWorkspaceContextCookies(response.cookies);
 

@@ -1,4 +1,36 @@
-import type { Campaign } from "@/types/explore-advertising";
+import type { Campaign, CampaignAudience } from "@/types/explore-advertising";
+export function campaignMatches(
+  campaign: Campaign,
+  path: string,
+  audience: CampaignAudience,
+  device: "desktop" | "mobile",
+) {
+  if(path === "/forum" && (campaign.kind!=="placement" || !campaign.placements?.includes("forum"))) return false;
+  return (
+    (campaign.audiences ?? ["guest", "personal", "staff", "owner"]).includes(
+      audience,
+    ) &&
+    (campaign.devices ?? ["desktop", "mobile"]).includes(device) &&
+    (campaign.locations ?? ["/explore"]).some(
+      (prefix) =>
+        prefix === "/" || path === prefix || path.startsWith(`${prefix}/`),
+    )
+  );
+}
+export function shuffleCampaigns<T>(
+  items: readonly T[],
+  random = Math.random,
+): T[] {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index--) {
+    const other = Math.min(
+      index,
+      Math.max(0, Math.floor(random() * (index + 1))),
+    );
+    [result[index], result[other]] = [result[other], result[index]];
+  }
+  return result;
+}
 export class CampaignValidationError extends Error {
   constructor(public fields: Record<string, string>) {
     super("Please correct the highlighted fields.");
@@ -87,6 +119,38 @@ export function parseCampaign(form: FormData): Campaign {
     }
   };
   const status = field("status") || (form.has("enabled") ? "running" : "draft");
+  const list = (key: string, fallback: string[]) =>
+    form.has(key)
+      ? field(key)
+          .split(/[\n,]+/)
+          .map((value) => value.trim())
+          .filter(Boolean)
+      : fallback;
+  const audiences = list("audiences", ["guest", "personal", "staff", "owner"]);
+  const devices = list("devices", ["desktop", "mobile"]);
+  const placements = list("placements", ["sidebar", "feed"]);
+  const locations = [...new Set(list("locations", ["/explore"]))];
+  for (const [key, values, allowed] of [
+    ["audiences", audiences, ["guest", "personal", "staff", "owner"]],
+    ["devices", devices, ["desktop", "mobile"]],
+    ["placements", placements, ["sidebar", "feed", "page-top", "page-bottom", "forum"]],
+  ] as const)
+    if (
+      !values.length ||
+      values.some((value) => !(allowed as readonly string[]).includes(value))
+    )
+      errors[key] = "Select at least one valid option.";
+  if (
+    !locations.length ||
+    locations.some(
+      (path) => !/^\/(?:[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*)?$/.test(path),
+    )
+  )
+    errors.locations =
+      "Add paths such as /explore or /staff. Use / for all pages.";
+  const popupTrigger = field("popupTrigger") || "delay";
+  if (!["delay", "scroll"].includes(popupTrigger))
+    errors.popupTrigger = "Choose a valid trigger.";
   if (!["draft", "running", "stopped"].includes(status))
     errors.status = "Choose a valid status.";
   const campaign: Campaign = {
@@ -95,6 +159,15 @@ export function parseCampaign(form: FormData): Campaign {
     kind: kind as Campaign["kind"],
     enabled: status === "running",
     status: status as Campaign["status"],
+    audiences: audiences as NonNullable<Campaign["audiences"]>,
+    devices: devices as NonNullable<Campaign["devices"]>,
+    placements: placements as NonNullable<Campaign["placements"]>,
+    locations,
+    popupTrigger: popupTrigger as Campaign["popupTrigger"],
+    forumEvery: form.has("forumEvery") ? number("forumEvery", 3, 30) : 6,
+    scrollPercent: form.has("scrollPercent")
+      ? number("scrollPercent", 1, 100)
+      : 35,
     imageUrl: url("imageUrl", true),
     href: url("href"),
     text: field("text").slice(0, 1000),
@@ -111,6 +184,8 @@ export function parseCampaign(form: FormData): Campaign {
   };
   if (!/^[0-9a-f-]{36}$/i.test(campaign.id))
     errors.id = "Invalid campaign identifier. Reopen the editor.";
+  if (!Number.isInteger(campaign.forumEvery)) errors.forumEvery="Use a whole number of posts.";
+  if (placements.includes("forum") && kind!=="placement") errors.placements="Forum supports in-feed placement campaigns only.";
   if (!campaign.name) errors.name = "Enter a campaign name.";
   for (const key of ["background", "color"] as const)
     if (!/^#[0-9a-f]{6}$/i.test(campaign[key]))
@@ -130,4 +205,10 @@ export function parseCampaign(form: FormData): Campaign {
       "A popup needs a close button or an automatic close duration.";
   if (Object.keys(errors).length) throw new CampaignValidationError(errors);
   return campaign;
+}
+
+export function forumCampaignAt(campaigns: Campaign[], postIndex: number, afterPost = false) {
+  if (!Number.isInteger(postIndex) || postIndex < 1) return null;
+  const eligible=campaigns.filter(c=>c.kind==="placement" && c.placements?.includes("forum") && (afterPost || ((c.forumEvery ?? 6) === 6 ? postIndex % 13 === 6 || postIndex % 13 === 0 : postIndex % (c.forumEvery ?? 6) === 0)));
+  return eligible[Math.max(0,Math.floor(postIndex/(eligible[0]?.forumEvery ?? 6))-1)%Math.max(eligible.length,1)] ?? null;
 }

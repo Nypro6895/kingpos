@@ -1,8 +1,12 @@
 import "server-only";
 import { cache } from "react";
 import { scopedBusinessContext } from "./scoped-business-context";
+import { memoizeReadContext, getReusableReadValidationToken } from "./read-context-scope";
+import { currentWorkspaceReadGraph, loadWorkspaceReadGraph, runWithWorkspaceReadGraph } from "./workspace-read-graph";
 
+import { getStaffProfilePhotoUrl } from "@/lib/staff-profile";
 import { routes } from "@/lib/routes";
+import { loadMembershipPermissionCodes } from "@/lib/membership-permissions";
 import {
   isActiveSalonLifecycle,
   isHistoricalSalonLifecycle,
@@ -12,12 +16,14 @@ import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
   createUserScopedSupabaseServerClient,
+  getAccessTokenFromRequest,
 } from "@/lib/supabase/server";
 import {
   SALON_PROFILE_MEDIA_BUCKET,
   normalizeSalonProfileMediaPath,
 } from "@/lib/salon-profile-media";
 import { isDeniedKingUserStatus } from "@/lib/users/account-status";
+import { assertAuthAvailable } from "@/lib/supabase/auth-rest";
 import {
   getCurrentKingUser,
   getKingUserForAuthUser,
@@ -29,6 +35,7 @@ import type { Role } from "@/types/role";
 import type { SalonMembership } from "@/types/salon-membership";
 import type { KingUser } from "@/types/user";
 import { cookies } from "next/headers";
+import { taxWorkspaceOption } from "@/lib/tax-role";
 
 export const CURRENT_ACCOUNT_COOKIE = "kingpos-current-account-id";
 export const LEGACY_CURRENT_SALON_COOKIE = "kingpos-current-salon-id";
@@ -44,10 +51,8 @@ export const LOCATION_SELECT =
 export const ROLE_SELECT =
   "id, account_id, name, code, description, is_system, created_at, updated_at";
 
-const ROLE_PERMISSION_SELECT = "id, role_id, permission_id, created_at";
-const PERMISSION_SELECT = "id, code";
 
-export type WorkspaceType = "account" | "personal" | "salon";
+export type WorkspaceType = "account" | "personal" | "salon" | "tax";
 export type SalonMode = "manage" | "staff";
 
 export type CurrentWorkspaceAction = {
@@ -57,6 +62,8 @@ export type CurrentWorkspaceAction = {
 };
 
 export type CurrentWorkspaceOption = {
+  staffDisplayName?: string | null;
+  staffAvatarUrl?: string | null;
   accountId: string | null;
   accountName: string | null;
   avatarUrl: string | null;
@@ -167,18 +174,10 @@ type CurrentBusinessContextOptions = {
   cookieStore?: CookieReader | null;
 };
 
-type PermissionRow = {
-  code: string;
-  id: string;
-};
-
-type RolePermissionRow = {
-  id: string;
-  permission_id: string;
-  role_id: string;
-};
 
 type StaffContextSalonRow = {
+  display_name: string | null;
+  public_profile_photo_path: string | null;
   id: string;
   salon_id: string;
 };
@@ -367,7 +366,7 @@ function buildManageWorkspaceActions(input: {
       "salon_profile.view",
     )
   ) {
-    actions.push(workspaceAction("profile", "Profile", "/salon-profile"));
+    actions.push(workspaceAction("profile", "Salon profile", "/salon-profile"));
   }
 
   if (
@@ -547,7 +546,8 @@ async function loadSalonWorkspaceProfiles(input: {
     return new Map<string, SalonWorkspaceProfile>();
   }
 
-  const { data, error } = await input.supabase
+  const graph = currentWorkspaceReadGraph();
+  const { data, error } = graph ? {data:graph.profiles.filter(row=>salonIds.includes(row.salon_id)),error:null} : await input.supabase
     .from("salon_settings")
     .select("salon_id, public_profile_logo_path")
     .in("salon_id", salonIds)
@@ -798,6 +798,7 @@ function buildManageWorkspaceOption(input: {
 }
 
 function buildStaffWorkspaceOption(input: {
+  staff: StaffContextSalonRow | null;
   account: Account | null;
   avatarUrl: string | null;
   salon: Location;
@@ -805,6 +806,8 @@ function buildStaffWorkspaceOption(input: {
   const actionSet = buildStaffWorkspaceActions();
 
   return {
+    staffDisplayName: input.staff?.display_name?.trim() || null,
+    staffAvatarUrl: getStaffProfilePhotoUrl(input.staff?.public_profile_photo_path),
     accountId: input.account?.id ?? input.salon.account_id ?? null,
     accountName: input.account?.name ?? null,
     avatarUrl: input.avatarUrl,
@@ -851,57 +854,9 @@ async function loadPermissionCodesForMembership(
   membership: CurrentMembership | null,
   supabase: SupabaseContextClient | null,
 ) {
-  if (!membership?.role_id) {
-    return new Set<string>();
-  }
-
-  if (!supabase) {
-    return new Set<string>();
-  }
-
-  const { data: rolePermissions, error: rolePermissionsError } = await supabase
-    .from("role_permissions")
-    .select(ROLE_PERMISSION_SELECT)
-    .eq("role_id", membership.role_id)
-    .returns<RolePermissionRow[]>();
-
-  if (rolePermissionsError) {
-    console.error("Supabase load role permission ids failed", {
-      code: rolePermissionsError.code,
-      details: rolePermissionsError.details,
-      hint: rolePermissionsError.hint,
-      message: rolePermissionsError.message,
-      roleId: membership.role_id,
-    });
-    throw new Error(rolePermissionsError.message);
-  }
-
-  const permissionIds = (rolePermissions ?? []).map(
-    (rolePermission) => rolePermission.permission_id,
-  );
-
-  if (permissionIds.length === 0) {
-    return new Set<string>();
-  }
-
-  const { data: permissions, error: permissionsError } = await supabase
-    .from("permissions")
-    .select(PERMISSION_SELECT)
-    .in("id", permissionIds)
-    .returns<PermissionRow[]>();
-
-  if (permissionsError) {
-    console.error("Supabase load permission codes failed", {
-      code: permissionsError.code,
-      details: permissionsError.details,
-      hint: permissionsError.hint,
-      message: permissionsError.message,
-      roleId: membership.role_id,
-    });
-    throw new Error(permissionsError.message);
-  }
-
-  return new Set((permissions ?? []).map((permission) => permission.code));
+  if (!membership) return new Set<string>();
+  const permissions = await loadMembershipPermissionCodes([membership], supabase);
+  return permissions.get(membership.id) ?? new Set<string>();
 }
 
 async function loadCurrentMemberships(input: {
@@ -921,6 +876,18 @@ async function loadCurrentMemberships(input: {
     return {
       accountMemberships: [] as AccountMembershipWithAccount[],
       salonMemberships: [] as SalonMembershipWithSalon[],
+      user,
+    };
+  }
+
+  const graph = currentWorkspaceReadGraph();
+  if (graph) {
+    const accounts = new Map(graph.accounts.map(row=>[row.id,row]));
+    const roles = new Map(graph.roles.map(row=>[row.id,row]));
+    const salons = new Map(graph.locations.map(row=>[row.id,row]));
+    return {
+      accountMemberships: graph.accountMemberships.map(row=>({...row,account:accounts.get(row.account_id)??null,role:row.role_id?roles.get(row.role_id)??null:null})),
+      salonMemberships: graph.salonMemberships.map(row=>({...row,account:accounts.get(row.account_id)??null,role:row.role_id?roles.get(row.role_id)??null:null,salon:salons.get(row.salon_id)??null})),
       user,
     };
   }
@@ -1129,6 +1096,11 @@ async function loadMissingAccounts(input: {
   accountIds: string[];
   supabase: SupabaseContextClient | null;
 }) {
+  const graph = currentWorkspaceReadGraph();
+  if (graph) {
+    for (const row of graph.accounts) if (input.accountIds.includes(row.id)) input.accountsById.set(row.id,row);
+    return;
+  }
   const missingAccountIds = input.accountIds.filter(
     (accountId) => !input.accountsById.has(accountId),
   );
@@ -1175,9 +1147,12 @@ async function loadStaffSalons(input: {
     };
   }
 
-  const { data: staffRows, error: staffError } = await input.supabase
+  const graph = currentWorkspaceReadGraph();
+  // The deployed graph includes linked IDs only. Read the same self-scoped active
+  // rows for header profile fields; an empty verified graph needs no extra read.
+  const { data: staffRows, error: staffError } = graph && graph.staff.length === 0 ? {data:[] as StaffContextSalonRow[],error:null} : await input.supabase
     .from("staff")
-    .select("id, salon_id")
+    .select("id, salon_id, display_name, public_profile_photo_path")
     .eq("account_user_id", input.user.id)
     .eq("is_active", true)
     .returns<StaffContextSalonRow[]>();
@@ -1221,7 +1196,7 @@ async function loadStaffSalons(input: {
     };
   }
 
-  const { data: staffSalons, error: staffSalonsError } = await input.supabase
+  const { data: staffSalons, error: staffSalonsError } = graph ? {data:graph.locations.filter(row=>salonIds.includes(row.id)&&row.status==="active"),error:null} : await input.supabase
     .from("locations")
     .select(LOCATION_SELECT)
     .in("id", salonIds)
@@ -1272,6 +1247,10 @@ async function loadStaffSalons(input: {
     staffSalons: salons,
     workspaceOptions: salons.map((salon) =>
       buildStaffWorkspaceOption({
+        // Ambiguous links must not display an arbitrary employee identity.
+        staff: (staffRows ?? []).filter(row => row.salon_id === salon.id).length === 1
+          ? (staffRows ?? []).find(row => row.salon_id === salon.id) ?? null
+          : null,
         account: salon.account_id
           ? (input.accountsById.get(salon.account_id) ?? null)
           : null,
@@ -1409,9 +1388,13 @@ function findMembershipForWorkspace(input: {
   return null;
 }
 
-export async function getCurrentStaffBusinessContext(): Promise<CurrentBusinessContext> {
+const staffBusinessReadKey = Symbol("staff-business-context");
+export function getCurrentStaffBusinessContext(): Promise<CurrentBusinessContext> {
   const scoped = scopedBusinessContext();
-  if (scoped?.salonMode === "staff") return scoped;
+  if (scoped?.salonMode === "staff") return Promise.resolve(scoped);
+  return memoizeReadContext(staffBusinessReadKey,loadCurrentStaffBusinessContext);
+}
+async function loadCurrentStaffBusinessContext(): Promise<CurrentBusinessContext> {
   const context = await getCurrentBusinessContext();
   const staffWorkspaces = context.workspaceOptions.filter(
     (workspace) => workspace.salonMode === "staff",
@@ -1503,6 +1486,8 @@ async function getCurrentBusinessContextAuth(
 
     const { data, error } = await supabase.auth.getUser(accessToken);
 
+    assertAuthAvailable(error, error?.status, "Authentication");
+
     if (error || !data.user) {
       return { supabase: null, user: null };
     }
@@ -1517,7 +1502,7 @@ async function getCurrentBusinessContextAuth(
   }
 
   const [supabase, user] = await Promise.all([
-    createAuthenticatedSupabaseServerClient(),
+    createAuthenticatedSupabaseServerClient({ throwOnUnavailable: true }),
     getCurrentKingUser(),
   ]);
 
@@ -1525,21 +1510,64 @@ async function getCurrentBusinessContextAuth(
 }
 
 const getDefaultBusinessContext = cache(() => loadCurrentBusinessContext({}));
+const businessReadKey = Symbol("business-context");
+const verifiedWorkspaceSnapshots = new WeakMap<CurrentBusinessContext, {token:object;auth:Awaited<ReturnType<typeof getCurrentBusinessContextAuth>>;snapshot:NonNullable<Awaited<ReturnType<typeof loadWorkspaceReadGraph>>>}>();
+
+/** A selector writes only UI cookies. Project its already verified, self-scoped
+ * graph through the original context builder, once in this request. This is not
+ * a capability for later requests, final revocation probes or business writes. */
+export async function projectSelectedWorkspaceRead(context: CurrentBusinessContext, workspaceId: string): Promise<CurrentBusinessContext> {
+  const capability = verifiedWorkspaceSnapshots.get(context);
+  const workspace = context.workspaceOptions.find(option=>option.id === workspaceId);
+  if(!capability || capability.token !== getReusableReadValidationToken() || !workspace || !context.user
+    || context.user.id !== capability.snapshot.userId) throw new Error("A fresh workspace snapshot is required.");
+  const values = new Map<string,string>();
+  writeNormalizedWorkspaceContextCookies({set:(name,value)=>values.set(name,value),delete:name=>values.delete(name)},workspace);
+  const cookieStore: CookieReader = {get: input => {
+    const name = typeof input === "string" ? input : input.name;
+    return values.has(name) ? {name,value:values.get(name)!} : undefined;
+  }};
+  return runWithWorkspaceReadGraph(capability.snapshot,()=>buildCurrentBusinessContext(capability.auth,{cookieStore}));
+}
 
 export function getCurrentBusinessContext(options: CurrentBusinessContextOptions = {}): Promise<CurrentBusinessContext> {
   const scoped = scopedBusinessContext();
   if (scoped && !options.accessToken && !options.cookieStore) return Promise.resolve(scoped);
   return options.accessToken || options.cookieStore
     ? loadCurrentBusinessContext(options)
-    : getDefaultBusinessContext();
+    : memoizeReadContext(businessReadKey, getDefaultBusinessContext);
 }
 
 async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions): Promise<CurrentBusinessContext> {
   const scoped = scopedBusinessContext();
   if (scoped && !options.accessToken && !options.cookieStore) return scoped;
-  const auth = await getCurrentBusinessContextAuth(
+  const authRead = getCurrentBusinessContextAuth(
     options.accessToken,
   );
+  // Only ordinary scoped reads may stage this self-only, SECURITY INVOKER RPC.
+  // Writes, explicit selector inputs and final revocation probes keep the
+  // original sequential gate. Staged rows are never authority on their own.
+  const staged = getReusableReadValidationToken() && !options.accessToken && !options.cookieStore
+    ? (async()=>{
+        const token=await getAccessTokenFromRequest();
+        const client=token?createUserScopedSupabaseServerClient(token):null;
+        if(!client)return undefined;
+        return loadWorkspaceReadGraph(client,authRead.then(auth=>auth.supabase?auth.user?.id??null:null,()=>null));
+      })().then(value=>({value}),error=>({error})) : null;
+  const auth=await authRead;
+  let snapshot:Awaited<ReturnType<typeof loadWorkspaceReadGraph>>=null;
+  if(auth.supabase && auth.user) {
+    const prepared=staged?await staged:null;
+    if(prepared && "error" in prepared)throw prepared.error;
+    snapshot=prepared?.value!==undefined?prepared.value:await loadWorkspaceReadGraph(auth.supabase,auth.user.id);
+  }
+  const context = await runWithWorkspaceReadGraph(snapshot ?? undefined, () => buildCurrentBusinessContext(auth, options));
+  const token = getReusableReadValidationToken();
+  if(token && snapshot && context.user?.id === snapshot.userId) verifiedWorkspaceSnapshots.set(context,{token,auth,snapshot});
+  return context;
+}
+
+async function buildCurrentBusinessContext(auth: Awaited<ReturnType<typeof getCurrentBusinessContextAuth>>, options: CurrentBusinessContextOptions): Promise<CurrentBusinessContext> {
   const { accountMemberships, salonMemberships, user } =
     await loadCurrentMemberships(auth);
 
@@ -1572,7 +1600,8 @@ async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions
     accountMemberships.map((membership) => [membership.account_id, membership]),
   );
   const accountIds = memberAccounts.map((account) => account.id);
-  const accountSalonResult =
+  const graph = currentWorkspaceReadGraph();
+  const accountSalonResult = graph ? {data:graph.locations.filter(row=>accountIds.includes(row.account_id)),error:null} :
     accountIds.length > 0
       ? await supabase
           .from("locations")
@@ -1610,15 +1639,11 @@ async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions
   const inactiveManageSalons = historicalManageSalons;
   const allBusinesses = allSalons as Business[];
   const salonsByAccount = groupSalonsByAccount(allSalons);
-  const salonProfilesById = await loadSalonWorkspaceProfiles({
-    salonIds: allSalons.map((salon) => salon.id),
-    supabase,
-  });
-  const staffLinkedContext = await loadStaffSalons({
-    accountsById,
-    supabase,
-    user,
-  });
+  const [salonProfilesById, staffLinkedContext, permissionCodesByMembershipId] = await Promise.all([
+    loadSalonWorkspaceProfiles({ salonIds: allSalons.map((salon) => salon.id), supabase }),
+    loadStaffSalons({ accountsById, supabase, user }),
+    loadMembershipPermissionCodes([...accountMemberships, ...enrichedSalonMemberships], supabase),
+  ]);
   const availableAccounts = dedupeById([...accountsById.values()]);
   const personalWorkspace = buildPersonalWorkspaceOption();
   const accountOptions = accountMemberships
@@ -1633,15 +1658,6 @@ async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions
     .filter(
       (workspace): workspace is CurrentWorkspaceOption => workspace !== null,
     );
-  const permissionCodesByMembershipId = new Map<string, Set<string>>();
-
-  for (const membership of [...accountMemberships, ...enrichedSalonMemberships]) {
-    permissionCodesByMembershipId.set(
-      membership.id,
-      await loadPermissionCodesForMembership(membership, supabase),
-    );
-  }
-
   const salonMembershipBySalonId = new Map(
     enrichedSalonMemberships.map((membership) => [
       membership.salon_id,
@@ -1682,8 +1698,11 @@ async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions
       ];
     }),
   );
+  // Missing migration keeps existing roles usable; Tax appears only after opt-in.
+  const taxProfile = await supabase.from("tax_profiles").select("user_id").eq("user_id",user.id).maybeSingle();
   const workspaceOptions = dedupeWorkspaces([
     personalWorkspace,
+    ...(!taxProfile.error && taxProfile.data ? [taxWorkspaceOption()] : []),
     ...accountOptions,
     ...manageWorkspaceOptions,
     ...staffLinkedContext.workspaceOptions,
@@ -1819,7 +1838,7 @@ export function writeNormalizedWorkspaceContextCookies(
     cookieStore.delete(CURRENT_ACCOUNT_COOKIE);
   }
 
-  if (workspace.type === "personal" || workspace.type === "account") {
+  if (workspace.type === "personal" || workspace.type === "account" || workspace.type === "tax") {
     cookieStore.delete(CURRENT_MANAGE_SALON_COOKIE);
     cookieStore.delete(CURRENT_STAFF_SALON_COOKIE);
     cookieStore.delete(LEGACY_CURRENT_SALON_COOKIE);

@@ -51,7 +51,7 @@ export function calculateTicketTotals({
       : roundMoney((taxable_amount * taxRate) / 100);
   const after_tax_amount = roundMoney(taxable_amount + tax_amount);
   const tip_amount =
-    after_tax_amount <= 0 || tipValue <= 0
+    tipValue <= 0
       ? 0
       : tipType === "percentage"
         ? roundMoney((after_tax_amount * tipValue) / 100)

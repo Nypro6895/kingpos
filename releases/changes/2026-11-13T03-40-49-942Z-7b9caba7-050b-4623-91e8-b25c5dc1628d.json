@@ -1,0 +1,57 @@
+{
+  "files": [
+    "tests/booking-pos-description.integration.test.mjs",
+    "app/bookings/owner-agenda-row.tsx",
+    "tests/owner-agenda-row-ui.test.mjs",
+    "app/bookings/booking-workspace-client.tsx",
+    "supabase/migrations/20261112220000_booking_ticket_handoff_completion.sql",
+    "components/salon-language-preferences.tsx",
+    "app/pos/owner-pos.css",
+    "app/bookings/booking-workspace.css",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "tests/owner-booking-ticket-handoff.integration.test.mjs"
+  ],
+  "validation": [
+    {
+      "result": "passed",
+      "evidence": "artifacts/iphone-three-layout/approved-ui/result.json",
+      "name": "Actual component browser behavior and geometry at six widths; Booking modal Activity regression"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/iphone-three-layout/handoff-db/handoff-result.json",
+      "name": "Full migrated isolated PostgreSQL handoff: permission/time/confirmation guards, idempotency, snapshots, open unpaid POS ticket and atomic rollback"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/iphone-three-layout/approved-build-evidence.json",
+      "name": "Full Next production build, TypeScript, scoped ESLint and diff check"
+    },
+    {
+      "result": "passed",
+      "evidence": "artifacts/iphone-three-layout/native-compile/",
+      "name": "Installed app bundle compilation without signing or upload"
+    },
+    {
+      "result": "pending",
+      "evidence": "artifacts/iphone-three-layout/APPROVED-HANDOFF.md",
+      "name": "Integrate against current live source, apply hosted migration before UI release, production-configured native bundle and physical-device acceptance"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\iphone-three-layout-fixes-20261112\\artifacts\\iphone-three-layout\\frozen-approved-v4"
+  },
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "changeId": "iphone-three-layout-fixes-20261112",
+  "kind": "change",
+  "summary": "Approved concept 04 implemented: Time/Staff/Services/Customer/Edit row, expandable text actions, conditional Confirm/Create ticket, No-show note modal, atomic booking Completed on new ticket handoff. Cumulative source retains POS Saved and inline Language fixes; replaces earlier Booking prototypes.",
+  "status": "needs-integration",
+  "id": "7b9caba7-050b-4623-91e8-b25c5dc1628d",
+  "recordedAt": "2026-11-13T03:40:49.942Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-three-layout-fixes-20261112",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

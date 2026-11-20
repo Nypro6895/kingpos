@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "app-local-portable-workspaces-20261016",
+  "status": "working",
+  "summary": "Exact original Portable POS five daily workspaces under fresh separate device authority, original PIN/capabilities/draft outbox and commands, no account lease substitution.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-portable-context-server.ts",
+    "lib/app-local-portable-metadata.ts",
+    "lib/app-local-portable-server.ts",
+    "lib/app-local-portable-registry.tsx",
+    "components/app-local-portable-workspace.tsx",
+    "components/app-local-portable-report.tsx",
+    "lib/app-local-portable-http-client.ts",
+    "lib/app-local-portable-http-server.ts",
+    "lib/app-local-portable-http-metadata.ts",
+    "tests/app-local-portable-context.test.mjs",
+    "tests/app-local-portable-server.test.mjs",
+    "tests/app-local-portable-ui.test.mjs",
+    "tests/app-local-portable-http.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "device authority + original workspace UI and pinned transport",
+      "result": "pending"
+    }
+  ],
+  "id": "7c679045-5bed-46dd-afcd-78d4f22478b4",
+  "recordedAt": "2026-10-16T17:05:11.880Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

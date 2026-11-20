@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "legal-entry-scroll-target-20261120",
+  "status": "needs-integration",
+  "summary": "Added zero-footprint route geometry so Privacy/Terms open at the top while hashes, Back/Forward, scroll=false, layout and Activity drafts remain intact; scoped viewer test artifacts to this checkout.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/experience-page-boundary.tsx",
+    "tests/experience-page-scroll-target.test.mjs",
+    "tests/content-viewer-navigation.test.mjs"
+  ],
+  "source": {
+    "commit": "ed0d7b269981fa002e0800a31b3b24ce60f0b673",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\root\\frozen-scroll-and-portable-test-3"
+  },
+  "dependencies": [
+    "combined-followup-integration-20261120"
+  ],
+  "validation": [
+    {
+      "name": "Real vendored React Fragment negative control, unchanged flow/flex/grid layout and retained Activity draft/focus",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\shared-scroll-regression-r2\\receipt.json"
+    },
+    {
+      "name": "Portable viewer artifact output; original assertions retained and new run passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\root\\test-artifact-output-scope-correction.json"
+    },
+    {
+      "name": "Exact code authority:101 mocked MFA and161 UI tests; zero failures/cancellations/skips; scoped lint zero errors",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\root\\checks-r2-tests-fixed\\checks-verified-summary.json"
+    },
+    {
+      "name": "Full Next312 pages, offline assets, TypeScript3135 files and client verify-only403 actions/1074 modules/zero unsupported",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\root\\checks-r2-build\\checks-verified-summary.json"
+    },
+    {
+      "name": "Actual local Next scroll regression14 cases and2 same-document history controls;925e runtime source projection to ed0d7b documented",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\ios-scroll\\FINAL-HANDOFF.json"
+    },
+    {
+      "name": "Fresh native archive/TestFlight and exact new-source real-device acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Full real MFA integration and exact26-migration rehearsal remain unverified; automatic safety review hold not retried",
+      "result": "pending"
+    },
+    {
+      "name": "Combined Production, Windows real backup/upgrade and Store factual declarations remain held",
+      "result": "pending"
+    }
+  ],
+  "id": "952e847a-a0eb-43d1-be94-0665c441865d",
+  "recordedAt": "2026-11-20T04:37:53.449Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-followup-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

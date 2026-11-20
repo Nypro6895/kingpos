@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "ios-moderation-operations-20261118",
+  "status": "working",
+  "summary": "Audit and fix non-AI UGC report/block, authorized takedown and appeal operations; no provider choice or public moderation action.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ios-moderation-operations-20261118.md",
+    "tests/moderation-operations.integration.test.mjs"
+  ],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26"
+  },
+  "validation": [
+    {
+      "name": "Source audit, concrete regression and scoped backend ownership confirmation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "notes": "Root assigned audit+fix. Backend file ownership will be confirmed before edits. No routine admin preapproval, AI/provider code, real data, public moderation decision, commit/push/deploy or material UI redesign.",
+  "id": "1dfe5070-8237-4263-b4ed-21d10dc931e3",
+  "recordedAt": "2026-11-18T20:59:12.489Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

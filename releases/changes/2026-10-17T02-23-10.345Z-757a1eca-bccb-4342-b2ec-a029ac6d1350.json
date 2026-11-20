@@ -1,0 +1,92 @@
+{
+  "kind": "change",
+  "changeId": "plugin-settings-consistency",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Compact task-oriented plugin entry points for Booking Rules, BookSMS, Campaigns, receipt/phone check-in, payroll download and Tax Company. Activation notices appear only on attempted use and lead to Market. Vietnamese remains only in Market. Preserve existing operation, permissions and billing; queue with Booking Deposit for combined deployment.",
+  "files": [
+    "app/settings/plugin-settings-row.tsx",
+    "app/settings/plugin-settings-row.module.css",
+    "app/settings/plugin-settings-actions.ts",
+    "app/settings/booking-plugin-settings.tsx",
+    "app/settings/booking-plugin-settings.module.css",
+    "app/settings/plugin-market-status-actions.ts",
+    "app/settings/plugin-market-settings.tsx",
+    "app/settings/direct-settings-actions.ts",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/pos-settings-panel.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/(app)/campaigns/page.tsx",
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/payroll/tax-company/settings/page.tsx",
+    "app/payroll/data-download-panel.tsx",
+    "tests/plugin-settings-actions.test.mjs",
+    "tests/plugin-settings-ui.test.mjs",
+    "tests/tax-company-ui.test.mjs",
+    "tests/fixtures/tax-company-preview.mjs",
+    "docs/plugin-settings-consistency-deploy-note.txt"
+  ],
+  "dependencies": [
+    "booking-deposit-compact-settings"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\plugin-settings-consistency-20261016\\source",
+    "commit": "0704689c8125f674b8ff6594e3df758e3aa2ba54",
+    "patch": "work/plugin-settings-consistency-20261016/implementation.patch",
+    "patchSha256": "d97cf02bab9ced386d16f047ba001b91f2f6ec9304b037d0dfec461b958a5e57",
+    "preexistingSnapshotCommit": "1ad6f13b45ab08514631aff40c2daf33bf88f046",
+    "note": "Isolated implementation delta, not a production baseline. Integrate after Booking Deposit and preserve all unrelated live and pending settings/payroll changes; do not merge the synthetic baseline parent wholesale."
+  },
+  "validation": [
+    {
+      "name": "19 browser, authorization, export and settings regression tests; expanded inactive/expired Tax rerun passes",
+      "result": "passed",
+      "evidence": "work/plugin-settings-consistency-20261016/verification.json"
+    },
+    {
+      "name": "Full workspace TypeScript and targeted ESLint on final product changes",
+      "result": "passed",
+      "evidence": "work/plugin-settings-consistency-20261016/verification.json"
+    },
+    {
+      "name": "Desktop/mobile visual review, frozen hashes, exact patch replay and unchanged business actions",
+      "result": "passed",
+      "evidence": "work/plugin-settings-consistency-20261016/verification.json"
+    }
+  ],
+  "limitations": [
+    "Full production build and authenticated live checks must run on the future assembled release source. This task did not deploy or push.",
+    "Plugins without a separate operational enable flag keep their existing installation/subscription semantics. Campaigns retains existing per-campaign pause/resume; no new global switch or implicit cancellation/uninstall."
+  ],
+  "nativeAssessment": "Web UI only; no native source, bundled assets, configuration or bridge changes. No separate iOS build required for this change.",
+  "handoffNote": "docs/plugin-settings-consistency-deploy-note.txt",
+  "id": "757a1eca-bccb-4342-b2ec-a029ac6d1350",
+  "recordedAt": "2026-10-17T02:23:10.345Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/plugin-settings-row.tsx": "45d53461a37b2ca59415844b5f55d780225ebfea098f307f7318776d4fbea96a",
+    "app/settings/plugin-settings-row.module.css": "f6510728c3ed6520b916a13bcb30c9be36d25bdff9bf155a688bb6ca14eb8450",
+    "app/settings/plugin-settings-actions.ts": "95374519df9bc46b73859400451cb6f26558aa00422c13724f5148082071c7cf",
+    "app/settings/booking-plugin-settings.tsx": "d9f820d892d8bbc110666b3efcf4b964b8790f27d4c8a36b59ceea1edeaf50fa",
+    "app/settings/booking-plugin-settings.module.css": "87dffd9ec8a514d7291483be763f0fb95d8bf423b3859898fd6f5b24bd7a8359",
+    "app/settings/plugin-market-status-actions.ts": "94add18b83c8c68fb6f32f1f670057356efe67761c7f8586bcb6cb05e51f4e02",
+    "app/settings/plugin-market-settings.tsx": "f0de935250eca4ed42764a91824723284994bd58f536eed94740ade84cd10cd1",
+    "app/settings/direct-settings-actions.ts": "c1cc264182b2f7bbd1ba487192d794a28445e0292742a9cc867510c3c490748e",
+    "app/settings/salon-settings-panels.tsx": "da9c45ebed56828db7473cdba3e71e5d66a48cd4f5e137d0dcbe5fbe4599d49b",
+    "app/settings/pos-settings-panel.tsx": "15da1ac727152cbcbbccbf0b13d5b0a98ee16cc91e2160b2a35da858ee26d7f7",
+    "app/settings/team-payroll-panels.tsx": "2a4f23012845a256bff82ddba05b98d202cda29b60042ae641f878af94ce2838",
+    "app/(app)/campaigns/page.tsx": "44bc628858c2688b9244557f2f2c110ff9d148468b5e911d8794b3c9a0096074",
+    "app/(app)/payroll/page.tsx": "484bfc7e74ec06d5fd1a378d72595231b69168adc63cb128e5cf9cef0cff1511",
+    "app/(app)/payroll/tax-company/settings/page.tsx": "37e5e8cfde6677aa9acd55dbdb1cfd3ddac246f63a16cdf9c1eda1decffe830a",
+    "app/payroll/data-download-panel.tsx": "6ff6f371c288c43b50b7b30766b175cb715fb4f82d453ab8896f71ec9c5bdd97",
+    "tests/plugin-settings-actions.test.mjs": "55e530a959714941b410d0bd156e868f8c31e595b4264a7ea8ceb8b70d64360a",
+    "tests/plugin-settings-ui.test.mjs": "d1748e8929a9e5942173bae23e8a01e200bfd84fb4043467960b12e515607a01",
+    "tests/tax-company-ui.test.mjs": "02d1c71cd362ac3ae8eb7354f3598d2b3792ebcc79d779b800d9e29b461ecfa4",
+    "tests/fixtures/tax-company-preview.mjs": "4bde0143d4bf7f619a5f0520d16da6f8ce4d593923536c680ab28131e79fbb2a",
+    "docs/plugin-settings-consistency-deploy-note.txt": "829f8f607f53b16a33af4efd94f67fdeaf4937016b42000b4089f8bb85e9700e"
+  }
+}

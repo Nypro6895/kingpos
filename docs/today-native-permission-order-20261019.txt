@@ -1,0 +1,38 @@
+TODAY TRÊN iOS — ĐỐI CHIẾU CƠ CHẾ VÀ SỬA KIỂM TRA QUYỀN
+Ngày 19/10/2026, America/Chicago. Bản sửa local; chưa phát hành.
+
+Nguồn đối chiếu
+
+Web dpl_8zvbNL9LePEukw2jUYGd56KYtjFj được xác minh vẫn đang phục vụ tại thời điểm điều tra. Native đã upload là TestFlight1.0.0(42), commit7ac8ced3d36ba724ebcdac8bccf06ce74a3e3972. Worktree riêng bắt đầu từ7d9ff2a5fbf51be1b065950b4aaf5ac39e49759f, chỉ thêm nhật ký sau nguồn upload. Không lấy checkout chính đang có thay đổi khác làm nguồn sửa.
+
+Today khác các trang đang hoạt động thế nào
+
+Trước thay đổi progressive Today, native đọc dashboard bằng ReadView chung rồi render trực tiếp. Thay đổi được authored trong8c65ce7 và tích hợp qua1c2628c thêm khung trang nhẹ và năm phần đọc độc lập: staff, bookings, waiting, financials, extras. Các phần không có quyền hoặc không phù hợp ngày được bỏ qua. Khung và các phần đều dùng quyền/clock/scope từ server hiện hành.
+
+TodayProgressiveClient có thêm một bước so sánh quyền giữa khung và từng phần. Nếu nó cho rằng quyền đã đổi, nó rút toàn bộ nội dung Today và hiện chính dòng “Your workspace access must be checked again.” Các trang khác không đi qua phép so sánh Today riêng này. Bản42 sửa các cuộc đua ở phiên/cache/transport nhưng không thay đổi phép so sánh này.
+
+Lỗi đã tái lập
+
+Phép so sánh cũ dùng JSON.stringify(next.permissions) với JSON.stringify(shell.permissions). Hai object có cùng năm giá trị boolean nhưng thứ tự trường khác nhau bị coi là quyền khác nhau. Component identity cũng phụ thuộc chuỗi chưa chuẩn hóa đó, nên một khung tải lại chỉ khác thứ tự trường có thể làm mất DOM/draft hoặc khởi động lại các phần.
+
+Native giải mã JSON thành dictionary của Foundation rồi trả dictionary qua WK replyHandler; đường này không chuẩn hóa thứ tự trường. Các phần được tải và cache riêng. Vì vậy không thể dùng thứ tự thuộc tính làm bằng chứng rằng quyền khác nhau.
+
+Fixture chạy component Today thật trên Chromium và WebKit: control cùng thứ tự giữ nội dung; chỉ đảo thứ tự quyền ở các phần thì hiện đúng màn hình bị chặn, dù các lần đọc thành công và quyền giống nhau. Đây là lỗi code đã chứng minh. Chưa thu được payload mới từ iPhone để khẳng định đây là nguyên nhân duy nhất trên thiết bị của chủ project.
+
+Vì sao Open Today trông như không phản ứng
+
+Nút này xác minh context mới, loại bỏ riêng shell/năm phần Today rồi tải lại. Nếu shell và các phần thành công tiếp tục có thứ tự trường khác nhau, trang lại bị chặn ngay. Cần sửa phép đối chiếu thay vì bỏ kiểm tra quyền hoặc ép đăng nhập lại.
+
+Phạm vi sửa
+
+Dùng một identity chuẩn hóa theo tên trường và giá trị quyền cho cả bước nhận section, khóa component và bước merge. Giữ nguyên mọi giá trị boolean. Quyền thiếu/thêm/đổi thật vẫn khác nhau. Giữ nguyên noAccess, scope, ngày/timezone, kiểm tra context mới, callback muộn, và các từ chối401/403/409/unconfirmed. Không sửa server permission/RLS, đăng nhập, dữ liệu, giao dịch hay command replay.
+
+Tạo lại bundle iOS với345 tài nguyên: chỉ app.js thay đổi,344 tài nguyên còn lại giữ nguyên.96 route,322 command và metadata đọc/config không đổi. Swift và bridge không đổi. Web được sửa cùng client, nhưng app42 đang cài có JS đóng gói cũ; một bản web mới riêng lẻ không sửa được bundle đã cài.
+
+Kiểm chứng và giới hạn
+
+Bằng chứng RED/control, kiểm tra UI Chromium/WebKit, native scope provider thật, denial/recovery/late callback, hợp đồng dashboard, bundle và production build được tổng hợp trong artifacts/today-native-admission-20261019/verification.json. Các log thất bại ban đầu được giữ riêng; kết quả xác minh cuối phân biệt lỗi fixture với lỗi sản phẩm.
+
+Chưa tối ưu tốc độ, chưa thay đổi production hay TestFlight trong nhiệm vụ này. Cần native build mới khi được phát hành và xác minh lại trên iPhone thật. Một tái lập local thành công không chứng minh mọi nguyên nhân thiết bị đã được loại bỏ.
+
+Nhánh phụ được tách riêng: context online hợp lệ nhưng cấp lease trả503/no-lease vẫn cho phép đọc online, còn bridge cache remove yêu cầu lease. Trong điều kiện đó Open Today sẽ báo thêm “Access could not be confirmed. Please try again.”; chưa có bằng chứng iPhone hiện tại nằm trong điều kiện này và nó không khớp hoàn toàn mô tả màn hình không đổi. Không mở quyền cache hoặc bỏ qua lỗi xóa trong bản sửa này. Nếu xử lý nhánh này sau, cần kiểm tra xóa đúng scope/key và chống khôi phục cache cũ khi lease được cấp lại, cùng native tests/archive.

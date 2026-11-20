@@ -55,6 +55,16 @@ export type SalonPayrollSetting = {
 };
 
 export type StaffPayrollSetting = {
+  show_check_to_tax_company?: boolean | null;
+  show_cash_to_tax_company?: boolean | null;
+  show_tip_to_tax_company?: boolean | null;
+  show_bonus_to_tax_company?: boolean | null;
+  tax_check?: boolean | null;
+  tax_cash?: boolean | null;
+  check_tax_rate?: number | null;
+  cash_tax_rate?: number | null;
+  tip_tax_rate?: number | null;
+  bonus_tax_rate?: number | null;
   apply_tax_to_fixed_pay: boolean;
   bonus_payout_method: PayrollPayoutMethod;
   cash_to_tax_company: boolean;
@@ -132,7 +142,30 @@ export type PayrollRun = {
 
 export type PayrollStatement = PayrollRun;
 
+/** Internal immutable calculation record. Shared Tax DTOs must mask hidden items. */
+export type PayrollTaxComponent = {
+  shown: boolean;
+  gross: number;
+  tax_applied: boolean | null;
+  tax_rate: number | null;
+  tax: number;
+  net: number;
+  payout_method: PayrollPayoutMethod | "mixed";
+  check_gross: number;
+  check_tax: number;
+  check_net: number;
+  cash_gross: number;
+  cash_tax: number;
+  cash_net: number;
+};
+export type PayrollTaxReportingSnapshot = {
+  version: 1;
+  components: Record<"check_wage" | "cash_wage" | "tip" | "bonus", PayrollTaxComponent>;
+  totals: Pick<PayrollTaxComponent, "gross" | "tax" | "net" | "check_gross" | "check_tax" | "check_net" | "cash_gross" | "cash_tax" | "cash_net">;
+};
+
 export type PayrollStaffLine = {
+  tax_reporting_snapshot?: PayrollTaxReportingSnapshot | null;
   base_cash_amount: number;
   base_check_amount: number;
   bonus_amount: number;
@@ -220,6 +253,7 @@ export type PayrollPaystub = {
 };
 
 export type PayrollCorrectionListItem = {
+  financialInputEventId?: string | null;
   businessDate: string;
   changedById: string | null;
   correctionDate: string;
@@ -263,6 +297,10 @@ export type PayrollSummary = {
 };
 
 export type PayrollStaffLineWithDailyTotals = PayrollStaffLine & {
+  /** Legacy audit facts only; never replaces the current live calculation. */
+  ledger?: import("@/lib/payroll-ledger").PayrollLineLedger;
+  dailyIncome?: import("@/lib/payroll-ledger").PayrollDailyIncome[];
+  liveDailyIncome?: import("@/lib/payroll-live-projection").LiveIncomeDay[];
   dailyTotals: PayrollStaffDailyTotal[];
   input: PayrollPeriodStaffInput | null;
   inputHistory?: PayrollPeriodStaffInputHistory[];
@@ -364,6 +402,9 @@ export type PayrollPeriodOption = {
 };
 
 export type PayrollShopDailyRow = {
+  actualTipIncome?: number | null;
+  tipDifference?: number | null;
+  payrollRecord?: {state:"closed"|"adjusted";sourcePeriod:{start:string;end:string};originalStaffNetPay:number;netAdjustment:number;originalTaxWithheld:number;taxAdjustment:number;originalStaffObligation:number;obligationAdjustment:number;originalShopNetIncome:number|null;shopNetAdjustment:number};
   actualIncome: number | null;
   businessDate: string;
   cashAmount: number | null;
@@ -386,6 +427,7 @@ export type PayrollShopDailyRow = {
 };
 
 export type PayrollShopSummary = {
+  totalActualTip?: number | null;
   cashAmount: number | null;
   correctionCount: number;
   creditCardAmount: number | null;

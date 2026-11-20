@@ -1,0 +1,107 @@
+{
+  "kind": "change",
+  "changeId": "auth-workspace-cache-repair-20261018",
+  "status": "ready",
+  "summary": "Repair shared Auth/workspace/cache coordination: deduplicate pending authority reads, retain exact-path authorized views, recover Staff Owner switches without write replay, and unblock canceled handoff retry; web/iOS tested, no production or TestFlight publication",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "components/app-local-session-expiry-prompt.tsx",
+    "components/app-local-shell.tsx",
+    "components/experience-scope.tsx",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "ios/ReylumiTests/WorkspaceSwitchTests.swift",
+    "lib/app-local-command-client.ts",
+    "lib/app-local-shell-workspace-navigation.ts",
+    "lib/experience-authorized-read.ts",
+    "lib/experience-offline-client.ts",
+    "lib/experience-persistent-cache.ts",
+    "scripts/fixtures/cache-history-source-profile.mjs",
+    "tests/app-local-workspace-navigation.test.mjs",
+    "tests/app-local-workspace-recovery-ui.test.mjs",
+    "tests/cache-history-comparison-ui.test.mjs",
+    "tests/experience-authorized-read.test.mjs",
+    "tests/idle-web-trace-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\auth-workspace-cache-repair-20261018\\artifacts\\auth-workspace-cache-repair-20261018\\frozen-source-v2",
+    "commit": "ea027fd76950971ce528d6fa57ed0aaed052cf70",
+    "baseCommit": "2ef993bb88d368d7e318b0965f5193db2a9f6ec0",
+    "overlaySha256": "246e38ebabd6edec9b7435313b3b5d34339f6a2006584149eb5d1585ec4f464e",
+    "bundleBuildId": "390bfb419c8023029c97fb697a0e1b5d4cd46b5163e259a2edbf53bc278b96fc"
+  },
+  "dependencies": [
+    "idle-cold-start-trace-20261018",
+    "owner-today-auth-progressive-20261018",
+    "ios-today-startup-recovery-20261018"
+  ],
+  "validation": [
+    {
+      "name": "104 core tests and125 web-suite case executions, source-verified to final candidate",
+      "result": "passed",
+      "evidence": "artifacts/auth-workspace-cache-repair-20261018/browser-final-verification.json"
+    },
+    {
+      "name": "Web production build, TypeScript, ESLint and427 offline assets within budget",
+      "result": "passed",
+      "evidence": "artifacts/auth-workspace-cache-repair-20261018/production-build.json"
+    },
+    {
+      "name": "112 iOS Simulator tests, unsigned archive,397 native source hashes and344 bundled resources",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/39188721151"
+    },
+    {
+      "name": "Staff Owner single-write recovery, weak-network, revisit, account/permission/cancellation fencing",
+      "result": "passed",
+      "evidence": "artifacts/auth-workspace-cache-repair-20261018/security-review-final.json"
+    },
+    {
+      "name": "Exact21 frozen file bytes match final Git commit and tested worktree",
+      "result": "passed",
+      "evidence": "artifacts/auth-workspace-cache-repair-20261018/implementation-verification.json"
+    }
+  ],
+  "releaseNotes": {
+    "webProductionPublished": false,
+    "testflightUploaded": false,
+    "nativeBuildRequired": true,
+    "physicalIPhoneValidated": false,
+    "firstOpenSpeedGainEstablished": false
+  },
+  "id": "7a36a601-ed65-4899-96b1-2aaab10b9b4a",
+  "recordedAt": "2026-10-19T02:21:43.496Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\auth-workspace-cache-repair-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "3fdb89dfcae5eed9a178dcc4b90a6a0710d4a2eddf05ec7eb20deef0421575ad",
+    "components/app-local-session-expiry-prompt.tsx": "52473d589bef47fdd4d97c7835d472477d75f949effc9fe7c81c9f48cdeee860",
+    "components/app-local-shell.tsx": "192ddbea717ff2cd647cd8239b86132ef4ace3a9c0405c8c126799a77a5d0942",
+    "components/experience-scope.tsx": "22eaf8b8155962469a7dc5662a979f1a2755ca416097e8bbe05e1c81d4f373db",
+    "ios/Reylumi/LocalAppBundle/app.css": "c3bfbf3c7dc31f45c3f533e5c404a94182d0ae096d3220a539cfcf1f282c580a",
+    "ios/Reylumi/LocalAppBundle/app.js": "f2237e8584ba38fa8fdd1ccabeac98f2ce712e9cbf9ff7235005ed2298a2dea9",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "be26783eabf227a67a70647cfdf189afc6f2645ab504e1e29812fe694a23fefb",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "a52a906b36c7e62a49282ade556743a2c77e286952fff4c4c0e248b28f8b4078",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "3a1f3f76cafa48d84eff8c7ae861240079eed18b390f6a5ff6fd8df272556622",
+    "ios/ReylumiTests/WorkspaceSwitchTests.swift": "e735675e129b2e344dc7dd5e814d381d82d98a3d796993a43656b87de83f1949",
+    "lib/app-local-command-client.ts": "012e71ddf867997c33eb1b2ff228091fe25adfea1a6c1d230d26d59eb16a6dda",
+    "lib/app-local-shell-workspace-navigation.ts": "bb1f093135dccfa79f290066dc63b9ed1a83f476b66837a84feadb4f1d70cf72",
+    "lib/experience-authorized-read.ts": "c726207c8d37bf8fe64f0b74c13043c4710c401b995924d3241a4ac4202e183a",
+    "lib/experience-offline-client.ts": "04eeba54292c2181c530c2a4e189c8014152a1a139190f97c350bcda4d41bff9",
+    "lib/experience-persistent-cache.ts": "e581a63664c1885d769f3d6d59e0d56be4a80afa956d8baa5303fa3929b806f8",
+    "scripts/fixtures/cache-history-source-profile.mjs": "03ac033ed8d38d4dd1338b33e66508457eb4ffb81ef58c9b4cab398a41e2de19",
+    "tests/app-local-workspace-navigation.test.mjs": "c2ab080f1e59e134f63d20604840cb84698259dd6e96cf637402a81a9e6f34a5",
+    "tests/app-local-workspace-recovery-ui.test.mjs": "0b99b49b83b93857bb6bc48d8357b6466f9dfaae427f4808f446311635cb8d66",
+    "tests/cache-history-comparison-ui.test.mjs": "cca03f4b7d715e7ecc315f81a9a4ad74677e24a322320ae88293d161544cc012",
+    "tests/experience-authorized-read.test.mjs": "9113d2e1b49a62fb561b7ae8f02562aea02a70a9b49730a9bc576004ece1f210",
+    "tests/idle-web-trace-ui.test.mjs": "5cc6f4ee6bdf77018b9b692325a6166d07a5bb8812e5fa71689d4c182294e21f"
+  }
+}

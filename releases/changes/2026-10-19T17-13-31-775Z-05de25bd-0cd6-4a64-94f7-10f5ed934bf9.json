@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "ios-device-report-handoff-20261019",
+  "status": "working",
+  "summary": "Investigate physical-iPhone build40 diagnostics: command401 session resets and context200 handoff/workspace-home rejection; reproduce real native event/callback ordering before minimal fix, no deployment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "tests/app-local-workspace-recovery-ui.test.mjs",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "commit": "e67c5d0664fe6ba0f1b1f68fb43b646bb54bf468"
+  },
+  "validation": [
+    {
+      "name": "physical-device-log-provenance",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/work/ios-device-report-20261019/artifacts/ios-device-report-20261019/device-evidence.json"
+    },
+    {
+      "name": "regression-reproduce-before-fix",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "05de25bd-0cd6-4a64-94f7-10f5ed934bf9",
+  "recordedAt": "2026-10-19T17:13:31.775Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-device-report-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

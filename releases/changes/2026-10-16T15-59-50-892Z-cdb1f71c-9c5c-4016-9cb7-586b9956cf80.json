@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "app-local-role-renderers-20261016",
+  "status": "working",
+  "summary": "Register actual customer/staff/Market/Settings local client views with server-authorized props and explicit transport metadata.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-resources-server.ts",
+    "lib/app-local-platform-types.ts",
+    "components/app-local-customer-views.tsx",
+    "tests/app-local-page-registry-ui.test.mjs",
+    "tests/app-local-platform-resources.test.mjs",
+    "components/app-local-social-views.tsx",
+    "app/local-app/customer-social-actions.ts"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016",
+    "app-local-role-policy-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Real renderer and server-scope runtime regression tests",
+      "result": "pending"
+    }
+  ],
+  "id": "cdb1f71c-9c5c-4016-9cb7-586b9956cf80",
+  "recordedAt": "2026-10-16T15:59:50.892Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

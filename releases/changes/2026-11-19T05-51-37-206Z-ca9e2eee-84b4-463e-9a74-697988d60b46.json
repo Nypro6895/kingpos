@@ -1,0 +1,80 @@
+{
+  "kind": "change",
+  "changeId": "public-image-safety-20261116",
+  "status": "needs-integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Reconciled obsolete provider/key/consent-UI blockers after owner manual setup, actual benign-image acceptance and approved UI; exact frozen source still awaits combined hosted/native integration",
+  "files": [
+    "app/api/account/erase-due/route.ts",
+    "app/beauty/actions.ts",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/salon-profile/actions.ts",
+    "app/salon-profile/salon-profile-view.tsx",
+    "docs/ios-store-moderation-proposal-20261116.md",
+    "docs/public-image-safety-20261116.md",
+    "lib/beauty.ts",
+    "lib/public-image-safety.ts",
+    "lib/public-image-staging-expiry.ts",
+    "lib/public-image-staging.ts",
+    "lib/public-image-upload-client.ts",
+    "lib/public-post-receipt.ts",
+    "lib/public-post-submission.ts",
+    "lib/salon-profile.ts",
+    "releases/changes/2026-11-16T23-17-01-903Z-1272ee4d-c1a9-4084-9973-38c30ccb2b66.json",
+    "supabase/migrations/20261116220000_public_image_safety.sql",
+    "supabase/migrations/20261116221000_salon_post_submission.sql",
+    "tests/beauty-pending-publication.test.mjs",
+    "tests/public-image-safety.full-schema.test.mjs",
+    "tests/public-image-safety.integration.test.mjs",
+    "tests/public-image-safety.test.mjs",
+    "tests/public-image-staging-expiry.test.mjs",
+    "tests/public-image-upload-client.test.mjs",
+    "tests/public-post-receipt.test.mjs",
+    "tests/salon-public-image-submission.test.mjs",
+    "types/beauty.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-store-completion-20261118\\photo-gates-reconciled-source",
+    "sourceSha256": "d2ab276339f7cc1b98e7fa7efcf404dc96422ae70a7b8cd67d49844c4d6b2853",
+    "manifest": "artifacts/ios-store-completion-20261118/photo-gates-reconciled-manifest.json"
+  },
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116",
+    "retained-storage-ownership-20261116"
+  ],
+  "validation": [
+    {
+      "name": "Owner selected OpenAI and manually saved the dedicated local key outside Git; no renewed setup request",
+      "result": "passed",
+      "evidence": "docs/openai-photo-live-acceptance-20261118.md"
+    },
+    {
+      "name": "Actual adapter single benign synthetic-image probe; connectivity/schema/verdict only, not accuracy or latency guarantee",
+      "result": "passed",
+      "evidence": "artifacts/openai-photo-live-acceptance-20261118/acceptance.json"
+    },
+    {
+      "name": "Owner-approved scoped Beauty/Salon photo permission UI and immutable retry",
+      "result": "passed",
+      "evidence": "docs/ios-approved-ui-implementation-20261118.md"
+    },
+    {
+      "name": "Exact-source assembled Next/TypeScript/offline-assets build",
+      "result": "passed",
+      "evidence": "artifacts/ios-steps-234-20261118/combined-build-result-r10.json"
+    },
+    {
+      "name": "Hosted environment/provider operations and final native/device/Store acceptance",
+      "result": "pending",
+      "evidence": "docs/ios-store-completion-20261118.md"
+    }
+  ],
+  "id": "ca9e2eee-84b4-463e-9a74-697988d60b46",
+  "recordedAt": "2026-11-19T05:51:37.206Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

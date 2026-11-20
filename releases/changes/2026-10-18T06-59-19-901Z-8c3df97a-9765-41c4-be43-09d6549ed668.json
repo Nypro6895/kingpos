@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "navigation-cache-release-integration-20261018",
+  "status": "working",
+  "summary": "Integrate navigation cache reliability, completed Services and Staff deltas against exact live source; refresh installed iOS bundle and scoped command registration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "dependencies": [
+    "navigation-cache-reliability-20261018",
+    "staff-inline-compact-20261017",
+    "service-save-timeout-inputs"
+  ],
+  "source": {
+    "baselineDeploymentId": "dpl_49BU78kTeWX78NtWmtpJM1gLMavf",
+    "snapshot": "work/navigation-cache-release-20261018"
+  },
+  "validation": [
+    {
+      "name": "Assembled release checks",
+      "result": "pending"
+    }
+  ],
+  "id": "8c3df97a-9765-41c4-be43-09d6549ed668",
+  "recordedAt": "2026-10-18T06:59:19.901Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

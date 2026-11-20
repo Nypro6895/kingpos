@@ -1,0 +1,31 @@
+{
+  "kind": "release",
+  "summary": "Verified native useful shell before WebKit and restored Lumi orbit. iOS1.0.1(18.1) signed archive uploaded; Apple VALID and internal TestFlight available. Web remains pending separate promotion; no App Store claim.",
+  "changes": [
+    "54a059f2-8f06-4230-a5a7-0fa840da7fb0"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "18.1",
+      "commit": "9215fe50d2249597df82aa291a3c52ad63438604",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\performance-release-20261015\\native-live-verification.json",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "appleCheckedAt": "2026-10-16T00:44:08.971Z",
+      "workflowUrl": "https://github.com/Nypro6895/kingpos/actions/runs/38830276848",
+      "appStoreStatus": "not-published-by-this-release",
+      "physicalDeviceValidation": "not performed;28 Simulator XCTest passed"
+    }
+  },
+  "baseline": {
+    "nativeCommit": "e4be37f0aa3d6e43767b3d7bc2573145f477d708",
+    "version": "1.0.1",
+    "build": "16.1"
+  },
+  "id": "b1f0198a-2d57-4f12-8207-307952ce4d60",
+  "recordedAt": "2026-10-16T00:51:37.299Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos"
+}

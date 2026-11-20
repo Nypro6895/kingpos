@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "app-local-bounded-file-uploads",
+  "status": "ready",
+  "summary": "Six exact original File actions use private single-use staged upload, including actual Creative sharp5MiB and optional POS three15MiB files; original authority/CAS/results retained, no business-write retry. Integrated with the complete validated application source.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-upload-policy.ts",
+    "lib/app-local-upload-client.ts",
+    "lib/app-local-upload-server.ts",
+    "supabase/migrations/20261016170000_app_local_upload_sessions.sql",
+    "tests/app-local-upload-runtime.test.mjs",
+    "tests/app-local-upload-client.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\integrated-frozen-r3",
+    "commit": "260e26849b807f841046edef634246aeec49ff84"
+  },
+  "validation": [
+    {
+      "name": "173 isolated integration behavior/authority/offline tests, zero failures/skips",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/final-validation.json"
+    },
+    {
+      "name": "Assembled production Next build and 411 offline web assets",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/next-production-final.log"
+    },
+    {
+      "name": "81 actual iOS XCTest cases and unsigned archive at exact source",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/38945864401"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "supersedesEvents": [
+    "1bf2f745-0897-4d44-8cbd-7887ea9404c4"
+  ],
+  "metadataCorrection": "Normalize integration dependency identifiers; product source and verification are unchanged.",
+  "id": "1b7eed93-251e-404e-94db-b9b08f5f30c7",
+  "recordedAt": "2026-10-16T18:24:31.997Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "fileHashes": {
+    "lib/app-local-upload-policy.ts": "a1d0534c6fbfd459acf8ba5b9fb0eebb0dbebd2de0321fc480beec20dff9a81c",
+    "lib/app-local-upload-client.ts": "87ae2684b3e94ee6190f2ec64d17476eb04aa43113c9e58c653594dedb69d1d2",
+    "lib/app-local-upload-server.ts": "71282b22a90c79059bc59e7c7788ccecbff931a086c738ebf485a3354fec1d01",
+    "supabase/migrations/20261016170000_app_local_upload_sessions.sql": "7e6d69fb697fc6863c6e6adb7ab200e48f4dab7a2d79ad030810729a02d6e524",
+    "tests/app-local-upload-runtime.test.mjs": "2b7767cbcd0a54904b6603ef784c5315ffce464b1897bb51da1699942fef15c2",
+    "tests/app-local-upload-client.test.mjs": "0db027764518d84fa34ef3a6f45284df1b1fa3e24c79ef17184b403dd9e3576f"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "kingpos-desktop",
   "productName": "KingPOS Portable",
-  "version": "0.7.0",
+  "version": "0.7.7",
   "private": true,
   "description": "KingPOS Portable for Windows â€” single checkout",
   "author": "KingPOS",

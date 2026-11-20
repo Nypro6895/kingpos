@@ -1,0 +1,39 @@
+IOS REOPEN: EXPIRED ACCOUNT SESSION
+
+Baseline: uploaded native source e1f0a95bbc49f2c301f5852136f2d565eac15dc6 (1.0.0 build 95).
+The expiry prompt previously depended on having seen an authenticated render in
+the current React lifetime. A cold denied private-page admission instead showed
+a full-page Sign in action. A denied request could also leave its previous
+private presentation until the reset arrived.
+
+Changed behavior:
+- Confirmed account sign-in failure withdraws private resources/admission and
+  replaces the underlying route with Explore before paint.
+- A known private path, including query filters, is retained only as login next.
+  The original HTTPS hosted login opens once, even without a prior signed-in
+  render. Native's existing authenticated return verifies the destination.
+- Missing private destination (neutral root), an ordinary guest page or explicit
+  logout continues to Explore without an automatic login popup.
+- Continue as guest cancels the return intent. A later expiry can open login
+  once again. Transport failures and 403/409 do not infer session expiry.
+- Portable/display authority remains under its existing presentation.
+- No writes or commands are replayed. No change to Remember me or cookie expiry.
+
+Validation on Windows:
+- 31 Node runtime regressions passed, including production entry recovery and
+  prompt hook execution, cold login next, guest dismissal, later repeated expiry,
+  root admission/handoff, cookie reset and staff identity guards.
+- Targeted ESLint passed for the three changed production files.
+- Installed bundle verification compiled 966 modules for Safari 16, validated
+  347 actions, found zero unsupported actions; no generated assets replaced.
+- git diff whitespace check passed with CRLF-aware checking for original CRLF files.
+
+Release requirements and limits:
+- Implementation-only; no deployment or native upload is authorized by this task.
+- Rebuild the bundled JS from this frozen patch against the current uploaded
+  native source. Web-only publication cannot update this installed entry.
+- Physical iPhone acceptance and the hosted authenticated round trip remain
+  pending. Test force-close/reopen after session expiry, long background resume,
+  canceled/failed sign-in, successful return, guest root, and denied workspaces.
+- The earlier Simulator cold-start tests in this conversation ran the previous
+  audit bundle. They are not acceptance evidence for this new patch.

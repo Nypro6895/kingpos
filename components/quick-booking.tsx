@@ -1,8 +1,11 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import type { PublicBookingPageData } from "@/lib/public-booking";
-import { useCloseOnNavigation } from "@/components/overlay-dismissal";
+import { useCloseOnNavigation, useTransientOverlay } from "@/components/overlay-dismissal";
 import styles from "./quick-booking.module.css";
 import { useExploreAuthenticated } from "@/components/explore-account-actions";
 
@@ -25,13 +28,18 @@ async function loadContext(url: URL, signal: AbortSignal) {
 }
 
 export function QuickBooking() {
+  const __vt = useWorkspaceTranslation();
+
   const authenticated = useExploreAuthenticated();
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const opener = useRef<HTMLElement | null>(null);
   const busy = useRef(false);
   const activeHref = useRef<string | null>(null);
   const warmContext = useRef<{ href: string; started: number; controller: AbortController; promise: Promise<PublicBookingPageData> } | null>(null);
   const [href, setHref] = useState<string | null>(null);
+  useOverlayViewport(dialog, Boolean(href), "panel");
+  useTransientOverlay(() => { activeHref.current = null; setHref(null); }, Boolean(href));
   const [data, setData] = useState<PublicBookingPageData | null>(null);
   const [Wizard, setWizard] = useState<BookingComponent | null>(null);
   const [error, setError] = useState("");
@@ -111,7 +119,7 @@ export function QuickBooking() {
     return () => { abort.abort(); if (usableWarm) warm.controller.abort(); element?.close(); document.body.style.overflow = previous; opener.current?.focus(); };
   }, [href, retry]);
   if (!href) return null;
-  return <dialog ref={dialog} className={styles.dialog} aria-label="Quick booking" onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === event.currentTarget) close(); }}>
-    {data && Wizard ? <Wizard data={data} embedded onClose={close} onBusyChange={value => { busy.current = value; }} /> : <div className={styles.loading}><header><strong>Book an appointment</strong><button onClick={close} aria-label="Close booking">×</button></header>{error ? <><p role="alert">{error}</p><button className={styles.primary} onClick={() => { setError(""); setRetry(value => value + 1); }}>Try again</button></> : <><div className={styles.skeleton}/><div className={styles.skeleton}/><p role="status">Checking available times…</p></>}</div>}
+  return <dialog ref={dialog} className={styles.dialog} aria-label={__vt("Quick booking")} onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === event.currentTarget) close(); }}>
+    {data && Wizard ? <Wizard data={data} embedded onClose={close} onBusyChange={value => { busy.current = value; }} /> : <div className={styles.loading}><header><strong><WorkspaceText text="Book an appointment" /></strong><button onClick={close} aria-label={__vt("Close booking")}>×</button></header>{error ? <><p role="alert"><WorkspaceText text={error} /></p><button className={styles.primary} onClick={() => { setError(""); setRetry(value => value + 1); }}><WorkspaceText text="Try again" /></button></> : <><div className={styles.skeleton}/><div className={styles.skeleton}/><p role="status"><WorkspaceText text="Checking available times…" /></p></>}</div>}
   </dialog>;
 }

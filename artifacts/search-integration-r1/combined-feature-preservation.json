@@ -1,0 +1,54 @@
+{
+  "createdAt": "2026-11-19T07:30:47.447Z",
+  "checkedCriticalCombinedFiles": [
+    {
+      "path": "app/explore/explore-salon-card.tsx",
+      "byteEqualToCandidateBase": true,
+      "crlfNormalizedEqualToCandidateBase": true,
+      "sha256": "cbd4fd4178efc2dc0d645f7b3098ff8ec30738d90dbaea9017e89778b9d0d57d"
+    },
+    {
+      "path": "components/explore-advertising.tsx",
+      "byteEqualToCandidateBase": true,
+      "crlfNormalizedEqualToCandidateBase": true,
+      "sha256": "a98a578edffe1a1e2ca007c680aa5bdcf1917164c55561b15215ce2efa061b75"
+    },
+    {
+      "path": "components/explore-ad-slot.tsx",
+      "status": "path-not-present"
+    },
+    {
+      "path": "lib/app-local-shell-http-client.ts",
+      "byteEqualToCandidateBase": true,
+      "crlfNormalizedEqualToCandidateBase": true,
+      "sha256": "6946709c2c9d8eb8da560d40ea53118731de335ffec3c2609734b052ce63be8d"
+    },
+    {
+      "path": "lib/app-local-shell-server.ts",
+      "byteEqualToCandidateBase": true,
+      "crlfNormalizedEqualToCandidateBase": true,
+      "sha256": "d27d05880cb1a529152b4338521fc6dd152da9d51aedcd7281d884a48e0b0363"
+    },
+    {
+      "path": "lib/exact-text-moderation.ts",
+      "status": "path-not-present"
+    },
+    {
+      "path": "supabase/migrations/20261118230000_exact_text_moderation.sql",
+      "status": "path-not-present"
+    }
+  ],
+  "trackedChangedPaths": [
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-salon-card.module.css",
+    "lib/explore-query-intent.ts",
+    "lib/explore-query-routing.ts",
+    "lib/explore-search-metrics.ts",
+    "lib/explore-search-refresh.ts",
+    "lib/explore-search-rpc.ts",
+    "lib/explore-search.ts",
+    "lib/use-explore-search-media.ts",
+    "types/explore.ts"
+  ],
+  "extraTrackedProductEdits": []
+}

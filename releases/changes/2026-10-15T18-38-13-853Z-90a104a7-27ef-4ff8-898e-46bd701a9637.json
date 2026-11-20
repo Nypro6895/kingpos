@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "explore-jsx-deploy-handoff-20261015",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Documentation handoff complete: verified existing BookingDepositPanel JSX fragment repair and full local TypeScript; saved all chat changes, hashes and release references. Existing JSX source is owned by booking-release-unblock-20261015; no product code modified in this verification turn.",
+  "files": [
+    "docs/explore-book-love-report-deploy-notes-20261015.txt"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-jsx-deploy-handoff-20261015\\source",
+    "commit": "c9b362be7bf785ae5fdfc6645adc13eda1b2d5f4",
+    "priorHandoffCommit": "a25b8a6bbf486a8506481eeaf7db9f7a9bec9d08",
+    "observedJsx": {
+      "path": "app/market/booking-deposit-panel.tsx",
+      "snapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-jsx-deploy-handoff-20261015\\before\\app\\market\\booking-deposit-panel.tsx",
+      "sha256": "714cc824f6bfa4ea437ffc4191b476d4c71fc3a19c8e58b8686b0e705dc64832",
+      "ownerChangeId": "booking-release-unblock-20261015",
+      "ownerEvent": "6c291093-df30-41b6-a274-83bcc97afb56"
+    },
+    "integratedExploreEvent": "26948845-ba80-4e73-a0b4-8489f233a648",
+    "releaseReceipt": "7e606ec5-c1ba-43a5-97af-1b4a68993412"
+  },
+  "validation": [
+    {
+      "name": "Whole-checkout TypeScript",
+      "result": "passed",
+      "evidence": "tsc --noEmit --incremental --tsBuildInfoFile work/explore-jsx-deploy-handoff-20261015/typecheck.tsbuildinfo; exit 0; typecheck.log"
+    },
+    {
+      "name": "Actual JSX parse and React SSR conditional rendering",
+      "result": "passed",
+      "evidence": "work/explore-jsx-deploy-handoff-20261015/booking-deposit-ssr-verification.json; both settingsOnly variants; no external action calls"
+    },
+    {
+      "name": "BookingDepositPanel ESLint",
+      "result": "passed",
+      "evidence": "work/explore-jsx-deploy-handoff-20261015/booking-deposit-eslint.json; zero errors/warnings"
+    },
+    {
+      "name": "Handoff source and receipt reconciliation",
+      "result": "passed",
+      "evidence": "All 9 original handoff hashes and 10 integrated ready snapshot hashes match. Local release receipt explicitly includes integrated Explore event; no live alias query or publication performed in this turn."
+    },
+    {
+      "name": "Deployment notes completeness",
+      "result": "passed",
+      "evidence": "Includes original/integrated source identities, JSX owner, verification, current recorded publication, and next-release baseline/alias requirements."
+    }
+  ],
+  "releaseScope": "Documentation only. Do not publish the observed working JSX ownership event on the strength of this note. Read its latest validated completion and current production source at release time.",
+  "id": "90a104a7-27ef-4ff8-898e-46bd701a9637",
+  "recordedAt": "2026-10-15T18:38:13.853Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "docs/explore-book-love-report-deploy-notes-20261015.txt": "fb96aacc77cdee69da01e94e2ebfcdf6d1fa12299fbc33d0e98c6ed3798280aa"
+  }
+}

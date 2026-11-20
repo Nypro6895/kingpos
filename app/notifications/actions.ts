@@ -97,12 +97,6 @@ export async function openAppNotificationAction(formData: FormData) {
         workspaceId: null,
       };
 
-  await applyNotificationWorkspaceContext({
-    destinationHref: destination.href,
-    notificationId,
-    workspaceId: destination.workspaceId,
-  });
-
   if (notificationId) {
     const didMarkRead = await markAppNotificationRead(notificationId);
 
@@ -111,6 +105,12 @@ export async function openAppNotificationAction(formData: FormData) {
     }
   }
 
+  // Both web documents and the installed client use the checked workspace
+  // handoff. Do not change cookies while returning a render of the old page.
+  if (destination.workspaceId) {
+    const params = new URLSearchParams({ workspace_id: destination.workspaceId, destination: destination.href });
+    redirect(`/workspace/open?${params}`);
+  }
   redirect(destination.href);
 }
 

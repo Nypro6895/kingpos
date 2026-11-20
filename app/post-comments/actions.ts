@@ -26,7 +26,7 @@ function revalidatePostCommentTarget(target: PostCommentTarget) {
   }
 
   if (target.sourceType === "beauty_post") {
-    revalidatePath("/beauty");
+    revalidatePath("/beauty"); revalidatePath("/beauty/library");
 
     if (target.profileId) {
       revalidatePath(`/explore/beauty/${target.profileId}`);
@@ -44,6 +44,7 @@ export async function loadPostCommentsAction(input: {
 }
 
 export async function createPostCommentAction(input: {
+  workspaceIdentityKey?: string;
   requestId?: string;
   asSalonReply?: boolean;
   body: string;

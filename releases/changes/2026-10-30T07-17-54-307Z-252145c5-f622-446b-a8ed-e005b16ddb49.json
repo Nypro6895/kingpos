@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "salon-qr-hosted-handoff-wide-layout-20261030",
+  "status": "needs-integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Repair confirmed physical73 warm/cold QR loss by presenting original hosted-only /qr after scene attachment;retain installed controller and task exit;stack QR copy on wide Customer Display",
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "app/pos/customer-display/customer-idle-screen.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\handoff-repair-source",
+    "baselineNativeCommit": "7f5b4d81f6f9c58385d38db3a3b9c9f741b45993",
+    "baselineBuild": "73"
+  },
+  "dependencies": [
+    "personal-qr-explicit-app-handoff-20261030",
+    "customer-display-qr-fallback-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Physical73 reproduction and unchanged hosted-only route authority diagnosis",
+      "result": "passed",
+      "evidence": "C:/Reylumi/artifacts/physical-smoke73-20261030/evidence/RESULT.json"
+    },
+    {
+      "name": "New real-container warm/cold WK regression plus full source-bound native suite/sign/upload/groups",
+      "result": "pending"
+    },
+    {
+      "name": "Physical74 Safari warm/cold handoff and actual wide Portable layout",
+      "result": "pending"
+    }
+  ],
+  "id": "252145c5-f622-446b-a8ed-e005b16ddb49",
+  "recordedAt": "2026-10-30T07:17:54.307Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

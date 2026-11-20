@@ -1,0 +1,42 @@
+{
+  "changeId": "pos-ios-custom-service-20261028",
+  "source": {
+    "snapshot": "artifacts/pos-ios-tablet/custom-v2/frozen"
+  },
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css"
+  ],
+  "status": "needs-integration",
+  "summary": "iOS top Add/Reset and pencil Services custom-name entry; preserve Windows and existing receipt flow",
+  "validation": [
+    {
+      "name": "8 browser configurations; custom add/rename/cancel/reload; Windows baseline pixels",
+      "evidence": "artifacts/pos-ios-tablet/custom-v2/verification.json",
+      "result": "passed"
+    },
+    {
+      "result": "passed",
+      "name": "Focused TypeScript, ESLint, canonical git apply --check"
+    },
+    {
+      "result": "pending",
+      "name": "Full authenticated receipt acceptance, assembled build and physical iOS"
+    }
+  ],
+  "dependencies": [
+    "pos-ios-tablet-layout-20261028"
+  ],
+  "id": "204750d6-d9f5-4df8-80d0-ba56345b22c9",
+  "recordedAt": "2026-10-29T04:33:51.812Z",
+  "worktree": "C:\\Reylumi-worktrees\\pos-ios-tablet-layout-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "today-native-admission-20261019",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Fix Today-only false workspace denial caused by JSON permission key order; preserve semantic authority and stable retained Today identity with88 passing contract/browser tests.",
+  "files": [
+    "app/staff/today/today-progressive-client.tsx",
+    "lib/today-dashboard-sections.ts",
+    "tests/owner-today-progressive-ui.test.mjs",
+    "tests/today-dashboard-progressive.test.mjs",
+    "tests/owner-today-native-recovery-ui.test.mjs",
+    "docs/today-native-permission-order-20261019.txt",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\today-native-admission-20261019\\frozen-e14ef97",
+    "commit": "e14ef974b69bd782840d182d0373b54be30e7359",
+    "sourceSha256": "ffbfacfffa96e56a992979d46e1ec4408287b374297b4985d92e6701437d7e6a",
+    "overlaySha256": "7e5db4429fad2c6d45248106adaaebcff83239bbc9e3ee035900471dc99827be"
+  },
+  "validation": [
+    {
+      "name": "88 contracts and Today/browser scenarios, zero failures/skips, including real native admission provider and old-source RED",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-admission-20261019/verification.json"
+    },
+    {
+      "name": "Production Next build/TypeScript, scoped lint and independent permission/security review",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-admission-20261019/production-build-result.json"
+    },
+    {
+      "name": "345 bundle resource hashes; only app.js changed,344 resources plus96routes322commands/config and Swift/bridge preserved",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/today-native-admission-20261019/bundle-verification.json"
+    }
+  ],
+  "limitations": [
+    "Identical-permission ordering defect is reproduced and fixed in real component/provider tests; current physical-phone payload ordering is not directly captured, so sole-cause attribution is unproven.",
+    "A separate online-only503/no-lease cache-removal conditional edge remains outside this patch and is documented; no cache authority was widened.",
+    "No new signed native build/archive/upload or web deployment was performed; installed42 still contains the old JS bundle.",
+    "Initial fixture still had an unrelated503 phase enabled; its failed run is retained separately from corrected all200 RED/GREEN checks."
+  ],
+  "releaseRequirements": {
+    "nativeBuildRequired": true,
+    "recheckCurrentProductionAndUploadedNativeBaseline": true,
+    "physicalIPhoneTestRequired": true
+  },
+  "id": "92406a2a-3330-433e-b4bf-5f8f886a6971",
+  "recordedAt": "2026-10-20T01:34:59.546Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\today-native-admission-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/staff/today/today-progressive-client.tsx": "36712f26295d8d36145a74945d14948cb44d368f53ebe450519dcb9cde8f0e42",
+    "lib/today-dashboard-sections.ts": "39be1a19a98e7d3ca7a6423323ea5abe05298618fa3cac30776596d7e9419e34",
+    "tests/owner-today-progressive-ui.test.mjs": "4c760022e7c2ede4feb586d1c8b40a534c3b3c5ccfb7bb24e218cbca92dc47fc",
+    "tests/today-dashboard-progressive.test.mjs": "d42bc6adccf52a29255fbbdb3fc8c69c340a20c82deaaf1d19688a3964bd1fe5",
+    "tests/owner-today-native-recovery-ui.test.mjs": "3b072b347ceae25f1f23ee7cdaad778d649bb9b9e110b6a08dff4cea76cd6c71",
+    "docs/today-native-permission-order-20261019.txt": "15183209e8fe19cef9c4600ad363e428cb5d740dd056b3c08f7c3a3b5a68e481",
+    "ios/Reylumi/LocalAppBundle/app.js": "1f26187fff42faf7574c196dcd2b1edbc65bdbb104c9a68ab66294e399b3e1c6",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "dd6aad8cbdb6a0db7a9efef619bd878c2c3d287a80dae09098294259a0296b45"
+  }
+}

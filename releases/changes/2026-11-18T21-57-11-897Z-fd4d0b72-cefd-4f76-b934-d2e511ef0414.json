@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "openai-photo-consented-wiring-20261118",
+  "status": "blocked",
+  "summary": "Consented OpenAI photo caller wiring and truthful policy addendum validated locally; blocked by secure key destination, end-user consent UI and actual provider acceptance.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/beauty.ts",
+    "lib/salon-profile.ts",
+    "types/beauty.ts",
+    "lib/legal-policies.ts",
+    "tests/public-photo-consented-wiring.test.mjs",
+    "docs/openai-photo-consented-wiring-20261118.md",
+    "releases/changes/2026-11-18T21-27-10-199Z-ae846731-88d6-4cef-b8d9-7df8d44c398c.json"
+  ],
+  "fileHashes": {
+    "lib/beauty.ts": "dcff2f6e983f158ffec1bd1ccee30581e2c846e4973b4e27ecff01566212b198",
+    "lib/salon-profile.ts": "a68c703f0342e2f11199cd004b51358f92e5bcb1c79a8a766c0e58242bf973d7",
+    "types/beauty.ts": "52bdfc55ff958f6a34b829aad01257debe3ed480258fbf1960781944645b33ae",
+    "lib/legal-policies.ts": "9857a58cb1e904420a3cd5db9c7c6e06883f5c96525c77639c70a15cbc3b0a32",
+    "tests/public-photo-consented-wiring.test.mjs": "bd1e22dc5a043b25cb52320745632a5e9af6f0ead596686d1b5451a975533771",
+    "docs/openai-photo-consented-wiring-20261118.md": "e2e3c4b5df461f3c556e0771ca9e90c3d7ab84fd195ff05c951663d85beaaaf0",
+    "releases/changes/2026-11-18T21-27-10-199Z-ae846731-88d6-4cef-b8d9-7df8d44c398c.json": "dcc655867648126c96ad5ae9615b40340379bc2d4cee9004101815013ec40a4b"
+  },
+  "source": {
+    "snapshot": "artifacts/ios-steps-234-20261118/frozen/wiring-r1",
+    "commit": "8d953b12e7539e5e382f07524f6faba31e2d4633",
+    "sha256": "87e403bd2d336eacaef7673d6f51eb379a6af75466744e431d95369cb8bb3852"
+  },
+  "validation": [
+    {
+      "name": "Actual scoped source tests and CRLF-aware whitespace/lint",
+      "result": "passed",
+      "evidence": "docs/ios-steps-2-3-4-implementation-20261118.md"
+    },
+    {
+      "name": "Combined production Next/TypeScript/offline-assets build",
+      "result": "passed",
+      "evidence": "artifacts/ios-steps-234-20261118/combined-build-result-r2.json"
+    },
+    {
+      "name": "Source parity5443inputs and actual12policy viewport routes",
+      "result": "passed",
+      "evidence": "artifacts/ios-steps-234-20261118/legal-r2-acceptance.json"
+    },
+    {
+      "name": "Secure key destination, approved consent/moderation UI, actual provider/runtime and final integration",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "public-image-safety-20261116",
+    "openai-public-photo-verifier-20261118",
+    "public-photo-processing-consent-20261118",
+    "ios-privacy-terms-implementation-20261118"
+  ],
+  "supersedesEvents": [],
+  "id": "fd4d0b72-cefd-4f76-b934-d2e511ef0414",
+  "recordedAt": "2026-11-18T21:57:11.897Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": []
+}

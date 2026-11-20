@@ -1,7 +1,11 @@
+import { CustomerIdentityFields } from "./customer-identity-fields";
+import { WorkspaceText } from "@/components/workspace-language";
 
 import { SubmitButton } from "@/components/submit-button";
 import type { Customer } from "@/types/customer";
 import Link from "next/link";
+import "./customer-form.css";
+import { CustomerFormActions } from "./customer-form-actions";
 
 type CustomerFormProps = {
   action: (formData: FormData) => Promise<void>;
@@ -27,7 +31,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-zinc-700">{label}</span>
+      <span className="text-sm font-medium text-zinc-700"><WorkspaceText text={label} /></span>
       <input
         autoComplete={autoComplete}
         className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
@@ -44,16 +48,17 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
   return (
     <form
       action={action}
-      className="mt-6 grid gap-5 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-2"
+      className="customer-form mt-5 grid gap-5 rounded-2xl border border-border-subtle bg-white p-5 sm:grid-cols-2"
     >
       {customer ? <input name="customer_id" type="hidden" value={customer.id} /> : null}
 
       {error ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:col-span-2">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
+      {mode === "create" ? <CustomerIdentityFields /> : <>
       <div className="sm:col-span-2">
         <Field
           autoComplete="name"
@@ -77,8 +82,13 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
         type="email"
       />
 
+      </>}
+
+      <details className="customer-form-notes sm:col-span-2" open={Boolean(customer?.notes || customer?.staff_notes || customer?.internal_notes)}>
+        <summary><WorkspaceText text="Notes" /><span><WorkspaceText text="Optional" /></span></summary>
+        <div className="grid gap-4 pt-4">
       <label className="block sm:col-span-2">
-        <span className="text-sm font-medium text-zinc-700">Legacy notes</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Legacy notes" /></span>
         <textarea
           className="mt-2 min-h-32 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={customer?.notes ?? ""}
@@ -87,7 +97,7 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
       </label>
 
       <label className="block sm:col-span-2">
-        <span className="text-sm font-medium text-zinc-700">Staff-safe notes</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Staff-safe notes" /></span>
         <textarea
           className="mt-2 min-h-24 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={customer?.staff_notes ?? ""}
@@ -96,42 +106,44 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
       </label>
 
       <label className="block sm:col-span-2">
-        <span className="text-sm font-medium text-zinc-700">Owner-only notes</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Owner-only notes" /></span>
         <textarea
           className="mt-2 min-h-24 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={customer?.internal_notes ?? ""}
           name="internal_notes"
         />
       </label>
+        </div>
+      </details>
 
       {mode === "edit" ? (
         <label className="block">
-          <span className="text-sm font-medium text-zinc-700">Status</span>
+          <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Status" /></span>
           <select
             className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
             defaultValue={customer?.status ?? "active"}
             name="status"
           >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="active"><WorkspaceText text="Active" /></option>
+            <option value="inactive"><WorkspaceText text="Inactive" /></option>
           </select>
         </label>
       ) : null}
 
-      <div className="flex flex-wrap gap-3 sm:col-span-2">
-        <SubmitButton pendingLabel="Saving…"
-          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-          type="submit"
-        >
-          Save Customer
-        </SubmitButton>
+      <CustomerFormActions>
         <Link
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
           href={customer ? `/customers/${customer.id}` : "/customers"}
         >
-          Cancel
+          <WorkspaceText text="Cancel" />
         </Link>
-      </div>
+        <SubmitButton pendingLabel="Saving…"
+          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+          type="submit"
+        >
+          <WorkspaceText text="Save Customer" />
+        </SubmitButton>
+      </CustomerFormActions>
     </form>
   );
 }

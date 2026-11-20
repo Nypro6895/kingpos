@@ -1,0 +1,27 @@
+POS MOBILE — GHI CHÚ CHỜ DEPLOY CHUNG
+Ngày: 2026-10-24 (America/Chicago)
+Yêu cầu chủ dự án: Lưu thay đổi để gộp deploy một lần. Chưa deploy ở lượt này.
+
+Phạm vi:
+- Bộ lọc ngày và tìm kiếm Ticket trên một hàng, giảm khoảng đệm phía trên.
+- Ẩn tiêu đề trang trong POS mobile dưới 980px; giữ tiêu đề hộp thoại và giao diện desktop.
+
+Change ID: pos-mobile-compact-20261024
+Event hoàn tất: 2e4dd0e4-2ed3-421c-8f99-3a3dabb2774c
+Trạng thái: needs-integration; chưa phát hành.
+Snapshot: artifacts/pos-mobile-compact-20261024/source
+Manifest: artifacts/pos-mobile-compact-20261024/completion.json
+
+Khi deploy chung:
+- Đọc docs/release-policy.txt, lấy baseline production hiện tại và kiểm tra pending journal.
+- Chỉ ghép khối CSS trong artifacts/pos-mobile-compact-20261024/mobile-only.css vào app/globals.css và thuộc tính data-ticket-date trong app/pos-tickets/ticket-filters.tsx.
+- Giữ dependency TicketFilters hiện có thay cho form Date/Search/Search/Today cũ. Không chép toàn bộ checkout dirty hoặc toàn bộ globals.css lên baseline.
+- ESLint và kiểm tra khoảng trắng đã đạt. Bố cục mẫu Chrome 320/390/430/980px đã kiểm tra; chưa kiểm tra phiên đăng nhập thật hoặc production.
+- Kiểm tra giao diện thực tế Ticket, Book, Check In và Report trên mobile sau khi tích hợp, rồi build/kiểm tra trước khi phát hành.
+- Đây là thay đổi web tương thích; đánh giá native theo baseline phát hành thực tế và chính sách dự án.
+
+Bổ sung 2026-10-25 — Ticket Owner một hàng:
+- Ghép tiếp owner-ticket-single-row-20261025 trong cùng đợt deploy với các bản sửa khác.
+- Chi tiết, patch và nguồn cố định: docs/owner-ticket-single-row-deploy-note.txt.
+- Bản mới giữ tiêu đề Ticket, ngày, Search và menu trên một hàng; cần giữ ngoại lệ [data-ticket-title] khi ghép CSS ẩn h1 mobile ở trên.
+- Chưa deploy. Tra event hoàn tất trong artifacts/owner-ticket-single-row-20261025/completion-event.json và pending journal.

@@ -1,5 +1,10 @@
 "use client";
+import { WorkspaceNavigationIcon } from "@/components/workspace-navigation-icon";
 
+import { useTransientOverlay } from "@/components/overlay-dismissal";
+
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { SubmitButton } from "@/components/submit-button";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -786,92 +791,16 @@ function usePrefersReducedMotion() {
 }
 
 function Icon({ icon }: { icon: OrbitAction["icon"] | "menu" }) {
-  const common = {
-    "aria-hidden": true,
-    className: "h-6 w-6",
-    fill: "none",
-    stroke: "currentColor",
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    strokeWidth: 2,
-    viewBox: "0 0 24 24",
-  };
-
-  if (icon === "book") {
-    return (
-      <svg {...common}>
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z" />
-      </svg>
-    );
-  }
-
-  if (icon === "calendar") {
-    return (
-      <svg {...common}>
-        <path d="M8 2v4M16 2v4M3 10h18" />
-        <rect height="18" rx="2" width="18" x="3" y="4" />
-      </svg>
-    );
-  }
-
-  if (icon === "check") {
-    return (
-      <svg {...common}>
-        <path d="M20 6 9 17l-5-5" />
-        <path d="M4 20h16" />
-      </svg>
-    );
-  }
-
-  if (icon === "logout") {
-    return (
-      <svg {...common}>
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-        <path d="M16 17l5-5-5-5" />
-        <path d="M21 12H9" />
-      </svg>
-    );
-  }
-
-  if (icon === "menu") {
-    return (
-      <svg {...common}>
-        <path d="M5 7h14M5 12h14M5 17h14" />
-      </svg>
-    );
-  }
-
-  if (icon === "report") {
-    return (
-      <svg {...common}>
-        <path d="M8 17V9M12 17V5M16 17v-6" />
-        <path d="M5 21h14" />
-      </svg>
-    );
-  }
-
-  if (icon === "ticket") {
-    return (
-      <svg {...common}>
-        <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a3 3 0 0 0 0 6v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a3 3 0 0 0 0-6z" />
-        <path d="M9 9h6M9 13h6" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg {...common}>
-      <path d="M4 10h16l-1-6H5z" />
-      <path d="M5 10v10h14V10M9 20v-6h6v6" />
-    </svg>
-  );
+  const icons = { book: "calendar", calendar: "calendar", check: "check", logout: "log-out", menu: "more", report: "list", ticket: "receipt", store: "store" } as const;
+  return <WorkspaceNavigationIcon name={icons[icon]} className="h-6 w-6" />;
 }
 
 export function PortableFloatingNav({
   items,
   salonName,
 }: PortableFloatingNavProps) {
+  const __vt = useWorkspaceTranslation();
+
   const pathname = usePathname();
   const controlsId = useId();
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -890,6 +819,7 @@ export function PortableFloatingNav({
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState(false);
   const [isMenuMounted, setIsMenuMounted] = useState(false);
+  useTransientOverlay(() => { setIsOpen(false); setIsMenuMounted(false); }, isMenuMounted);
   const [isDimmed, setIsDimmed] = useState(false);
   const [dragTilt, setDragTilt] = useState(0);
 
@@ -1170,7 +1100,7 @@ export function PortableFloatingNav({
       <button
         aria-controls={isMenuMounted ? controlsId : undefined}
         aria-expanded={isOpen}
-        aria-label="Open portable navigation"
+        aria-label={__vt("Open portable navigation")}
         className={[
           "portable-nav-main-button relative grid place-items-center rounded-full bg-white text-zinc-950 shadow-[0_18px_46px_rgba(15,23,42,0.28)] outline-none ring-1 ring-zinc-950/36 transition duration-200 focus-visible:ring-4 focus-visible:ring-orange-500/30",
           isDimmed && !isOpen ? "opacity-58" : "opacity-100",
@@ -1203,7 +1133,7 @@ export function PortableFloatingNav({
         />
         <span className="relative z-10 grid h-full w-full place-items-center overflow-visible rounded-full bg-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.98)]">
           <Image
-            alt=""
+            alt={__vt("")}
             aria-hidden="true"
             className="h-[68px] w-[68px] max-w-none rounded-full object-contain drop-shadow-[0_14px_22px_rgba(15,23,42,0.30)]"
             data-portable-floating-nav-brand-icon
@@ -1218,7 +1148,7 @@ export function PortableFloatingNav({
 
       {isMenuMounted ? (
         <div
-          aria-label={`Portable navigation for ${salonName}`}
+          aria-label={__vt(`Portable navigation for ${salonName}`)}
           className="pointer-events-none fixed inset-0 z-40 bg-transparent"
           data-portable-floating-nav-menu
           id={controlsId}
@@ -1269,7 +1199,7 @@ export function PortableFloatingNav({
               return (
                 <Link
                   aria-current={isActive ? "page" : undefined}
-                  aria-label={action.label}
+                  aria-label={__vt(action.label)}
                   className={commonClass}
                   data-orbit-angle={item.angle.toFixed(2)}
                   data-orbit-radius={item.radius.toFixed(2)}
@@ -1281,10 +1211,10 @@ export function PortableFloatingNav({
                   ref={index === 0 ? firstActionRef : undefined}
                   role="menuitem"
                   style={commonStyle}
-                  title={action.label}
+                  title={__vt(action.label)}
                 >
                   <Icon icon={action.icon} />
-                  <span className="sr-only">{action.label}</span>
+                  <span className="sr-only"><WorkspaceText text={action.label} /></span>
                 </Link>
               );
             }
@@ -1299,8 +1229,8 @@ export function PortableFloatingNav({
                 key={item.action.id}
                 style={commonStyle}
               >
-                <button
-                  aria-label={item.action.label}
+                <SubmitButton
+                  aria-label={__vt(item.action.label)}
                   className={commonClass.replace("absolute ", "")}
                   data-orbit-angle={item.angle.toFixed(2)}
                   data-orbit-radius={item.radius.toFixed(2)}
@@ -1315,12 +1245,13 @@ export function PortableFloatingNav({
                     transitionDuration: commonStyle.transitionDuration,
                     width: "100%",
                   }}
-                  title={item.action.label}
+                  title={__vt(item.action.label)}
+                  pendingLabel=""
                   type="submit"
                 >
                   <Icon icon={item.action.icon} />
-                  <span className="sr-only">{item.action.label}</span>
-                </button>
+                  <span className="sr-only"><WorkspaceText text={item.action.label} /></span>
+                </SubmitButton>
               </form>
             );
           })}

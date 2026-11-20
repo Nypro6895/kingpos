@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "auth-session-missing-rejection-20261020",
+  "status": "ready",
+  "summary": "Keep SDK-confirmed missing sessions unauthenticated instead of inventing an authentication503; unknown400 and real503 still fail closed. Focused implementation validation passed; assembled release build remains required before publication.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/supabase/auth-rest.ts",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/read-backend-profile.test.mjs",
+    "tests/read-deadline-sdk-contract.test.mjs",
+    "tests/app-local-command-backend-trace.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\auth-rejection-cf992a1-source",
+    "commit": "cf992a1e209fe6a9a0e3995cc2a9d917ea4296fd",
+    "snapshotSha256": "070d3c7a59b8dc71baa7f44ccee9285a395e1e88e29d9b47e0bb0f575ac401ed"
+  },
+  "validation": [
+    {
+      "name": "Real SDK baseline reproduced two missing-session failures before the production fix; original red evidence retained",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/auth-rejection-baseline-red-corrected.log"
+    },
+    {
+      "name": "Five explicit auth/read/trace suites:45 passed,0 failed,0 skipped; actual SDK parsing and real server/session unauthenticated paths, unknown400/503 denied",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/auth-rejection-validation.json"
+    },
+    {
+      "name": "ESLint on the six changed source/test files and CRLF-aware Git whitespace check",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/auth-rejection-changed-lint.log"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "id": "ffcdf1d7-97dc-4bd3-b7aa-2b4896744d04",
+  "recordedAt": "2026-10-21T03:52:32.293Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-auth-rejection-20261020",
+  "deletedFiles": [],
+  "fileHashes": {
+    "lib/supabase/auth-rest.ts": "cfef742df9e8c3c32455b53939c57dd10a5bc02f9ac843710f594cd0ceeefe2f",
+    "tests/read-auth-coalescing.test.mjs": "2bdbf7f414a00826fe026e9fa09a3eb7b7c3b586e89151ba7b1c7d488239261e",
+    "tests/experience-auth-availability.test.mjs": "9170f379316a88f1d6fdafad91887ca402d8f7fb7cabab47a2d8e6c02fd56a5e",
+    "tests/read-backend-profile.test.mjs": "45cfa13b8aa27f0165706882ed2bdfdcec2df420cbdb3d7101fb2e5243d69c7c",
+    "tests/read-deadline-sdk-contract.test.mjs": "cfac6f4a6b2e61c5006a5efdf3534d24d80b57f21ec32d5b20b925798a3c443c",
+    "tests/app-local-command-backend-trace.test.mjs": "803a8a8c0b3f97d535b864ac6f1e7352a3c4f5a62e2ba93cf431c9390177d1be"
+  }
+}

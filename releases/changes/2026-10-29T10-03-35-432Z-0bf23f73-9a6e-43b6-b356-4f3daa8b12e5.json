@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "pos-receipt-flow-20261029",
+  "status": "ready",
+  "summary": "POS shared header restored; receipt add line opens services then staff; compact responsive Ticket search. Current Ticket source already has a single toolbar.; latest owner-confirmed top +Add/Reset and bottom Services pencil retained; preserve shipped WorkspaceFrame.; live/physical66 findings repaired: global POS header/remaining viewport and duplicate native Ticket toolbar.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos.css",
+    "app/globals.css",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave67-header-ticket\\frozen-ready",
+    "commit": "d20058a06c0c71a04830346b0ad444657bca2acd"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "3efd8a3b-9f90-4c50-92b4-d4dc522d9e0e"
+  ],
+  "integration": {
+    "originalEvents": [
+      "3efd8a3b-9f90-4c50-92b4-d4dc522d9e0e"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "0bf23f73-9a6e-43b6-b356-4f3daa8b12e5",
+  "recordedAt": "2026-10-29T10:03:35.432Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-pos-client.tsx": "59e480f114123a4745b903e3ad5ba448d7ac0ddc4d9108f526b971e2e2cb187c",
+    "app/pos/owner-pos.css": "f2d85033f8072b4888276435a8e0a19fac293ef7fc829fb5751a498b55a91cbd",
+    "app/globals.css": "2d02721c3234413d07ea0341c24c65636fb0d9b283b79c367486a9a6df82637f",
+    "app/pos/owner-workspace-frame.tsx": "a832f59ac3e050fe9bf25339f9220a9b8a8e75989196453966c07b67af98727a",
+    "app/pos-tickets/ticket-filters.tsx": "caee309f98d69780c3689c7373e7cdddba8354b7d37bc7e39bf217807bc9de1c",
+    "app/pos-tickets/ticket-filters.module.css": "f9ffb5098172bf0af8879f6752447b17a70764aa04c789429dd26fe3875211ed"
+  }
+}

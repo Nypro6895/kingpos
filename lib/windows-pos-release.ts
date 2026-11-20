@@ -1,7 +1,8 @@
 import { readFile, access } from 'node:fs/promises';
 import path from 'node:path';
 
-export async function getWindowsPosRelease() {
+// Internal source locations never enter API responses or share/copy controls.
+export async function getWindowsPosDownloadSource() {
   const downloadUrl = process.env.WINDOWS_POS_DOWNLOAD_URL?.trim();
   const downloadVersion = process.env.WINDOWS_POS_DOWNLOAD_VERSION?.trim();
   if (downloadUrl) {
@@ -23,4 +24,9 @@ export async function getWindowsPosRelease() {
     await access(path.join(process.cwd(), 'public/desktop-updates', filename));
     return { version, href: '/desktop-updates/' + encodeURIComponent(filename), edition };
   } catch { return null; }
+}
+
+export async function getWindowsPosRelease() {
+  const source = await getWindowsPosDownloadSource();
+  return source ? { ...source, href: '/download/windows' } : null;
 }

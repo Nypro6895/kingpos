@@ -1,0 +1,68 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-today-release-20261101\\artifacts\\release\\frozen-integrated",
+    "commit": "42b48f0bdd75b0c93a698c5391481eb9d23d2fec"
+  },
+  "validation": [
+    {
+      "name": "Production build and remote READY candidate",
+      "result": "passed",
+      "evidence": "artifacts/release/build-web-final.txt"
+    },
+    {
+      "name": "Exact 3765 deployed source content hashes",
+      "result": "passed",
+      "evidence": "artifacts/release/candidate-source-verified.json"
+    },
+    {
+      "name": "TypeScript and scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release/typecheck-final.txt"
+    },
+    {
+      "name": "23 integration tests including money aggregation and progressive merge",
+      "result": "passed",
+      "evidence": "artifacts/release/integration-tests.txt"
+    },
+    {
+      "name": "Responsive Statistics chart, pie selector and empty states",
+      "result": "passed",
+      "evidence": "artifacts/release/browser-results.json"
+    },
+    {
+      "name": "Source-bound installed bundle, current and legacy read-only DTO",
+      "result": "passed",
+      "evidence": "artifacts/release/installed-current.txt"
+    }
+  ],
+  "changeId": "today-staff-navigation-20261101",
+  "summary": "Integrated staff-to-day tickets navigation with exact staff selection and changeable staff filter; preserve shipped ticket date/search/calendar behavior.",
+  "files": [
+    "app/(app)/pos-tickets/page.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css"
+  ],
+  "dependencies": [
+    "today-statistics-20261101"
+  ],
+  "id": "69001912-9131-49db-bcaa-431ad28fed95",
+  "recordedAt": "2026-11-01T20:26:12.638Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/pos-tickets/page.tsx": "0e4226b3ac2b5613481ef937eb5807b71aac586fb9830283e637cb75cc10731b",
+    "app/pos-tickets/owner-live-tickets.tsx": "715516d02bc039ea5a30c1f3590489b21340fa12db3ea8d49ea7679b64cf0cdc",
+    "app/staff/today/today-dashboard-view.tsx": "aae171cb1b6166cc380f43a7d7585a206b07abab23d0625af0ed4d9457a7087d",
+    "app/pos-tickets/ticket-filters.tsx": "a09155d4c0f8afcc9693be7261a846f9ec1957faacf27772a58997af99c8793b",
+    "app/pos-tickets/ticket-filters.module.css": "d8d6cde63a2d620cdfe97d3b0fcc54958f1d8ccf6c1119f39476ef6e1a62f9e0"
+  }
+}

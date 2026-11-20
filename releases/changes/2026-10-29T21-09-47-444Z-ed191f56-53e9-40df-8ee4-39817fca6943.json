@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "staff-my-pay-native-integration-20261029",
+  "status": "ready",
+  "summary": "Integrate completed Staff My Pay notice/recorded-evidence disclosure removal on web and bundled native; all amounts and change history preserved",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/my-work/staff-pay-analysis.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029-mypay\\frozen",
+    "commit": "6c46577f58426bd4d31560790abff41d93ad86ef",
+    "integratedFromEvent": "61a9a430-1afd-478b-bc54-0a383a997a1f"
+  },
+  "dependencies": [
+    "staff-my-pay-remove-evidence-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Full production build including TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-mypay/build.log"
+    },
+    {
+      "name": "15 payroll display/change-notice/period checks",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-mypay/tests.log"
+    },
+    {
+      "name": "Scoped ESLint and exact two-line patch review",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-mypay/patch-review.json"
+    }
+  ],
+  "id": "ed191f56-53e9-40df-8ee4-39817fca6943",
+  "recordedAt": "2026-10-29T21:09:47.444Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/staff/my-work/staff-pay-analysis.tsx": "a8e6f958c10eade1764fabd7d2d84793e35d4d556611b8a8192f4059784fb8a5"
+  }
+}

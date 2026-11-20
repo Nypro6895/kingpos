@@ -1,10 +1,12 @@
+import { loadSalonPostAttribution } from "@/lib/salon-post-attribution";
 import "server-only";
 
 import {
   contentBookingOptionKey,
   loadPublicContentBookingOptions,
 } from "@/lib/content-booking";
-import { getAccountSavedPostStateKeys } from "@/lib/account-social";
+import { getPostCommentCounts, getPostCommentCount } from "@/lib/post-comments";
+import { getAccountSavedPostCounts, getAccountSavedPostStateKeys } from "@/lib/account-social";
 import {
   exploreFeedTrustFromDecisionSignals,
   getExploreDecisionSignalsBySalonId,
@@ -126,7 +128,9 @@ function normalizeCursor(
 
   return {
     mediaId: cursor.mediaId,
-    publishedAt: date.toISOString(),
+    // Preserve PostgreSQL microseconds so equal-millisecond posts keep their
+    // exact keyset boundary across requests.
+    publishedAt: cursor.publishedAt,
   };
 }
 
@@ -273,13 +277,15 @@ async function attachInspirationSaveStates(items: ExploreInspirationItem[]) {
   }
 
   try {
-    const savedKeys = await getAccountSavedPostStateKeys(targets);
+    const [savedKeys, loveCounts, commentCounts] = await Promise.all([getAccountSavedPostStateKeys(targets), getAccountSavedPostCounts(targets), getPostCommentCounts(targets)]);
 
     return items.map((item) => ({
       ...item,
+      commentCount: getPostCommentCount(commentCounts, item.saveTarget),
       saveTarget: {
         ...item.saveTarget,
         saved: savedKeys.has(savedPostKey(item.saveTarget)),
+        saveCount: loveCounts.get(savedPostKey(item.saveTarget)) ?? 0,
       },
     }));
   } catch {
@@ -332,9 +338,10 @@ export async function getExploreInspirationPage(input: {
           }
         : null;
     const seenMediaIds = new Set<string>();
-    const operatingStatusMap = await getPublicSalonOperatingStatusesBySalonId(
-      visibleRows.map((row) => row.salon_id),
-    );
+    const [operatingStatusMap, attribution] = await Promise.all([
+      getPublicSalonOperatingStatusesBySalonId(visibleRows.map(row => row.salon_id)),
+      loadSalonPostAttribution(visibleRows.map(row => row.content_id)),
+    ]);
     const items = visibleRows
       .map((row) =>
         mapInspirationRow(
@@ -343,6 +350,7 @@ export async function getExploreInspirationPage(input: {
         ),
       )
       .filter((item): item is ExploreInspirationItem => Boolean(item))
+      .map(item => ({ ...item, authorRole: attribution.get(item.contentId)?.role ?? "salon" as const, authorStaffId: attribution.get(item.contentId)?.staffId ?? null }))
       .filter((item) => {
         if (seenMediaIds.has(item.mediaId)) {
           return false;
@@ -358,7 +366,7 @@ export async function getExploreInspirationPage(input: {
           .filter((item) => !item.salonLogoImageUrl)
           .map((item) => item.salonId),
       }),
-      loadPublicContentBookingOptions(items.map((item) => item.salonId)),
+      loadPublicContentBookingOptions(items.map((item) => item.salonId), null, items.map(item => item.contentId)),
       getExploreDecisionSignalsBySalonId(
         rpc,
         items.map((item) => item.salonId),

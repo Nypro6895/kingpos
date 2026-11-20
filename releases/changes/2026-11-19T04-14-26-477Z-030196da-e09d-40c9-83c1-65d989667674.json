@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "ios-approved-consent-admin-coordination-20261118",
+  "status": "needs-integration",
+  "summary": "Implemented and locally validated both owner-approved interfaces: per-post OpenAI permission for Beauty/Salon and compact admin exact-text Hide/Restore with independent case holds and immutable history. Combined NextR4/runtime parity and actual436-migration acceptance pass. No push/deploy/native upload/Apple writes.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ios-approved-ui-implementation-20261118.md",
+    "docs/ios-approved-ui-acceptance-20261118.json",
+    "releases/changes/2026-11-19T03-36-28-906Z-991785ac-e4d9-4fa0-890d-64a488ad25ff.json"
+  ],
+  "fileHashes": {
+    "docs/ios-approved-ui-implementation-20261118.md": "27618cc1f6668a12ef55a850695d7998caf06046c4cf33dd3fb27f93bfbff325",
+    "docs/ios-approved-ui-acceptance-20261118.json": "43e6c8eba105e0a0547b5e8d2f13ddb6e8e1bebeadb95de0b99fb8d8530127f9",
+    "releases/changes/2026-11-19T03-36-28-906Z-991785ac-e4d9-4fa0-890d-64a488ad25ff.json": "5542216aea725430ad34b7b8d3f9e3fdd6530ce1391003bb3a007fdb990f4ec8"
+  },
+  "source": {
+    "snapshot": "artifacts/ios-approved-ui-20261118/frozen-coordination",
+    "commit": "0f22a7e78d3da4166cabcd2453e54cc719c91b4d",
+    "sha256": "e40546fb841ca93e2d7f4dcaf23338ae7f02d6a8e9d343e885613c8be5078947"
+  },
+  "validation": [
+    {
+      "name": "Consent22/22, adminUI12/12, focused server/permission26/26; zero skips",
+      "result": "passed",
+      "evidence": "docs/ios-approved-ui-implementation-20261118.md"
+    },
+    {
+      "name": "FullSupabase436 migrations;7/7 including actualRPC/RLS and concurrency; executedSQLhash matches source",
+      "result": "passed",
+      "evidence": "artifacts/admin-exact-text-moderation-20261118/acceptance/admin-exact-text-acceptance.json"
+    },
+    {
+      "name": "CombinedNextR4build and5484inputruntime source parity",
+      "result": "passed",
+      "evidence": "artifacts/ios-approved-ui-20261118/build-source-parity-final-r4.json"
+    },
+    {
+      "name": "Three frozen source packs9+7+7 hashes and10 evidence links",
+      "result": "passed",
+      "evidence": "artifacts/ios-approved-ui-20261118/selected-source-files.json"
+    },
+    {
+      "name": "Finalbaseline/pendingreview, hostedmigration/runtime, nativebinary/physical and Apple acceptance",
+      "result": "pending",
+      "evidence": "docs/ios-approved-ui-implementation-20261118.md"
+    }
+  ],
+  "dependencies": [
+    "public-photo-processing-consent-ui-20261118",
+    "admin-exact-text-r2-ui-20261118",
+    "admin-exact-text-moderation-20261118",
+    "openai-photo-live-acceptance-20261118"
+  ],
+  "id": "030196da-e09d-40c9-83c1-65d989667674",
+  "recordedAt": "2026-11-19T04:14:26.477Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

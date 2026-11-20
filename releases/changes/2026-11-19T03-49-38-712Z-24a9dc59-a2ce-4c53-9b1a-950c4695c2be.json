@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "admin-exact-text-r2-ui-20261118",
+  "status": "ready",
+  "summary": "Owner-approved compact exact-text moderation UI r2: one case-scoped content decision, collapsed history/Support handling, versioned same-request recovery and stale authority fencing.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/reports/report-case-view.tsx",
+    "app/(app)/admin/reports/report-case-view.module.css",
+    "app/(app)/admin/reports/social-content-decision.tsx",
+    "tests/admin-exact-text-r2-ui.browser.test.mjs",
+    "tests/fixtures/admin-exact-text-r2-entry.tsx",
+    "tests/social-report-consumer.integration.test.mjs",
+    "docs/admin-exact-text-r2-ui-20261118.md"
+  ],
+  "source": {
+    "commit": "40b1b6e7909f6e50e3372dbf873b814ab4eb1f66",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\admin-exact-text-r2-ui-20261118\\frozen-source"
+  },
+  "validation": [
+    {
+      "name": "Actual-component browser10 scenarios and existing SQL producer/loader/SSR regression (12 Node records, 0 skip)",
+      "result": "passed",
+      "evidence": "artifacts/admin-exact-text-r2-ui-20261118/browser-acceptance.json"
+    },
+    {
+      "name": "ESLint owned product TSX and isolated browser fixture/test",
+      "result": "passed"
+    },
+    {
+      "name": "Visually reviewed390px/1080px captures; 44px controls, no horizontal overflow, no external requests",
+      "result": "passed",
+      "evidence": "artifacts/admin-exact-text-r2-ui-20261118/r2-visible-390.png"
+    },
+    {
+      "name": "Frozen7-file copy and SHA256 equality; documented source/evidence paths exist",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [
+    "admin-exact-text-moderation-20261118"
+  ],
+  "scopeBoundary": "Scoped UI candidate only. Backend migration/types/helper/actions/resolver are separately owned dependency. Coordinator combined Next build/product preview/hosted RLS and device acceptance remain separate; no production/deploy claim. Mounted-session unknown intent only, no hard-reload draft persistence. No provider calls, secrets, realdata, commit/push/deploy.",
+  "id": "24a9dc59-a2ce-4c53-9b1a-950c4695c2be",
+  "recordedAt": "2026-11-19T03:49:38.712Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/admin/reports/report-case-view.tsx": "6667ca6a1e9a328039cdb46aaf44fafddd220f0ab64cc03e47c424273b0bbb08",
+    "app/(app)/admin/reports/report-case-view.module.css": "669a4450e91c0544c24161783af8e415886c73f82568e967f1c514613711592f",
+    "app/(app)/admin/reports/social-content-decision.tsx": "4c44ea50c119bddb86a5408570d33b6ce25fdcb4d7e8f93716b694d53cb8e26a",
+    "tests/admin-exact-text-r2-ui.browser.test.mjs": "55a080cbc22046f61db6ed3d7f82bcc9a60b2f7bf0908b4c35c956edac79c05f",
+    "tests/fixtures/admin-exact-text-r2-entry.tsx": "5dd2dad5375c1d8cf1ff1f300e55c301e5e68a9d52f445e4e58b08ada00b3050",
+    "tests/social-report-consumer.integration.test.mjs": "d948054f4b4f5f3515c5979226c04e0807467f3455bffec326e9fbed578177ba",
+    "docs/admin-exact-text-r2-ui-20261118.md": "58dc176a713446c36c8f5fbd897284ff0ab34ca709f9c316be4f2c381717c4d1"
+  }
+}

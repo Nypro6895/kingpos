@@ -1,4 +1,5 @@
 "use server";
+import {systemSmsReady} from "@/lib/system-sms";
 
 import {
   ACCOUNT_LOGIN_SESSION_COOKIE,
@@ -16,8 +17,13 @@ import {
   createAuthenticatedSupabaseAuthSessionServerClient,
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
+  createUserScopedSupabaseServerClient,
+  getCurrentAppLoginSessionId,
   setSupabaseSessionCookies,
+  validateSupabaseAppSession,
 } from "@/lib/supabase/server";
+import { readMfaAssurance } from "@/lib/supabase/mfa-assurance";
+import type { Session } from "@supabase/supabase-js";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import type { KingUser } from "@/types/user";
 import { createHash, randomBytes } from "node:crypto";
@@ -185,8 +191,7 @@ async function getMutationContext(): Promise<MutationContextResult> {
 }
 
 async function getCurrentSessionId() {
-  const value = (await cookies()).get(ACCOUNT_LOGIN_SESSION_COOKIE)?.value;
-  return isAccountLoginSessionId(value) ? value : null;
+  return getCurrentAppLoginSessionId();
 }
 
 async function clearCurrentSessionCookies() {
@@ -254,15 +259,10 @@ async function revokeCurrentSession(input: {
     return;
   }
 
-  const { error } = await input.supabase
-    .from("account_login_sessions")
-    .update({
-      revoked_at: new Date().toISOString(),
-      revoked_by_user_id: input.user.id,
-    })
-    .eq("id", sessionId)
-    .eq("user_id", input.user.id)
-    .is("revoked_at", null);
+  const { error } = await input.supabase.rpc("revoke_account_login_session", {
+    p_session_id: sessionId,
+    p_scope: "one",
+  });
 
   if (error && !isLoginSecuritySchemaMissing(error)) {
     logSupabaseError("Supabase revoke current login session failed", error, {
@@ -282,15 +282,10 @@ async function revokeOtherSessions(input: {
     return;
   }
 
-  const { error } = await input.supabase
-    .from("account_login_sessions")
-    .update({
-      revoked_at: new Date().toISOString(),
-      revoked_by_user_id: input.user.id,
-    })
-    .eq("user_id", input.user.id)
-    .neq("id", sessionId)
-    .is("revoked_at", null);
+  const { error } = await input.supabase.rpc("revoke_account_login_session", {
+    p_session_id: null,
+    p_scope: "others",
+  });
 
   if (error && !isLoginSecuritySchemaMissing(error)) {
     logSupabaseError("Supabase revoke other login sessions failed", error, {
@@ -304,14 +299,10 @@ async function revokeAllSessions(input: {
   supabase: AuthenticatedSupabaseClient;
   user: KingUser;
 }) {
-  const { error } = await input.supabase
-    .from("account_login_sessions")
-    .update({
-      revoked_at: new Date().toISOString(),
-      revoked_by_user_id: input.user.id,
-    })
-    .eq("user_id", input.user.id)
-    .is("revoked_at", null);
+  const { error } = await input.supabase.rpc("revoke_account_login_session", {
+    p_session_id: null,
+    p_scope: "all",
+  });
 
   if (error && !isLoginSecuritySchemaMissing(error)) {
     logSupabaseError("Supabase revoke all login sessions failed", error, {
@@ -543,17 +534,10 @@ export async function revokeLoginSessionAction(
     return logOutCurrentSessionAction();
   }
 
-  const { data, error } = await context.supabase
-    .from("account_login_sessions")
-    .update({
-      revoked_at: new Date().toISOString(),
-      revoked_by_user_id: context.user.id,
-    })
-    .eq("id", sessionId)
-    .eq("user_id", context.user.id)
-    .is("revoked_at", null)
-    .select("id")
-    .maybeSingle<{ id: string }>();
+  const { data, error } = await context.supabase.rpc("revoke_account_login_session", {
+    p_session_id: sessionId,
+    p_scope: "one",
+  });
 
   if (error) {
     if (isLoginSecuritySchemaMissing(error)) {
@@ -571,12 +555,6 @@ export async function revokeLoginSessionAction(
     return { error: "That session is already logged out." };
   }
 
-  await recordSecurityActivity({
-    activityType: "session_revoked",
-    metadata: { session_id: sessionId },
-    supabase: context.supabase,
-    user: context.user,
-  });
   revalidatePath(LOGIN_SECURITY_PATH);
 
   return {
@@ -593,11 +571,6 @@ export async function logOutCurrentSessionAction(): Promise<LoginSecurityActionR
 
   if (context.ok) {
     await revokeCurrentSession({
-      supabase: context.supabase,
-      user: context.user,
-    });
-    await recordSecurityActivity({
-      activityType: "session_logged_out",
       supabase: context.supabase,
       user: context.user,
     });
@@ -619,17 +592,11 @@ export async function logOutAllSessionsAction(): Promise<LoginSecurityActionResu
   ]);
 
   if (context.ok) {
-    await revokeAllSessions({
-      supabase: context.supabase,
-      user: context.user,
-    });
     await removeTrustedDevices({
       supabase: context.supabase,
       user: context.user,
     });
-    await recordSecurityActivity({
-      activityType: "all_sessions_logged_out",
-      metadata: { trusted_devices_removed: true },
+    await revokeAllSessions({
       supabase: context.supabase,
       user: context.user,
     });
@@ -833,6 +800,19 @@ export async function beginTotpEnrollmentAction(): Promise<TotpEnrollmentActionR
   };
 }
 
+async function promoteVerifiedMfaEnrollment(client: AuthSessionSupabaseClient, session: Session) {
+  const assurance = await readMfaAssurance(client, session.access_token);
+  if (assurance !== "verified") return { error: assurance === "unavailable" ? "Two-factor authentication status could not be checked. Please try again later." : "Two-factor verification is required." };
+  try {
+    if (!await validateSupabaseAppSession(session.access_token)) return { error: "Your session expired. Sign in again." };
+  } catch {
+    return { error: "Your account could not be checked. Please try again later." };
+  }
+  // Promote before any request-scoped audit/guard can see the old AAL1 cookie.
+  await setSupabaseSessionCookies(session);
+  return { error: null, supabase: createUserScopedSupabaseServerClient(session.access_token) };
+}
+
 export async function verifyTotpEnrollmentAction(
   input: ActionInput,
 ): Promise<LoginSecurityActionResult> {
@@ -878,13 +858,14 @@ export async function verifyTotpEnrollmentAction(
     };
   }
 
-  await setSupabaseSessionCookies(verification.data);
+  const promoted = await promoteVerifiedMfaEnrollment(authSupabase, verification.data);
+  if (promoted.error) return { error: promoted.error };
 
-  if (context.ok) {
+  if (context.ok && promoted.supabase) {
     await recordSecurityActivity({
       activityType: "two_factor_enabled",
       metadata: { factor_id: factorId, factor_type: "totp" },
-      supabase: context.supabase,
+      supabase: promoted.supabase,
       user: context.user,
     });
   }
@@ -898,6 +879,7 @@ export async function verifyTotpEnrollmentAction(
 }
 
 export async function beginPhoneMfaEnrollmentAction(): Promise<PhoneMfaEnrollmentActionResult> {
+  if (!(await systemSmsReady('authSms'))) return {error:'System authentication SMS is disabled or not configured.'};
   const context = await getMutationContext();
 
   if (!context.ok) {
@@ -994,13 +976,14 @@ export async function verifyPhoneMfaEnrollmentAction(
     };
   }
 
-  await setSupabaseSessionCookies(verification.data);
+  const promoted = await promoteVerifiedMfaEnrollment(authSupabase, verification.data);
+  if (promoted.error) return { error: promoted.error };
 
-  if (context.ok) {
+  if (context.ok && promoted.supabase) {
     await recordSecurityActivity({
       activityType: "two_factor_phone_enabled",
       metadata: { factor_id: factorId, factor_type: "phone" },
-      supabase: context.supabase,
+      supabase: promoted.supabase,
       user: context.user,
     });
   }

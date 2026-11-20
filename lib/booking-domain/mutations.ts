@@ -204,6 +204,7 @@ export async function createCanonicalBookingForCurrentSalon(
     }
 
     const customerResolution = await resolveBookingCustomer({
+      deferWrites: true,
       actorUserId: context.user.id,
       bookingSource: input.source ?? "owner_manual",
       customer: input.customer,
@@ -225,54 +226,44 @@ export async function createCanonicalBookingForCurrentSalon(
       return lineSnapshots;
     }
 
-    const { data, error } = await context.supabase.rpc("create_canonical_booking", {
-      p_actor_source: "manager",
-      p_confirmation_mode: input.confirmationMode ?? "request_confirmation",
-      p_confirmation_status: defaultConfirmationStatus(input),
-      p_customer_id: customerResolution.data.customer.id,
-      p_customer_user_id: customerResolution.data.customerUserId,
-      p_end_at: input.endAt,
-      p_idempotency_key: input.idempotencyKey ?? null,
-      p_internal_notes: input.internalNotes ?? null,
-      p_lines: lineSnapshots.data,
-      p_overbooking_override_reason: input.overbookingOverrideReason ?? null,
-      p_public_notes: input.publicNotes ?? null,
-      p_salon_id: context.salon.id,
-      p_source: input.source ?? "owner_manual",
-      p_start_at: input.startAt,
-      p_status: defaultStatus(input),
+    const { data: atomicResult, error } = await context.supabase.rpc("create_owner_booking_atomic", {
+      p_customer: {
+        id: customerResolution.data.created ? null : customerResolution.data.customer.id,
+        name: customerResolution.data.customer.name,
+        phone: customerResolution.data.customer.phone,
+        email: customerResolution.data.customer.email,
+        user_id: customerResolution.data.customerUserId,
+      },
+      p_source_reference_type: trimmedOrNull(input.sourceReferenceType),
+      p_source_reference_id: trimmedOrNull(input.sourceReferenceId),
+      p_booking: {
+        p_confirmation_mode: input.confirmationMode ?? "request_confirmation",
+        p_confirmation_status: defaultConfirmationStatus(input),
+        p_end_at: input.endAt,
+        p_idempotency_key: input.idempotencyKey ?? null,
+        p_internal_notes: input.internalNotes ?? null,
+        p_lines: lineSnapshots.data,
+        p_overbooking_override_reason: input.overbookingOverrideReason ?? null,
+        p_public_notes: input.publicNotes ?? null,
+        p_salon_id: context.salon.id,
+        p_source: input.source ?? "owner_manual",
+        p_start_at: input.startAt,
+        p_status: defaultStatus(input),
+      },
     });
 
     if (error) {
       throw error;
     }
 
+    const data = atomicResult?.booking_id;
     if (typeof data !== "string") {
       return bookingFailure("database_error", "Booking RPC returned no id.");
     }
 
-    const sourceReferenceType = trimmedOrNull(input.sourceReferenceType);
-    const sourceReferenceId = trimmedOrNull(input.sourceReferenceId);
-
-    if (sourceReferenceType || sourceReferenceId) {
-      const { error: referenceError } = await context.supabase
-        .from("bookings")
-        .update({
-          source_reference_id: sourceReferenceId,
-          source_reference_type: sourceReferenceType,
-          updated_by_user_id: context.user.id,
-        })
-        .eq("id", data)
-        .eq("salon_id", context.salon.id);
-
-      if (referenceError) {
-        throw referenceError;
-      }
-    }
-
     return bookingOk({
       bookingId: data,
-      customerId: customerResolution.data.customer.id,
+      customerId: atomicResult.customer_id,
       customerUserId: customerResolution.data.customerUserId,
     });
   } catch (error) {

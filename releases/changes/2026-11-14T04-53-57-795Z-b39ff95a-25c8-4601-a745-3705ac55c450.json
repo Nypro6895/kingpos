@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "changeId": "basic-page-loading-wave2-20261113",
+  "status": "needs-integration",
+  "summary": "My Place streams admitted workspaces before optional readers; Services keeps safe toolbar while scoped data loads; Notifications keeps header/filter with existing guarded feed/cache. Preserve authority, drafts and actions; local build and98checks passed.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/my-place/page.tsx",
+    "app/(app)/notifications/page.tsx",
+    "app/(app)/services/page.tsx",
+    "app/my-place/my-place-client.tsx",
+    "app/my-place/place-ui.tsx",
+    "app/notifications/notification-center-client.tsx",
+    "app/services/services-manager.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-personal-metadata.ts",
+    "lib/app-local-personal-registry.tsx",
+    "lib/app-local-platform-types.ts",
+    "app/(app)/services/loading.tsx",
+    "app/notifications/notification-center-frame.tsx",
+    "tests/basic-my-place-loading.test.mjs",
+    "tests/basic-page-wave2-native.test.mjs",
+    "tests/notifications-loading-runtime.test.mjs",
+    "tests/services-loading-runtime.test.mjs",
+    "docs/basic-page-loading-wave2-20261113.txt",
+    "releases/changes/2026-11-14T04-40-58-715Z-2ec6d55a-e789-447a-b543-c1c2522b49c9.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\basic-page-loading-wave2-20261113\\artifacts\\basic-page-loading-wave2\\frozen",
+    "commit": "783751346970106168789c62a230f55482786b48",
+    "aggregateSha256": "c43a6770512606213a8e51aa5a3aab3905bf7ab49a9fba66f3f1cd71dbfae3fc"
+  },
+  "validation": [
+    {
+      "name": "Assembled scoped/runtime/regression checks",
+      "result": "passed",
+      "evidence": "98/98; artifacts/basic-page-loading-wave2/targeted-tests.log"
+    },
+    {
+      "name": "Production Next build, TypeScript, offline manifest",
+      "result": "passed",
+      "evidence": "569assets/11552311bytes; artifacts/basic-page-loading-wave2/build.log"
+    },
+    {
+      "name": "Actual local Next role route checks",
+      "result": "passed",
+      "evidence": "13visits Guest/Personal/Staff/Owner; expected guest/workspace guards;0pageerrors/overflow; artifacts/basic-page-loading-wave2/actual-qa-accepted/page-results.json"
+    },
+    {
+      "name": "Native bundle verify-only",
+      "result": "passed",
+      "evidence": "Safari16;403pinnedactions;1007modules;0unsupported;assetsWritten:false"
+    },
+    {
+      "name": "Scoped lint and diff",
+      "result": "passed",
+      "evidence": "17files;0errors;1byte-identical pre-existing Services effect warning; artifacts/basic-page-loading-wave2/lint.log"
+    },
+    {
+      "name": "Independent intent/impact and draft/privacy review",
+      "result": "passed",
+      "evidence": "Profile unknown-refresh draft and cold Viewed falseempty regressions corrected/tested; docs/basic-page-loading-wave2-20261113.txt"
+    },
+    {
+      "name": "Broader existing Settings fixture",
+      "result": "failed",
+      "evidence": "Unchanged Booking fixture omits setup.services and fails BookingSetupGuide before Services; scoped tests/build pass; documented in report."
+    },
+    {
+      "name": "Current production/native baseline integration and distribution",
+      "result": "pending",
+      "evidence": "No deploy/upload/device acceptance; native imported bundled JS changed and requires rebuilt bundle/app assessment during authorized release."
+    }
+  ],
+  "dependencies": [
+    "basic-page-loading-20261113"
+  ],
+  "id": "b39ff95a-25c8-4601-a745-3705ac55c450",
+  "recordedAt": "2026-11-14T04:53:57.795Z",
+  "worktree": "C:\\Reylumi-worktrees\\basic-page-loading-wave2-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

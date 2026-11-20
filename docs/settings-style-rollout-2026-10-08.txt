@@ -1,0 +1,25 @@
+THỐNG NHẤT STYLE SETTINGS — 2026-10-08
+
+Style chung: components/settings-style.css, tải từ app/(app)/layout.tsx.
+Chỉ vùng có class settings-style tham gia, không đổi toàn bộ giao diện nghiệp vụ.
+Tiêu đề 21px desktop/20px mobile, nhóm 18px/14px; nền mở, đường phân cách mảnh, active xanh #edf5ef với chữ #35634e. Input, preview ảnh, bảng dữ liệu, modal backdrop, cảnh báo đỏ/vàng giữ chức năng riêng.
+
+Các route đã áp dụng:
+/account; /salon-settings; /pos/settings; /settings/login-security;
+/settings/recovery-back-office (route hỗ trợ cũ có kiểm tra quyền);
+/admin/settings; /admin/settings/twilio; /admin/settings/support-email; /admin/recovery.
+
+Các phần thiết lập nhúng:
+Account profile/contact; DirectSettingsPanel (salon, Booking, staff, payroll, POS, ownership, closure, shortcuts); Notifications; Personal public profile; Connections; Add salon; Security quick editor; Recovery panel; AllSettingsClient cũ; POS group forms/device download/customer display setup; Staff Booking settings; Staff Profile drawer/editor; Quick Access; payroll cycle/staff inline settings; availability; salon ownership/public team/lifecycle.
+Beauty profile editor và Salon Profile Studio chỉ áp dụng vào vùng chỉnh sửa, không thay đổi trang hồ sơ công khai.
+Chi tiết 32 module/42 nhánh render ban đầu: artifacts/settings-live-audit-2026-10-08/settings-style-inventory.json. Thêm 2 vùng editor Beauty/Salon Studio, tổng 34 module.
+
+Kiểm tra:
+TypeScript toàn dự án: pass. ESLint trên 34 module được chỉnh: pass.
+57 kiểm tra về Settings, security, Twilio, Staff Profile, Quick Access, payroll access: pass, không skip.
+Một lượt kiểm tra mở rộng Beauty có lỗi hợp đồng cũ: test kỳ vọng nhãn 'More post actions' không có trong source hiện tại. Chỉnh sửa của đợt này ở file đó chỉ thêm class settings-style vào form chỉnh hồ sơ, không liên quan menu bài đăng. Không sửa tính năng bài đăng để vượt test.
+Test staff payroll cần PGLITE_MODULE_PATH; chạy lại với đường dẫn dependency đúng đã pass.
+3 UI tests Settings cũ được repo đánh dấu skip; không tính chúng là kiểm tra thành công.
+Đã quan sát style trực tiếp trong Settings/security và Admin/settings. Chưa xác nhận mọi role và mọi nhánh save/backend trong phiên này. Không lưu cấu hình hay thay đổi quyền/dữ liệu.
+
+Đợt này thay đổi giao diện; không di chuyển quyền admin về Settings người dùng, không thay đổi server actions, khóa xung đột POS, xác thực Twilio, hay hợp đồng lưu theo salon/user.

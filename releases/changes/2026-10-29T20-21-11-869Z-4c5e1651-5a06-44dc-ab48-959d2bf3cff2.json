@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "pos-status-main-only-20261029",
+  "status": "ready",
+  "summary": "Complete latest Owner instruction: sync status only on primary POS toolbar; Portable pages keep synchronization mounted but hidden, native Owner navigation removes duplicate status while retained checkout keeps original syncing",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/portable/portable-sync-indicator.tsx",
+    "app/pos/portable/portable-workspace-tabs.tsx",
+    "app/local-app/entry.tsx",
+    "tests/pos-status-main-only-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029-status\\frozen-overlay",
+    "integratedFromEvent": "ec4c0299-5a38-4c74-a3d1-a2781070dfe1",
+    "baseCommit": "de99b2fede4745a784a7a8383c70ab496436ed86"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-status/build.log"
+    },
+    {
+      "name": "Actual status component browser: healthy hidden, offline/attention visible only when permitted, invisible mode still syncs, main route query/hash support",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-status/tests.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-status/lint.log"
+    }
+  ],
+  "id": "4c5e1651-5a06-44dc-ab48-959d2bf3cff2",
+  "recordedAt": "2026-10-29T20:21:11.869Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos/portable/portable-sync-indicator.tsx": "15c1b360cc70ad04fd93de463c6eb02b5776ddbc2e12bff64661cd524af61a29",
+    "app/pos/portable/portable-workspace-tabs.tsx": "0b08af0b79e411d33067b7506934e1d3d91bf674c05aba8315cc7ca038db157e",
+    "app/local-app/entry.tsx": "d583f0ad74459d5ad1e05068beaa549c9c7dd2626591f3f673739ae060bc7948",
+    "tests/pos-status-main-only-ui.test.mjs": "06a61f2f1e23d5264c6b31f871f673b86e7e82ceb7d26642c47b882ab2912fac"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "customer-display-small-window-20261026",
+  "status": "ready",
+  "summary": "Completed small-window Customer Display layout and concise tip amounts; preserve large layout; integrate scoped patch into release baseline; reconciled with current live source and combined fixes",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/customer-display-responsive.css",
+    "tests/customer-display-tip-format.test.mjs",
+    "tests/fixtures/customer-display-responsive-preview.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\all-recent-chats-20261026\\frozen"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Clean production build and full TypeScript",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/build.log"
+    },
+    {
+      "name": "Integrated browser/unit suites and 26 complete-schema database tests",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r2.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r3.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/pos-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/db-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/display-browser.json"
+      ]
+    },
+    {
+      "name": "Windows installer build, packaged updater SHA512/cache/corrupt-rejection and Help menu",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/windows-build-fixed.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/packaged-runtime.stdout",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/desktop-tests.log"
+      ]
+    }
+  ],
+  "integration": {
+    "producerEventId": "dfb13018-88bf-476a-9089-cae3c334c60a",
+    "baselineDeploymentId": "dpl_GUQtNqU69KygUkpE8C9W4eVWpAEq",
+    "notes": "Preserve shipped owner workspace recovery, action feedback, offline safeguards, Report and flat UI. Adaptive category tiles supersede the earlier folder presentation. Help uses shipped server language/session architecture. Windows Help ships in rebuilt 0.7.3. Database backfill awaits action-time confirmation; ready source is not publication."
+  },
+  "id": "f16755c8-d5d7-40a4-bc78-e9eb80532ae5",
+  "recordedAt": "2026-10-26T23:55:43.584Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "app/pos/customer-display/customer-display-client.tsx": "ad1ad213672d66bd2837b8894a306794a04c40469eb1ae78e9a4c38279147901",
+    "app/pos/customer-display/customer-display-responsive.css": "f1c026f6c51629ed2fc0566bcffa9e29938e6400b83baafb8b20e7666f308328",
+    "tests/customer-display-tip-format.test.mjs": "07532cfdbc3ada702f66710976e693bd940d12fafc6f780735ee50413d2915bd",
+    "tests/fixtures/customer-display-responsive-preview.mjs": "ce61409781097a83667a29beab11c8db0380290d494a7f3ba459a3ab34a659fb"
+  }
+}

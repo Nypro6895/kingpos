@@ -1,0 +1,84 @@
+REYLUMI — KIỂM TRA QUY TRÌNH PLUGIN VÀ ADMIN MARKET
+Ngày 09/10/2026
+
+Phạm vi
+Rà soát Market, Booking Rules làm luồng tham chiếu, Vietnamese Language,
+Check-in Receipt, Booking Deposit, cài đặt admin và callback thanh toán.
+Campaigns/credit và Payroll Data Download được kiểm tra về cách phân loại;
+không chứng nhận lại toàn bộ cơ chế quảng cáo hoặc xuất payroll trong lần này.
+
+Tình trạng production đã đọc trực tiếp
+- Market subscription checkout: enabled=false.
+- Booking Deposit testing: enabled=true (không thu tiền).
+- Vietnamese Language: published=true.
+- Ngân hàng/giá/thuế/phí mới vẫn là draft; chưa có đối soát chuyển khoản.
+Vì vậy chưa thể khẳng định một khoản thanh toán thật đã đi hết vòng đời.
+Kiểm thử billing dùng Stripe fixtures; UI tests dùng action sandbox, không tạo
+thuê bao thật, không sửa giá hoặc thông tin ngân hàng trên production.
+
+Các lỗi đã sửa
+1. Check-in Receipt trước đây chỉ kiểm tra subscription active. Bây giờ cần
+   latest_invoice.status=paid và kỳ hợp lệ trước khi cấp paid_until.
+2. Khi receipt subscription canceled, xóa liên kết thuê bao đã kết thúc,
+   reset checkout và tạo reservation UUID mới, để lần mua sau không tái dùng
+   idempotency key của một phiên cũ.
+3. Callback hủy cũ không được xóa reservation mới. Paid period được giữ đến
+   deadline nếu hóa đơn đã trả; past_due/incomplete không cấp quyền mới.
+4. Vietnamese đồng nhất cách giữ kỳ đã thanh toán khi hủy với plugin khác.
+5. Bốn checkout chặn đăng ký mới khi khách còn prepaid access, tránh trả tiền
+   hai lần cho cùng thời gian. Portal quản lý thuê bao vẫn mở khi checkout tắt.
+6. My features vẫn giữ các plugin còn subscription dù mất active access, để
+   khách tìm lại nơi sửa payment method/hủy. Gỡ Booking Deposit hiển thị rõ
+   việc gỡ chức năng không tự hủy recurring billing.
+7. Market nhận diện checkout đang tắt; nút mua bị khóa, gói miễn phí/trial và
+   quản lý thuê bao còn dùng được. Redirect thành công chỉ báo đang xác minh,
+   không dùng query parameter để cấp quyền.
+8. Plugin concept dùng “View availability”, tránh hứa “Add” khi chưa phát triển.
+9. Admin form chia ba nhóm: ngân hàng, giá, thuế/phí; tên plugin dễ đọc, hiện
+   giá đang dùng bên cạnh giá dự kiến; bảng preview tổng tiền cập nhật trực tiếp.
+10. Khi admin lưu bản mới, form remount theo version để không gửi version mới
+    cùng các giá default cũ. Backend tiếp tục chống stale version và race update.
+11. Service Relay được hiển thị Published trong danh sách admin như hiện trạng.
+
+Luồng Booking Rules tham chiếu
+- Owner chọn đúng salon active; người không có quyền không được lưu/mua.
+- Có thể lưu draft trước khi mua; chỉ nội dung published và paid access mới
+  hiện cho khách trên booking page. Draft được giữ khi hết quyền.
+- Nếu checkout tắt: vẫn lưu draft, thấy lý do, không mở mua.
+- Nếu checkout bật: reuse phiên open; phiên complete chờ callback xác nhận.
+- Stripe invoice paid + đúng giá USD/tháng + đúng salon/payer => quyền sử dụng.
+- Invoice chưa trả/past_due => không cấp quyền; My features dẫn về quản lý bill.
+- Hủy gia hạn qua portal; chỉ dùng hết kỳ đã trả, không tự đổi giá hiện có.
+- Sau khi kỳ đã trả kết thúc, có thể mua lại với reservation mới.
+
+Kiểm chứng
+- Tests tính tiền, chữ ký webhook, giá/kỳ/currency, invoice paid/unpaid,
+  cancellation replay, quyền salon/payer, session open/complete, idempotency.
+- SQL integration: publication cần paid entitlement; draft sống qua expiry;
+  receipt entitlement/queue/scan isolation. Migration giữ contract hiện có.
+- Admin action tests: quyền platform owner, giá không hợp lệ, version cũ,
+  update race, audit không chứa bank account.
+- Browser sandbox 1280px và 390px: preview 5.90 + tax 8% + fee 2% + 0.30
+  = 6.79; lưu draft; chặn tỷ lệ >100; save rules; nút mua/portal phù hợp trạng
+  thái; không tràn ngang. Đã xem hình desktop và mobile.
+
+Các điều kiện còn thiếu để gọi là quy trình thanh toán hoàn chỉnh
+- Chuyển khoản: order snapshot, reference, bank receipt, reconciliation,
+  allocation/idempotency, missing/extra/late money, invoice, refund.
+- Tax theo địa điểm và loại dịch vụ; fee policy theo phương thức. Giá nháp
+  không phải hợp đồng có hiệu lực và chưa được dùng trong checkout.
+- Refund/dispute cần ledger và chính sách entitlement; callback hiện chưa xử lý
+  đầy đủ các sự kiện này. Không xem invoice paid là bằng chứng chưa bị refund.
+- Cần chạy kịch bản Stripe sandbox thật từ checkout đến renewal/failure/cancel
+  trước khi bật thu tiền. Chưa dùng thẻ hoặc nhận tiền thật trong lần audit này.
+- Đồng bộ webhook hiện đọc current state tránh thứ tự event cũ, nhưng update
+  các bảng subscription chưa dùng optimistic locking đầy đủ giữa các webhook
+  concurrent; cần transaction/event ledger nếu mở billing quy mô production.
+- Chủ mới/payer cũ: chưa có workflow chuyển quyền payer; không tự chuyển bill.
+- Lưu cấu hình và audit là hai thao tác; lỗi audit hiện cảnh báo sau khi lưu.
+  Để audit bắt buộc và atomic, cần chuyển save settings vào một DB transaction.
+
+Tài liệu Stripe đã đối chiếu
+https://docs.stripe.com/billing/subscriptions/webhooks
+https://docs.stripe.com/billing/subscriptions/cancel
+https://docs.stripe.com/api/checkout/sessions/create

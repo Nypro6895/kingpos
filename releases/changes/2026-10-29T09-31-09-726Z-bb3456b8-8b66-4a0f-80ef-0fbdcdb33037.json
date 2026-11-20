@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "iphone-ui-audit-20261029",
+  "status": "ready",
+  "summary": "Three isolated UI corrections after physical iPhone audit: report SVG viewport height, booking time separator, and standalone mobile Services canvas. Major layout proposals remain unapproved.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/reports/reports.module.css",
+    "app/services/services.css",
+    "app/(app)/my-bookings/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integration": {
+    "originalEvents": [
+      "5a4f7522-2a1c-410b-ae67-c681d9bbc69d"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "bb3456b8-8b66-4a0f-80ef-0fbdcdb33037",
+  "recordedAt": "2026-10-29T09:31:09.726Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/reports/reports.module.css": "c93bdba806023599f91b986fefcc55af7c8c9bce96b5927446f06081bf946058",
+    "app/services/services.css": "d4bd95b1ffb2122bb8e0ebf3977075edaf165cc47cde51d0e681be61a344cae4",
+    "app/(app)/my-bookings/page.tsx": "35b4e3c8d5a7e91bcf37da84f5f8b8e112fdf018693e716ae54e8787dfaadb08"
+  }
+}

@@ -1,0 +1,98 @@
+EXPERIENCE RELOAD LOOP FIX — 2026-10-15
+
+Production source baseline
+dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6, commit 34ea63589e7e8caf5718bf4ffe54e403eab6775a.
+The release preserves the existing Explore routes/providers, payments, privacy,
+admin features and native source. Release hashes and exact selected journal
+events are recorded in artifacts/reload-fix-20261015/release-receipt.json.
+
+Cause and history
+The preceding progressive-cache implementation added an authorization gate for
+retained React Activity pages. Its fetch monitor treated every POST and Server
+Action as a mutation. Read actions invoked by ExploreSalonLove and the delayed
+OwnerCampaignRuntime therefore hid the Activity, stopped its effects, then
+restarted those same reads after validation. Telemetry POST requests could also
+invalidate the entire cache. The original source reproduced 14 effect cleanup
+cycles in 3.2 seconds, and three delayed campaign cycles in 7.2 seconds.
+These cycles often looked like a document reload even with an unchanged session.
+Real reload paths for identity, permission and resource-access changes also
+lacked a persistent bound across documents.
+
+Correction
+- Read actions and passive search/delivery/telemetry POSTs do not invalidate
+  retained page state. Actual Server Action changes use Next 16.2's revalidation
+  response signal; explicit server data/scope hints remain supported.
+- Data writes refresh resources in the active account scope and recheck current
+  grants without hiding an already authorized page. Settings and service-relay
+  writes explicitly revalidate their affected retained views after success.
+- A pre-save context response cannot authorize post-save state. Responses from
+  disposed/old session fetch wrappers cannot invalidate a new session. Nested
+  admin and ordinary providers both recheck their own grant fingerprints.
+- Foreground, account, permission and access-rejection gates remain fail closed.
+  Network failures retain bounded retries and a usable retry action.
+- Automatic document recovery is limited across documents using session storage.
+  Repeated or unpersistable recovery keeps protected content hidden and offers
+  an explicit Reload button. The limiter stores only time and reason.
+
+Validation evidence
+The release folder contains the exact build and test source; artifacts include:
+- production-build.log and lint-final.log
+- web-ui-regressions-chromium-final.tap
+- native-validation/final-reload-loop-webkit-90s-v2.tap
+- response-policy-settings-regressions.tap
+- claim-settings-relay-final-tests.log
+- validation-main.json plus validation-workspace.json for the claim-import
+  fixture adaptation (workspace authorization expectations are unchanged)
+- validation-regression.json
+- browser-validation.json and its final browser logs
+- final-build-browser-validation.json: final assembled build cug6GJRTWuDOiOajuoEB4,
+  Chromium 3/3 and WebKit 3/3 normal navigation/retention/credential checks;
+  production build and TypeScript passed with 220 generated routes.
+- native-validation/assessment.json and the pinned simulator CI evidence
+
+Checks cover actual production React with retained DOM/input/scroll, live data
+refresh, background readers, delayed responses, concurrent writes, nested scopes,
+offline/transient failures, logout, 401/403/409 access rejection, manual recovery,
+and unavailable/corrupt recovery storage. Built-app browser navigation also
+checks sensitive forms are cleared rather than retained.
+
+Separate existing stress limitation
+Normal built navigation/retained-state/credential tests pass in WebKit (3/3).
+The artificial test that withholds the HTTP response EOF remains intermittent:
+the fixed paired sample reproduced a stall on the exact baseline as well as
+the candidate, before Next bootstrap/React hydration, with no fetches, cache
+events or Activity hiding. Both become ready after EOF is released. That
+startup stress test is not marked passed; see bounded-held-tail-comparison.json.
+
+Native compatibility
+All 14 native source/assets match the actually uploaded iOS 1.0.1 (14.1), commit
+cc53062ca58795e37ab62269655bea73f4902241. This is a compatible hosted web fix:
+no Swift, bundled bridge, permissions, signing or distribution changes. Native
+test-only CI is pinned separately and is not a new TestFlight/App Store upload.
+Physical iPhone testing is not claimed; exact environments are in the evidence.
+Actual iPhone 17 Pro Simulator / iOS 26.2 WKWebView validation and the unsigned
+unchanged production native archive passed in run 38775495497, commit
+26a50ecc664842ee5f8cf425c04022ea80fe12f3. Test transport is simulated. Automatic
+reload intent is intercepted, then the next document is loaded manually in the
+same WKWebView to verify the persistent recovery budget. The HTTP fixture does
+not exercise the HTTPS-only native startup handshake. Source hashes, launch
+token, artifact digest and completed assertions are in simulator-final-result.json.
+
+Coordinated release scope
+The previously completed, frozen salon claim lookup/create events are integrated
+under docs/release-policy.txt. Their selected SQL migration adds three indexes
+and an equivalent indexed lookup function; production data and execute grants
+are unchanged. Local comparison used the captured live function (206 cases),
+and live readback verified indexes, privileges and an authenticated empty probe.
+Workspace switching uses the existing guarded /workspace/open document handoff
+in the assembled source. Actual built-app password login, desktop/mobile,
+My Place and QuickPanel handoffs, foreign/forbidden workspace denial, revoked
+membership and logout checks passed (10/10) against disposable GoTrue/PostgREST.
+Production data was not used. See workspace-switch-validation/real-auth-smoke.json.
+Publication selects its exact READY event; workspace-switch-integration.json
+binds the frozen files and validation to that event. The existing native app
+accepts this same-origin document navigation without a bridge/configuration update.
+Booking privacy has passed isolated Auth/RLS and loader checks, but its access
+dependency, assembled browser verification and staged database/web rollout
+remain incomplete. Booking notification review is still working. These changes
+and their database migrations are not selected for the reload release.

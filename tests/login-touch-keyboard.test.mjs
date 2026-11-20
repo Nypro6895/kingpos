@@ -1,3 +1,4 @@
+import {deviceSettingsFixture} from './helpers/device-settings-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -7,13 +8,13 @@ const require = createRequire(import.meta.url);
 const { build } = require(process.env.ESBUILD_MODULE_PATH || 'esbuild');
 const { chromium } = require('playwright-core');
 
-test('Windows login keyboard enters credentials and MFA; browser login keeps native input', async () => {
+test('Windows login defaults to native input and can enable a persisted supplemental keyboard for credentials and MFA', async () => {
   const result = await build({
     stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LoginForm}from'./app/login/login-form';createRoot(document.getElementById('root')).render(<LoginForm/>);`, resolveDir: process.cwd(), loader: 'tsx' },
     bundle: true, write: false, outdir: 'out', jsx: 'automatic', loader: { '.css': 'css' },
-    plugins: [{ name: 'next-test', setup(builder) {
+    plugins: [deviceSettingsFixture(),{ name: 'next-test', setup(builder) {
       builder.onResolve({ filter: /^next\/(link|navigation)$/ }, args => ({ path: args.path, namespace: 'next-test' }));
-      builder.onLoad({ filter: /.*/, namespace: 'next-test' }, args => ({ contents: args.path === 'next/link' ? `import React from 'react';export default function Link(p){return <a {...p}/>}` : `export const useRouter=()=>({push(){},refresh(){}});`, loader: 'jsx', resolveDir: process.cwd() }));
+      builder.onLoad({ filter: /.*/, namespace: 'next-test' }, args => ({ contents: args.path === 'next/link' ? `import React from 'react';export default function Link(p){return <a {...p}/>}` : `export const useRouter=()=>({push(){},refresh(){}});export const usePathname=()=>'/login';`, loader: 'jsx', resolveDir: process.cwd() }));
     } }],
   });
   const js = result.outputFiles.find(file => file.path.endsWith('.js')).text;
@@ -33,11 +34,16 @@ test('Windows login keyboard enters credentials and MFA; browser login keeps nat
       await page.goto(`http://127.0.0.1:${server.address().port}`);
       const keyboard = page.getByRole('group', { name: 'Touch keyboard' });
       await page.getByLabel('Email', { exact: true }).click();
+      assert.equal(await keyboard.count(), 0);
       if (!desktop) {
         assert.equal(await keyboard.count(), 0);
         await page.close();
         continue;
       }
+      await page.getByRole('button', { name: 'Device settings', exact: true }).click();
+      await page.getByLabel('Keyboard').check();
+      await page.getByRole('dialog').getByRole('button', { name: 'Close settings', exact: true }).click();
+      await page.getByLabel('Email', { exact: true }).click();
       const key = name => keyboard.getByRole('button', { name, exact: true }).click();
       await key('a'); await key('123 / @'); await key('@'); await key('ABC');
       await key('b'); await key('123 / @'); await key('.'); await key('ABC');

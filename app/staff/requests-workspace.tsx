@@ -3,7 +3,7 @@
 import {
   createContext,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useState,
   useTransition,
   type ReactNode,
@@ -43,7 +43,7 @@ export function RequestForm({
 function RequestFormContents({ children }: { children: ReactNode }) {
   const { pending } = useFormStatus();
   const setDrawerBusy = useContext(BusyContext);
-  useEffect(() => {
+  useLayoutEffect(() => {
     setDrawerBusy?.(pending);
     return () => setDrawerBusy?.(false);
   }, [pending, setDrawerBusy]);

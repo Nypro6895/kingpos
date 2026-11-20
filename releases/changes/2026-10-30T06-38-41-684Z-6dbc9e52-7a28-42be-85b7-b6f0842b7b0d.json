@@ -1,0 +1,101 @@
+{
+  "kind": "change",
+  "changeId": "full-release-excluding-market-20261030",
+  "status": "working",
+  "summary": "Owner authorized combined web/Portable hosted/iOS release; integrate profile, Beauty and salon QR; preserve financial logic; Market excluded",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/salon-profile/salon-website-header.module.css",
+    "app/salon-profile/salon-website-home.module.css",
+    "app/salon-profile/salon-website-home.tsx",
+    "app/settings/profile-layout-thumbnail.module.css",
+    "app/settings/profile-layout-thumbnail.tsx",
+    "app/settings/salon-profile-preferences-panel.tsx",
+    "docs/profile-layout-defaults-20261029.md",
+    "lib/salon-website-images.ts",
+    "public/images/profile-defaults/botanical-welcome.webp",
+    "public/images/profile-defaults/thumbnail-nails-01.webp",
+    "public/images/profile-defaults/thumbnail-nails-02.webp",
+    "public/images/profile-defaults/thumbnail-nails-03.webp",
+    "public/images/profile-defaults/thumbnail-nails-04.webp",
+    "tests/profile-layout-defaults.test.mjs",
+    "tests/salon-website-layouts.test.mjs",
+    "app/pos/customer-display/customer-idle-screen.css",
+    "app/service-relay/customer-entry-qr.tsx",
+    ".env.example",
+    "app/api/service-relay/entry/route.ts",
+    "app/check-in/[entry]/page.tsx",
+    "app/qr/actions.ts",
+    "app/.well-known/apple-app-site-association/route.ts",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Reylumi.entitlements",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "ios/project.yml",
+    "proxy.ts",
+    "supabase/migrations/20261030041000_basic_personal_camera_checkin.sql",
+    "tests/basic-personal-camera-checkin.integration.test.mjs",
+    "tests/personal-camera-landing.test.mjs",
+    "docs/implementation/personal-camera-qr-20261029.md",
+    "app/(app)/beauty/library/page.tsx",
+    "app/(app)/beauty/page.tsx",
+    "app/(app)/more/page.tsx",
+    "app/account/actions.ts",
+    "app/activity/customer-merge-actions.ts",
+    "app/api/images/normalize/route.ts",
+    "app/beauty/actions.ts",
+    "app/beauty/beauty-appointment.tsx",
+    "app/beauty/beauty-home-favorites.tsx",
+    "app/beauty/beauty-home-icon.tsx",
+    "app/beauty/beauty-home.css",
+    "app/beauty/beauty-home.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/beauty/beauty-quick-qr.tsx",
+    "app/customers/actions.ts",
+    "app/navigation-shell.tsx",
+    "app/post-comments/actions.ts",
+    "app/post-moderation/actions.ts",
+    "app/role-navigation.ts",
+    "docs/beauty-shortcut-home-20261029.txt",
+    "tests/beauty-home-ui.test.mjs",
+    "components/app-local-more.tsx",
+    "lib/app-local-personal-registry.tsx",
+    "lib/app-local-personal-metadata.ts",
+    "lib/app-local-personal-resources-server.ts"
+  ],
+  "dependencies": [
+    "profile-layout-defaults-20261029",
+    "customer-display-qr-fallback-20261029",
+    "personal-qr-camera-20261029",
+    "beauty-shortcut-home-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Assembled production build, signed native, hosted and device acceptance",
+      "result": "pending"
+    }
+  ],
+  "heldScopes": [
+    {
+      "changeId": "digital-gift-card-20261029",
+      "reason": "Canonical financial reconciliation and existing POS payment confirmation unresolved in producer handoff; preserve service/tip/Staff inputs; no activation"
+    },
+    {
+      "changeId": "rewardlumi-unified-20261029",
+      "reason": "Depends on final reconciled Gift Card; overlapping gift migration and payment flow require combined financial acceptance"
+    }
+  ],
+  "source": {
+    "snapshot": "artifacts/release-20261030/frozen-source"
+  },
+  "id": "6dbc9e52-7a28-42be-85b7-b6f0842b7b0d",
+  "recordedAt": "2026-10-30T06:38:41.684Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

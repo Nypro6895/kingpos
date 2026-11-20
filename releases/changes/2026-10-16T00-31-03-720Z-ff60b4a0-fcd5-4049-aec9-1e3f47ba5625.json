@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "daily-closing-saving-20261015",
+  "status": "working",
+  "channels": [
+    "web"
+  ],
+  "summary": "Minimal Daily Closing UI recovery using existing Owner action and Portable RPC. Review payroll/report/export/realtime dependencies; no new SQL, RPC, write API, automatic resend, or production change.",
+  "files": [
+    "app/(app)/reports/page.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/pos/portable/report/portable-report-closing-form.tsx",
+    "app/pos/portable/actions.ts",
+    "app/api/pos/owner/reports/route.ts",
+    "lib/daily-pos-report.ts",
+    "lib/daily-closing-input.ts",
+    "lib/daily-closing-save.ts",
+    "app/reports/closing-save-notice.tsx",
+    "tests/daily-closing-input.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-20261016\\candidate",
+    "commit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f"
+  },
+  "validation": [
+    {
+      "name": "Existing save/read dependencies, browser recovery, downstream payroll/report fixtures",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "ff60b4a0-fcd5-4049-aec9-1e3f47ba5625",
+  "recordedAt": "2026-10-16T00:31:03.720Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

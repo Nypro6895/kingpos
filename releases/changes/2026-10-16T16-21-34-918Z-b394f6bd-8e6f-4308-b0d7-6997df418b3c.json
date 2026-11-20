@@ -1,0 +1,37 @@
+{
+  "status": "working",
+  "summary": "Reuse unchanged Explore page helpers and real Explore client in installed local UI with exact original search/feed/area read transports",
+  "kind": "change",
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "changeId": "app-local-explore-20261016",
+  "validation": [
+    {
+      "name": "Explore original helper equivalence, scoped transport and real client controls",
+      "result": "pending"
+    }
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "files": [
+    "app/(app)/explore/page.tsx",
+    "lib/explore-page-resource-server.ts",
+    "lib/app-local-explore-registry.tsx",
+    "lib/app-local-explore-server.ts",
+    "lib/app-local-explore-http-client.ts",
+    "lib/app-local-explore-metadata.ts",
+    "tests/app-local-explore.test.mjs",
+    "tests/app-local-explore-ui.test.mjs"
+  ],
+  "id": "b394f6bd-8e6f-4308-b0d7-6997df418b3c",
+  "recordedAt": "2026-10-16T16:21:34.918Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

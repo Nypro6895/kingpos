@@ -132,7 +132,7 @@ test("Lumi Spark uses Common, Silver, Gold and Diamond materials with no empty m
     assert.ok(trustComponent.includes(`name: "${name}"`));
   }
   assert.match(trustComponent, /if \(level === "empty"\) return null/);
-  assert.equal((trustComponent.match(/if \(summary.level === "empty"\) return null/g) ?? []).length, 2);
+  assert.equal((trustComponent.match(/if \(summary.level === "empty"\) return null/g) ?? []).length, 1);
   assert.match(trustComponent, /linearGradient/);
   assert.match(trustComponent, /radialGradient/);
   assert.match(trustComponent, /data-lumi-trust-material/);

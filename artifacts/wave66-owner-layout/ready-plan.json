@@ -1,0 +1,365 @@
+{
+  "at": "2026-10-29T09:18:12.317Z",
+  "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+  "status": "prepared-not-recorded-await-native",
+  "plans": [
+    {
+      "changeId": "settings-consistent-layout-20261029",
+      "summary": "Queued cumulative Personal + Salon Settings: all 22 destinations audited, responsive iPhone/Windows layout, draft-safe editors, phone verification and existing permission/closure safeguards. Build blocker fixed; not deployed.",
+      "files": [
+        "app/settings/settings-hub-client.tsx",
+        "app/settings/settings-hub.css",
+        "app/settings/direct-settings-ui.tsx",
+        "app/settings/direct-settings-panel.tsx",
+        "app/settings/notification-preferences-panel.tsx",
+        "app/settings/salon-settings-panels.tsx",
+        "app/settings/team-payroll-panels.tsx",
+        "app/settings/plugin-settings-row.tsx",
+        "lib/vietnamese-dictionary.ts",
+        "tests/settings-hub-ui.test.mjs",
+        "app/settings/settings-navigation.ts",
+        "app/settings/settings-icon.tsx",
+        "app/settings/settings-controls.css",
+        "lib/vietnamese-settings-copy.json",
+        "tests/settings-grouped-editors.test.mjs",
+        "app/account/account-profile-editor.tsx",
+        "app/account/actions.ts",
+        "app/account/phone-change-actions.ts",
+        "lib/account-phone-change.ts",
+        "app/settings/personal-public-profile-panel.tsx",
+        "app/settings/blocked-users-panel.tsx",
+        "app/settings/deferred-personal-section.tsx",
+        "app/settings/login-security/login-security-panel.tsx",
+        "app/settings/login-security/login-security-quick-editor.tsx",
+        "tests/login-security-contract.test.mjs",
+        "tests/ios-personal-settings.test.mjs",
+        "tests/account-phone-change.test.mjs",
+        "app/settings/pos-settings-panel.tsx",
+        "app/settings/ownership-lifecycle-panels.tsx",
+        "app/settings/shortcuts-settings-panel.tsx",
+        "app/settings/salon-profile-preferences-panel.tsx",
+        "app/pos/settings/settings-group-form.tsx",
+        "tests/settings-owner-closure-ui.test.mjs",
+        "tests/settings-consistent-layout.test.mjs"
+      ],
+      "originalEvents": [
+        "007ad3f4-b8fa-4f41-86e6-47a860987a1d"
+      ],
+      "supersedesEvents": [
+        "007ad3f4-b8fa-4f41-86e6-47a860987a1d"
+      ]
+    },
+    {
+      "changeId": "ios-personal-settings-20261029",
+      "summary": "Personal iOS Settings: streamlined identity and editors, single-tap navigation, compact security rows, email authorization before replacing/removing an existing phone, public media controls and tested blocking.",
+      "files": [
+        "app/settings/settings-hub-client.tsx",
+        "app/settings/settings-hub.css",
+        "app/account/account-profile-editor.tsx",
+        "app/account/actions.ts",
+        "app/account/phone-change-actions.ts",
+        "lib/account-phone-change.ts",
+        "app/settings/personal-public-profile-panel.tsx",
+        "app/settings/blocked-users-panel.tsx",
+        "app/settings/notification-preferences-panel.tsx",
+        "app/settings/deferred-personal-section.tsx",
+        "app/settings/login-security/login-security-panel.tsx",
+        "app/settings/login-security/login-security-quick-editor.tsx",
+        "lib/vietnamese-settings-copy.json",
+        "tests/settings-hub-ui.test.mjs",
+        "tests/login-security-contract.test.mjs",
+        "tests/ios-personal-settings.test.mjs",
+        "tests/account-phone-change.test.mjs"
+      ],
+      "originalEvents": [
+        "f49dc3d4-407a-4b42-aa19-a7defb34b7cd"
+      ],
+      "supersedesEvents": []
+    },
+    {
+      "changeId": "settings-image-runtime-build-fix-20261029",
+      "summary": "Remove redundant Node.js route config that conflicts with Cache Components; production build and image/Safari security regressions pass. Queue only, not deployed.",
+      "files": [
+        "app/api/images/normalize/route.ts"
+      ],
+      "originalEvents": [
+        "4145c173-b4c8-4db1-bb30-1c8d337a083a"
+      ],
+      "supersedesEvents": [
+        "4145c173-b4c8-4db1-bb30-1c8d337a083a"
+      ]
+    },
+    {
+      "changeId": "pos-receipt-flow-20261029",
+      "summary": "POS shared header restored; receipt add line opens services then staff; compact responsive Ticket search. Current Ticket source already has a single toolbar.; latest owner-confirmed top +Add/Reset and bottom Services pencil retained; preserve shipped WorkspaceFrame.",
+      "files": [
+        "app/pos/owner-pos-client.tsx",
+        "app/pos/owner-pos.css",
+        "app/globals.css",
+        "app/pos/owner-workspace-frame.tsx",
+        "app/pos-tickets/ticket-filters.tsx",
+        "app/pos-tickets/ticket-filters.module.css"
+      ],
+      "originalEvents": [
+        "5a6af92c-15ea-4927-8938-3cad7698e236"
+      ],
+      "supersedesEvents": []
+    },
+    {
+      "changeId": "iphone-ui-audit-20261029",
+      "summary": "Three isolated UI corrections after physical iPhone audit: report SVG viewport height, booking time separator, and standalone mobile Services canvas. Major layout proposals remain unapproved.",
+      "files": [
+        "app/reports/reports.module.css",
+        "app/services/services.css",
+        "app/(app)/my-bookings/page.tsx"
+      ],
+      "originalEvents": [
+        "5a4f7522-2a1c-410b-ae67-c681d9bbc69d"
+      ],
+      "supersedesEvents": []
+    },
+    {
+      "changeId": "iphone-ui-proposals-20261029",
+      "summary": "Approved A1–A4 presentation: numbered booking progress, one-row Ticket calendar/Today and icon search, compact Today header/aligned KPI cards, grouped More list. Settings excluded; no business logic or loading/animation changes.",
+      "files": [
+        "app/pos-tickets/ticket-filters.tsx",
+        "app/pos-tickets/ticket-filters.module.css",
+        "app/bookings/booking-workspace-client.tsx",
+        "app/bookings/appointment-progress.module.css",
+        "app/(app)/more/page.tsx",
+        "app/(app)/more/more-layout.module.css",
+        "app/staff/today/today-dashboard-view.tsx",
+        "app/staff/today/today-layout.module.css"
+      ],
+      "originalEvents": [
+        "a8e889be-eedf-49ca-921e-4182ad1c0137"
+      ],
+      "supersedesEvents": []
+    },
+    {
+      "changeId": "iphone-ui-followup-20261029",
+      "summary": "Physical iPhone follow-up: prevent Searching label wrapping in My Place ApplyPanel; flex sizing and nowrap only. Four additional public routes audited; remaining access/data gaps documented.",
+      "files": [
+        "app/my-place/place-panels.tsx"
+      ],
+      "originalEvents": [
+        "be11f919-1158-4b6b-b5fe-dec93e1fd394"
+      ],
+      "supersedesEvents": []
+    },
+    {
+      "changeId": "ios-explore-comments-transport",
+      "summary": "Physical iPhone acceptance passed for Nene quick comment and post preview; queue validated read transport fix for a later coordinated web+iOS release only.",
+      "files": [
+        "lib/app-local-explore-http-client.ts",
+        "lib/app-local-explore-metadata.ts",
+        "lib/app-local-explore-server.ts",
+        "tests/app-local-comments-transport.test.mjs"
+      ],
+      "originalEvents": [
+        "d5a9b81c-796c-42d0-9181-811904a337fb"
+      ],
+      "supersedesEvents": []
+    },
+    {
+      "changeId": "payroll-compact-display-only-20261029",
+      "summary": "Display-only compact Payroll period rail and Date/Gross/Tip listing on web/native; preserve all history, calculations and actions. Original partial history event remains pending.",
+      "files": [
+        "app/(app)/payroll/page.tsx",
+        "app/payroll/payroll-daily-listing.tsx",
+        "app/payroll/payroll-period-rail.tsx",
+        "app/payroll/payroll-mobile.module.css",
+        "lib/app-local-owner-payroll-view.tsx"
+      ],
+      "originalEvents": [
+        "2a895c72-1390-4570-8108-d0d0ad55a012"
+      ],
+      "supersedesEvents": []
+    },
+    {
+      "changeId": "check-writer-disabled-code-integration-20261029",
+      "summary": "First-party Check Writer compatible code and print bridge only; sales disabled, no production SQL/key/flag/billing activation; original module activation events remain pending. Developer Market excluded.",
+      "files": [
+        "app/market/sample-apps.ts",
+        "lib/market-card-rules.ts",
+        "lib/market-commerce.ts",
+        "lib/market-catalog-view.ts",
+        "lib/market-experience-data.ts",
+        "app/market/market-client.tsx",
+        "app/(app)/payroll/page.tsx",
+        "next.config.ts",
+        "ios/Reylumi/NativeBridge.js",
+        "ios/Reylumi/ReylumiViewController.swift",
+        ".env.example",
+        "package.json",
+        "package-lock.json",
+        "lib/vietnamese-dictionary.ts",
+        "lib/experience-route-policies.ts",
+        "types/check-writer.ts",
+        "docs/check-writer.md",
+        "app/(app)/check-writer/page.tsx",
+        "app/check-writer/check-writer.tsx",
+        "app/check-writer/check-writer.module.css",
+        "app/api/check-writer/route.ts",
+        "app/api/check-writer/pdf/route.ts",
+        "lib/check-writer-server.ts",
+        "lib/check-writer-rules.ts",
+        "lib/check-writer-crypto.ts",
+        "lib/check-writer-request.ts",
+        "lib/check-writer-pdf.ts",
+        "lib/check-writer-market.ts",
+        "app/market/check-writer-panel.tsx",
+        "app/market/check-writer-actions.ts",
+        "lib/vietnamese-check-writer.json",
+        "assets/check-writer/NotoSans-Regular.ttf",
+        "assets/check-writer/OFL.txt",
+        "assets/check-writer/micr-e13b.ttf",
+        "tests/check-writer-runtime.test.mjs",
+        "tests/check-writer-api.test.mjs",
+        "tests/check-writer.integration.test.mjs",
+        "tests/check-writer-ui.test.mjs",
+        "tests/check-writer-payroll-read.test.mjs",
+        "app/market/card-payment-actions.ts",
+        "lib/check-writer-subscription.ts",
+        "tests/check-writer-market.test.mjs",
+        "docs/check-writer-audit-20261028.md",
+        "lib/check-writer-readiness.ts",
+        "docs/check-writer-readiness.md",
+        "tests/check-writer-sales-hold.test.mjs",
+        "tests/check-writer-preflight.test.mjs",
+        "tests/check-writer-provider-contract.test.mjs",
+        "scripts/check-writer-preflight.mjs"
+      ],
+      "originalEvents": [
+        "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+        "a487d2ab-008b-41c0-9699-c4107a62c95e",
+        "6db51b3f-1463-4749-93e9-bae876ed2f68"
+      ],
+      "supersedesEvents": []
+    },
+    {
+      "changeId": "combined-settings-pos-payroll-checkwriter-20261029",
+      "summary": "Combined completed Settings, POS/header with owner-confirmed Add/Reset, three UI fixes, Explore comment read adapter, Payroll display and disabled Check Writer code; preserve security/financial baseline. No unfinished history or developer Market.",
+      "files": [
+        ".env.example",
+        ".gitignore",
+        "app/(app)/check-writer/page.tsx",
+        "app/(app)/more/more-layout.module.css",
+        "app/(app)/more/page.tsx",
+        "app/(app)/my-bookings/page.tsx",
+        "app/(app)/payroll/page.tsx",
+        "app/account/account-profile-editor.tsx",
+        "app/account/actions.ts",
+        "app/account/phone-change-actions.ts",
+        "app/api/check-writer/pdf/route.ts",
+        "app/api/check-writer/route.ts",
+        "app/bookings/appointment-progress.module.css",
+        "app/bookings/booking-workspace-client.tsx",
+        "app/check-writer/check-writer.module.css",
+        "app/check-writer/check-writer.tsx",
+        "app/globals.css",
+        "app/market/card-payment-actions.ts",
+        "app/market/check-writer-actions.ts",
+        "app/market/check-writer-panel.tsx",
+        "app/market/market-client.tsx",
+        "app/market/sample-apps.ts",
+        "app/my-place/place-panels.tsx",
+        "app/payroll/payroll-daily-listing.tsx",
+        "app/payroll/payroll-mobile.module.css",
+        "app/payroll/payroll-period-rail.tsx",
+        "app/pos-tickets/ticket-filters.module.css",
+        "app/pos-tickets/ticket-filters.tsx",
+        "app/pos/owner-pos-client.tsx",
+        "app/pos/owner-pos.css",
+        "app/pos/owner-workspace-frame.tsx",
+        "app/pos/settings/settings-group-form.tsx",
+        "app/reports/reports.module.css",
+        "app/services/services.css",
+        "app/settings/blocked-users-panel.tsx",
+        "app/settings/deferred-personal-section.tsx",
+        "app/settings/direct-settings-panel.tsx",
+        "app/settings/direct-settings-ui.tsx",
+        "app/settings/login-security/login-security-panel.tsx",
+        "app/settings/login-security/login-security-quick-editor.tsx",
+        "app/settings/notification-preferences-panel.tsx",
+        "app/settings/ownership-lifecycle-panels.tsx",
+        "app/settings/personal-public-profile-panel.tsx",
+        "app/settings/plugin-settings-row.tsx",
+        "app/settings/pos-settings-panel.tsx",
+        "app/settings/salon-profile-preferences-panel.tsx",
+        "app/settings/salon-settings-panels.tsx",
+        "app/settings/settings-controls.css",
+        "app/settings/settings-hub-client.tsx",
+        "app/settings/settings-hub.css",
+        "app/settings/shortcuts-settings-panel.tsx",
+        "app/settings/team-payroll-panels.tsx",
+        "app/staff/today/today-dashboard-view.tsx",
+        "app/staff/today/today-layout.module.css",
+        "assets/check-writer/NotoSans-Regular.ttf",
+        "assets/check-writer/OFL.txt",
+        "assets/check-writer/micr-e13b.ttf",
+        "docs/check-writer-audit-20261028.md",
+        "docs/check-writer-readiness.md",
+        "docs/check-writer.md",
+        "ios/Reylumi/NativeBridge.js",
+        "ios/Reylumi/ReylumiViewController.swift",
+        "lib/account-phone-change.ts",
+        "lib/app-local-command-policy.json",
+        "lib/app-local-commands-server.generated.ts",
+        "lib/app-local-explore-http-client.ts",
+        "lib/app-local-explore-metadata.ts",
+        "lib/app-local-explore-server.ts",
+        "lib/app-local-online-routes.json",
+        "lib/app-local-owner-payroll-view.tsx",
+        "lib/app-local-route-inventory.generated.json",
+        "lib/check-writer-crypto.ts",
+        "lib/check-writer-market.ts",
+        "lib/check-writer-pdf.ts",
+        "lib/check-writer-readiness.ts",
+        "lib/check-writer-request.ts",
+        "lib/check-writer-rules.ts",
+        "lib/check-writer-server.ts",
+        "lib/check-writer-subscription.ts",
+        "lib/experience-route-policies.ts",
+        "lib/market-card-rules.ts",
+        "lib/market-catalog-view.ts",
+        "lib/market-commerce.ts",
+        "lib/market-experience-data.ts",
+        "lib/vietnamese-check-writer.json",
+        "lib/vietnamese-dictionary.ts",
+        "lib/vietnamese-settings-copy.json",
+        "next.config.ts",
+        "package-lock.json",
+        "package.json",
+        "scripts/check-writer-preflight.mjs",
+        "scripts/generate-app-local-routes.mjs",
+        "supabase/migrations/20261028040000_check_writer.sql",
+        "supabase/migrations/20261028193000_check_writer_output_and_price.sql",
+        "supabase/migrations/20261029040000_check_writer_sales_hold.sql",
+        "tests/account-phone-change.test.mjs",
+        "tests/app-local-comments-transport.test.mjs",
+        "tests/check-writer-api.test.mjs",
+        "tests/check-writer-market.test.mjs",
+        "tests/check-writer-payroll-read.test.mjs",
+        "tests/check-writer-preflight.test.mjs",
+        "tests/check-writer-provider-contract.test.mjs",
+        "tests/check-writer-runtime.test.mjs",
+        "tests/check-writer-sales-hold.test.mjs",
+        "tests/check-writer-ui.test.mjs",
+        "tests/check-writer.integration.test.mjs",
+        "tests/fixtures/check-writer-bootstrap.sql",
+        "tests/ios-personal-settings.test.mjs",
+        "tests/login-security-contract.test.mjs",
+        "tests/settings-consistent-layout.test.mjs",
+        "tests/settings-grouped-editors.test.mjs",
+        "tests/settings-hub-ui.test.mjs",
+        "tests/settings-owner-closure-ui.test.mjs",
+        "types/check-writer.ts"
+      ],
+      "originalEvents": [
+        "db411f31-759c-429b-bee0-db7e10e2374b"
+      ],
+      "supersedesEvents": []
+    }
+  ]
+}

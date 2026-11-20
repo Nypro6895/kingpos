@@ -1,0 +1,20 @@
+# Kiosk recognition and Back — 2026-10-25 — NOT DEPLOYED
+
+Scope: repair customer recognition and navigation only. Keep the existing kiosk screens and two-step interaction. V1–V4 visual concepts are not implementation approval. No production customer data was changed.
+
+Root causes: resolve_display_customer_identity required a name before phone lookup; the legacy local-receipt RPC compared raw digits and selected the newest record. Back cleared lastSubmittedPhoneRef while retaining the phone (or failed to restore the confirmed phone after service selection). The auto-submit effect then immediately submitted again. Each phone call generated a new request ID and asynchronous responses could overwrite newer navigation.
+
+Changes:
+- Resolve exact normalized phone inside the draft token's salon. One active CRM profile is reusable without any auth account. No account is created or claimed.
+- Multiple exact-phone profiles require a uniquely matching typed name. Unresolved or contradictory identity returns a generic front-desk message without listing profiles; explicit new-customer flags cannot bypass an existing phone. No automatic merge/delete or newest/oldest-row guess.
+- Keep the existing transaction salon lock, visit reuse and server request replay. Apply the same resolver and lock to the local receipt creation path; concurrent check-in and receipt requests cannot create separate customers for the same initially new phone through these paths.
+- Restore phone on Back; suppress automatic resubmit until it is edited or explicitly submitted. Retain request IDs for retries, reject obsolete async responses, preserve edit mode across polling, and guard repeated Confirm.
+- An already-created pending visit remains intact when going Back. Correcting to a different person's phone does not cancel or merge the earlier visit; existing visit lifecycle is preserved.
+
+Validation: PostgreSQL 17.11 isolated synthetic schema using actual resolver/check-in/visit functions; independent concurrent database sessions exercise known/no-account, +1, fresh customer, shared phone, salon boundaries, retry IDs, mixed legacy/check-in creation and repeated Confirm. Source-extracted actual client handlers exercise Back/edit, polling, stale responses, double submit, retry and Confirm. TypeScript checks the changed client/helper and imported dependencies. See adjacent frozen receipt for exact results and hashes. These are not full-schema Auth/RLS or native Windows acceptance tests.
+
+Deployment: one later combined release only. No push, migration application to production, or deployment in this task. Integrate the exact patch against the then-current production baseline, preserve other changes, run the assembled build and Windows paired-display acceptance, and apply 20261025090000_kiosk_phone_recognition.sql with the web change. Required baseline functions come from the existing identity migrations dated 20261023080000 and 20261023081000. No Swift/native bridge or visual asset changes; assess the Windows packaging source in the combined release, rather than assuming a packaged client updates automatically.
+
+Rollback: reverse only this task's patch after checking for later edits, never reset the dirty checkout. Before applying the SQL in a release, capture pg_get_functiondef and grants for resolve_display_customer_identity(uuid,text,text,uuid,boolean), find_pos_live_draft_customer_by_phone(text,text), and create_pos_live_draft_customer_by_phone(text,text,text). Restore those captured definitions transactionally if needed. The frozen rollback-baseline.sql is a source-baseline reference, not proof of the future production definitions. No data rollback, customer deletion or duplicate cleanup is required or authorized.
+
+Source handling: canonical DRAKO C:\Reylumi\kingpos. Existing changes were preserved; only the listed task files were copied after checking the original client hash. No commit of the pre-existing dirty checkout. Exact patch, baseline/after hashes and immutable release journal entries identify this change for later integration.

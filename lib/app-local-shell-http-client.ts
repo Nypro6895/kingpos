@@ -1,0 +1,84 @@
+"use client";
+import { getAppLocalHost, type AppLocalHost } from "./app-local-host";
+import { getAppLocalCommandScope } from "./app-local-command-client";
+import type { AppLocalHttpResponse } from "./app-local-http-client";
+import {APP_LOCAL_AD_REPORT_BYTES,APP_LOCAL_AD_SELECTION_BYTES,appLocalInputBytes,isAppLocalAdSelection,isAppLocalAdReport,isAppLocalAdProofReservation} from './app-local-advertising-input';
+
+async function postBody(request:Request|undefined,init:RequestInit|undefined,max:number){
+ if(init?.body!==undefined){if(typeof init.body!=='string'||appLocalInputBytes(init.body)>max)throw new Error('The request could not be sent.');return init.body;}
+ if(!request)return '';
+ const body=request.clone().body;if(!body)return '';const reader=body.getReader(),parts:Uint8Array[]=[];let bytes=0;
+ try{for(;;){const part=await reader.read();if(part.done)break;bytes+=part.value.byteLength;if(bytes>max){void reader.cancel().catch(()=>{});throw new Error('The request could not be sent.');}parts.push(part.value);}}
+ finally{reader.releaseLock();}
+ const all=new Uint8Array(bytes);let offset=0;for(const part of parts){all.set(part,offset);offset+=part.byteLength;}return new TextDecoder('utf-8',{fatal:true}).decode(all);
+}
+
+export function createAppLocalShellHttpFetch(options: { scope(): string | undefined; host(): AppLocalHost; fetch: typeof fetch; location?: string }): typeof fetch {
+  return async (input, init) => {
+    const request = input instanceof Request ? input : undefined, raw = request?.url ?? String(input), base = new URL(options.location ?? location.href);
+    let url: URL; try { url = new URL(raw, base); } catch { return options.fetch(input, init); }
+    const local = url.protocol === base.protocol && url.hostname === base.hostname && url.port === base.port;
+    if (!options.host().isNative || url.username || url.password || url.hash || !(local || url.origin === "https://reylumi.com") || raw.startsWith("//") && !local) return options.fetch(input, init);
+    const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
+    const name = method === "GET" ? ({ "/api/auth/session": "http.shell.session", "/api/forum/latest": "http.shell.forum-latest", "/api/public-booking/context": "http.shell.quick-booking", "/api/explore/advertising": "http.shell.advertising", "/api/campaigns/delivery": "http.shell.campaigns" } as Record<string, string>)[url.pathname] : method === "POST" && !url.search ? ({ "/api/membership/salon-badges": "http.shell.membership-badges", "/api/auth/logout": "shell.logout", "/api/explore/advertising": "http.shell.advertising-event", "/api/campaigns/delivery": "http.shell.campaign-event", "/api/advertising/reports":"http.shell.advertising-report" } as Record<string, string>)[url.pathname] : undefined;
+    if (!name) return options.fetch(input, init);
+    const scope = options.scope(), signal = init?.signal ?? request?.signal; if (!scope) throw new Error("Connect to verify your account."); if (signal?.aborted) throw signal.reason;
+    let data: AppLocalHttpResponse;
+    try {
+      if (method === "GET") {
+        if (["http.shell.session", "http.shell.forum-latest"].includes(name) && url.search) throw new Error("Unsupported session scope.");
+        if ([...url.searchParams].some(([key]) => url.searchParams.getAll(key).length !== 1)) throw new Error("Unsupported shell request.");
+        const result = await options.host().read<AppLocalHttpResponse>(name, Object.fromEntries(url.searchParams), { scope, signal: signal ?? undefined });
+        if (!result.data) throw new Error("Could not open this page."); data = result.data;
+      } else {
+        const body = await postBody(request,init,['http.shell.advertising-report','http.shell.advertising-event'].includes(name)?APP_LOCAL_AD_REPORT_BYTES:name==='http.shell.membership-badges'?10000:APP_LOCAL_AD_SELECTION_BYTES);
+        const parsed = body ? JSON.parse(body) : {};
+        if(name==='http.shell.advertising-event'&&(appLocalInputBytes(body)>APP_LOCAL_AD_SELECTION_BYTES||parsed?.disclosureProof!==undefined)&&!isAppLocalAdProofReservation(parsed))throw new Error('Invalid advertising request.');
+        if (scope !== options.scope()) throw new Error("Your account has changed.");
+        if (signal?.aborted) throw signal.reason;
+        if (name === "http.shell.membership-badges") {
+          const result = await options.host().read<AppLocalHttpResponse>(name, {input: body}, {scope,signal:signal ?? undefined});
+          if (!result.data) throw new Error("Could not load membership.");
+          data = result.data;
+        } else if (name === "http.shell.campaign-event" && parsed?.kind === "select") {
+          if(!isAppLocalAdSelection(parsed))throw new Error('Choose a valid location.');
+          const result = await options.host().read<AppLocalHttpResponse>("http.shell.campaigns", {selection:'1',location:parsed.location,...(parsed.latitude!==undefined?{latitude:String(parsed.latitude),longitude:String(parsed.longitude)}:{}),...(parsed.batch!==undefined?{batch:parsed.batch?'1':'0'}:{}),...(parsed.query!==undefined?{query:parsed.query}:{})}, {scope,signal:signal ?? undefined});
+          if (!result.data) throw new Error("Could not load advertising.");
+          data = result.data;
+        } else {
+          if(name==='http.shell.advertising-report'){
+            const headers=new Headers(init?.headers??request?.headers);
+            if(headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json'||!isAppLocalAdReport(parsed))throw new Error('Invalid ad report.');
+          }
+          data = await options.host().command<AppLocalHttpResponse>(name, name === "shell.logout" ? {} : { input: parsed }, { scope });
+        }
+      }
+    } catch (error) {
+      if (scope === options.scope() && error && typeof error === "object" && "status" in error && [401, 403, 409].includes(Number(error.status))) window.dispatchEvent(new Event("reylumi:app-local-access-changed"));
+      throw error;
+    }
+    const loggedOut = name === "shell.logout" && data.status >= 200 && data.status < 300;
+    // nativeRequest validates this acknowledgement against the new native host
+    // metadata. Sign-out intentionally withdraws the request's former scope.
+    const nativeLogout = loggedOut && (data as AppLocalHttpResponse & { signedOut?: boolean }).signedOut === true;
+    if (scope !== options.scope() && !nativeLogout) throw new Error("Your account has changed.");
+    let responseBody = data.body;
+    if (loggedOut) {
+      if (!nativeLogout) window.dispatchEvent(new CustomEvent("reylumi:app-local-reset", { detail: { reason: "logout" } }));
+      // Return to public browsing only for the original logout DTO. Entry owns
+      // Explore's fresh admission; do not revive the former page or repeat the
+      // committed command when that later context read is unavailable.
+      try {
+        const result = JSON.parse(data.body);
+        if (result && Object.keys(result).length === 1 && result.redirectTo === "/login?message=You have been logged out.") responseBody = JSON.stringify({ redirectTo: "/explore" });
+      } catch { /* Preserve an unrecognized original response. */ }
+    }
+    if (signal?.aborted) throw signal.reason;
+    return new Response([204, 205, 304].includes(data.status) ? null : responseBody, { status: data.status, headers: data.headers });
+  };
+}
+export function installAppLocalShellHttpTransport(scope = getAppLocalCommandScope) {
+  if (typeof window === "undefined" || !getAppLocalHost().isNative) return () => {};
+  const original = window.fetch, transport = createAppLocalShellHttpFetch({ scope, host: getAppLocalHost, fetch: original });
+  window.fetch = transport; return () => { if (window.fetch === transport) window.fetch = original; };
+}

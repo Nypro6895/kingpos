@@ -19,9 +19,18 @@ function session({ status = "active", revoked = false, queryError = false, delet
         maybeSingle: () => new Promise(resolve => pending.set(table, resolve)) };
       return query;
     },
-    rpc: async () => ({ data: deleted, error: null }),
+    rpc: async name => name === "reylumi_account_session_state"
+      ? new Promise(resolve => pending.set("account_login_sessions", resolve))
+      : ({ data: deleted, error: null }),
   };
   const dependencies = {
+    "@/lib/users/user-select": {USER_SELECT:"*"},
+    "node:crypto": require("node:crypto"),
+    "./auth-rejection": {AuthRejectionError: class extends Error {}, isConfirmedAuthRejection:()=>false},
+    "@/lib/read-context-scope": {getReadRequestTiming:()=>null, memoizeReadValidation:(_key,_authority,read)=>read()},
+    "@/lib/abuse-context": { safetyRequestHeaders: async () => ({}) },
+    "./session-policy": {},
+    "./auth-rest": { supabaseDeadlineFetch() {}, assertAuthAvailable() {}, AuthAvailabilityError: class extends Error {} },
     "@supabase/supabase-js": { createClient: () => client },
     "@/lib/account-security-shared": { ACCOUNT_LOGIN_SESSION_COOKIE: "login", isAccountLoginSessionId: () => true },
     "@/lib/users/account-status": { isDeniedKingUserStatus: value => ["suspended", "deleted"].includes(value) },
@@ -34,7 +43,7 @@ function session({ status = "active", revoked = false, queryError = false, delet
   } });
   return { pending, run: exports.createAuthenticatedSupabaseServerClient, release() {
     pending.get("users")?.({ data: status ? { status } : null, error: queryError ? { code: "unavailable" } : null });
-    pending.get("account_login_sessions")?.({ data: { revoked_at: revoked ? "2026-01-01" : null }, error: null });
+    pending.get("account_login_sessions")?.({ data: { allowed: !revoked, session_id: "session" }, error: null });
   } };
 }
 

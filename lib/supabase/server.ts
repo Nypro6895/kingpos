@@ -1,3 +1,4 @@
+import { safetyRequestHeaders } from "@/lib/abuse-context";
 import { createClient } from "@supabase/supabase-js";
 import type { Session } from "@supabase/supabase-js";
 import {
@@ -5,14 +6,21 @@ import {
   isAccountLoginSessionId,
 } from "@/lib/account-security-shared";
 import { isDeniedKingUserStatus } from "@/lib/users/account-status";
-import type { KingUserStatus } from "@/types/user";
+import type { KingUser } from "@/types/user";
+import { USER_SELECT } from "@/lib/users/user-select";
 import { cookies, headers } from "next/headers";
+import { ADMIN_SESSION_COOKIE, REMEMBER_LOGIN_COOKIE, sessionCookieOptions } from "./session-policy";
+import { assertAuthAvailable, AuthAvailabilityError, supabaseDeadlineFetch } from "./auth-rest";
+import { AuthRejectionError, isConfirmedAuthRejection } from "./auth-rejection";
+import { getReadRequestTiming, memoizeReadValidation } from "@/lib/read-context-scope";
+import { createHash } from "node:crypto";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
 export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
 export const PENDING_MFA_ACCESS_TOKEN_COOKIE = "sb-pending-mfa-access-token";
 export const PENDING_MFA_REFRESH_TOKEN_COOKIE = "sb-pending-mfa-refresh-token";
 export const PENDING_MFA_REMEMBER_COOKIE = "sb-pending-mfa-remember";
+export const PENDING_MFA_CHALLENGE_COOKIE = "sb-pending-mfa-challenge";
 
 const PENDING_MFA_MAX_AGE_SECONDS = 60 * 10;
 
@@ -35,13 +43,54 @@ type SupabaseConfig = {
   supabaseUrl: string;
 };
 
-type PublicUserStatusRow = {
-  status: KingUserStatus;
-};
+type VerifiedAccountSession = { allowed: boolean; session_id?: string; registered?: boolean };
 
-type AccountLoginSessionStatusRow = {
-  revoked_at: string | null;
-};
+const authUserReadKey = Symbol("read-auth-user");
+const accountStatusReadKey = Symbol("read-account-status");
+const loginSessionReadKey = Symbol("read-login-session-status");
+const appSessionValidationKey = Symbol("read-app-session-validation");
+const authenticatedReadAuthorities = new WeakMap<
+  NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+  string
+>();
+
+// Only gated clients receive metadata. The opaque value is for pending read
+// equality, never an authorization decision or a cache of a successful gate.
+export function getAuthenticatedReadAuthority(
+  client: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+): string | undefined {
+  return authenticatedReadAuthorities.get(client);
+}
+
+// Keys live only while the raw read is pending inside an explicit read request.
+// Caller-specific strict/optional handling stays outside the shared transport.
+function authReadAuthority(config: SupabaseConfig, accessToken: string, ...parts: string[]) {
+  return JSON.stringify([config.supabaseUrl, config.supabaseAnonKey, accessToken, ...parts]);
+}
+
+/** Executing SDK operation, including its decode; joined callers do not add a span.
+ * These nested/parallel waits are not additive wall time or database execution. */
+function measureAuthRead<T>(stage: "auth_user" | "auth_status" | "auth_session" | "auth_tombstone", read: () => Promise<T>): Promise<T> {
+  const timing = getReadRequestTiming();
+  return timing ? timing.measure(stage, read) : read();
+}
+
+function readAuthUser(
+  supabase: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+  accessToken: string,
+  config: SupabaseConfig | null,
+) {
+  const read = () => measureAuthRead("auth_user", () => supabase.auth.getUser(accessToken));
+  return config ? memoizeReadValidation(authUserReadKey, authReadAuthority(config, accessToken), read) : read();
+}
+
+/** Raw identity/profile result shared only in this read request. Strict denial
+ * policy remains with each caller; fresh revocation checks bypass this memo. */
+export function readPublicUserProfileForAuthIdentity(client: NonNullable<ReturnType<typeof createSupabaseServerClient>>, accessToken: string, authUserId: string) {
+  const config = getSupabaseConfig();
+  const read = () => measureAuthRead("auth_status", async () => await client.from("users").select(USER_SELECT).eq("auth_user_id",authUserId).maybeSingle<KingUser>());
+  return config ? memoizeReadValidation(accountStatusReadKey, authReadAuthority(config, accessToken, authUserId), read) : read();
+}
 
 type SupabaseCookieWriter = {
   delete: (name: string) => unknown;
@@ -78,6 +127,8 @@ export function clearSupabaseSessionCookieWriter(
 ) {
   cookieStore.delete(ACCESS_TOKEN_COOKIE);
   cookieStore.delete(REFRESH_TOKEN_COOKIE);
+  cookieStore.delete(REMEMBER_LOGIN_COOKIE);
+  cookieStore.delete(ADMIN_SESSION_COOKIE);
   clearPendingMfaSessionCookieWriter(cookieStore);
 
   for (const name of cookieNames.filter(isSupabaseAuthTokenCookieName)) {
@@ -91,6 +142,7 @@ export function clearPendingMfaSessionCookieWriter(
   cookieStore.delete(PENDING_MFA_ACCESS_TOKEN_COOKIE);
   cookieStore.delete(PENDING_MFA_REFRESH_TOKEN_COOKIE);
   cookieStore.delete(PENDING_MFA_REMEMBER_COOKIE);
+  cookieStore.delete(PENDING_MFA_CHALLENGE_COOKIE);
 }
 
 export function setPendingMfaSessionCookieWriter(
@@ -134,6 +186,7 @@ export function createSupabaseServerClient() {
   }
 
   return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    global: { fetch: supabaseDeadlineFetch },
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -156,6 +209,7 @@ export function createUserScopedSupabaseServerClient(accessToken: string) {
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -163,7 +217,7 @@ export function createUserScopedSupabaseServerClient(accessToken: string) {
   });
 }
 
-export async function createAuthenticatedSupabaseServerClient() {
+export async function createAuthenticatedSupabaseServerClient(options: { throwOnUnavailable?: boolean; throwOnRejected?: boolean } = {}) {
   const config = getSupabaseConfig();
   const accessToken = await getAccessTokenFromRequest();
 
@@ -171,27 +225,50 @@ export async function createAuthenticatedSupabaseServerClient() {
     return null;
   }
 
-  const accessTokenAllowed = await isAccessTokenAllowedForAppSession(
-    config,
-    accessToken,
-  );
+  const loginSessionId = (await cookies()).get(ACCOUNT_LOGIN_SESSION_COOKIE)?.value ?? null;
+  const validationAuthority = createHash("sha256").update(JSON.stringify([
+    config.supabaseUrl, config.supabaseAnonKey, accessToken, loginSessionId,
+    Boolean(options.throwOnUnavailable), Boolean(options.throwOnRejected),
+  ])).digest("hex");
+  const accessTokenAllowed = await memoizeReadValidation(appSessionValidationKey, validationAuthority, () =>
+    isAccessTokenAllowedForAppSession(config, accessToken, options.throwOnUnavailable, options.throwOnRejected));
 
   if (!accessTokenAllowed) {
     return null;
   }
 
-  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+  const requestHeaders = {
+    Authorization: `Bearer ${accessToken}`,
+    ...await safetyRequestHeaders(),
+  };
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
     },
     global: {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      fetch: supabaseDeadlineFetch,
+      headers: requestHeaders,
     },
   });
+
+  try {
+    const loginSessionId = (await cookies()).get(ACCOUNT_LOGIN_SESSION_COOKIE)?.value ?? null;
+    const authority = createHash("sha256").update(JSON.stringify([
+      config.supabaseUrl,
+      config.supabaseAnonKey,
+      accessToken,
+      loginSessionId,
+      Object.entries(requestHeaders).sort(([left], [right]) => left.localeCompare(right)),
+    ])).digest("hex");
+    authenticatedReadAuthorities.set(supabase, authority);
+  } catch {
+    // Metadata is optional: failure preserves the authenticated client and
+    // simply prevents any raw read from joining another client's request.
+  }
+
+  return supabase;
 }
 
 export async function createAuthenticatedSupabaseAuthSessionServerClient() {
@@ -203,6 +280,7 @@ export async function createAuthenticatedSupabaseAuthSessionServerClient() {
   }
 
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    global: { fetch: supabaseDeadlineFetch },
     auth: {
       persistSession: true,
       autoRefreshToken: false,
@@ -231,15 +309,17 @@ export async function createAuthenticatedSupabaseAuthSessionServerClient() {
   return supabase;
 }
 
-export async function createPendingMfaSupabaseAuthSessionServerClient() {
+export async function createPendingMfaSupabaseAuthSessionServerClient(options: { throwOnUnavailable?: boolean } = {}) {
   const config = getSupabaseConfig();
   const sessionTokens = await getPendingMfaSessionTokensFromRequest();
 
   if (!config || !sessionTokens) {
+    if (!config && options.throwOnUnavailable) throw new AuthAvailabilityError("Authentication");
     return null;
   }
 
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    global: { fetch: supabaseDeadlineFetch },
     auth: {
       persistSession: true,
       autoRefreshToken: false,
@@ -253,18 +333,38 @@ export async function createPendingMfaSupabaseAuthSessionServerClient() {
   });
 
   if (error || !data.session || !data.user) {
+    if (options.throwOnUnavailable) {
+      if (!error) throw new AuthAvailabilityError("Authentication");
+      assertAuthAvailable(error, error?.status, "Authentication");
+    }
     return null;
   }
 
   return {
     rememberLogin: sessionTokens.rememberLogin,
+    continuationId: pendingMfaContinuationId(sessionTokens),
+    accessToken: data.session.access_token,
+    challengeReceipt: (await cookies()).get(PENDING_MFA_CHALLENGE_COOKIE)?.value,
     supabase,
   };
+}
+
+export function pendingMfaContinuationId(tokens: SupabaseSessionTokens) {
+  return createHash("sha256").update(JSON.stringify([tokens.accessToken, tokens.refreshToken])).digest("hex");
+}
+
+/** Validate the freshly verified token, never a different request cookie. */
+export async function validateSupabaseAppSession(accessToken: string) {
+  const config = getSupabaseConfig();
+  if (!config) throw new AuthAvailabilityError("Authentication");
+  return isAccessTokenAllowedForAppSession(config, accessToken, true, true);
 }
 
 async function isAccessTokenAllowedForAppSession(
   config: SupabaseConfig,
   accessToken: string,
+  throwOnUnavailable = false,
+  throwOnRejected = false,
 ) {
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
@@ -273,30 +373,47 @@ async function isAccessTokenAllowedForAppSession(
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     },
   });
 
-  const { data: authData, error: authError } = await supabase.auth.getUser(
-    accessToken,
-  );
+  const { data: authData, error: authError } = await readAuthUser(supabase, accessToken, config);
 
   if (authError || !authData.user) {
+    if (throwOnRejected && authError && isConfirmedAuthRejection(authError, authError.status)) throw new AuthRejectionError(401);
+    if (!authError && throwOnUnavailable) throw new AuthAvailabilityError("Authentication");
+    if (throwOnUnavailable) assertAuthAvailable(authError, authError?.status, "Authentication");
     return false;
   }
 
-  const [{ data: userStatus, error: userStatusError }, sessionAllowed] = await Promise.all([
-    supabase
-      .from("users")
-      .select("status")
-      .eq("auth_user_id", authData.user.id)
-      .maybeSingle<PublicUserStatusRow>(),
-    isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id),
-  ]);
+  const statusRead = readPublicUserProfileForAuthIdentity(supabase, accessToken, authData.user.id);
+  const sessionRead = isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id, throwOnUnavailable, throwOnRejected);
+  const [{ data: userStatus, error: userStatusError }, sessionAllowed] = throwOnRejected ? await (async () => {
+    // An unavailable sibling must not hide a successful, conclusive denial.
+    // A proven denial need not wait for that sibling's remaining read budget.
+    const denial = new Promise<never>((_resolve, reject) => {
+      void statusRead.then(({ data, error }) => {
+        if (!error && data?.status && isDeniedKingUserStatus(data.status)) reject(new AuthRejectionError(403));
+      }, () => {});
+      void sessionRead.catch(error => { if (error instanceof AuthRejectionError) reject(error); });
+    });
+    const settled = Promise.allSettled([statusRead, sessionRead]).then(([status, session]) => {
+      if (session.status === "rejected" && session.reason instanceof AuthRejectionError) throw session.reason;
+      if (status.status === "fulfilled" && !status.value.error && status.value.data?.status && isDeniedKingUserStatus(status.value.data.status)) throw new AuthRejectionError(403);
+      if (status.status === "rejected") throw status.reason;
+      if (session.status === "rejected") throw session.reason;
+      return [status.value, session.value] as const;
+    });
+    // Both promises retain handlers after the race; a late unknown failure is
+    // consumed without another decision, replay, or cancelling another reader.
+    return Promise.race([denial, settled]);
+  })() : await Promise.all([statusRead, sessionRead]);
 
   if (userStatusError) {
+    if (throwOnUnavailable) throw new AuthAvailabilityError("Account status");
     console.error("Unable to verify public user status for app session", {
       authUserId: authData.user.id,
       code: userStatusError.code,
@@ -309,6 +426,7 @@ async function isAccessTokenAllowedForAppSession(
 
   if (userStatus?.status) {
     if (isDeniedKingUserStatus(userStatus.status)) {
+      if (throwOnRejected) throw new AuthRejectionError(403);
       return false;
     }
 
@@ -316,11 +434,14 @@ async function isAccessTokenAllowedForAppSession(
   }
 
   const { data: authIdentityDeleted, error: authIdentityDeletedError } =
-    await supabase.rpc("auth_identity_is_deleted", {
+    await measureAuthRead("auth_tombstone", async () => await supabase.rpc("auth_identity_is_deleted", {
       p_auth_user_id: authData.user.id,
-    });
+    }));
 
   if (authIdentityDeletedError) {
+    if (throwOnUnavailable && authIdentityDeletedError.code !== "42883" && authIdentityDeletedError.code !== "42P01") {
+      throw new AuthAvailabilityError("Account status");
+    }
     if (
       authIdentityDeletedError.code !== "42883" &&
       authIdentityDeletedError.code !== "42P01"
@@ -338,39 +459,18 @@ async function isAccessTokenAllowedForAppSession(
   }
 
   if (authIdentityDeleted === true) {
+    if (throwOnRejected) throw new AuthRejectionError(401);
     return false;
   }
 
   return sessionAllowed;
 }
 
-function isAccountLoginSecuritySchemaMissing(error: {
-  code?: string | null;
-  message?: string | null;
-} | null | undefined) {
-  const message = error?.message ?? "";
-
-  return (
-    error?.code === "42P01" ||
-    error?.code === "42703" ||
-    error?.code === "PGRST202" ||
-    (error?.code === "PGRST205" && /account_login_sessions/i.test(message))
-  );
-}
-
-async function isAppLoginSessionCookieAllowed(
+async function readVerifiedAccountSession(
   config: SupabaseConfig,
   accessToken: string,
   authUserId: string,
 ) {
-  const loginSessionId = (await cookies()).get(
-    ACCOUNT_LOGIN_SESSION_COOKIE,
-  )?.value;
-
-  if (!isAccountLoginSessionId(loginSessionId)) {
-    return true;
-  }
-
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
       persistSession: false,
@@ -378,41 +478,83 @@ async function isAppLoginSessionCookieAllowed(
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     },
   });
-  const { data, error } = await supabase
-    .from("account_login_sessions")
-    .select("revoked_at")
-    .eq("id", loginSessionId)
-    .eq("auth_user_id", authUserId)
-    .maybeSingle<AccountLoginSessionStatusRow>();
+  return memoizeReadValidation(
+    loginSessionReadKey,
+    authReadAuthority(config, accessToken, authUserId),
+    () => measureAuthRead("auth_session", async () => await supabase.rpc("reylumi_account_session_state", {}, { get: true })),
+  );
+}
 
+async function isAppLoginSessionCookieAllowed(
+  config: SupabaseConfig,
+  accessToken: string,
+  authUserId: string,
+  throwOnUnavailable = false,
+  throwOnRejected = false,
+) {
+  // Identity comes from the JWT verified by Supabase/PostgREST, never from the
+  // optional device cookie. Removing or swapping that cookie grants nothing.
+  const { data, error } = await readVerifiedAccountSession(config, accessToken, authUserId);
   if (error) {
-    if (isAccountLoginSecuritySchemaMissing(error)) {
-      return true;
+    if (error.code === "PT401" || isConfirmedAuthRejection(error)) {
+      if (throwOnRejected) throw new AuthRejectionError(401);
+      return false;
     }
-
+    // Missing migration/schema is unavailable, never permissive legacy access.
+    if (throwOnUnavailable) throw new AuthAvailabilityError("Session status");
     console.error("Unable to verify app login session", {
       code: error.code,
-      details: error.details,
-      hint: error.hint,
-      message: error.message,
     });
     return false;
   }
+  const state = data as VerifiedAccountSession | null;
+  const allowed = state?.allowed === true && isAccountLoginSessionId(state.session_id);
+  if (!allowed && throwOnRejected) throw new AuthRejectionError(401);
+  return allowed;
+}
 
-  return data?.revoked_at ? false : true;
+export async function getCurrentAppLoginSessionId() {
+  const config = getSupabaseConfig();
+  const accessToken = await getAccessTokenFromRequest();
+  if (!config || !accessToken) return null;
+  const client = createSupabaseServerClient();
+  if (!client) return null;
+  const { data: identity, error: identityError } = await readAuthUser(client, accessToken, config);
+  if (identityError || !identity.user) {
+    assertAuthAvailable(identityError, identityError?.status, "Authentication");
+    return null;
+  }
+  const { data, error } = await readVerifiedAccountSession(config, accessToken, identity.user.id);
+  if (error) {
+    if (error.code === "PT401" || isConfirmedAuthRejection(error)) return null;
+    throw new AuthAvailabilityError("Session status");
+  }
+  const state = data as VerifiedAccountSession | null;
+  if (state?.allowed !== true || !isAccountLoginSessionId(state.session_id)) return null;
+  if (state.registered === true) return state.session_id;
+  // New callback/native sessions may not yet have display metadata. Enrollment
+  // is an explicit, idempotent write; it is never retried as a safe page read.
+  const scoped = createUserScopedSupabaseServerClient(accessToken);
+  if (!scoped) return null;
+  const enrolled = await scoped.rpc("check_account_login_session").abortSignal(AbortSignal.timeout(10_000));
+  if (enrolled.error) {
+    if (enrolled.error.code === "PT401" || isConfirmedAuthRejection(enrolled.error)) return null;
+    throw new AuthAvailabilityError("Session status");
+  }
+  const registered = enrolled.data as VerifiedAccountSession | null;
+  return registered?.allowed === true && isAccountLoginSessionId(registered.session_id) ? registered.session_id : null;
 }
 
 export async function getAccessTokenFromRequest() {
   const authorization = (await headers()).get("authorization");
-  const bearerPrefix = "Bearer ";
-
-  if (authorization?.startsWith(bearerPrefix)) {
-    return authorization.slice(bearerPrefix.length);
+  if (authorization !== null) {
+    return authorization.match(/^Bearer\s+(\S+)$/i)?.[1] ?? null;
   }
 
   const cookieStore = await cookies();
@@ -423,13 +565,13 @@ export async function getAccessTokenFromRequest() {
 
 export async function getSupabaseSessionTokensFromRequest(): Promise<SupabaseSessionTokens | null> {
   const authorization = (await headers()).get("authorization");
-  const bearerPrefix = "Bearer ";
-  const bearerToken = authorization?.startsWith(bearerPrefix)
-    ? authorization.slice(bearerPrefix.length)
-    : null;
+  const bearerToken = authorization?.match(/^Bearer\s+(\S+)$/i)?.[1] ?? null;
   const cookieStore = await cookies();
   const directAccessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
   const directRefreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
+  // A caller asserting a Bearer identity cannot borrow another browser
+  // identity's refresh token for password/MFA/session-management operations.
+  if (authorization !== null && (!bearerToken || bearerToken !== directAccessToken)) return null;
   const accessToken = bearerToken || directAccessToken;
 
   if (accessToken && directRefreshToken) {
@@ -446,6 +588,9 @@ export async function getPendingMfaSessionTokensFromRequest(): Promise<PendingMf
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(PENDING_MFA_ACCESS_TOKEN_COOKIE)?.value;
   const refreshToken = cookieStore.get(PENDING_MFA_REFRESH_TOKEN_COOKIE)?.value;
+  const authorization = (await headers()).get("authorization");
+  const bearer = authorization?.match(/^Bearer\s+(\S+)$/i)?.[1] ?? null;
+  if (authorization !== null && (!bearer || bearer !== accessToken)) return null;
 
   if (!accessToken || !refreshToken) {
     return null;
@@ -460,17 +605,19 @@ export async function getPendingMfaSessionTokensFromRequest(): Promise<PendingMf
 
 export async function setSupabaseSessionCookies(session: Session) {
   const cookieStore = await cookies();
+  const remember = cookieStore.get(REMEMBER_LOGIN_COOKIE)?.value === "1";
 
   cookieStore.set(
     ACCESS_TOKEN_COOKIE,
     session.access_token,
-    getSupabaseCookieOptions(session.expires_in),
+    sessionCookieOptions(remember),
   );
   cookieStore.set(
     REFRESH_TOKEN_COOKIE,
     session.refresh_token,
-    getSupabaseCookieOptions(60 * 60 * 24 * 30),
+    sessionCookieOptions(remember),
   );
+  cookieStore.set(REMEMBER_LOGIN_COOKIE, remember ? "1" : "0", sessionCookieOptions(remember));
 }
 
 export async function clearSupabaseSessionCookies() {
@@ -481,7 +628,7 @@ export async function clearSupabaseSessionCookies() {
   );
 }
 
-export async function getSupabaseAuthUser() {
+export async function getSupabaseAuthUser(options: { throwOnUnavailable?: boolean } = { throwOnUnavailable: true }) {
   const supabase = createSupabaseServerClient();
   const accessToken = await getAccessTokenFromRequest();
 
@@ -489,11 +636,26 @@ export async function getSupabaseAuthUser() {
     return null;
   }
 
-  const { data, error } = await supabase.auth.getUser(accessToken);
+  const { data, error } = await readAuthUser(supabase, accessToken, getSupabaseConfig());
 
   if (error || !data.user) {
+    if (!error && options.throwOnUnavailable !== false) throw new AuthAvailabilityError("Authentication");
+    if (options.throwOnUnavailable !== false) assertAuthAvailable(error, error?.status, "Authentication");
     return null;
   }
 
+  const config = getSupabaseConfig();
+  if (!config || !await isAppLoginSessionCookieAllowed(config, accessToken, data.user.id, options.throwOnUnavailable !== false)) {
+    return null;
+  }
   return data.user;
+}
+
+export async function createSafetySupabaseServerClient() {
+  const config = getSupabaseConfig();
+  if (!config) return null;
+  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    global: { fetch: supabaseDeadlineFetch, headers: await safetyRequestHeaders() },
+  });
 }

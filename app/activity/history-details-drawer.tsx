@@ -1,6 +1,11 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
+import { BookingRewardPending } from "@/components/rewardlumi/booking-reward-pending";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { SalonAddressLink } from "@/components/salon-address-link";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { historyBookingLabel } from "@/lib/booking-history";
@@ -8,23 +13,47 @@ import { bookingStatusLabel } from "@/lib/booking-no-show";
 import { loadHistoryDetailsAction } from "./history-details-actions";
 import { HistoryLinkControl } from "./history-link-control";
 import { VisitExperiencePrompt } from "./visit-experience-prompt";
+import { useDialogViewport } from "@/components/use-dialog-viewport";
 import { BookingDetailActions } from "@/app/my-bookings/[bookingId]/booking-detail-actions";
 import bookingStyles from "@/components/booking-ui/booking-theme.module.css";
 import type { CustomerActivity, CustomerActivityReceipt } from "@/lib/customer-activity";
 import type { CustomerBookingDetail } from "@/lib/customer-bookings";
+import { useExperienceScope } from "@/components/experience-scope";
+import { usePersistentReadView } from "@/lib/use-persistent-read-view";
+import { loadCustomerHistoryRead } from "@/lib/customer-history-client";
 
-export function HistoryDetailsDrawer({ activity, onClose }: { activity: CustomerActivity; onClose: () => void }) {
+function subscribeConnection(change: () => void) { window.addEventListener("online", change); window.addEventListener("offline", change); return () => { window.removeEventListener("online", change); window.removeEventListener("offline", change); }; }
+const onlineSnapshot = () => navigator.onLine;
+const serverOnline = () => true;
+
+export function HistoryDetailsDrawer({ activity, onClose, initialDetails, onChanged }: { activity: CustomerActivity; onClose: () => void; initialDetails?: { booking: CustomerBookingDetail | null; receipt: CustomerActivityReceipt | null }; onChanged?: () => void }) {
   useCloseOnNavigation(onClose);
   const dialog = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialog);
   const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
+  useDialogViewport(dialog, Boolean(portalHost));
   useEffect(() => { let active = true; queueMicrotask(() => { if (active) setPortalHost(document.body); }); return () => { active = false; }; }, []);
-  const [data, setData] = useState<{ booking: CustomerBookingDetail | null; receipt: CustomerActivityReceipt | null } | null>(activity.type === "visit" ? { booking: null, receipt: null } : null);
+  const [data, setData] = useState<{ booking: CustomerBookingDetail | null; receipt: CustomerActivityReceipt | null } | null>(initialDetails ?? (activity.type === "visit" ? { booking: null, receipt: null } : null));
+  const [updatedAt, setUpdatedAt] = useState(()=>initialDetails ? Date.now() : 0);
+  const experience = useExperienceScope();
+  const resourceScope = experience?.context.authenticated ? experience.context.scope : undefined;
+  const online = useSyncExternalStore(subscribeConnection, onlineSnapshot, serverOnline);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   const [now] = useState(() => Date.now());
   const [activeBookingId, setActiveBookingId] = useState<string>();
   const bookingId = activeBookingId ?? (activity.type === "booking" ? activity.bookingId : activity.type === "purchase" ? activity.bookingId : undefined);
   const ticketId = activity.type === "purchase" ? activity.ticketId : undefined;
+  usePersistentReadView({
+    scope: resourceScope,
+    domain: "customer-history-detail", params: { bookingId: bookingId ?? null, ticketId: ticketId ?? null },
+    data, updatedAt,
+    validate: (value: unknown): value is NonNullable<typeof data> => {
+      const item = value as Partial<NonNullable<typeof data>> | null;
+      return Boolean(item && "booking" in item && "receipt" in item && (item.booking === null || item.booking?.id === bookingId) && (item.receipt === null || item.receipt?.ticketId === ticketId));
+    },
+    onRestore: (value, timestamp) => { setError(""); setData(value); setUpdatedAt(timestamp); },
+  });
   useEffect(() => {
     if (!portalHost) return;
     const previousOverflow = document.body.style.overflow;
@@ -35,14 +64,17 @@ export function HistoryDetailsDrawer({ activity, onClose }: { activity: Customer
   }, [portalHost]);
   useEffect(() => {
     if (activity.type === "visit") return;
+    if (initialDetails && retry === 0 && !activeBookingId) return;
+    if (!online) return;
     let active = true;
-    loadHistoryDetailsAction({ bookingId, ticketId }).then(result => {
+    const read = resourceScope ? loadCustomerHistoryRead(resourceScope, { bookingId, ticketId }) : loadHistoryDetailsAction({ bookingId, ticketId });
+    read.then(result => {
       if (!active) return;
       if (result.error) setError(result.error);
-      else { setError(""); setData({ booking: result.booking ?? null, receipt: result.receipt ?? null }); }
+      else { setError(""); setData({ booking: result.booking ?? null, receipt: result.receipt ?? null }); setUpdatedAt(Date.now()); }
     }).catch(() => { if (active) setError("Details could not be loaded. Please try again."); });
     return () => { active = false; };
-  }, [activity.type, bookingId, ticketId, retry]);
+  }, [activity.type, bookingId, ticketId, retry, online, resourceScope, initialDetails, activeBookingId]);
   const booking = data?.booking;
   const receipt = data?.receipt;
   const timezone = booking?.salon_timezone_snapshot ?? activity.timezone ?? "America/Chicago";
@@ -59,16 +91,14 @@ export function HistoryDetailsDrawer({ activity, onClose }: { activity: Customer
   const duration = booking ? Math.round((new Date(booking.end_at).getTime() - new Date(booking.start_at).getTime()) / 60000) : null;
   const canChange = Boolean(booking && !receipt && !booking.historyEvidence?.ticket && ["confirmed", "scheduled", "pending"].includes(booking.status) && new Date(booking.start_at).getTime() > now);
   const status = receipt ? "Visited" : booking ? historyBookingLabel(booking.status, booking.start_at, booking.historyEvidence, now) ?? bookingStatusLabel(booking.status, booking.no_show_kind) : activity.type === "visit" ? "Checked in" : "";
-  const address = receipt ? [receipt.salon.addressLine1, receipt.salon.addressLine2].filter(Boolean).join(", ") : [booking?.salon?.address_line1, booking?.salon?.address_line2].filter(Boolean).join(", ");
-  const city = receipt ? [receipt.salon.city, receipt.salon.state, receipt.salon.postalCode].filter(Boolean).join(", ") : booking ? [booking.salon?.city, booking.salon?.state, booking.salon?.postal_code].filter(Boolean).join(", ") : location;
   const logo = booking?.salon?.logoUrl ?? activity.salon.imageUrl;
   const canViewSalon = Boolean(booking?.salon?.publicDiscoveryEnabled || receipt);
   return portalHost ? createPortal(<dialog ref={dialog} aria-labelledby="history-details-title" onCancel={event => { if (event.target !== event.currentTarget) event.stopPropagation(); }} onClose={event => { if (event.target === event.currentTarget) onClose(); }}
     onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}
-    className={`${bookingStyles.bookingSurface} fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-dvh w-full max-w-sm overflow-y-auto border-0 bg-white p-0 text-text-primary shadow-xl backdrop:bg-black/30`}>
+    className={`${bookingStyles.bookingSurface} fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-dvh w-full max-w-none sm:max-w-sm overflow-y-auto border-0 bg-white p-0 text-text-primary shadow-xl backdrop:bg-black/30`}>
     <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border-subtle bg-white px-4 py-2">
-      <h2 id="history-details-title" className="text-sm font-semibold">Booking details</h2>
-      <button type="button" onClick={() => dialog.current?.close()} className="flex h-10 w-10 items-center justify-center text-xl text-text-secondary" aria-label="Close history details">&times;</button>
+      <h2 id="history-details-title" className="text-sm font-semibold">{receipt ? "Visit & receipt" : activity.type === "visit" ? "Visit details" : "Appointment details"}</h2>
+      <button type="button" onClick={() => dialog.current?.close()} className="flex h-11 w-11 items-center justify-center text-xl text-text-secondary" aria-label="Close history details">&times;</button>
     </header>
     <div className="px-4 pb-6 text-sm">
       <section className="border-b border-border-subtle py-4">
@@ -79,16 +109,16 @@ export function HistoryDetailsDrawer({ activity, onClose }: { activity: Customer
               <img src={logo} alt={`${activity.salon.name} logo`} className="h-full w-full object-cover" />
             ) : activity.salon.name.slice(0, 2)}
           </span>
-          <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="text-lg font-semibold leading-6">{activity.salon.name}</h3><span className="pt-1 text-[11px] font-normal text-text-secondary">{status}</span></div>
-            <div className="mt-1 text-xs leading-5 text-text-secondary">{address ? <p>{address}</p> : null}{city ? <p>{city}</p> : null}</div>
+          <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="text-lg font-semibold leading-6"><SalonName name={activity.salon.name} salonId={activity.salon.id}/></h3><span className="pt-1 text-[11px] font-normal text-text-secondary">{status}</span></div>
+            <div className="mt-1 text-xs leading-5 text-text-secondary">{location ? <p><SalonAddressLink address={location} /></p> : null}</div>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-brand-teal">
               {phone ? <a href={`tel:${phone.replace(/[^\d+]/g, "")}`}>Call salon</a> : null}
-              {canViewSalon ? <Link href={`/explore/salons/${activity.salon.id}`}>View salon</Link> : null}
+              {canViewSalon ? <Link prefetch={false} href={`/explore/salons/${activity.salon.id}`}>View salon</Link> : null}
             </div>
           </div>
         </div>
       </section>
-      {!data && !error ? <p role="status" className="py-3 text-xs">Loading details...</p> : null}
+      {!data && !error ? <p role="status" className="py-3 text-xs">{online ? "Loading details..." : "Reconnect to view these details."}</p> : null}
       {error ? <div role="alert" className="py-3"><p>{error}</p><button className="min-h-10 text-brand-teal" onClick={() => { setError(""); setRetry(retry+1); }} type="button">Try again</button></div> : null}
       <section className="border-b border-border-subtle py-3">
         <p className="text-lg font-semibold">{day}</p>
@@ -102,7 +132,8 @@ export function HistoryDetailsDrawer({ activity, onClose }: { activity: Customer
       </section>
       {receipt ? <dl className="grid grid-cols-2 gap-y-1.5 border-b border-border-subtle py-3 text-xs text-text-secondary">
         <dt>Subtotal</dt><dd className="text-right">{money(receipt.totals.subtotal)}</dd>
-        {receipt.totals.discount_amount ? <><dt>Discount</dt><dd className="text-right">&minus;{money(receipt.totals.discount_amount)}</dd></> : null}
+        {receipt.totals.discount_amount-(receipt.rewardDiscount??0)>0 ? <><dt>Discount</dt><dd className="text-right">&minus;{money(receipt.totals.discount_amount-(receipt.rewardDiscount??0))}</dd></> : null}
+        {!!receipt.rewardDiscount&&<><dt>Reward used</dt><dd className="text-right">&minus;{money(receipt.rewardDiscount)}</dd></>}
         {receipt.totals.tax_amount ? <><dt>Tax</dt><dd className="text-right">{money(receipt.totals.tax_amount)}</dd></> : null}
         {receipt.totals.tip_amount ? <><dt>Tip</dt><dd className="text-right">{money(receipt.totals.tip_amount)}</dd></> : null}
         <dt className="text-sm font-semibold text-text-primary">Paid at salon</dt><dd className="text-right text-lg font-semibold text-text-primary">{money(total)}</dd>
@@ -125,11 +156,13 @@ export function HistoryDetailsDrawer({ activity, onClose }: { activity: Customer
           {booking.cancellation_reason ? <p>Cancellation: {booking.cancellation_reason}</p> : null}
         </div>
       </details> : null}
+      {receipt && <Link className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-orange" href={`/activity/receipts/${receipt.ticketId}`}>View receipt</Link>}
       {booking && receipt ? <details className="border-b border-border-subtle py-2 text-xs"><summary className="cursor-pointer py-2">Original booking · Est. {money(booking.lines?.reduce((sum,line) => sum+Number(line.line_total),0) ?? 0)}</summary><ul>{booking.lines?.map(line => <li className="flex justify-between py-1" key={line.id}><span>{line.service_name_snapshot}</span><span>{money(line.line_total)}</span></li>)}</ul></details> : null}
       <div className="grid gap-2 pt-3">
-        {booking ? <HistoryLinkControl bookingId={booking.id} evidence={booking.historyEvidence} timezone={timezone} /> : null}
-        {receipt?.verifiedVisit ? <VisitExperiencePrompt compact actionLabel="Report experience" countsTowardReputation={receipt.verifiedVisit.countsTowardReputation} initialBody={receipt.verifiedVisit.experienceBody} initialState={receipt.verifiedVisit.experienceState} salonName={activity.salon.name} ticketId={receipt.ticketId} windowDays={receipt.verifiedVisit.windowDays} /> : null}
-        {booking ? <BookingDetailActions embedded onChanged={newBookingId => { if (newBookingId) setActiveBookingId(newBookingId); setRetry(value => value+1); }} booking={booking} canViewSalon={canViewSalon} canChange={canChange} canBookAgain={!canChange && Boolean(booking.lines?.some(line => line.currentServiceBookable))} /> : data && activity.type !== "booking" ? <Link className="inline-flex min-h-10 items-center justify-center rounded-lg bg-brand-orange px-4 text-white" href={`/book/${activity.salon.id}`}>Rebook</Link> : null}
+        {booking ? <HistoryLinkControl bookingId={booking.id} evidence={booking.historyEvidence} timezone={timezone} onChanged={()=>{setRetry(value=>value+1);onChanged?.();}}/> : null}
+        {bookingId && !receipt && !["cancelled", "no_show"].includes(booking?.status ?? activity.status) ? <BookingRewardPending key={`${bookingId}:${booking?.status ?? activity.status}:${retry}`} bookingId={bookingId}/> : null}
+        {receipt?.verifiedVisit ? <VisitExperiencePrompt compact actionLabel="Report experience" countsTowardReputation={receipt.verifiedVisit.countsTowardReputation} experienceId={receipt.verifiedVisit.experienceId} initialBody={receipt.verifiedVisit.experienceBody} initialState={receipt.verifiedVisit.experienceState} salonName={activity.salon.name} ticketId={receipt.ticketId} windowDays={receipt.verifiedVisit.windowDays} /> : null}
+        {booking ? <BookingDetailActions embedded onChanged={newBookingId => { window.dispatchEvent(new Event("reylumi:rewards-changed")); if (newBookingId) setActiveBookingId(newBookingId); setRetry(value => value+1); onChanged?.(); }} booking={booking} canViewSalon={canViewSalon} canChange={canChange} canBookAgain={!canChange && Boolean(booking.lines?.some(line => line.currentServiceBookable))} /> : data && activity.type !== "booking" ? <Link prefetch={false} className="inline-flex min-h-10 items-center justify-center rounded-lg bg-brand-orange px-4 text-white" href={`/book/${activity.salon.id}`}>Rebook</Link> : null}
       </div>
     </div>
   </dialog>, portalHost) : null;

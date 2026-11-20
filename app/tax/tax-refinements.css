@@ -1,0 +1,71 @@
+.tax-app td .tax-actions {
+  margin: 0;
+  gap: 6px;
+}
+.tax-app .tax-payroll-table td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.tax-heading > .tax-actions {
+  margin: 0;
+}
+.tax-app .tax-payroll-table th:first-child {
+  width: 38px;
+}
+.tax-app .tax-message {
+  white-space: normal;
+}
+.tax-app .tax-file-title {
+  word-break: break-word;
+}
+.tax-app:has(> .tax-qa) .tax-shell {
+  min-height: calc(100vh - 96px);
+}
+
+.tax-app .tax-documents-table th:first-child {
+  min-width: 210px;
+}
+
+.tax-app .tax-payroll-table th:first-child { width: auto; }
+.tax-app .tax-payroll-table { min-width: 1060px; }
+.tax-app .tax-toolbar { gap: 7px; padding: 9px 14px; }
+.tax-app .tax-toolbar select { max-width: 260px; }
+.tax-app .tax-toolbar input[type="search"] { width: 145px; }
+.tax-date-filter { position: relative; }
+.tax-date-filter > summary { cursor: pointer; padding: 9px 10px; border: 1px solid var(--tax-line); border-radius: 6px; background: white; }
+.tax-date-filter[open] .tax-date-fields { position: absolute; z-index: 5; right: 0; top: 45px; min-width: 280px; padding: 14px; background: white; border: 1px solid var(--tax-line); border-radius: 8px; box-shadow: 0 8px 20px #193d3615; }
+.tax-explanation { padding: 16px 20px; margin: 22px 16px; background: var(--tax-soft); border: 1px solid var(--tax-line); border-radius: 8px; font-size: 13px; color: var(--tax-muted); }
+.tax-explanation h2 { font-size: 15px; color: var(--tax-text); margin: 0 0 8px; }
+.tax-explanation p { margin: 8px 0; }
+.tax-mobile-breakdown { display:none; }
+.tax-mode-owner .tax-topbar, .tax-mode-staff .tax-topbar { display:none; }
+.tax-mode-owner .tax-shell, .tax-mode-staff .tax-shell { grid-template-columns:minmax(0,1fr); min-height:0; }
+.tax-mode-owner .tax-sidebar, .tax-mode-staff .tax-sidebar { padding:10px 14px; border-right:0; border-bottom:1px solid var(--tax-line); }
+.tax-mode-owner .tax-sidebar > :not(:first-child), .tax-mode-staff .tax-sidebar > :not(:first-child) { display:none; }
+
+@media (max-width:760px) {
+ .tax-shell { grid-template-rows: auto 1fr; align-content:start; }
+ .tax-sidebar { align-items:center; align-content:start; }
+ .tax-mode-staff .tax-sidebar .tax-business { display:none; }
+ .tax-tabs { overflow-x: auto; white-space: nowrap; }
+ .tax-mode-owner .tax-heading, .tax-mode-staff .tax-heading { padding: 12px; }
+ .tax-mode-owner .tax-heading h1, .tax-mode-staff .tax-heading h1 { font-size: 21px; }
+ .tax-mode-owner .tax-toolbar { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+ .tax-mode-owner .tax-toolbar select, .tax-mode-owner .tax-toolbar input[type="search"] { width:100%; min-width:0; }
+ .tax-mode-owner .tax-toolbar .tax-grow { display:none; }
+ .tax-mode-owner .tax-payroll-table, .tax-mode-owner .tax-documents-table, .tax-mode-staff .tax-documents-table { min-width:0; display:block; }
+ .tax-mode-owner .tax-payroll-table thead, .tax-mode-owner .tax-documents-table thead, .tax-mode-staff .tax-documents-table thead { display:none; }
+ .tax-mode-owner .tax-payroll-table tfoot { display:block; padding:10px; }
+ .tax-mode-owner .tax-payroll-table tbody, .tax-mode-owner .tax-documents-table tbody, .tax-mode-staff .tax-documents-table tbody { display:grid; gap:10px; padding:10px; }
+ .tax-mode-owner .tax-payroll-table tr, .tax-mode-owner .tax-documents-table tr, .tax-mode-staff .tax-documents-table tr { display:grid; grid-template-columns: minmax(0,1fr); border:1px solid var(--tax-line); border-radius:9px; overflow:hidden; }
+ .tax-mode-owner .tax-payroll-table td, .tax-mode-owner .tax-documents-table td, .tax-mode-staff .tax-documents-table td { display:flex; align-items:center; flex-wrap:wrap; justify-content:space-between; gap:6px 12px; text-align:right; padding:9px 12px; min-width:0; }
+ .tax-mode-owner .tax-payroll-table td::before, .tax-mode-owner .tax-documents-table td::before, .tax-mode-staff .tax-documents-table td::before { content:attr(data-label); color:var(--tax-muted); font-size:12px; text-align:left; }
+ .tax-mode-owner .tax-payroll-table .tax-person, .tax-mode-owner .tax-documents-table td:first-child, .tax-mode-staff .tax-documents-table td:first-child { display:block; text-align:left; background:var(--tax-soft); }
+ .tax-mode-owner .tax-payroll-table td small { flex-basis:100%; }
+ .tax-mode-owner .tax-payroll-table .tax-person::before, .tax-mode-owner .tax-documents-table td:first-child::before, .tax-mode-staff .tax-documents-table td:first-child::before { display:none; }
+ .tax-mode-owner .tax-payroll-table tr:not(.tax-expanded-row) td:nth-child(2), .tax-mode-owner .tax-payroll-table tr:not(.tax-expanded-row) td:nth-child(3), .tax-mode-owner .tax-payroll-table tr:not(.tax-expanded-row) td:nth-child(4) { display:none; }
+ .tax-mode-owner .tax-mobile-breakdown { display:block; }
+ .tax-mode-owner .tax-payroll-table .tax-detail { display:block; text-align:left; }
+ .tax-mode-owner .tax-payroll-table .tax-expanded-row { margin-top:-10px; }
+ .tax-explanation { margin:12px 10px; padding:12px; }
+}

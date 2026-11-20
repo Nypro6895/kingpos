@@ -1,0 +1,81 @@
+{
+  "kind": "change",
+  "changeId": "phone-otp-sms-target-20261113",
+  "status": "ready",
+  "summary": "Fix adding/changing-phone OTP delivery by using the signed Supabase sms.phone destination, plus accurate EN/VI dialog delivery state; frozen and validated for combined deploy only.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/auth/sms-hook/route.ts",
+    "app/account/account-profile-editor.tsx",
+    "lib/vietnamese-workspace-copy.json",
+    "tests/auth-sms-hook-runtime.test.mjs",
+    "tests/ios-personal-settings.test.mjs",
+    "releases/phone-otp-sms-target-20261113.txt"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\phone-otp-sms-target-20261113\\artifacts\\phone-otp-sms-target\\frozen",
+    "commit": "0f8c6b6b585e7896d346f1603f74f87bd9f3a20c",
+    "baseCommit": "274a3ab4300956a458c564ad6beab44ff85e7264"
+  },
+  "validation": [
+    {
+      "name": "Signed hook runtime and account phone-change security",
+      "result": "passed",
+      "evidence": "16/16 tests; real signature verifier and mocked storage/provider; no external delivery"
+    },
+    {
+      "name": "Account phone dialog initial/failure/success browser states",
+      "result": "passed",
+      "evidence": "1/1 browser test across 320/390/768 Chromium viewports"
+    },
+    {
+      "name": "Changed product and test ESLint",
+      "result": "passed",
+      "evidence": "Both TS/TSX product files and both test files clean"
+    },
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/phone-otp-sms-target/build.log; 305 pages and 571 offline assets; background dispatch disabled"
+    },
+    {
+      "name": "Signed-hook destination independent review",
+      "result": "passed",
+      "evidence": "No material issue; existing signature/idempotency/email authorization boundaries preserved"
+    },
+    {
+      "name": "Frozen source and patch integrity",
+      "result": "passed",
+      "evidence": "Exact committed bytes; six SHA256 hashes; patch applies to isolated index at published baseline"
+    },
+    {
+      "name": "Actual local source HTTP checks and preview registration",
+      "result": "passed",
+      "evidence": "/account 200 and unsigned /api/auth/sms-hook 401 on own dev server; owner preview registered"
+    }
+  ],
+  "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+  "releaseConstraint": "Combined deployment queue only; do not publish separately or schedule automatically.",
+  "nativeAssessment": "Server destination fix is web-only; AccountProfileEditor and workspace copy are bundled clients requiring a native rebundle for the iPhone copy change.",
+  "acceptanceRemaining": [
+    "Reconcile against then-current production and latest uploaded native source before combined release.",
+    "Hosted delivery and physical iPhone acceptance after authorized publication; no real SMS sent during this task."
+  ],
+  "id": "154ce943-7c0f-46a5-966f-fb9006032093",
+  "recordedAt": "2026-11-14T03:23:48.340Z",
+  "worktree": "C:\\Reylumi-worktrees\\phone-otp-sms-target-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/auth/sms-hook/route.ts": "716de4295d274a091ddef6609bf7af0b4e95611c9a88a49a8fb4391aa3a87ac2",
+    "app/account/account-profile-editor.tsx": "cc50c74cc3dabd4533d5c743bfd7cfea925c419f7c663d5f0129f0743ef88afb",
+    "lib/vietnamese-workspace-copy.json": "e301296458cda434d1a53ae2c23b2b65fc53c2682a16e167ff9b43365806d882",
+    "tests/auth-sms-hook-runtime.test.mjs": "6ea6566ee18313d6781e122bd6375a0a37022f5ac621583365b03555d0952fb3",
+    "tests/ios-personal-settings.test.mjs": "a40ce144090e020bf7dc845c5830c9299f0ba354a67c6afed4b8930b11ae1c72",
+    "releases/phone-otp-sms-target-20261113.txt": "2623c51916fd5e3762cec7db5183fab90b61fb98003d51b01e359b7b922c98e3"
+  }
+}

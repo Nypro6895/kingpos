@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "staff-owner-header-20261026",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Show staff personal identity and salon subtitle; owner salon identity and Owner subtitle",
+  "files": [
+    "app/navigation-shell.tsx"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\role-header-20261026\\frozen"
+  },
+  "validation": [
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/role-header-20261026/build.log"
+    },
+    {
+      "name": "10 rendered identity assertions and 6 mobile browser layouts",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos-role-header-20261026/artifacts/browser.json"
+    },
+    {
+      "name": "ESLint changed module",
+      "result": "passed"
+    }
+  ],
+  "notes": "Scoped role header release; pending journal inspected. Unrelated queued changes retained as pending; exact current production source retained. Compatible web-only change, no native build required.",
+  "id": "5f626186-2bb4-4e20-9587-815124921dbe",
+  "recordedAt": "2026-10-26T22:04:01.574Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/navigation-shell.tsx": "c3c9a9e65da0ffac9912259b5de20dd338035ad446c197969c0c0b765632476b"
+  }
+}

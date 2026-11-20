@@ -1,0 +1,133 @@
+{
+  "at": "2026-10-29T21:13:42.148Z",
+  "mode": "live",
+  "base": "https://reylumi.com",
+  "rows": [
+    {
+      "path": "/help",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Reylumi Help"
+    },
+    {
+      "path": "/help?lang=vi",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Hướng dẫn Reylumi"
+    },
+    {
+      "path": "/help/windows-portable",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Windows Portable: daily use, settings and turns | Reylumi"
+    },
+    {
+      "path": "/explore",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Reylumi"
+    },
+    {
+      "path": "/login",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Log in | ReyLUMI"
+    },
+    {
+      "path": "/settings",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Settings | Reylumi"
+    },
+    {
+      "path": "/account",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Reylumi"
+    },
+    {
+      "path": "/check-writer",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Check Writer | Reylumi"
+    },
+    {
+      "path": "/payroll",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Reylumi"
+    },
+    {
+      "path": "/reports",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Reylumi"
+    },
+    {
+      "path": "/staff",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Reylumi"
+    },
+    {
+      "path": "/pos",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Reylumi"
+    },
+    {
+      "path": "/download/windows",
+      "method": "HEAD",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": null
+    },
+    {
+      "path": "/security-check",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Security check | Reylumi"
+    },
+    {
+      "path": "/admin/post-safety/spam",
+      "method": "GET",
+      "status": 200,
+      "location": null,
+      "serverError": false,
+      "title": "Reylumi"
+    },
+    {
+      "path": "/api/app-local/read?name=customer.history&scope=v3:0000000000000000000000000000000000000000000000000000000000000000",
+      "status": 401,
+      "unauthenticatedDenial": true
+    }
+  ],
+  "writes": 0
+}

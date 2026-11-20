@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "local-first-pos-staff-20261016",
+  "status": "working",
+  "summary": "Preserve verified public asset deployment ownership while background preparation replaces a retained page, without touching drafts, grants or financial rules.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "public/experience-offline-worker.js",
+    "tests/experience-offline-foundation.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+    "commit": "4bfb9e2cde05443d3c41b60c8d95bc087df3d8e2"
+  },
+  "validation": [
+    {
+      "name": "Retained DOM A across background build B with offline unseen lazy module and bounded generation eviction",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "42aefb3d-b4a6-47ec-893a-f281450d1e09",
+  "recordedAt": "2026-10-16T05:16:25.014Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

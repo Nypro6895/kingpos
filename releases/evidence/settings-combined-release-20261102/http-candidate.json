@@ -1,0 +1,67 @@
+{
+  "at": "2026-11-02T16:09:25.097Z",
+  "applicationSession": false,
+  "infrastructureAccess": "Official authenticated Vercel curl",
+  "records": [
+    {
+      "route": "/salon-settings",
+      "status": 200,
+      "bytes": 78371
+    },
+    {
+      "route": "/settings",
+      "status": 200,
+      "bytes": 82489
+    },
+    {
+      "route": "/explore",
+      "status": 200,
+      "bytes": 223197
+    },
+    {
+      "route": "/salon-profile",
+      "status": 200,
+      "bytes": 80147
+    },
+    {
+      "route": "/help",
+      "status": 200,
+      "bytes": 63704
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "bytes": 214799
+    },
+    {
+      "route": "/staff/today",
+      "status": 200,
+      "bytes": 92578
+    },
+    {
+      "route": "/pos-tickets",
+      "status": 200,
+      "bytes": 79186
+    },
+    {
+      "route": "/payroll",
+      "status": 200,
+      "bytes": 80762
+    },
+    {
+      "route": "/api/pos/owner/reports",
+      "status": 401,
+      "bytes": 0
+    },
+    {
+      "route": "/reports",
+      "status": 200,
+      "bytes": 79497
+    },
+    {
+      "route": "/api/experience/today",
+      "status": 401,
+      "bytes": 24
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "status": "needs-integration",
+  "changeId": "ios-camera-purpose-copy-20261116",
+  "summary": "Clarified two existing iOS permission purpose strings for QR and selected support/document photos; no new permissions/bundle/version, awaits native integration",
+  "channels": [
+    "ios"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "XML validity and only Camera/Photos purpose strings changed; all permission keys/bundle/version preserved",
+      "result": "passed",
+      "evidence": "artifacts/ios-submission-scope-20261116/camera-purpose-validation.json"
+    },
+    {
+      "name": "Source-backed QR, Support, Claim and Tax image-upload purposes",
+      "result": "passed",
+      "evidence": "docs/ios-submission-native-data-map-20261116.md"
+    },
+    {
+      "name": "New native archive/binary and real-device prompts",
+      "result": "pending"
+    }
+  ],
+  "files": [
+    "ios/Reylumi/Info.plist",
+    "releases/changes/2026-11-17T04-42-06-299Z-99a55902-1e52-451b-a7f9-3081ab67c3ef.json"
+  ],
+  "source": {
+    "snapshot": "artifacts/ios-submission-scope-20261116/frozen/camera",
+    "commit": "08c877386d010d283be61ed77e3ccf6f0c63a677"
+  },
+  "snapshotSha256": "c5df91ca466bffb97762b520679138298ed055d3f6a144acd0b157384e87ce73",
+  "id": "069979e9-00db-42a2-b641-f00b6ab7f0a2",
+  "recordedAt": "2026-11-17T04:55:42.286Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

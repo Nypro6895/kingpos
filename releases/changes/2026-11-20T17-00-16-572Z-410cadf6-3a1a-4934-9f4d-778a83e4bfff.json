@@ -1,0 +1,47 @@
+{
+  "summary": "Collect archive/export privacy declarations and reject mismatched selected main identity before upload",
+  "channels": [
+    "ios"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-ios-final-r1\\ios-privacy-inventory\\frozen-source-r2",
+    "commit": "ff6e84c450ef039765c9a94e1a501a992c428ffa"
+  },
+  "changeId": "ios-archive-privacy-inventory-20261120",
+  "validation": [
+    {
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-ios-final-r1\\ios-privacy-inventory\\r2\\fixtures-test.log",
+      "result": "passed",
+      "name": "15 generated fixture tests; XML/binary/privacy boundaries/identity mismatch"
+    },
+    {
+      "evidence": "bash -n and git diff --check; no actual archive/provider action",
+      "result": "passed",
+      "name": "shell syntax and whitespace check"
+    }
+  ],
+  "supersedesEvents": [
+    "75368aa4-2373-49e8-b534-d9d03f84c804"
+  ],
+  "files": [
+    "ios/scripts/collect-archive-privacy.py",
+    "ios/scripts/test_collect_archive_privacy.py",
+    "ios/scripts/testflight.sh",
+    ".github/workflows/reylumi-ios-testflight.yml",
+    "docs/ios-archive-privacy-inventory.md"
+  ],
+  "kind": "change",
+  "status": "ready",
+  "id": "410cadf6-3a1a-4934-9f4d-778a83e4bfff",
+  "recordedAt": "2026-11-20T17:00:16.572Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-archive-privacy-inventory-20261120-r1",
+  "deletedFiles": [],
+  "fileHashes": {
+    "ios/scripts/collect-archive-privacy.py": "80fecfa12a6417625abb907c82f8651696a3448d239f0cfadbd4ea34b109bd7f",
+    "ios/scripts/test_collect_archive_privacy.py": "b1c2a1fc9935af514c91845e09c49072807123b3a6e377fc4068e0ddeffb5d5e",
+    "ios/scripts/testflight.sh": "68ef8a182abbf21d672c2892029b75747c278b8c63371df1e59cc410bc0ae92c",
+    ".github/workflows/reylumi-ios-testflight.yml": "7c618a2a900f6d43bdcfbbcf2a18ed26909590511260d769ed697a14144b30d3",
+    "docs/ios-archive-privacy-inventory.md": "c5b4c0e2a8a7fcffe177ebe38cd4168e03d59530dd45a4ed1fcf44156842c2c7"
+  }
+}

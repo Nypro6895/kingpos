@@ -1,0 +1,46 @@
+{
+  "kind": "release",
+  "summary": "Verified salon setup web release including the settled 404 title follow-up. Test salon remains private; no live save, publication, booking or payment was performed by this release.",
+  "changes": [
+    "8a50bcc5-55de-48ad-9e4d-076db0513ef4",
+    "86149564-d12c-4a4b-8990-54569ccd6e5d",
+    "a6162a5c-d3e3-43ae-aff4-f8c7cf0ce79c",
+    "641cc70e-e34d-41bb-801a-595e1ed7e9bf"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_EW3mj5c8bzs8kw48X4cJDvKvhUuX",
+      "baselineDeploymentId": "dpl_EuCQkjXX6nhSji6dp48tvFV3uEAB",
+      "sourceSha256": "f388e0ab8e6bf1dc817c6f117230a56fe6f019ed0a803d03ef07645f43559462",
+      "overlaySha256": "d0412b71031239c3a49cbd18e4dfa316b1b27030d4f2639f65443753ac1e9a3d",
+      "deploySourceSha256": "f388e0ab8e6bf1dc817c6f117230a56fe6f019ed0a803d03ef07645f43559462",
+      "commit": "9ee5daa9394f60e1e28d60423ea73145b74b99e3",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/title-followup/live-source-verification.json"
+    }
+  },
+  "verification": {
+    "http": 12,
+    "ui": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/live-ui-verification.json",
+    "sourceAndFrozenEventHashes": true
+  },
+  "source": {
+    "commit": "9ee5daa9394f60e1e28d60423ea73145b74b99e3",
+    "manifest": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/title-followup/assembled-source.json"
+  },
+  "exclusions": [
+    {
+      "changeId": "payroll-period-ledger-20261015",
+      "reason": "Separate financial rules and unresolved security follow-up; existing production payroll preserved."
+    },
+    {
+      "changeId": "salon setup layout and publication policy consolidation",
+      "reason": "Proposal only, not approved or implemented."
+    }
+  ],
+  "id": "82fdda9a-e231-498e-bcca-cbc37696ad9a",
+  "recordedAt": "2026-10-16T20:52:59.165Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos"
+}

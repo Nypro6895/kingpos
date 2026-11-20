@@ -1,0 +1,95 @@
+{
+  "kind": "change",
+  "changeId": "owner-today-auth-progressive-20261018",
+  "status": "ready",
+  "summary": "Coalesce concurrent read authentication and progressively load Owner Today on web/iOS while preserving access and accounting; locally verified, not deployed",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/staff/today/page.tsx",
+    "app/api/experience/today/route.ts",
+    "app/staff/today/today-dashboard-client.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-resources-server.ts",
+    "lib/app-local-platform-types.ts",
+    "lib/app-local-resource.ts",
+    "lib/app-local-role-resources-server.ts",
+    "lib/app-local-role-resources.ts",
+    "lib/read-context-scope.ts",
+    "lib/supabase/server.ts",
+    "lib/today-dashboard-sections.ts",
+    "lib/today-dashboard.ts",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/owner-today-progressive-native-contract.test.mjs",
+    "tests/owner-today-progressive-ui.test.mjs",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/today-dashboard-progressive.test.mjs",
+    "tests/today-dashboard-view-progressive.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\owner-today-auth-progressive-20261018\\frozen-source-v2",
+    "baseCommit": "ea618840b71e35fbd54bd31532f2676d6fd895a6",
+    "sourceSha256": "7aff6e0b0a4675518acf18d476f7ea1689524e9481b4e763d25921d042821f88"
+  },
+  "validation": [
+    {
+      "name": "109 selected auth/financial parity/render/cache/browser checks",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\owner-today-auth-progressive-20261018\\verification.json"
+    },
+    {
+      "name": "TypeScript and production web build plus offline assets",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\owner-today-auth-progressive-20261018\\production-build-final.json"
+    },
+    {
+      "name": "ESLint zero errors/warnings on selected implementation and tests",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\owner-today-auth-progressive-20261018\\verification.json"
+    },
+    {
+      "name": "iOS bundle build, 344 file hashes and public configuration parity",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\owner-today-auth-progressive-20261018\\ios-bundle-integrity.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "c69ac413-b7f2-4651-8ff2-8e76248298ab",
+  "recordedAt": "2026-10-18T22:47:01.846Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/staff/today/page.tsx": "fc94a261119fd4e0c212f61ff7a566bc480a64997aabe849894286800ee42277",
+    "app/api/experience/today/route.ts": "73ff8ccda7a77636f77bbf3ac2b9dc04efe123d31a16ef33f584629c1ad7d1b7",
+    "app/staff/today/today-dashboard-client.tsx": "f1e4c8d88170393cf9ca7b31dcb1536bab85de032c6ebf5305a1681a54c99fe3",
+    "app/staff/today/today-dashboard-view.tsx": "5e1ae03265848dd367f6b060c0e3e136a6de0aae1e4c7e0fadff5b5ca9fdeae5",
+    "app/staff/today/today-progressive-client.tsx": "4bf85415f69421111472eb04a6e63d3816133cf464512c4456d7be224b33ca5c",
+    "ios/Reylumi/LocalAppBundle/app.css": "9b7887fb7aa4d813d81c2c73720b5c28fc3714c188bb12e000c0c60a89a021db",
+    "ios/Reylumi/LocalAppBundle/app.js": "67958790443487eb07e11bc2d8f686f3dba9e9df90310bf8c1d136b49bc2cbf0",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "c0f98c4464423959a1b969fdac78160862432f5ab46b0e514c0389c7d330f7ac",
+    "lib/app-local-page-registry.tsx": "f15131099a545826d22860338bb66ed4da1fa6a0cb279f21b51608be51092858",
+    "lib/app-local-platform-resources-server.ts": "6942e40f496876861ec62ff5fa4f1c39ad4b7b8258bff8996b7afefb5f62485c",
+    "lib/app-local-platform-types.ts": "cb42adee68e573080fbc270abb537406561d1a4ce8f392a850207955bdad0ca0",
+    "lib/app-local-resource.ts": "1bd202268ceed8d158184d44e4dc1f6346162ce725e3ea0f9abd6372acfed4f6",
+    "lib/app-local-role-resources-server.ts": "7b32176d09ad7484396203874d9a58e605a9319c42a6fc0b30a4aec716cbe26e",
+    "lib/app-local-role-resources.ts": "84db189260d87e317896a8ddd444e8fa6cb7b963bffd14f47c6c331aa360234c",
+    "lib/read-context-scope.ts": "0cdb50a573704817246ecccadaca6d044e21b0e84c2409fc142d81a8fd1facee",
+    "lib/supabase/server.ts": "a390630e64d73ecdc4af2bb1bf7479477d5889fba4e58a52c00472f548401a7d",
+    "lib/today-dashboard-sections.ts": "2efe3f99c06aaebb20c07c44257e986cffe5cf4d5840496b21f4306065fb3ac0",
+    "lib/today-dashboard.ts": "2e6491a44adc027d0170dc2db9eba227905b65092d83c05625b2bbcb21a0d7dd",
+    "tests/experience-auth-availability.test.mjs": "d4d68ac7a0fedcb0f233d2ce352d58667740b00a13f5b58032461a306600b75c",
+    "tests/owner-today-progressive-native-contract.test.mjs": "aaf5910a904fb6486830f207a945b5d93a8db909a85196f3ec339200d5b6cc63",
+    "tests/owner-today-progressive-ui.test.mjs": "4704f98b431116afa58becc298c0c5bac3f8c3ff97c57738aa746c537763c4ba",
+    "tests/read-auth-coalescing.test.mjs": "67b2fd7d2fe1171615ad102c28324a2abc648a2b13fbfa35b5250b62a149841d",
+    "tests/today-dashboard-progressive.test.mjs": "200d4225440db2e19632c2a844dbef9f86d86066a11a9a5b5e62abf2e138c00f",
+    "tests/today-dashboard-view-progressive.test.mjs": "baed99b72c14305a1355d788dac7e89c599de67817d69712a2ee6b6106e14b95"
+  }
+}

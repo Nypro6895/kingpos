@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-11-19T07:33:38.707Z",
+  "kind": "source-only-search-sql-compatibility-review",
+  "candidateBase": "045dfa2278548787c1abb434b0362ef83b90afec",
+  "migrationHashes": {
+    "search": "5ad8295f813199f9eb22791290d2f94b49a18fe039d0433c92369109e396ef11",
+    "preparation": "900fda212ed246b481c8f994c43565586d399166b93c1f992c7963461e5b0562"
+  },
+  "independentReviewer": "/root/android_store_audit",
+  "newConcreteBlockerFound": false,
+  "confirmedSourceFacts": [
+    "default OFF; no automatic backfill/activation",
+    "new empty derivative indexes; no public raw-table/view grants",
+    "history triggers preserve canonical sources and source-token/block/public-salon proof",
+    "ad selection functions unchanged",
+    "service-only bounded preparation, generation CAS,41 index metadata checks, statistics outside canonical clock, NOWAIT revision publication boundary"
+  ],
+  "unverified": [
+    "actual combined full-schema replay after all current migrations",
+    "moderation/account-erasure visibility after synthetic local activation in combined schema",
+    "hosting capacity, planner statistics and online cutover",
+    "actual hosted readback/physical native QA"
+  ],
+  "noDatabaseExecutedByPeer": true
+}

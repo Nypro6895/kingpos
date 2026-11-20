@@ -1,0 +1,21 @@
+{
+  "kind": "release",
+  "summary": "Shop collected/remaining/reserves, zero-day shortages, audited inputs, expenses and Gift/Reward/Discount reconciliation published; authenticated owner navigation/forms verified. Native exact-source build remains in progress.",
+  "changes": [
+    "6024f0b5-5eb7-48ab-8ad6-f052b8c93c4b"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_62ypVGBt4UeVjHymgi9gXKqQmETn",
+      "baselineDeploymentId": "dpl_Bkrw88gADr6EfwAGLQ4vG9gTUfBA",
+      "sourceSha256": "7c3b8bf93f8943ddca98dc39b1617ebda1ace9ca21a470c1b6031b1bcd57256b",
+      "overlaySha256": "6494469bf68bce302c4592cd01d8aba616d3063d141b5ed11856481360248c04",
+      "evidence": "artifacts/shop-money-20261031/v3/web-live-source-verified.json; artifacts/shop-money-20261031/v3/http-live.json; artifacts/shop-money-20261031/v3/authenticated-owner-live.json; artifacts/shop-money-20261031/v3/production-migration.json"
+    }
+  },
+  "id": "1e72b906-47a9-4905-8451-4b6ad8ad845e",
+  "recordedAt": "2026-11-01T04:34:38.838Z",
+  "worktree": "C:\\Reylumi-worktrees\\shop-money-expenses-20261031"
+}

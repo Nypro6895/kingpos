@@ -1,0 +1,28 @@
+{
+  "validation": [
+    {
+      "evidence": "artifacts/owner-forum/database-tests-final.txt",
+      "result": "passed",
+      "name": "Numeric chat/audit ordering and authorization runtime tests"
+    }
+  ],
+  "channels": [
+    "web"
+  ],
+  "dependencies": [
+    "owner-forum-20261103"
+  ],
+  "kind": "change",
+  "status": "working",
+  "summary": "Keep bigint chat and audit IDs precision-safe on the wire while sorting numerically in PostgreSQL",
+  "changeId": "owner-forum-numeric-order-20261103",
+  "files": [
+    "supabase/migrations/20261103183500_forum_numeric_order.sql",
+    "tests/forum-runtime.test.mjs"
+  ],
+  "id": "7a88011e-8504-4f88-a497-1e918aa563ff",
+  "recordedAt": "2026-11-03T18:32:06.134Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

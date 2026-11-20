@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "help-report-separation-20261017",
+  "status": "ready",
+  "summary": "Separate Help from Report, default Help to English and show request history as dated rows Integrated and validated against dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ with iOS 1.0.0 package parity.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/support/page.tsx",
+    "app/help/help-language.tsx",
+    "app/help/help-content.tsx",
+    "app/help/help-catalog.tsx",
+    "app/help/help.module.css",
+    "tests/help-draft.test.mjs",
+    "app/role-navigation.ts",
+    "app/navigation-shell.tsx",
+    "lib/reylumi-config.ts",
+    "app/(app)/help/page.tsx",
+    "app/(app)/help/[slug]/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "sourceEventId": "541cdfdd-821b-42f9-9d04-335778e89b38"
+  },
+  "supersedesEvents": [],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/web-build.log"
+    },
+    {
+      "name": "277 integration/browser regression cases; initial five fixture failures repaired and rerun, two Chrome-only tests explicitly executed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/validation-summary.json"
+    },
+    {
+      "name": "Actual native package and four version-preflight checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/final-package-tests.log"
+    },
+    {
+      "name": "Rollback-only actual-schema rehearsal, 16 functions and seven preserved authorities",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/database-rehearse.json"
+    },
+    {
+      "name": "Existing live Stripe webhook receives card setup event",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/payment-webhooks.json"
+    }
+  ],
+  "id": "dabb8849-233e-420f-961e-afdb40afadd9",
+  "recordedAt": "2026-10-17T22:06:59.267Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\release-audit-ios-1-0-0-20261017",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/support/page.tsx": "8d5fac666ffe1aa9623da00ea15a56a09e7c30aadb5687aaec1f73629639e278",
+    "app/help/help-language.tsx": "27bd49c06379a5fdfee5f69805d112b6bda68ddc50f47957ca0c7f23615fc251",
+    "app/help/help-content.tsx": "1e78c726c61f8f4045fa3a394810a47b754cbe353dc77138180c8d75698d2f0a",
+    "app/help/help-catalog.tsx": "c72b872be54790f79817b1341c200e5671069b5e57ce33f4b3843f098ac8c5df",
+    "app/help/help.module.css": "5064e7e82ca6a28ed99468507979d58cee79ad5bb34d6451fbcbc21ecf8b314c",
+    "tests/help-draft.test.mjs": "ad25bc7d0a81418a692b9e466a4711b1197b07243bf1c1d1eb48d4c09067651c",
+    "app/role-navigation.ts": "9a3dc3f87d9a3a0cfd98ede58ec3bbf65d6fb7cf7f37ca654a1e949427c2817c",
+    "app/navigation-shell.tsx": "fb9ffd36225f154d2ae78a0e652c55c6e62e9d3d726e1d70e098fa300c2fc4a9",
+    "lib/reylumi-config.ts": "92da041395d70d408e89d071b0add131b5172638b8a6a404e17220681aa5a732",
+    "app/(app)/help/page.tsx": "a7a7f9d7bd80700e1dde473cf2e8965c521ea9fd4bd8ffebcd8efb4d1ec34100",
+    "app/(app)/help/[slug]/page.tsx": "4f9d2c519a31df4b14e24abf484ccd5bf8a13ca531064c975303fe0ab4a75558"
+  }
+}

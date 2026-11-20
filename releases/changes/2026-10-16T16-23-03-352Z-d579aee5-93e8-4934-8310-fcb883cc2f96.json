@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "app-local-role-http-20261016",
+  "status": "ready",
+  "summary": "Bridge only exact existing staff booking and notification HTTP reads/actions to their original guarded route handlers for installed local views.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-role-http-client.ts",
+    "lib/app-local-role-http-server.ts",
+    "tests/app-local-role-http.test.mjs",
+    "lib/app-local-platform-types.ts"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "validation": [
+    {
+      "name": "17 focused server authority/conditional/cancel/wire and actual local UI tests",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/role-renderers-tests.json"
+    },
+    {
+      "name": "Targeted lint and whole TypeScript",
+      "result": "passed"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\frozen-role-renderers-20261016T1620"
+  },
+  "id": "d579aee5-93e8-4934-8310-fcb883cc2f96",
+  "recordedAt": "2026-10-16T16:23:03.352Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-role-http-client.ts": "e29970510b469e833593c466787a0e7ea819894b94f5c7605a04e21e1e824e68",
+    "lib/app-local-role-http-server.ts": "6d548e903dcc8a2d34eda0bc84efe23c65dcfb820f9a19ebfc5fe6bd18616ac4",
+    "tests/app-local-role-http.test.mjs": "bece08ff929f92fd2c64445137571c1ba321b9a8f35d132cf33f0689605f2310",
+    "lib/app-local-platform-types.ts": "d553307d549964f22e92c6734bd6d03725687f74efd9917937dd6a1e6567e288"
+  }
+}

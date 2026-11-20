@@ -1,0 +1,68 @@
+{
+  "kind": "change",
+  "changeId": "profile-public-notice-cleanup-20261017",
+  "status": "needs-integration",
+  "summary": "Remove redundant public-profile confirmation banners across managed Profile, publication drawer and Settings; retain private/unavailable warnings, public navigation and unclaimed-business behavior.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/salon-publication-status.tsx",
+    "app/(app)/salon-profile/page.tsx"
+  ],
+  "source": {
+    "snapshot": "artifacts/profile-public-notice-20261017/source",
+    "baselineSnapshot": "artifacts/profile-public-notice-20261017/before",
+    "patch": "artifacts/profile-public-notice-20261017/change-portable.patch",
+    "patchSha256": "672775cf950afbb35531f9cfea6ada80705cddc5faf127508c9d807831b70b5a"
+  },
+  "fileHashes": {
+    "components/salon-publication-status.tsx": "122616c703c1b16d5c3bf4c2b0fd663302f8430776c44c8cd71c768462d22e3b",
+    "app/(app)/salon-profile/page.tsx": "76d03c316b16d5538867df5d69a2fb95d56f6b455ab2007a78b4c2621ab3878e"
+  },
+  "validation": [
+    {
+      "name": "TypeScript full workspace check",
+      "result": "passed",
+      "command": "npx tsc --noEmit --incremental false"
+    },
+    {
+      "name": "Targeted ESLint",
+      "result": "passed",
+      "command": "npx eslint components/salon-publication-status.tsx app/(app)/salon-profile/page.tsx"
+    },
+    {
+      "name": "Existing focused readiness/content/booking tests",
+      "result": "passed",
+      "evidence": "11 passed."
+    },
+    {
+      "name": "React server markup comparison",
+      "result": "passed",
+      "evidence": "Published branch renders only View public profile anchor. Unpublished markup is byte-identical before and after."
+    },
+    {
+      "name": "Extended directory/settings tests",
+      "result": "failed",
+      "evidence": "3 passed, 1 failed, 1 skipped. Favorites test mock rejects existing import @/components/saved-salon-list in untouched favorites route."
+    },
+    {
+      "name": "Existing owner route test",
+      "result": "failed",
+      "evidence": "Mock lacks @/components/experience-page imported by untouched public Explore route. Unrelated to these two changed files."
+    },
+    {
+      "name": "Portable patch applies cleanly to frozen before snapshot",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "integration": "Apply change-portable.patch to current production source. Full source files include pre-existing shared-checkout changes and are reference material, not a replacement production baseline.",
+  "nativeAssessment": "Not requested; not deployed. No native build required for this web-only presentation change.",
+  "correctsEvent": "8124012b-e0a6-4716-a8f1-b605badf192b",
+  "id": "3432be07-8d51-46ac-be8d-1a72625094bd",
+  "recordedAt": "2026-10-17T01:27:43.196Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

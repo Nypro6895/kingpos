@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "pos-adaptive-categories-20261026",
+  "status": "ready",
+  "summary": "Replace category folders with continuous same-color service categories; adapt staff and service grids before scrolling; reconciled with current live source and combined fixes",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/pos-adaptive-layout.ts",
+    "app/pos/adaptive-pos-workspace.tsx",
+    "app/pos/adaptive-pos-workspace.css",
+    "app/pos/service-catalog.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/(app)/pos/settings/page.tsx",
+    "tests/pos-service-catalog-ui.test.mjs",
+    "tests/pos-adaptive-layout.test.mjs",
+    "docs/pos-adaptive-categories-20261026-deploy-note.txt"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\all-recent-chats-20261026\\frozen"
+  },
+  "dependencies": [
+    "pos-service-categories-20261026"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Clean production build and full TypeScript",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/build.log"
+    },
+    {
+      "name": "Integrated browser/unit suites and 26 complete-schema database tests",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r2.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r3.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/pos-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/db-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/display-browser.json"
+      ]
+    },
+    {
+      "name": "Windows installer build, packaged updater SHA512/cache/corrupt-rejection and Help menu",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/windows-build-fixed.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/packaged-runtime.stdout",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/desktop-tests.log"
+      ]
+    }
+  ],
+  "integration": {
+    "producerEventId": "53cba3bc-b68e-40bc-8627-373820e8a392",
+    "baselineDeploymentId": "dpl_GUQtNqU69KygUkpE8C9W4eVWpAEq",
+    "notes": "Preserve shipped owner workspace recovery, action feedback, offline safeguards, Report and flat UI. Adaptive category tiles supersede the earlier folder presentation. Help uses shipped server language/session architecture. Windows Help ships in rebuilt 0.7.3. Database backfill awaits action-time confirmation; ready source is not publication."
+  },
+  "id": "7f5a98b0-6e02-4914-a557-32c4a09cc4dc",
+  "recordedAt": "2026-10-26T23:55:40.919Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "fileHashes": {
+    "lib/pos-adaptive-layout.ts": "b97f8428ed621fc12db355163a639c77f3218ebdbb6d811e016e4934ad4760be",
+    "app/pos/adaptive-pos-workspace.tsx": "e462405fa2c375ad2eb6462322ce4359978593521aff77cb54e62787330b94c1",
+    "app/pos/adaptive-pos-workspace.css": "8230ba53941fd3dfd473f29b7c6e476a10e9b1aaf89f0cd4d1e44f591d592f33",
+    "app/pos/service-catalog.tsx": "29f338728fbc51c304e66ce8d0dcb0c08242196ca87220450297527a840f7003",
+    "app/pos/pos-desk-client.tsx": "686671d025bbf1129677ff0bfbb34dc60e6d35733f14496b60b0dd25bd032db5",
+    "app/pos/owner-pos-client.tsx": "45ef01caeeb9b159ae39adf5bb18ee48866e7497d67e6aad32baecb0b4dc9722",
+    "app/(app)/pos/settings/page.tsx": "f4afbfbf7fe58f29c171d964d082c5e436a4fd8fd4dee05b391732b8f6c43665",
+    "tests/pos-service-catalog-ui.test.mjs": "633b2f69fba8d34dc116bee12f4facee9f18a886409d0bc00c103f2bce94b81d",
+    "tests/pos-adaptive-layout.test.mjs": "04722aa0fb4df27060c6b12d6a781abe3bbc4893c067d6dfca40aee00bd17449",
+    "docs/pos-adaptive-categories-20261026-deploy-note.txt": "e69d2775619096d7da78ff34d321bbc2e3e2feb9ffd9a8cbbd341f34790af8ee"
+  }
+}

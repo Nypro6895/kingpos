@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "unified-owner-guest-integration-20261021",
+  "status": "working",
+  "summary": "Integrate fixed Owner POS optional offline admission and explicit Guest continuation into a new R4 candidate; retain Campaign gates and prior Portable fix.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/experience-scope.tsx",
+    "tests/owner-offline-admission-ui.test.mjs",
+    "app/local-app/entry.tsx",
+    "components/app-local-shell.tsx",
+    "tests/app-local-expiry-guest-continuation-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\owner-guest-integration\\preimage",
+    "commit": "81c8e312ef09b0e539ca4a9db09627d8d01f5dd8"
+  },
+  "dependencies": [
+    "unified-windows-portable-integration-20261021",
+    "windows-portable-owner-startup-20261021",
+    "pc-ios-explicit-guest-continuation-20261021"
+  ],
+  "validation": [
+    {
+      "name": "fixed-source-hash-preimage-applycheck",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\owner-guest-integration\\PRE-APPLY.json"
+    }
+  ],
+  "releaseHold": true,
+  "id": "0d2a2874-3ac6-4d91-a12e-458d46f60bc5",
+  "recordedAt": "2026-10-21T18:45:11.637Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\unified-candidate-r4",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -230,12 +230,14 @@ export type SalonBackupActionResult =
   | {
       error: null;
       expiresAt: string;
+      downloadExpiresAt: string;
       filename: string;
       signedUrl: string;
     }
   | {
       error: string;
       expiresAt?: never;
+      downloadExpiresAt?: never;
       filename?: never;
       signedUrl?: never;
     };
@@ -447,6 +449,7 @@ export async function generateCurrentSalonBackupAction(): Promise<SalonBackupAct
     return {
       error: null,
       expiresAt: salonExport.expiresAt,
+      downloadExpiresAt: salonExport.downloadExpiresAt,
       filename: salonExport.filename,
       signedUrl: salonExport.signedUrl,
     };

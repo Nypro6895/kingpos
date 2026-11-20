@@ -1,0 +1,71 @@
+{
+  "kind": "change",
+  "changeId": "app-local-readonly-filter-navigation-20261119",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "components/app-local-payroll-tax.tsx",
+    "components/app-local-portable-report.tsx",
+    "components/navigation-form.tsx",
+    "docs/app-local-readonly-filter-navigation-20261119.md",
+    "lib/app-local-link-navigation.ts",
+    "tests/app-local-readonly-filter-navigation.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [
+    "installed-global-search-navigation-20261119"
+  ],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-36.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "40afd4d5-a907-4568-9702-2d6b277c89a0"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-36",
+  "id": "2938f42f-03a9-4b14-a323-d3096589c21a",
+  "recordedAt": "2026-11-19T19:41:38.537Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "components/app-local-payroll-tax.tsx": "5f8063c8c1f8d8a70c9927cf8dc323f5cf3cecdb2e4ddaecd9720be9921ad2a7",
+    "components/app-local-portable-report.tsx": "649f610615d13856204e9c30532569254c3653593f176c5ba23d462ee6783cec",
+    "components/navigation-form.tsx": "65ae91641631ef1e28a2006f77c5012280eb55f7db63ebf36189ae6aeebbcc80",
+    "docs/app-local-readonly-filter-navigation-20261119.md": "0d2177a3da33e7ea9dd9461d8e85c1ab03a233944eae6cf2c9b7ed4270b585c8",
+    "lib/app-local-link-navigation.ts": "27b34b67f615e62c856699bec2467a413b7f62a19dd91dc108f6dbec0c49378e",
+    "tests/app-local-readonly-filter-navigation.test.mjs": "4542400e97900077309ad9f8464b7273126a7907ef0c71c38a172f4c2221b33d"
+  }
+}

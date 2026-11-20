@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-19T03:26:45.619Z",
+  "status": "PASSED",
+  "source": {
+    "file": "lib/public-image-verifier-openai.ts",
+    "sha256": "76a9be68dcd28ba53e9add1c6e48a5d577b0f8ad6359f2c76cae484664b9dbc5"
+  },
+  "credential": {
+    "source": "user-created and user-saved workspace .env.local",
+    "secretPrinted": false,
+    "secretWritten": false
+  },
+  "fixture": {
+    "kind": "synthetic solid-color WebP",
+    "containsPersonalOrUserData": false,
+    "width": 96,
+    "height": 96,
+    "bytes": 86,
+    "sha256": "42879c196d7b51f213fed72e86bf5a3863e4561b7a1f4eb18944f416aeba70c9"
+  },
+  "request": {
+    "attempts": 1,
+    "endpoint": "https://api.openai.com/v1/moderations",
+    "method": "POST",
+    "model": "omni-moderation-latest"
+  },
+  "transport": {
+    "httpStatus": 200,
+    "headersElapsedMs": 2421,
+    "contentType": "application/json",
+    "declaredBytes": null,
+    "redirected": false,
+    "endpointMatched": true,
+    "contractSummary": {
+      "knownReturnedModel": true,
+      "topLevelFieldCount": 3,
+      "resultCount": 1,
+      "resultFieldCount": 4,
+      "categoriesCount": 13,
+      "scoresCount": 13,
+      "appliedInputTypesCount": 13
+    }
+  },
+  "verdict": {
+    "allowed": true,
+    "provider": "openai",
+    "model": "omni-moderation-latest",
+    "policyVersion": "reylumi-public-photo-openai-20261118-v1"
+  },
+  "scope": {
+    "publicUpload": false,
+    "postPublished": false,
+    "databaseReadOrWrite": false,
+    "productionActivated": false,
+    "storeSubmission": false
+  },
+  "limitations": [
+    "One benign request is not classifier accuracy or harmful-content coverage evidence.",
+    "No production configuration, retention, consent UI, private-evidence operation or native acceptance is established."
+  ],
+  "adapterElapsedMs": 2434
+}

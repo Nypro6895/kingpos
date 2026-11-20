@@ -1,0 +1,51 @@
+{
+  "at": "2026-11-11T18:30:07.648Z",
+  "project": "reylumi-qa-20261111",
+  "localBackend": true,
+  "allPublishedPortsLoopback": true,
+  "markerVerified": true,
+  "productionQaRouteDisabled": true,
+  "realProviderKeysLoaded": false,
+  "providerControlRequiresToken": true,
+  "blockedOutboundFetch": true,
+  "emailCapturedLocally": true,
+  "storageUpload": true,
+  "persistedBusinessRecordsVerified": true,
+  "onlineGiftFulfilled": true,
+  "businessCases": [
+    {
+      "name": "Local authorization boundary",
+      "passed": true
+    },
+    {
+      "name": "Book and cancel a synthetic appointment",
+      "passed": true
+    },
+    {
+      "name": "Forum post persisted under the synthetic owner",
+      "passed": true
+    },
+    {
+      "name": "Gift counter payment recorded without charging a card",
+      "passed": true
+    },
+    {
+      "name": "Campaign submitted and synthetic credits reserved",
+      "passed": true
+    },
+    {
+      "name": "Reward request, customer consent and POS settlement",
+      "passed": true
+    },
+    {
+      "name": "Campaign review and local delivery admission",
+      "passed": true
+    }
+  ],
+  "note": "Local simulation only; not external Stripe or native-device acceptance.",
+  "sourceBaseline": "acb17696eabeb49fc03a680b2610d4b6d1dc92bc",
+  "ownerStaffCustomerBrowserLogin": "passed",
+  "actualGiftUiLocalCheckout": "passed",
+  "stopStartPersistence": "passed",
+  "staffPendingRegression": "passed"
+}

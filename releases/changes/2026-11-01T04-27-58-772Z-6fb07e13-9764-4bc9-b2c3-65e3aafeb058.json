@@ -1,0 +1,27 @@
+{
+  "kind": "change",
+  "changeId": "shop-money-expenses-20261031",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Finish Owner Payroll reconciliation tabs and Reports Expenses wiring found by authenticated live QA; add full-page and report-tab regressions",
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/reports/report-controls.tsx"
+  ],
+  "validation": [
+    {
+      "name": "Final full-page navigation and expenses SQL browser acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "6fb07e13-9764-4bc9-b2c3-65e3aafeb058",
+  "recordedAt": "2026-11-01T04:27:58.772Z",
+  "worktree": "C:\\Reylumi-worktrees\\shop-money-expenses-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

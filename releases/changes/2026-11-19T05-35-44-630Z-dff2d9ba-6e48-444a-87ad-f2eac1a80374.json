@@ -1,0 +1,49 @@
+{
+  "kind": "change",
+  "changeId": "app-local-advertising-transport-20261118",
+  "status": "needs-integration",
+  "summary": "Native owner selection and actor-bound ad report transport with narrow signed platform admission compatibility; original privacy, abuse, cookies and billing handlers preserved",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-advertising-input.ts",
+    "lib/app-local-command-trace-names.generated.json",
+    "app/api/app-local/command/route.ts",
+    "tests/app-local-advertising-transport.test.mjs",
+    "tests/app-local-shell-auxiliary.test.mjs",
+    "docs/app-local-advertising-transport-20261118.md"
+  ],
+  "source": {
+    "snapshot": "artifacts/app-local-advertising-transport-20261118/frozen",
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "ads-reporting-transparency-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Actual adapter/outer command/original report+platform handler scoped synthetic tests 25/25, zero skipped",
+      "result": "passed",
+      "evidence": "artifacts/app-local-advertising-transport-20261118/validation.json"
+    },
+    {
+      "name": "Scoped ESLint and whitespace verification",
+      "result": "passed",
+      "evidence": "artifacts/app-local-advertising-transport-20261118/validation.json"
+    },
+    {
+      "name": "Coordinated final build/native regeneration/archive/physical iOS acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "dff2d9ba-6e48-444a-87ad-f2eac1a80374",
+  "recordedAt": "2026-11-19T05:35:44.630Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

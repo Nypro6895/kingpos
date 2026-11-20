@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { LegalDocumentPage } from "@/app/legal/legal-components";
 import { legalDocuments, legalMetadata } from "@/lib/legal-policies";
 import type { Metadata } from "next";
@@ -8,6 +9,8 @@ export const metadata: Metadata = legalMetadata({
   title: legalDocuments.business.title,
 });
 
-export default function BusinessTermsPage() {
+function BusinessTermsPage() {
   return <LegalDocumentPage document={legalDocuments.business} />;
 }
+
+export default withExperiencePage(BusinessTermsPage);

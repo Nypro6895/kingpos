@@ -1,0 +1,17 @@
+{
+  "bodies": {
+    "customer_name_key": "6b88f2a4d7ba5c20866650c4b26d597c15dce2e97d9484a68a547b346367ceaa",
+    "get_staff_legal_names": "2c91df3fbe21fd57378ceed723aad174bb6c9d5820317ce57495a611b91ec585",
+    "merge_customer_records": "c1f59802525c59a1a2a086f900bb1815d28e78fb01db0be573f9bbc9d5656b54",
+    "customer_duplicate_batch": "f9191a0caca0d49f5ba3b592d252c5b1c5fc98744368628fb0aab47c7161e27f",
+    "customer_identity_auto_match": "d9e01a35febd4e2aa9f2ea0d1927d79a5337477b834db5cfa74bd6e41301d16e",
+    "customer_identity_candidates": "5ca56a43c56a13db2c08d426a952875924d1988fa817c909b6d421c8630bcd94",
+    "consolidate_customer_identities": "84c3377bd57d19a0999fa1d1c15bc020ea498b9bf36ea343495ea8b26e44ccef"
+  },
+  "legal_anon": false,
+  "migrations": [
+    "20261028180000",
+    "20261029160000"
+  ],
+  "legal_authenticated": true
+}

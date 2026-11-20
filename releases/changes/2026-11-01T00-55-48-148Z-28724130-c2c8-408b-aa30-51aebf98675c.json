@@ -1,0 +1,25 @@
+{
+  "kind": "change",
+  "changeId": "ticket-calendar-history-20261031",
+  "status": "working",
+  "summary": "Unify ticket calendar/search and verify historical date loading",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/pos/portable/ticket/portable-ticket-client.tsx"
+  ],
+  "validation": [
+    {
+      "name": "Implementation and regression verification",
+      "result": "pending"
+    }
+  ],
+  "id": "28724130-c2c8-408b-aa30-51aebf98675c",
+  "recordedAt": "2026-11-01T00:55:48.148Z",
+  "worktree": "C:\\Reylumi-worktrees\\ticket-calendar-history-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "hosted-pos-ticket-today-close-20261029",
+  "status": "working",
+  "summary": "Hosted web-only OwnerWorkspaceFrame intercepts Today navigation before child popup close handler. Close only the containing Ticket date details before retained navigation; native67 confirmed closes correctly and remains unchanged.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/owner-workspace-frame.tsx"
+  ],
+  "source": {
+    "commit": "d20058a06c0c71a04830346b0ad444657bca2acd"
+  },
+  "validation": [
+    {
+      "name": "Hosted live popup stays open, native67 closes correctly",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/live-browser-smoke.json"
+    },
+    {
+      "name": "Scoped causality test and native-bundle byte equality assessment",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "f84b5311-8d92-48d0-9b9f-ae144516ffa3",
+  "recordedAt": "2026-10-29T10:11:42.024Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,11 +1,45 @@
 "use client";
+import { ExperienceReplyComposer, ExperienceReplyGroup } from "@/components/experience-reply-composer";
+import experienceStyles from "./experiences.module.css";
+import { SalonName } from "@/components/salon-member-badge";
+
+import { VisitReplyControls } from "@/app/activity/visit-reply-controls";
+import { salonProfileAnchor } from "@/lib/salon-profile-anchor";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { SalonLocationMap } from "@/components/salon-location-map";
+import { mapDirectionsUrl } from "@/lib/location/map-links";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
+import { SalonAddressLink } from "@/components/salon-address-link";
+import { compressImageCanvas } from "@/lib/image-upload-client";
+import { runPublicImageUploadBatch } from "@/lib/public-image-upload-client";
+import { clearPublicPostReceipt, readPublicPostReceipt, writePublicPostReceipt } from "@/lib/public-post-receipt";
+import { PublicPhotoProcessingPermission, usePublicPhotoProcessingPermission } from "@/components/public-photo-processing-permission";
+import { PUBLIC_PHOTO_PROCESSING_DECLINE_NOTICE } from "@/lib/public-photo-processing-consent";
+import { useSalonProfilePages } from "@/lib/use-salon-profile-pages";
+import { PublicationPanel } from "./publication-panel";
+import { ContentViewer } from "@/components/content-viewer";
+import { useSalonFollowState } from "@/components/use-salon-follow-state";
+import { ActionFeedback } from "@/components/action-feedback";
+import { useFormStatus } from "react-dom";
+import { MediaUploadProgress } from "@/components/media-upload-progress";
+import type { MediaUploadPhase } from "@/lib/media-upload-progress";
+import { PostIdentity } from "@/components/post-identity";
+import { resolvePostIdentity } from "@/lib/post-identity";
+
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { SettingsIcon } from "@/components/settings-icon";
 import {SalonTrustLine,SalonVerifiedBadge} from "@/components/salon-trust-line";
 import {salonPopularPrice} from "@/lib/salon-identity";
 import { salonAboutParagraphs, visibleSalonPosts } from "@/lib/salon-profile-content";
 import { isDefaultNailImage } from "@/lib/default-nail-images";
 import { NailIllustrationCredit } from "@/components/nail-illustration-credit";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
+import { useHiddenPosts, postIdentity } from "@/components/post-safety";
+import { usePostCaption } from "@/components/post-change-state";
 import { PostActions } from "./post-actions";
+import { BlockUserButton } from "@/components/block-user-button";
+import { SocialTextReportButton } from "@/components/social-text-report-button";
+import { SalonReportDialog } from "@/components/salon-report-dialog";
 import { ServiceMenu } from "./service-menu";
 import { TeamMenu } from "./team-menu";
 
@@ -13,6 +47,9 @@ import { SalonProfilePreferencesPanel } from "@/app/settings/salon-profile-prefe
 import { OperatingHoursQuick } from "./operating-hours-quick";
 import { OperatingHoursDisplay } from "./operating-hours-display";
 import { SalonWebsiteHome, WebsiteServices, WebsiteTeam } from "./salon-website-home";
+import { PostShareButton } from "@/components/post-share-button";
+import { WebsitePostEngagement } from "./website-post-engagement";
+import type { WebsiteLibraryPhoto } from "./website-photo-feed";
 import { SalonWebsiteHeader } from "./salon-website-header";
 import websitePageStyles from "./salon-website-header.module.css";
 import { DEFAULT_PROFILE_PREFERENCES, type SalonProfilePreferences } from "@/lib/salon-profile-preferences";
@@ -20,10 +57,9 @@ import { InspirationAvailability } from "@/components/inspiration-availability";
 import {
   createSalonProfileReviewReplyAction,
   createSalonProfileSocialPostAction,
-  deleteSalonProfileLookDirectAction,
+  deleteSalonProfileMediaAction,
   getSalonProfileMediaUploadSessionAction,
   setSalonProfilePublicationAction,
-  setSalonProfileLookStatusDirectAction,
   toggleSalonFollowAction,
   toggleSalonLookSaveAction,
   updateSalonProfileIdentityAction,
@@ -67,12 +103,14 @@ import type {
   PostCommentViewer,
 } from "@/types/post-comments";
 import { useRouter, usePathname } from "next/navigation";
+import { useRememberedExperience } from "@/lib/use-remembered-experience";
 import { createPortal } from "react-dom";
 import {
   createContext,
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -84,7 +122,26 @@ import {
   type ReactNode,
 } from "react";
 
+const ProfileSalonIdentityContext = createContext({ name: "Salon", href: "", logoUrl: null as string | null });
+function ProfilePostIdentity({ item }: { item: ProfileFeedItem }) {
+  const salon = useContext(ProfileSalonIdentityContext);
+  return <PostIdentity source="salon" salonName={salon.name} salonHref={salon.href} authorName={item.authorName} authorRole={item.authorRole} authorHref={null} />;
+}
+function ProfileCustomerIdentity({ post }: { post: PublicSalonProfileBeautyPost }) {
+  const salon = useContext(ProfileSalonIdentityContext);
+  return <PostIdentity source="personal" authorName={post.authorDisplayName} authorHref={`/explore/beauty/${post.profileId}`} salonName={salon.name} salonHref={salon.href} />;
+}
+function ProfilePostAvatar() {
+  const salon = useContext(ProfileSalonIdentityContext);
+  const avatar = <Avatar logoUrl={salon.logoUrl} name={salon.name} size="sm" />;
+  return salon.href ? <a href={salon.href} aria-label={salon.name} className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-brand-orange">{avatar}</a> : avatar;
+}
 const ProfilePreferencesContext = createContext<SalonProfilePreferences>(DEFAULT_PROFILE_PREFERENCES);
+
+function ProfileSharePostButton(props: Parameters<typeof PostShareButton>[0]) {
+  const preferences = useContext(ProfilePreferencesContext);
+  return preferences.allow_sharing ? <PostShareButton {...props} /> : null;
+}
 
 function ProfileSavePostButton(props: Parameters<typeof SavePostButton>[0]) {
   const preferences = useContext(ProfilePreferencesContext);
@@ -93,16 +150,17 @@ function ProfileSavePostButton(props: Parameters<typeof SavePostButton>[0]) {
 }
 function ProfilePostCommentThread(props: Parameters<typeof PostCommentThread>[0]) {
   const preferences = useContext(ProfilePreferencesContext);
-  return preferences.allow_comments ? <PostCommentThread {...props} /> : <p className="text-xs text-zinc-500">Comments are disabled for this salon.</p>;
+  return preferences.allow_comments ? <PostCommentThread {...props} /> : <p className="text-xs text-zinc-500"><WorkspaceText text="Comments are disabled for this salon." /></p>;
 }
 
 type SalonProfileViewProps = {
+  rewards?: ReactNode;
   capabilities?: SalonProfileViewerCapabilities;
   data: PublicSalonProfileData;
   error?: string;
   manageData?: {
     ownedLookIds?: string[];
-    publicHref: string;
+    publicHref: string | null;
     readiness: SalonProfileReadiness;
     setting: SalonProfileSetting;
   };
@@ -117,8 +175,66 @@ type TabId =
   | "services"
   | "team";
 
+type ProfileExperience = {
+  selectedTab: TabId;
+  selectedMood: string | null;
+  featuredLookId: string | null;
+  experienceFilter: "all" | "issues" | "verified" | "good";
+  verifiedExperiencesOnly?: boolean;
+  visibleTimelineCount: number;
+  tabScrollPositions: Record<TabId, number>;
+};
+function isProfileExperience(value: unknown): value is ProfileExperience {
+  if (!value || typeof value !== "object") return false;
+  const state = value as ProfileExperience;
+  const tabs: TabId[] = ["about", "discover", "experiences", "gallery", "services", "team"];
+  return tabs.includes(state.selectedTab)
+    && (state.selectedMood === null || (typeof state.selectedMood === "string" && state.selectedMood.length <= 100))
+    && (state.featuredLookId === null || (typeof state.featuredLookId === "string" && state.featuredLookId.length <= 100))
+    && ["all", "issues", "verified", "good"].includes(state.experienceFilter)
+    && Number.isInteger(state.visibleTimelineCount) && state.visibleTimelineCount >= 0 && state.visibleTimelineCount <= 120
+    && Boolean(state.tabScrollPositions) && tabs.every(tab => Number.isFinite(state.tabScrollPositions[tab])
+      && state.tabScrollPositions[tab] >= 0 && state.tabScrollPositions[tab] <= 10_000_000);
+}
+
 type AuthPromptIntent = "follow" | "save";
 type ComposerType = "auto" | "look" | "opening" | "update";
+
+type SalonPostRequest = Parameters<typeof createSalonProfileSocialPostAction>[0] & { requestId: string };
+type SalonPostReceipt = { input: SalonPostRequest; requestId: string };
+function salonPostReceiptScope(viewerId: string, salonId: string) { return `salon:${viewerId}:${salonId}`; }
+function readSalonPostReceipt(viewerId: string, salonId: string): SalonPostReceipt | null {
+  const receipt = readPublicPostReceipt<SalonPostRequest>(salonPostReceiptScope(viewerId, salonId));
+  const optionalText = receipt && [receipt.input.mood, receipt.input.serviceId, receipt.input.staffId, receipt.input.startsAt, receipt.input.title];
+  const optionalNumbers = receipt && [receipt.input.durationMinutes, receipt.input.startingPrice];
+  if (receipt && (receipt.input.salonId !== salonId || receipt.input.requestId !== receipt.requestId ||
+    !(receipt.input.caption === null || typeof receipt.input.caption === "string") ||
+    !(receipt.input.imagePath === null || typeof receipt.input.imagePath === "string") ||
+    !optionalText?.every(value => value == null || typeof value === "string") ||
+    !optionalNumbers?.every(value => value == null || typeof value === "number" && Number.isFinite(value)) ||
+    !(receipt.input.bookingCtaEnabled === undefined || typeof receipt.input.bookingCtaEnabled === "boolean") ||
+    !(receipt.input.additionalServiceIds === undefined || Array.isArray(receipt.input.additionalServiceIds) && receipt.input.additionalServiceIds.every(value => typeof value === "string")) ||
+    ![undefined, "auto", "look", "opening", "update"].includes(receipt.input.contentType))) {
+    throw new Error("The saved post confirmation could not be read. Keep this browser session and contact Support before posting it again.");
+  }
+  return receipt;
+}
+function salonPostLocalTime(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "";
+}
+type PendingSalonPost = {
+  authorUserId: string;
+  caption: string;
+  error?: string;
+  phase: MediaUploadPhase | "unknown";
+  previewUrl: string | null;
+  progress: number;
+  requestId: string;
+  salonId: string;
+  title: string;
+};
 type SalonProfileUploadableKind = Extract<
   SalonProfileMediaKind,
   "cover" | "logo" | "look" | "update"
@@ -271,6 +387,7 @@ function profileFeedCommentTarget(
 ): PostCommentTarget {
   return {
     salonId: item.salonId,
+    salonName: item.salonName,
     sourceId: item.id,
     sourceType:
       item.contentType === "look"
@@ -384,9 +501,7 @@ function displayWebsite(value: string | null) {
 }
 
 function directionsUrl(address: string) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    address,
-  )}`;
+  return mapDirectionsUrl(address);
 }
 
 function joinMeta(parts: Array<string | null | undefined>) {
@@ -525,6 +640,7 @@ function readImage(file: File) {
 
     image.onload = () => {
       URL.revokeObjectURL(url);
+      if (image.naturalWidth * image.naturalHeight > 40_000_000) { reject(new Error("Choose an image smaller than 40 megapixels.")); return; }
       resolve(image);
     };
     image.onerror = () => {
@@ -532,23 +648,6 @@ function readImage(file: File) {
       reject(new Error("Image could not be read."));
     };
     image.src = url;
-  });
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("Image could not be processed."));
-          return;
-        }
-
-        resolve(blob);
-      },
-      type,
-      quality,
-    );
   });
 }
 
@@ -592,13 +691,8 @@ async function processImage(file: File, kind: SalonProfileMediaKind) {
     outputHeight,
   );
 
-  let quality = 0.9;
-  let blob = await canvasToBlob(canvas, "image/webp", quality);
-
-  while (blob.size > config.targetBytes && quality > 0.72) {
-    quality -= 0.06;
-    blob = await canvasToBlob(canvas, "image/webp", quality);
-  }
+  const compressed = await compressImageCanvas(canvas);
+  const blob = compressed.blob;
 
   return new File([blob], `${kind}-${crypto.randomUUID()}.webp`, {
     type: "image/webp",
@@ -621,6 +715,7 @@ function uploadToSupabase(input: {
     )}/${encodeStoragePath(input.path)}`;
 
     xhr.open("POST", objectUrl);
+    xhr.timeout = 120_000;
     xhr.setRequestHeader("Authorization", `Bearer ${input.accessToken}`);
     xhr.setRequestHeader("apikey", input.anonKey);
     xhr.setRequestHeader("Content-Type", input.blob.type);
@@ -640,6 +735,7 @@ function uploadToSupabase(input: {
       reject(new Error(xhr.responseText || "Upload failed."));
     };
     xhr.onerror = () => reject(new Error("Upload failed."));
+    xhr.ontimeout = () => reject(new Error("Upload timed out. Check your connection and try again."));
     xhr.onabort = () => reject(new Error("Upload cancelled."));
     xhr.send(input.blob);
   });
@@ -650,6 +746,9 @@ async function processAndUploadImage(input: {
   intent: "content" | "identity";
   kind: SalonProfileUploadableKind;
   onProgress: (value: number) => void;
+  onPhase?: (phase: MediaUploadPhase) => void;
+  onReserved?: (path: string) => void;
+  salonId?: string;
 }) {
   if (!acceptedMimeTypes.has(input.file.type)) {
     throw new Error("Use a JPEG, PNG, or WebP image.");
@@ -659,23 +758,31 @@ async function processAndUploadImage(input: {
     throw new Error("That image is too large.");
   }
 
+  input.onPhase?.("preparing");
   const processed = await processImage(input.file, input.kind);
   const session = await getSalonProfileMediaUploadSessionAction(
     input.intent,
     input.kind,
+    undefined,
+    input.salonId,
   );
+  input.onReserved?.(session.objectPath ?? session.path);
 
+  input.onPhase?.("uploading");
   await uploadToSupabase({
     accessToken: session.accessToken,
     anonKey: session.anonKey,
     blob: processed,
     bucket: session.bucket,
-    onProgress: input.onProgress,
+    onProgress: (value) => {
+      input.onProgress(value);
+      if (value >= 100) input.onPhase?.("confirming");
+    },
     path: session.path,
     supabaseUrl: session.supabaseUrl,
   });
 
-  return session.path;
+  return session.objectPath ?? session.path;
 }
 
 function EmptyState({
@@ -686,8 +793,8 @@ function EmptyState({
   title: string;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-zinc-200 bg-white/85 p-8 text-center shadow-[0_16px_50px_rgba(24,24,27,.05)]">
-      <h3 className="text-lg font-semibold text-zinc-950">{title}</h3>
+    <div className="border-dashed border-zinc-200 bg-white/85 p-8 text-center rounded-none border-0 shadow-none">
+      <h3 className="text-lg font-semibold text-zinc-950"><WorkspaceText text={title} /></h3>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-600">
         {children}
       </p>
@@ -703,6 +810,8 @@ function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "subtle" | "brand";
 }) {
+  const { pending: formPending } = useFormStatus();
+  const pending = props.type === "submit" && formPending;
   const styles = {
     brand: "bg-brand-orange text-white hover:bg-brand-orange-hover disabled:bg-brand-orange/50",
     primary:
@@ -721,8 +830,10 @@ function Button({
       ].join(" ")}
       type="button"
       {...props}
+      disabled={props.disabled || pending}
+      aria-busy={pending || props["aria-busy"]}
     >
-      {children}
+      <ActionFeedback pending={pending} pendingLabel="Saving…">{children}</ActionFeedback>
     </button>
   );
 }
@@ -821,7 +932,7 @@ function TimelineActionButton({
   return (
     <button
       className={[
-        "inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 px-1.5 py-2 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950 disabled:cursor-not-allowed disabled:text-zinc-400",
+        "inline-flex min-h-11 min-w-11 max-w-full flex-none items-center justify-center gap-1.5 px-2 py-2 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950 disabled:cursor-not-allowed disabled:text-zinc-400",
         tone === "primary"
           ? "text-brand-orange hover:bg-brand-orange-soft hover:text-brand-orange"
           : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950",
@@ -834,7 +945,7 @@ function TimelineActionButton({
       {...props}
     >
       <TimelineActionIcon name={icon} />
-      <span className="min-w-0 truncate">{children}</span>
+      <span className="min-w-0 whitespace-normal break-words">{children}</span>
     </button>
   );
 }
@@ -848,11 +959,13 @@ function LookImage({
   imageUrl: string | null;
   title: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   if (imageUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        alt={`${title} nail look`}
+        alt={__vt(`${title} nail look`)}
         className={`${className} object-cover`}
         src={imageUrl}
       />
@@ -861,12 +974,12 @@ function LookImage({
 
   return (
     <div
-      aria-label={`${title} visual fallback`}
+      aria-label={__vt(`${title} visual fallback`)}
       className={`${className} ${imageFallbackClass(title)} grid place-items-center overflow-hidden`}
       role="img"
     >
       <span className="max-w-40 text-center text-sm font-semibold text-zinc-700">
-        {title}
+        <WorkspaceText text={title} />
       </span>
     </div>
   );
@@ -940,12 +1053,14 @@ function SalonCover({
   coverImageUrl: string | null;
   name: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   if (coverImageUrl) {
     return (
       <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        alt={isDefaultNailImage(coverImageUrl) ? "AI-generated nail-service illustration" : `${name} salon cover`}
+        alt={__vt(isDefaultNailImage(coverImageUrl) ? "AI-generated beauty-service illustration" : `${name} salon cover`)}
         className="absolute inset-0 h-full w-full object-cover"
         src={coverImageUrl}
       />
@@ -956,7 +1071,7 @@ function SalonCover({
 
   return (
     <div
-      aria-label={`${name} cover fallback`}
+      aria-label={__vt(`${name} cover fallback`)}
       className="absolute inset-0 bg-[linear-gradient(135deg,#f8fafc,#d1fae5_45%,#fef9c3)]"
       role="img"
     />
@@ -976,6 +1091,8 @@ function MediaApplyButton({
   label: string;
   salonId: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
@@ -1036,14 +1153,14 @@ function MediaApplyButton({
           type="file"
         />
         <button
-          aria-label={label}
+          aria-label={__vt(label)}
           className={[
             "inline-flex min-h-10 w-10 items-center justify-center rounded-full bg-transparent p-0 text-zinc-950/55 transition hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-not-allowed disabled:opacity-50",
             className,
           ].join(" ")}
           disabled={busy}
           onClick={() => inputRef.current?.click()}
-          title={busy ? `Applying ${progress}%` : label}
+          title={__vt(busy ? `Applying ${progress}%` : label)}
           type="button"
         >
           <svg
@@ -1060,10 +1177,10 @@ function MediaApplyButton({
             <circle cx="12" cy="13" r="3" />
           </svg>
           <span className="sr-only">
-            {busy ? `Applying ${progress}%` : label}
+            <WorkspaceText text={busy ? `Applying ${progress}%` : label} />
           </span>
         </button>
-        {error ? <span className="text-xs text-red-700">{error}</span> : null}
+        {error ? <span className="text-xs text-red-700"><WorkspaceText text={error} /></span> : null}
       </span>
     );
   }
@@ -1078,16 +1195,16 @@ function MediaApplyButton({
         type="file"
       />
       <Button
-        aria-label={label}
+        aria-label={__vt(label)}
         className={className}
         disabled={busy}
         onClick={() => inputRef.current?.click()}
-        title={busy ? `Applying ${progress}%` : label}
+        title={__vt(busy ? `Applying ${progress}%` : label)}
         variant="secondary"
       >
-        {busy ? `Applying ${progress}%` : label}
+        <WorkspaceText text={busy ? `Applying ${progress}%` : label} />
       </Button>
-      {error ? <span className="text-xs text-red-700">{error}</span> : null}
+      {error ? <span className="text-xs text-red-700"><WorkspaceText text={error} /></span> : null}
     </span>
   );
 }
@@ -1113,7 +1230,9 @@ function Modal({
   panelClassName?: string;
   title: string;
 }) {
-  useCloseOnNavigation(onClose);
+  const __vt = useWorkspaceTranslation();
+
+  // Navigation resets local owner state; the explicit close action may update a URL or ask about a draft.
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const latestOnCloseRef = useRef(onClose);
@@ -1223,7 +1342,7 @@ function Modal({
       role="dialog"
     >
       <button
-        aria-label="Close dialog backdrop"
+        aria-label={__vt("Close dialog backdrop")}
         className="absolute inset-0 cursor-default"
         onClick={onClose}
         type="button"
@@ -1238,10 +1357,10 @@ function Modal({
       >
         <div className="z-10 flex min-h-14 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 sm:px-5">
           <h2 className="min-w-0 text-base font-semibold text-zinc-950" id={titleId}>
-            {title}
+            <WorkspaceText text={title} />
           </h2>
           <button
-            aria-label="Close"
+            aria-label={__vt("Close")}
             className="grid h-9 w-9 place-items-center rounded-full border border-zinc-200 text-sm text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
             onClick={onClose}
             type="button"
@@ -1270,6 +1389,8 @@ function ProfileEditor({
   onClose: () => void;
   setting: SalonProfileSetting;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [businessName, setBusinessName] = useState(setting.business_name);
   const [tagline, setTagline] = useState(setting.public_profile_tagline ?? "");
   const [description, setDescription] = useState(
@@ -1277,15 +1398,15 @@ function ProfileEditor({
   );
 
   return (
-    <Modal onClose={onClose} title="Edit profile">
+    <Modal onClose={onClose} title={__vt("Edit profile")}>
       <form action={updateSalonProfileIdentityAction} className="grid gap-4">
         <input name="salon_id" type="hidden" value={setting.salon_id} />
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+        <div className="border-zinc-200 bg-zinc-50 p-4 rounded-none border-0 shadow-none">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-            Live preview
+            <WorkspaceText text="Live preview" />
           </p>
           <h3 className="mt-3 text-2xl font-semibold text-zinc-950">
-            {businessName || "Salon name"}
+            <WorkspaceText text={businessName || "Salon name"} />
           </h3>
           {description ? (
             <p className="mt-2 text-sm leading-6 text-zinc-600">
@@ -1296,20 +1417,20 @@ function ProfileEditor({
             <MediaApplyButton
               className="min-h-9 px-3 text-xs"
               kind="logo"
-              label="Change logo"
+              label={__vt("Change logo")}
               salonId={setting.salon_id}
             />
             <MediaApplyButton
               className="min-h-9 px-3 text-xs"
               kind="cover"
-              label="Change cover"
+              label={__vt("Change cover")}
               salonId={setting.salon_id}
             />
           </div>
         </div>
         <label className="grid gap-2">
           <span className="text-sm font-semibold text-zinc-800">
-            Public salon name
+            <WorkspaceText text="Public salon name" />
           </span>
           <input
             className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
@@ -1321,7 +1442,7 @@ function ProfileEditor({
           />
         </label>
         <label className="grid gap-2">
-          <span className="text-sm font-semibold text-zinc-800">Tagline</span>
+          <span className="text-sm font-semibold text-zinc-800"><WorkspaceText text="Tagline" /></span>
           <input
             className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
             name="public_profile_tagline"
@@ -1332,7 +1453,7 @@ function ProfileEditor({
         </label>
         <label className="grid gap-2">
           <span className="text-sm font-semibold text-zinc-800">
-            Short description
+            <WorkspaceText text="Short description" />
           </span>
           <textarea
             className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-950 outline-none transition focus:border-zinc-950"
@@ -1344,43 +1465,39 @@ function ProfileEditor({
         </label>
         <TextArea
           defaultValue={setting.public_profile_story}
-          label="Story"
+          label={__vt("Story")}
           name="public_profile_story"
           rows={4}
         />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field defaultValue={setting.phone} label="Phone" name="phone" />
-          <Field defaultValue={setting.email} label="Email" name="email" />
+          <Field defaultValue={setting.phone} label={__vt("Phone")} name="phone" />
+          <Field defaultValue={setting.email} label={__vt("Email")} name="email" />
         </div>
-        <Field defaultValue={setting.website} label="Website" name="website" />
+        <Field defaultValue={setting.website} label={__vt("Website")} name="website" />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            defaultValue={setting.address_line1}
-            label="Address line 1"
-            name="address_line1"
-          />
+          <AddressAutocomplete defaultValue={setting.address_line1} label={__vt("Address line 1")} />
           <Field
             defaultValue={setting.address_line2}
-            label="Address line 2"
+            label={__vt("Address line 2")}
             name="address_line2"
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field defaultValue={setting.city} label="City" name="city" />
-          <Field defaultValue={setting.state} label="State" name="state" />
+          <Field defaultValue={setting.city} label={__vt("City")} name="city" />
+          <Field defaultValue={setting.state} label={__vt("State")} name="state" />
           <Field
             defaultValue={setting.postal_code}
-            label="ZIP"
+            label={__vt("ZIP")}
             name="postal_code"
           />
         </div>
-        <Field defaultValue={setting.country} label="Country" name="country" />
+        <Field defaultValue={setting.country} label={__vt("Country")} name="country" />
         <div className="flex flex-col gap-2 border-t border-zinc-200 pt-4 sm:flex-row sm:justify-end">
           <Button className="w-full sm:w-auto" onClick={onClose} variant="secondary">
-            Cancel
+            <WorkspaceText text="Cancel" />
           </Button>
           <Button className="w-full sm:w-auto" type="submit" variant="primary">
-            Save changes
+            <WorkspaceText text="Save changes" />
           </Button>
         </div>
       </form>
@@ -1393,7 +1510,7 @@ function Field({
   label,
   name,
   required,
-  type = "text",
+  type,
 }: {
   defaultValue?: string | number | null;
   label: string;
@@ -1403,13 +1520,14 @@ function Field({
 }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-semibold text-zinc-800">{label}</span>
+      <span className="text-sm font-semibold text-zinc-800"><WorkspaceText text={label} /></span>
       <input
         className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
         defaultValue={defaultValue ?? ""}
         name={name}
         required={required}
-        type={type}
+        type={type ?? (name === "phone" ? "tel" : name === "email" ? "email" : "text")}
+        inputMode={name === "phone" ? "tel" : type === "number" ? "decimal" : undefined}
       />
     </label>
   );
@@ -1428,7 +1546,7 @@ function TextArea({
 }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-semibold text-zinc-800">{label}</span>
+      <span className="text-sm font-semibold text-zinc-800"><WorkspaceText text={label} /></span>
       <textarea
         className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-950 outline-none transition focus:border-zinc-950"
         defaultValue={defaultValue ?? ""}
@@ -1448,13 +1566,15 @@ function ComposerCard({
   name: string;
   onOpen: (type: ComposerType) => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
-    <section className="flex min-w-0 items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white p-3 shadow-sm sm:p-4">
+    <section className="flex min-w-0 items-center gap-3 border-zinc-200/80 bg-white p-3 sm:p-4 rounded-none border-0 shadow-none">
       <Avatar logoUrl={logoUrl} name={name} size="md" />
       <button className="min-h-12 min-w-0 flex-1 rounded-full bg-zinc-100 px-4 text-left text-sm text-zinc-500 transition hover:bg-zinc-200/70 focus-visible:outline-2 focus-visible:outline-brand-orange" onClick={() => onOpen("auto")} type="button">
-        Share something with your customers…
+        <WorkspaceText text="Share something with your customers…" />
       </button>
-      <button aria-label="Create a photo post" title="Add a photo" className="grid size-12 shrink-0 place-items-center rounded-full text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-brand-orange" onClick={() => onOpen("look")} type="button">
+      <button aria-label={__vt("Create a photo post")} title={__vt("Add a photo")} className="grid size-12 shrink-0 place-items-center rounded-full text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-brand-orange" onClick={() => onOpen("look")} type="button">
         <PostPhotoIcon />
       </button>
     </section>
@@ -1469,6 +1589,8 @@ function PostSuggestionField({ label, placeholder, options, value, onChange, all
   label: string; placeholder: string; options: { id: string; label: string }[];
   value: string; onChange: (id: string) => void; allowCustom?: boolean;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const id = useId();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
@@ -1478,10 +1600,10 @@ function PostSuggestionField({ label, placeholder, options, value, onChange, all
   const open = focused && matches.length > 0;
   function choose(option: { id: string; label: string }) { onChange(option.id); setQuery(""); setFocused(false); }
   return <div className="relative min-w-0">
-    <label className="mb-1.5 block text-xs font-medium text-zinc-600" htmlFor={id}>{label}</label>
+    <label className="mb-1.5 block text-xs font-medium text-zinc-600" htmlFor={id}><WorkspaceText text={label} /></label>
     <input id={id} role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls={`${id}-suggestions`} aria-activedescendant={open ? `${id}-option-${Math.min(active, matches.length - 1)}` : undefined} autoComplete="off"
       className="min-h-11 w-full min-w-0 rounded-xl border border-zinc-200 bg-white px-3 text-base outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/10"
-      placeholder={placeholder} value={selected?.label ?? (allowCustom ? value : query)}
+      placeholder={__vt(placeholder)} value={selected?.label ?? (allowCustom ? value : query)}
       onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
       onChange={(event) => { onChange(allowCustom ? event.currentTarget.value : ""); setQuery(event.currentTarget.value); setActive(0); setFocused(true); }}
       onKeyDown={(event) => {
@@ -1492,46 +1614,101 @@ function PostSuggestionField({ label, placeholder, options, value, onChange, all
       }} />
     {open ? <ul id={`${id}-suggestions`} role="listbox" className="mt-1 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
       {matches.map((option, index) => <li id={`${id}-option-${index}`} key={option.id} role="option" aria-selected={index === active}>
-        <button type="button" tabIndex={-1} onMouseDown={(event) => event.preventDefault()} onClick={() => choose(option)} className={`w-full px-3 py-2.5 text-left text-sm ${index === active ? "bg-brand-orange-soft text-zinc-900" : "hover:bg-zinc-50"}`}>{option.label}</button>
+        <button type="button" tabIndex={-1} onMouseDown={(event) => event.preventDefault()} onClick={() => choose(option)} className={`w-full px-3 py-2.5 text-left text-sm ${index === active ? "bg-brand-orange-soft text-zinc-900" : "hover:bg-zinc-50"}`}><WorkspaceText text={option.label} /></button>
       </li>)}
     </ul> : null}
-    {!allowCustom && focused && query.trim() && !matches.length ? <p className="mt-1 text-xs text-zinc-500">No matching options. You can leave this optional field empty.</p> : null}
+    {!allowCustom && focused && query.trim() && !matches.length ? <p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="No matching options. You can leave this optional field empty." /></p> : null}
   </div>;
+}
+
+function PendingSalonPostCard({ pending, onResume }: {
+  pending: PendingSalonPost;
+  onResume: () => void;
+}) {
+  const unknown = pending.phase === "unknown";
+  const label = unknown ? "Post confirmation interrupted" : pending.phase === "preparing" ? "Preparing your photo…"
+    : pending.phase === "uploading" ? "Uploading your photo…" : pending.previewUrl ? "Checking your photo and finishing your post…" : "Finishing your post…";
+  return <article className="overflow-hidden rounded-2xl border border-brand-orange/30 bg-white p-4" data-salon-post-request={pending.requestId}>
+    <div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-zinc-950"><WorkspaceText text={label} /></p>
+      <p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Only you can see this preview. It is not a published post." /></p></div>
+      <button className="shrink-0 rounded-lg border border-zinc-200 px-3 py-2 text-xs font-semibold" type="button" onClick={onResume}><WorkspaceText text={unknown ? "Check & retry" : "View progress"} /></button></div>
+    {pending.previewUrl ? <div className="mt-3 overflow-hidden rounded-xl bg-zinc-50">{/* eslint-disable-next-line @next/next/no-img-element */}
+      <img alt="" className="max-h-64 w-full object-contain" src={pending.previewUrl} /></div> : null}
+    {unknown && !pending.previewUrl ? <p className="mt-3 rounded-xl bg-zinc-50 p-3 text-xs text-zinc-600"><WorkspaceText text="A saved submission is waiting for confirmation. Its photo preview is not stored in this browser receipt." /></p> : null}
+    {pending.title ? <p className="mt-3 font-semibold text-zinc-900">{pending.title}</p> : null}
+    {pending.caption ? <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-700">{pending.caption}</p> : null}
+    <div className="mt-3" aria-live="polite">{unknown ? <p className="text-sm text-amber-800"><WorkspaceText text="We could not confirm the result. Retry to check this same submission before changing or posting it again." /></p>
+      : <MediaUploadProgress phase={pending.phase as MediaUploadPhase} progress={pending.progress} />}</div>
+  </article>;
 }
 
 function ComposerModal({
   data,
   initialType,
+  initialReceipt,
+  isCurrent,
   onClose,
+  onPendingChange,
+  onPresentedChange,
   onPosted,
+  presented,
+  viewerId,
 }: {
   data: PublicSalonProfileData;
   initialType: ComposerType;
+  initialReceipt?: SalonPostReceipt | null;
+  isCurrent: () => boolean;
   onClose: () => void;
+  onPendingChange: (pending: PendingSalonPost | null, requestId: string) => void;
+  onPresentedChange: (presented: boolean) => void;
   onPosted: (result: { post: ProfileFeedItem; look: PublicSalonProfileLook | null }) => void;
+  presented: boolean;
+  viewerId: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const captionRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const formId = useId();
-  const [caption, setCaption] = useState("");
-  const [additionalServiceIds, setAdditionalServiceIds] = useState<string[]>([]);
-  const [bookingCtaEnabled, setBookingCtaEnabled] = useState(true);
-  const [contentType, setContentType] = useState<ComposerType>(initialType);
-  const [durationMinutes, setDurationMinutes] = useState("");
+  const restored = initialReceipt?.input;
+  const receiptScope = salonPostReceiptScope(viewerId, data.profile.salonId);
+  const [caption, setCaption] = useState(restored?.caption ?? "");
+  const [additionalServiceIds, setAdditionalServiceIds] = useState<string[]>(restored?.additionalServiceIds ?? []);
+  const [bookingCtaEnabled, setBookingCtaEnabled] = useState(restored?.bookingCtaEnabled ?? true);
+  const [contentType, setContentType] = useState<ComposerType>(restored?.contentType ?? initialType);
+  const [durationMinutes, setDurationMinutes] = useState(restored?.durationMinutes == null ? "" : String(restored.durationMinutes));
   const [file, setFile] = useState<File | null>(null);
-  const [mood, setMood] = useState("");
+  const [stagedImagePath, setStagedImagePath] = useState<string | null>(restored?.imagePath ?? null);
+  const [mediaVersion, setMediaVersion] = useState(0);
+  const [mood, setMood] = useState(restored?.mood ?? "");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [serviceId, setServiceId] = useState("");
-  const [staffId, setStaffId] = useState("");
-  const [startsAt, setStartsAt] = useState("");
-  const [startingPrice, setStartingPrice] = useState("");
-  const [title, setTitle] = useState("");
+  const [serviceId, setServiceId] = useState(restored?.serviceId ?? "");
+  const [staffId, setStaffId] = useState(restored?.staffId ?? "");
+  const [startsAt, setStartsAt] = useState(salonPostLocalTime(restored?.startsAt));
+  const [startingPrice, setStartingPrice] = useState(restored?.startingPrice == null ? "" : String(restored.startingPrice));
+  const [title, setTitle] = useState(restored?.title ?? "");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [uncertain, setUncertain] = useState(Boolean(initialReceipt));
+  const hasPhoto = Boolean(file || stagedImagePath);
+  const photoPermission = usePublicPhotoProcessingPermission(JSON.stringify([receiptScope, mediaVersion, contentType]));
+  const [mediaPhase, setMediaPhase] = useState<MediaUploadPhase>("preparing");
+  const submitBusy = useRef(false);
+  const attempt = useRef<{
+    file: File | null;
+    imagePath: string | null;
+    mediaVersion: number;
+    request: SalonPostRequest | null;
+    requestId: string;
+    signature: string;
+    unknown: boolean;
+  } | null>(initialReceipt ? { file: null, imagePath: restored?.imagePath ?? null, mediaVersion: 0,
+    request: initialReceipt.input, requestId: initialReceipt.requestId, signature: "", unknown: true } : null);
   const isDirty = Boolean(
     caption.trim() ||
       file ||
+      stagedImagePath ||
       title.trim() ||
       serviceId ||
       additionalServiceIds.length > 0 ||
@@ -1541,6 +1718,7 @@ function ComposerModal({
       durationMinutes ||
       startingPrice,
   );
+  useTransientOverlay(requestClose, presented);
 
   useEffect(() => {
     captionRef.current?.focus({ preventScroll: true });
@@ -1579,6 +1757,9 @@ function ComposerModal({
     }
 
     setFile(nextFile);
+    photoPermission.reset();
+    setStagedImagePath(null);
+    setMediaVersion((value) => value + 1);
     setPreviewUrl(URL.createObjectURL(nextFile));
   }
 
@@ -1595,44 +1776,89 @@ function ComposerModal({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitBusy.current || !isCurrent() || !viewerId) return;
     setError("");
 
     const resolvedType =
-      contentType === "auto" ? (file ? "look" : "update") : contentType;
+      contentType === "auto" ? (file || stagedImagePath ? "look" : "update") : contentType;
 
     if (resolvedType === "opening" && !caption.trim()) {
       setError("Write a short opening message before sharing.");
       return;
     }
 
-    if (!caption.trim() && !file && resolvedType !== "opening") {
+    if (!caption.trim() && !file && !stagedImagePath && resolvedType !== "opening") {
       setError("Write a caption or choose an image before posting.");
       return;
     }
 
-    if (resolvedType === "look" && !file) {
+    if (resolvedType === "look" && !file && !stagedImagePath) {
       setError("Choose an image for a look post.");
       return;
     }
+    const photoProcessingConsent = hasPhoto ? photoPermission.consent : undefined;
+    // A frozen unknown request must reach the server's completed-receipt lookup
+    // unchanged, including legacy requests that never carried this permission.
+    if (!attempt.current?.unknown && hasPhoto && !photoProcessingConsent) {
+      setError(PUBLIC_PHOTO_PROCESSING_DECLINE_NOTICE);
+      return;
+    }
 
+    const signature = JSON.stringify({ additionalServiceIds, bookingCtaEnabled, caption, contentType: resolvedType,
+      durationMinutes, mood, serviceId, staffId, startsAt, startingPrice, title,
+      ...(photoProcessingConsent ? { photoProcessingConsent } : {}) });
+    const previous = attempt.current;
+    if (!previous?.unknown && (!previous || previous.signature !== signature || previous.mediaVersion !== mediaVersion)) {
+      if (previous?.imagePath && previous.mediaVersion !== mediaVersion) void deleteSalonProfileMediaAction(previous.imagePath, data.profile.salonId).catch(() => {});
+      attempt.current = { file, imagePath: previous?.mediaVersion === mediaVersion ? previous.imagePath : stagedImagePath, mediaVersion, request: null,
+        requestId: crypto.randomUUID(), signature, unknown: false };
+    }
+    const current = attempt.current!;
+    const unknownBefore = current.unknown;
+    const draftPreview: PendingSalonPost = { authorUserId: viewerId, caption, phase: "preparing", previewUrl,
+      progress: 0, requestId: current.requestId, salonId: data.profile.salonId, title };
+    function updatePending(phase: PendingSalonPost["phase"], value = 0) {
+      if (!isCurrent()) return;
+      setMediaPhase(phase === "unknown" ? "confirming" : phase);
+      setProgress(value);
+      onPendingChange({ ...draftPreview, phase, progress: value }, current.requestId);
+    }
+    submitBusy.current = true;
     setSubmitting(true);
     setProgress(0);
+    setMediaPhase("preparing");
+    onPendingChange(draftPreview, current.requestId);
+    onPresentedChange(false);
+    let requestSent = false;
 
     try {
-      const imagePath = file
-        ? await processAndUploadImage({
-            file,
-            intent: "content",
-            kind: resolvedType === "look" ? "look" : "update",
-            onProgress: setProgress,
-          })
-        : null;
-      const result = await createSalonProfileSocialPostAction({
+      if (!current.request && file && !current.imagePath) {
+        const [imagePath] = await runPublicImageUploadBatch({ items: [file], concurrency: 2, isCurrent,
+          upload: async (selectedFile) => {
+            let reserved: string | null = null;
+            try {
+              return await processAndUploadImage({ file: selectedFile, intent: "content", kind: resolvedType === "look" ? "look" : "update",
+                salonId: data.profile.salonId, onReserved: (path) => { reserved = path; },
+                onProgress: (value) => updatePending(value >= 100 ? "confirming" : "uploading", value),
+                onPhase: (phase) => updatePending(phase), });
+            } catch (uploadError) {
+              if (reserved) await deleteSalonProfileMediaAction(reserved, data.profile.salonId).catch(() => {});
+              throw uploadError;
+            }
+          },
+          cleanup: (path) => deleteSalonProfileMediaAction(path, data.profile.salonId).catch(() => {}),
+        });
+        current.imagePath = imagePath;
+        setStagedImagePath(imagePath);
+      }
+      if (!isCurrent()) return;
+      current.request ??= {
         additionalServiceIds,
         bookingCtaEnabled,
         caption,
         contentType: resolvedType,
-        imagePath,
+        imagePath: current.imagePath,
+        requestId: current.requestId,
         durationMinutes: durationMinutes ? Number(durationMinutes) : null,
         mood: mood || null,
         salonId: data.profile.salonId,
@@ -1641,69 +1867,105 @@ function ComposerModal({
         startsAt: startsAt ? new Date(startsAt).toISOString() : null,
         startingPrice: startingPrice ? Number(startingPrice) : null,
         title,
-      });
+        ...(current.imagePath && photoProcessingConsent ? { photoProcessingConsent } : {}),
+      };
+      writePublicPostReceipt(receiptScope, { requestId: current.requestId, input: current.request });
+      updatePending(current.imagePath ? "confirming" : "saving", current.imagePath ? 100 : 0);
+      requestSent = true;
+      const result = await createSalonProfileSocialPostAction(current.request);
+      if (!isCurrent()) return;
 
       if (result.error !== null) {
+        const rejected = "outcome" in result && result.outcome === "rejected";
+        current.unknown = !rejected;
+        setUncertain(!rejected);
         setError(result.error);
+        if (rejected) {
+          try { clearPublicPostReceipt(receiptScope, current.requestId); } catch { /* A known rejection remains safe to edit; no publication occurred. */ }
+          current.request = null;
+          onPendingChange(null, current.requestId);
+        } else updatePending("unknown");
+        onPresentedChange(true);
         return;
       }
 
+      current.unknown = false;
+      setUncertain(false);
+      try { clearPublicPostReceipt(receiptScope, current.requestId); } catch { /* Replay remains idempotent if the receipt could not be cleared. */ }
+      onPendingChange(null, current.requestId);
+      window.dispatchEvent(new CustomEvent("reylumi:post-published"));
       onPosted(result);
       onClose();
     } catch (submitError) {
+      if (!isCurrent()) return;
+      current.unknown = requestSent || unknownBefore;
+      setUncertain(current.unknown);
+      if (current.unknown) updatePending("unknown");
+      else onPendingChange(null, current.requestId);
       setError(
         submitError instanceof Error ? submitError.message : "Post failed.",
       );
+      onPresentedChange(true);
     } finally {
+      submitBusy.current = false;
       setSubmitting(false);
     }
   }
 
   function requestClose() {
+    if (submitting || uncertain) {
+      onPresentedChange(false);
+      return;
+    }
     if (
       isDirty &&
       !submitting &&
-      !window.confirm("Discard this post draft?")
+      !window.confirm(__vt("Discard this post draft?"))
     ) {
       return;
     }
 
+    const current = attempt.current;
+    if (current?.imagePath && !current.unknown) void deleteSalonProfileMediaAction(current.imagePath, data.profile.salonId).catch(() => {});
     onClose();
   }
 
-  const primaryLabel = "Post";
+  const primaryLabel = uncertain ? "Check & retry" : "Post";
   const pendingLabel = contentType === "opening" ? "Sharing" : "Posting";
   const suggestedService = hashtagSuggestionsForServices(caption, data.services);
   const onlineStaff = data.staff.filter((member) => member.onlineBookingEnabled);
   const fieldClass = "min-h-11 w-full min-w-0 rounded-xl border border-zinc-200 bg-white px-3 text-base outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/10";
   const serviceOptions = data.services.map((service) => ({ id: service.id, label: service.name }));
 
+  if (!presented) return null;
+
   return (
     <Modal
       bodyClassName="p-0"
       footer={
         <div className="grid gap-2 sm:flex sm:items-center sm:justify-between sm:gap-3">
-          <p className="min-w-0 text-xs leading-5 text-zinc-500 sm:text-sm" aria-live="polite">
-            {submitting
-              ? `${pendingLabel} ${progress}%`
-              : "Share with your salon’s customers."}
-          </p>
+          <div className="min-w-0 flex-1 text-xs leading-5 text-zinc-500 sm:text-sm">
+            {submitting && file ? <MediaUploadProgress phase={mediaPhase} progress={progress} /> :
+              <p role={submitting || uncertain ? "status" : undefined}><WorkspaceText text={submitting ? `${pendingLabel}...` : uncertain ? "Retry checks the same post. Keep this draft unchanged until the result is confirmed." : "Share with your salon’s customers."} /></p>}
+          </div>
           <button
             className="min-h-12 w-full shrink-0 rounded-xl bg-brand-orange px-8 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:bg-brand-orange/50 sm:w-auto"
-            disabled={submitting}
+            disabled={submitting || (!uncertain && hasPhoto && !photoPermission.accepted)}
             form={formId}
             type="submit"
           >
-            {submitting ? `${pendingLabel}...` : primaryLabel}
+            <WorkspaceText text={submitting ? `${pendingLabel}...` : primaryLabel} />
           </button>
         </div>
       }
-      initialFocusRef={captionRef}
+      initialFocusRef={uncertain ? undefined : captionRef}
       onClose={requestClose}
       panelClassName="sm:max-w-[46rem]"
-      title={contentType === "opening" ? "Share opening" : "Create post"}
+      title={__vt(contentType === "opening" ? "Share opening" : "Create post")}
     >
       <form className="grid gap-4 p-4 sm:p-5" id={formId} onSubmit={submit}>
+        {uncertain ? <p role="status" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900"><WorkspaceText text="The result is not confirmed. This draft is locked so retry checks the same post without creating a duplicate." /></p> : null}
+        <fieldset className="contents" disabled={submitting || uncertain}>
         <div className="flex items-center gap-3">
           <Avatar
             logoUrl={data.profile.logoImageUrl}
@@ -1711,12 +1973,12 @@ function ComposerModal({
             size="md"
           />
           <div>
-            <p className="font-semibold text-zinc-950">{data.profile.name}</p>
-            <p className="text-sm text-zinc-500">Posting to Salon Profile</p>
+            <p className="font-semibold text-zinc-950"><SalonName name={data.profile.name} salonId={data.profile.salonId}/></p>
+            <p className="text-sm text-zinc-500"><WorkspaceText text="Posting to Salon Profile" /></p>
           </div>
         </div>
         <label className="sr-only" htmlFor={`${formId}-caption`}>
-          Post caption
+          <WorkspaceText text="Post caption" />
         </label>
         <textarea
           className="max-h-56 min-h-28 w-full resize-none border-0 bg-white py-2 text-base leading-7 text-zinc-950 outline-none placeholder:text-zinc-400"
@@ -1725,48 +1987,51 @@ function ComposerModal({
             setCaption(event.currentTarget.value);
             resizeCaptionTextarea();
           }}
-          placeholder="Share a new look, a little inspiration, or news from your salon…"
+          placeholder={__vt("Share a new look, a little inspiration, or news from your salon…")}
           ref={captionRef}
           value={caption}
         />
-        <input accept={SALON_PROFILE_ALLOWED_IMAGE_TYPES.join(",")} className="sr-only" aria-label="Choose a post photo" onChange={(event) => { acceptFile(event.currentTarget.files?.[0] ?? null); event.currentTarget.value = ""; }} ref={fileInputRef} type="file" />
+        <input accept={SALON_PROFILE_ALLOWED_IMAGE_TYPES.join(",")} className="sr-only" aria-label={__vt("Choose a post photo")} onChange={(event) => { acceptFile(event.currentTarget.files?.[0] ?? null); event.currentTarget.value = ""; }} ref={fileInputRef} type="file" />
         {previewUrl ? <div className="relative overflow-hidden rounded-2xl bg-zinc-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="Selected post preview" className="max-h-64 w-full object-contain" src={previewUrl} />
-          <button aria-label="Remove selected image" className="absolute right-2 top-2 rounded-full bg-white/95 px-3 py-2 text-xs font-medium shadow" type="button" onClick={() => { setFile(null); setPreviewUrl(null); }}>Remove</button>
+          <img alt={__vt("Selected post preview")} className="max-h-64 w-full object-contain" src={previewUrl} />
+          <button aria-label={__vt("Remove selected image")} className="absolute right-2 top-2 rounded-full bg-white/95 px-3 py-2 text-xs font-medium shadow" type="button" onClick={() => { photoPermission.reset(); setFile(null); setPreviewUrl(null); setStagedImagePath(null); setMediaVersion((value) => value + 1); }}><WorkspaceText text="Remove" /></button>
         </div> : null}
+        {stagedImagePath && !previewUrl ? <div className="rounded-xl bg-zinc-50 p-3 text-sm text-zinc-600"><WorkspaceText text="Your uploaded photo is kept for this submission. Its preview is unavailable after reloading." />{!uncertain ? <button className="ml-2 underline" type="button" onClick={() => { photoPermission.reset(); setStagedImagePath(null); setMediaVersion((value) => value + 1); }}><WorkspaceText text="Remove" /></button> : null}</div> : null}
         <div className="flex flex-wrap items-center justify-between gap-2 border-y border-zinc-100 py-3">
-          <button className="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-brand-orange hover:bg-brand-orange-soft" type="button" onClick={() => fileInputRef.current?.click()}><PostPhotoIcon />{file ? "Change photo" : "Add photo"}</button>
-          <div aria-label="Post type" className="flex flex-wrap gap-1">
-            {([{ id: "auto", label: "Post" }, { id: "opening", label: "Opening" }] as const).map((type) => <button key={type.id} type="button" aria-pressed={type.id === "auto" ? contentType !== "opening" : contentType === "opening"} className={`min-h-9 rounded-full px-3 text-xs font-medium ${ (type.id === "opening") === (contentType === "opening") ? "bg-brand-orange-soft text-brand-orange" : "text-zinc-500 hover:bg-zinc-100"}`} onClick={() => setContentType(type.id)}>{type.label}</button>)}
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-brand-orange hover:bg-brand-orange-soft" type="button" onClick={() => fileInputRef.current?.click()}><PostPhotoIcon /><WorkspaceText text={file ? "Change photo" : "Add photo"} /></button>
+          <div aria-label={__vt("Post type")} className="flex flex-wrap gap-1">
+            {([{ id: "auto", label: "Post" }, { id: "opening", label: "Opening" }] as const).map((type) => <button key={type.id} type="button" aria-pressed={type.id === "auto" ? contentType !== "opening" : contentType === "opening"} className={`min-h-9 rounded-full px-3 text-xs font-medium ${ (type.id === "opening") === (contentType === "opening") ? "bg-brand-orange-soft text-brand-orange" : "text-zinc-500 hover:bg-zinc-100"}`} onClick={() => setContentType(type.id)}><WorkspaceText text={type.label} /></button>)}
           </div>
         </div>
         <section className="grid gap-3">
-          <div><h3 className="text-sm font-semibold text-zinc-900">Service & booking</h3><p className="mt-1 text-xs text-zinc-500">Optional · type to find a service or professional.</p></div>
-          {suggestedService && suggestedService.service.id !== serviceId ? <button type="button" className="rounded-xl bg-brand-orange-soft px-3 py-2 text-left text-xs text-zinc-700" onClick={() => { setServiceId(suggestedService.service.id); setAdditionalServiceIds((current) => current.filter((id) => id !== suggestedService.service.id)); }}>Suggested from your caption: <strong>{suggestedService.service.name}</strong> · Add</button> : null}
+          <div><h3 className="text-sm font-semibold text-zinc-900"><WorkspaceText text="Service & booking" /></h3><p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Optional · type to find a service or professional." /></p></div>
+          {suggestedService && suggestedService.service.id !== serviceId ? <button type="button" className="rounded-xl bg-brand-orange-soft px-3 py-2 text-left text-xs text-zinc-700" onClick={() => { setServiceId(suggestedService.service.id); setAdditionalServiceIds((current) => current.filter((id) => id !== suggestedService.service.id)); }}><WorkspaceText text="Suggested from your caption:" /> <strong>{suggestedService.service.name}</strong> <WorkspaceText text="· Add" /></button> : null}
           <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-            <PostSuggestionField label="Primary service" placeholder="e.g. Full set" options={serviceOptions} value={serviceId} onChange={(id) => { setServiceId(id); setAdditionalServiceIds((current) => current.filter((item) => item !== id)); }} />
-            <PostSuggestionField label="Professional" placeholder="Type a name" options={onlineStaff.map((member) => ({ id: member.id, label: member.displayName }))} value={staffId} onChange={setStaffId} />
+            <PostSuggestionField label={__vt("Primary service")} placeholder={__vt("e.g. Full set")} options={serviceOptions} value={serviceId} onChange={(id) => { setServiceId(id); setAdditionalServiceIds((current) => current.filter((item) => item !== id)); }} />
+            <PostSuggestionField label={__vt("Professional")} placeholder={__vt("Type a name")} options={onlineStaff.map((member) => ({ id: member.id, label: member.displayName }))} value={staffId} onChange={setStaffId} />
           </div>
-          <PostSuggestionField label="Additional services" placeholder="Type to add another service" options={serviceOptions.filter((option) => option.id !== serviceId && !additionalServiceIds.includes(option.id))} value="" onChange={(id) => { if (id) setAdditionalServiceIds((current) => [...current, id]); }} />
-          {additionalServiceIds.length ? <div className="flex flex-wrap gap-2">{additionalServiceIds.map((id) => <button key={id} type="button" aria-label={`Remove ${data.services.find((service) => service.id === id)?.name}`} className="rounded-full bg-brand-orange-soft px-3 py-1.5 text-xs text-zinc-700" onClick={() => setAdditionalServiceIds((current) => current.filter((item) => item !== id))}>{data.services.find((service) => service.id === id)?.name} <span aria-hidden="true">×</span></button>)}</div> : null}
+          <PostSuggestionField label={__vt("Additional services")} placeholder={__vt("Type to add another service")} options={serviceOptions.filter((option) => option.id !== serviceId && !additionalServiceIds.includes(option.id))} value="" onChange={(id) => { if (id) setAdditionalServiceIds((current) => [...current, id]); }} />
+          {additionalServiceIds.length ? <div className="flex flex-wrap gap-2">{additionalServiceIds.map((id) => <button key={id} type="button" aria-label={__vt(`Remove ${data.services.find((service) => service.id === id)?.name}`)} className="rounded-full bg-brand-orange-soft px-3 py-1.5 text-xs text-zinc-700" onClick={() => setAdditionalServiceIds((current) => current.filter((item) => item !== id))}>{data.services.find((service) => service.id === id)?.name} <span aria-hidden="true">×</span></button>)}</div> : null}
           <div className="grid min-w-0 grid-cols-2 gap-3">
-            <label className="grid min-w-0 gap-1.5"><span className="text-xs font-medium text-zinc-600">Duration · minutes</span><input className={fieldClass} min="0" onChange={(event) => setDurationMinutes(event.currentTarget.value)} placeholder="e.g. 45" type="number" value={durationMinutes} /></label>
-            <label className="grid min-w-0 gap-1.5"><span className="text-xs font-medium text-zinc-600">Starting price · $</span><input className={fieldClass} min="0" step="0.01" onChange={(event) => setStartingPrice(event.currentTarget.value)} placeholder="e.g. 55" type="number" value={startingPrice} /></label>
+            <label className="grid min-w-0 gap-1.5"><span className="text-xs font-medium text-zinc-600"><WorkspaceText text="Duration · minutes" /></span><input className={fieldClass} min="0" onChange={(event) => setDurationMinutes(event.currentTarget.value)} placeholder={__vt("e.g. 45")} type="number" value={durationMinutes} /></label>
+            <label className="grid min-w-0 gap-1.5"><span className="text-xs font-medium text-zinc-600"><WorkspaceText text="Starting price · $" /></span><input className={fieldClass} min="0" step="0.01" onChange={(event) => setStartingPrice(event.currentTarget.value)} placeholder={__vt("e.g. 55")} type="number" value={startingPrice} /></label>
           </div>
-          {contentType === "opening" ? <label className="grid min-w-0 gap-1.5"><span className="text-xs font-medium text-zinc-600">Opening time</span><input className={fieldClass} onChange={(event) => setStartsAt(event.currentTarget.value)} type="datetime-local" value={startsAt} /></label> : null}
-          <label className="flex min-h-10 items-center gap-2 text-xs text-zinc-600"><input className="size-4 accent-brand-orange" checked={bookingCtaEnabled} onChange={(event) => setBookingCtaEnabled(event.currentTarget.checked)} type="checkbox" />Let customers book from this post</label>
+          {contentType === "opening" ? <label className="grid min-w-0 gap-1.5"><span className="text-xs font-medium text-zinc-600"><WorkspaceText text="Opening time" /></span><input className={fieldClass} onChange={(event) => setStartsAt(event.currentTarget.value)} type="datetime-local" value={startsAt} /></label> : null}
+          <label className="flex min-h-10 items-center gap-2 text-xs text-zinc-600"><input className="size-4 accent-brand-orange" checked={bookingCtaEnabled} onChange={(event) => setBookingCtaEnabled(event.currentTarget.checked)} type="checkbox" /><WorkspaceText text="Let customers book from this post" /></label>
         </section>
         <section className="grid gap-3 border-t border-zinc-100 pt-4">
-          <div><h3 className="text-sm font-semibold text-zinc-900">A little more detail</h3><p className="mt-1 text-xs text-zinc-500">Optional · add only what fits your post.</p></div>
+          <div><h3 className="text-sm font-semibold text-zinc-900"><WorkspaceText text="A little more detail" /></h3><p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Optional · add only what fits your post." /></p></div>
           <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-            <label className="grid min-w-0 gap-1.5"><span className="text-xs font-medium text-zinc-600">Title</span><input className={fieldClass} onChange={(event) => setTitle(event.currentTarget.value)} placeholder="e.g. A fresh summer set" value={title} /></label>
-            <PostSuggestionField allowCustom label="Mood" placeholder="e.g. Soft & clean" options={["Soft & clean", "Summer bright", "Rich & modern", "Special moment"].map((label) => ({ id: label, label }))} value={mood} onChange={setMood} />
+            <label className="grid min-w-0 gap-1.5"><span className="text-xs font-medium text-zinc-600"><WorkspaceText text="Title" /></span><input className={fieldClass} onChange={(event) => setTitle(event.currentTarget.value)} placeholder={__vt("e.g. A fresh summer set")} value={title} /></label>
+            <PostSuggestionField allowCustom label={__vt("Mood")} placeholder={__vt("e.g. Soft & clean")} options={["Soft & clean", "Summer bright", "Rich & modern", "Special moment"].map((label) => ({ id: label, label }))} value={mood} onChange={setMood} />
           </div>
         </section>
+        {hasPhoto && !uncertain ? <PublicPhotoProcessingPermission accepted={photoPermission.accepted} disabled={submitting} onChange={photoPermission.setAccepted} /> : null}
+        </fieldset>
         {error ? (
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-            {error}
+            <WorkspaceText text={error} />
           </p>
         ) : null}
       </form>
@@ -1783,6 +2048,8 @@ function Avatar({
   name: string;
   size?: "lg" | "md" | "sm";
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const sizeClass =
     size === "lg"
       ? "h-24 w-24 text-2xl sm:h-32 sm:w-32"
@@ -1798,7 +2065,7 @@ function Avatar({
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        alt={`${name} logo`}
+        alt={__vt(`${name} logo`)}
         className={`${sizeClass} ${frameClass} shrink-0 bg-white object-cover`}
         src={logoUrl}
       />
@@ -1852,10 +2119,10 @@ function TeamPreviewRows({
           </span>
           <span className="min-w-0">
             <span className="block truncate text-sm font-semibold text-zinc-950">
-              {overflowLabel}
+              <WorkspaceText text={overflowLabel} />
             </span>
             <span className="block text-xs text-zinc-500">
-              View all {formatSalonProfileTeamCount(preview.totalCount)}
+              <WorkspaceText text="View all" /> {formatSalonProfileTeamCount(preview.totalCount)}
             </span>
           </span>
         </button>
@@ -1869,12 +2136,10 @@ function FeedCard({
   commentCount: initialCommentCount,
   item,
   look,
-  logoUrl,
   onBook,
   onCommentCountChange,
   onOpenPost,
   onRefresh,
-  canFeature = false,
   onSavedChange,
   onShare,
   saved,
@@ -1889,24 +2154,25 @@ function FeedCard({
   onCommentCountChange: (target: PostCommentTarget, count: number) => void;
   onOpenPost: (item: ProfileFeedItem) => void;
   onRefresh: () => void;
-  canFeature?: boolean;
   onSavedChange: (look: PublicSalonProfileLook, saved: boolean) => void;
   onShare: (item?: ProfileFeedItem) => void;
   saved: boolean;
   saveCount: number;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const preferences = useContext(ProfilePreferencesContext);
-  const [managing, startManageTransition] = useTransition();
   const [commentsExpanded, setCommentsExpanded] = useState(false);
   const [commentCountState, setCommentCountState] = useState(() => ({
     count: initialCommentCount,
     itemId: item.id,
   }));
   const commentsPanelId = useId();
+  const caption = usePostCaption(profileFeedCommentTarget(item, item.title), item.caption, capabilities.currentUserId);
   const title =
     item.contentType === "look"
       ? item.title
-      : item.caption || item.title || "Salon update";
+      : caption || item.title || "Salon update";
   const commentTarget = profileFeedCommentTarget(item, title);
   const viewer = postCommentViewer(capabilities);
   const commentCount =
@@ -1929,42 +2195,6 @@ function FeedCard({
     return undefined;
   }, [item.contentType, item.id]);
 
-  function updateLookStatus(status?: "archived" | "draft" | "published", isPinned?: boolean) {
-    if (!look) {
-      return;
-    }
-
-    startManageTransition(async () => {
-      const result = await setSalonProfileLookStatusDirectAction({
-        isPinned,
-        lookId: look.id,
-        salonId: look.serviceId ? item.salonId : item.salonId,
-        status,
-      });
-
-      if (!result.error) {
-        onRefresh();
-      }
-    });
-  }
-
-  function deleteLook() {
-    if (!look || !window.confirm("Delete this look?")) {
-      return;
-    }
-
-    startManageTransition(async () => {
-      const result = await deleteSalonProfileLookDirectAction({
-        lookId: look.id,
-        salonId: item.salonId,
-      });
-
-      if (!result.error) {
-        onRefresh();
-      }
-    });
-  }
-
   function updateCommentCount(count: number) {
     setCommentCountState({ count, itemId: item.id });
     onCommentCountChange(commentTarget, count);
@@ -1972,29 +2202,25 @@ function FeedCard({
 
   return (
     <article
-      className="min-h-[calc(100svh-8rem)] scroll-mt-24 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)]"
+      className="min-h-[calc(100svh-8rem)] scroll-mt-24 overflow-hidden border-zinc-200/80 bg-white rounded-none border-0 shadow-none"
       id={`${item.contentType}-${item.id}`}
     >
       <div className="flex items-start justify-between gap-3 p-4">
         <div className="flex min-w-0 items-center gap-3">
-          <Avatar
-            logoUrl={item.authorAvatarUrl ?? logoUrl}
-            name={item.authorName}
-            size="sm"
-          />
+          <ProfilePostAvatar/>
           <div className="min-w-0">
             <p className="truncate font-semibold text-zinc-950">
-              {item.authorName}
+              <ProfilePostIdentity item={item}/>
             </p>
             <p className="text-sm text-zinc-500">{timeAgo(item.publishedAt)}</p>
           </div>
         </div>
-        <PostActions disabled={managing} onOpen={()=>onOpenPost(item)} onShare={preferences.allow_sharing?()=>onShare(item):undefined} onFeature={canFeature && item.contentType === "look" && item.imageUrl ? ()=>updateLookStatus(undefined,!item.isPinned):undefined} isFeatured={item.isPinned} onArchive={capabilities.canManageContent && look?()=>updateLookStatus("archived"):undefined} onDelete={capabilities.canManageContent && look?()=>deleteLook():undefined}/>
+        <PostActions target={profileFeedCommentTarget(item, caption || item.title)} viewerId={capabilities.currentUserId} onChanged={onRefresh} onOpen={()=>onOpenPost(item)} onShare={preferences.allow_sharing?()=>onShare(item):undefined} isFeatured={item.isPinned}/>
 
       </div>
-      {item.caption ? (
+      {caption ? (
         <p className="px-4 pb-4 text-sm leading-6 text-zinc-800">
-          <CaptionWithHashtags text={item.caption} />
+          <CaptionWithHashtags text={caption} />
         </p>
       ) : null}
       {item.hashtags.length > 0 ? (
@@ -2020,7 +2246,7 @@ function FeedCard({
             <LookImage
               className="aspect-[4/5] max-h-[760px] w-full"
               imageUrl={item.imageUrl}
-              title={title}
+              title={__vt(title)}
             />
           </button>
         </div>
@@ -2030,27 +2256,27 @@ function FeedCard({
           {item.contentType === "look" && item.mood ? <span>{item.mood}</span> : null}
           {item.serviceName ? <span>{item.serviceName}</span> : null}
           {item.contentType === "look" && item.recommendedStaffName ? (
-            <span>With {item.recommendedStaffName}</span>
+            <span><WorkspaceText text="With" /> {item.recommendedStaffName}</span>
           ) : null}
           {item.contentType === "update" && item.staffName ? (
-            <span>With {item.staffName}</span>
+            <span><WorkspaceText text="With" /> {item.staffName}</span>
           ) : null}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3 text-xs font-medium text-zinc-500">
           <span>
-            {item.contentType === "look" && saveCount > 0
+            <WorkspaceText text={item.contentType === "look" && saveCount > 0
               ? `${saveCount} save${saveCount === 1 ? "" : "s"}`
-              : null}
+              : null} />
           </span>
           <span>
-            {commentCount} comment
+            {commentCount} <WorkspaceText text="comment" />
             {commentCount === 1 ? "" : "s"}
           </span>
         </div>
-        <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+        <div className="post-action-toolbar">
           {look && preferences.allow_saves ? (
             <ProfileSavePostButton
-              className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+              className="min-w-0"
               initialSaved={saved}
               onSavedChange={(active) => onSavedChange(look, active)}
               saveCount={saveCount}
@@ -2063,7 +2289,7 @@ function FeedCard({
             />
           ) : item.contentType === "update" ? (
             <ProfileSavePostButton
-              className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+              className="min-w-0"
               size="toolbar"
               target={{
                 salonId: item.salonId,
@@ -2072,55 +2298,41 @@ function FeedCard({
               }}
             />
           ) : null}
-          <TimelineActionButton
-            aria-label="View post"
-            className="border-r border-zinc-100 last:border-r-0"
-            icon="open"
-            onClick={() => onOpenPost(item)}
-            title="View post"
-          >
-            View
-          </TimelineActionButton>
+
           {preferences.allow_comments ? <>
           <TimelineActionButton
             active={commentsExpanded}
             aria-controls={commentsPanelId}
             aria-expanded={commentsExpanded}
-            aria-label={
-              commentCount > 0
+            aria-label={__vt(commentCount > 0
                 ? `Read ${commentCount} comments or write a comment`
-                : "Write a comment"
-            }
-            className="border-r border-zinc-100 last:border-r-0"
+                : "Write a comment")}
             icon="comment"
             onClick={() => setCommentsExpanded((current) => !current)}
-            title="Comment"
+            title={__vt("Comment")}
           >
-            Comment
+            <WorkspaceText text="Comment" />
           </TimelineActionButton>
           </> : null}
           {preferences.allow_sharing ? <>
           <TimelineActionButton
-            aria-label={`Share ${title}`}
-            className="border-r border-zinc-100 last:border-r-0"
+            aria-label={__vt(`Share ${title}`)}
             icon="share"
             onClick={() => void onShare(item)}
-            title="Share"
+            title={__vt("Share")}
           >
-            Share
+            <WorkspaceText text="Share" />
           </TimelineActionButton>
           </> : null}
-          {capabilities.canBook ? <InspirationAvailability href={`/book/${item.salonId}?inspiration=${item.id}&source=public_profile`} /> : null}
+
           {capabilities.canBook || !capabilities.isOwnSalon ? (
             <TimelineActionButton
-              aria-label={
-                item.contentType === "look" ? "Book look" : "Book inspiration"
-              }
+              aria-label={__vt(item.contentType === "look" ? "Book look" : "Book inspiration")}
               icon="book"
               onClick={() =>
                 onBook({
                   lookId: item.contentType === "look" ? item.id : null,
-                  note: item.caption,
+                  note: caption,
                   title:
                     item.contentType === "look"
                       ? "Book this look"
@@ -2129,18 +2341,17 @@ function FeedCard({
                     startAt: item.contentType === "update" && item.updateType === "last_minute_opening" ? item.startsAt : null,
                 })
               }
-              title={
-                item.contentType === "look" ? "Book look" : "Book inspiration"
-              }
+              title={__vt(item.contentType === "look" ? "Book look" : "Book inspiration")}
               tone="primary"
             >
-              Book
+              <span data-booking-action-label><WorkspaceText text="Book appointment" /></span>
             </TimelineActionButton>
           ) : null}
         </div>
+        {capabilities.canBook ? <InspirationAvailability href={`/book/${item.salonId}?inspiration=${item.id}&source=public_profile`} /> : null}
         {commentsExpanded && preferences.allow_comments ? (
           <div
-            className="rounded-xl border border-zinc-200 bg-zinc-50/75 p-3"
+            className="border-zinc-200 bg-zinc-50/75 p-3 rounded-none border-0 shadow-none"
             id={commentsPanelId}
           >
             <ProfilePostCommentThread
@@ -2171,6 +2382,8 @@ function BeautyTransformationsSection({
   onOpenPost?: (post: PublicSalonProfileBeautyPost) => void;
   posts: PublicSalonProfileBeautyPost[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   if (posts.length === 0) {
     return null;
   }
@@ -2179,10 +2392,10 @@ function BeautyTransformationsSection({
     <section className="grid min-h-[calc(100svh-8rem)] scroll-mt-24 content-center gap-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-          Client transformations
+          <WorkspaceText text="Client transformations" />
         </p>
         <h2 className="mt-1 text-2xl font-semibold text-zinc-950">
-          Shared by customers
+          <WorkspaceText text="Shared by customers" />
         </h2>
       </div>
       <div className="grid gap-3">
@@ -2207,7 +2420,7 @@ function BeautyTransformationsSection({
 
           return (
             <article
-              className="group overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_70px_rgba(24,24,27,.08)]"
+              className="group overflow-hidden border-zinc-200/80 bg-white transition rounded-none border-0 shadow-none"
               key={post.id}
             >
               <div className="relative">
@@ -2241,7 +2454,7 @@ function BeautyTransformationsSection({
                     {post.authorAvatarUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        alt={`${post.authorDisplayName} profile`}
+                        alt={__vt(`${post.authorDisplayName} profile`)}
                         className="h-full w-full object-cover"
                         src={post.authorAvatarUrl}
                       />
@@ -2251,7 +2464,7 @@ function BeautyTransformationsSection({
                   </span>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-zinc-950">
-                      {post.authorDisplayName}
+                      <ProfileCustomerIdentity post={post}/>
                     </p>
                     {meta ? (
                       <p className="truncate text-xs font-medium text-zinc-500">
@@ -2259,25 +2472,49 @@ function BeautyTransformationsSection({
                       </p>
                     ) : null}
                   </div>
+                  <div className="flex">
+                    {onOpenPost ? (
+                      <button
+                        aria-label={__vt("View post")}
+                        className="inline-flex min-h-11 min-w-11 max-w-full flex-none items-center justify-center gap-1.5 px-2 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
+                        onClick={() => onOpenPost(post)}
+                        title={__vt("View post")}
+                        type="button"
+                      >
+                        <TimelineActionIcon name="open" />
+                        <span className="min-w-0 whitespace-normal break-words"><WorkspaceText text="View" /></span>
+                      </button>
+                    ) : (
+                      <a
+                        aria-label={__vt("View post")}
+                        className="inline-flex min-h-11 min-w-11 max-w-full flex-none items-center justify-center gap-1.5 px-2 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
+                        href={post.postHref}
+                        title={__vt("View post")}
+                      >
+                        <TimelineActionIcon name="open" />
+                        <span className="min-w-0 whitespace-normal break-words"><WorkspaceText text="View" /></span>
+                      </a>
+                    )}
+                  </div>
                 </div>
                 {post.caption ? (
                   <p className="line-clamp-2 text-sm leading-5 text-zinc-700">
-                    {post.caption}
+                    <WorkspaceText text={post.caption} />
                   </p>
                 ) : null}
                 <div className="grid gap-2 pt-1">
                   {bookedCount !== null ? (
                     <p className="text-xs font-semibold text-zinc-500">
-                      {beautyBookedCountLabel(bookedCount)}
+                      <WorkspaceText text={beautyBookedCountLabel(bookedCount)} />
                     </p>
                   ) : null}
                   <p className="text-xs font-semibold text-zinc-500">
-                    {displayedCommentCount} comment
+                    {displayedCommentCount} <WorkspaceText text="comment" />
                     {displayedCommentCount === 1 ? "" : "s"}
                   </p>
-                  <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+                  <div className="post-action-toolbar">
                     <ProfileSavePostButton
-                      className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+                      className="min-w-0"
                       size="toolbar"
                       target={{
                         sourceId: post.id,
@@ -2286,65 +2523,43 @@ function BeautyTransformationsSection({
                     />
                     {onOpenPost ? (
                       <TimelineActionButton
-                        aria-label="Read or write comments"
-                        className="border-r border-zinc-100 last:border-r-0"
+                        aria-label={__vt("Read or write comments")}
                         icon="comment"
                         onClick={() => onOpenPost(post)}
-                        title="Comment"
+                        title={__vt("Comment")}
                       >
-                        Comment
+                        <WorkspaceText text="Comment" />
                       </TimelineActionButton>
                     ) : (
                       <a
-                        aria-label="Read or write comments"
-                        className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 border-r border-zinc-100 px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
+                        aria-label={__vt("Read or write comments")}
+                        className="inline-flex min-h-11 min-w-11 max-w-full flex-none items-center justify-center gap-1.5 px-2 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
                         href={`${post.postHref}#comments`}
-                        title="Comment"
+                        title={__vt("Comment")}
                       >
                         <TimelineActionIcon name="comment" />
-                        <span className="truncate">Comment</span>
+                        <span className="min-w-0 whitespace-normal break-words"><WorkspaceText text="Comment" /></span>
                       </a>
                     )}
+                    <ProfileSharePostButton href={post.postHref} title={post.caption || "Beauty post"} />
                     {bookingHref ? (
                       <a
-                        aria-label={[
-                          booking?.label ?? "Book",
+                        aria-label={__vt([
+                          booking?.label ?? "Book appointment",
                           bookedCount !== null
                             ? beautyBookedCountLabel(bookedCount)
                             : null,
                         ]
                           .filter(Boolean)
-                          .join(", ")}
-                        className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 border-r border-zinc-100 px-1.5 py-2 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
+                          .join(", "))}
+                        className="inline-flex min-h-11 min-w-11 max-w-full flex-none items-center justify-center gap-1.5 px-2 py-2 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
                         href={bookingHref}
-                        title={booking?.label ?? "Book"}
+                        title={__vt(booking?.label ?? "Book appointment")}
                       >
                         <TimelineActionIcon name="book" />
-                        <span className="truncate">Book</span>
+                        <span className="min-w-0 whitespace-normal break-words"><span data-booking-action-label><WorkspaceText text="Book appointment" /></span></span>
                       </a>
                     ) : null}
-                    {onOpenPost ? (
-                      <button
-                        aria-label="View post"
-                        className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
-                        onClick={() => onOpenPost(post)}
-                        title="View post"
-                        type="button"
-                      >
-                        <TimelineActionIcon name="open" />
-                        <span className="truncate">View</span>
-                      </button>
-                    ) : (
-                      <a
-                        aria-label="View post"
-                        className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
-                        href={post.postHref}
-                        title="View post"
-                      >
-                        <TimelineActionIcon name="open" />
-                        <span className="truncate">View</span>
-                      </a>
-                    )}
                   </div>
                 </div>
               </div>
@@ -2375,30 +2590,33 @@ function ExperienceSummaryPanel({ summary }: { summary: PublicSalonProfileData["
   const trustSummary = profileTrustSummary(summary);
   const evidence = summary.trustEvidence;
   return (
-    <section aria-labelledby="lumi-trust-profile-title" className="rounded-xl border border-zinc-200 bg-white p-4" id="lumi-trust">
+    <details id="lumi-trust" className="scroll-mt-24 border-zinc-200 bg-white p-4">
+      <summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="LUMI Trust" /></summary>
+    <section aria-labelledby="lumi-trust-profile-title" className="border-zinc-200 bg-white p-4 rounded-none border-0 shadow-none">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold text-brand-orange">LUMI Trust</p>
-          <h3 className="mt-1 text-lg font-semibold text-zinc-950" id="lumi-trust-profile-title">Current trust evidence</h3>
+          <p className="text-xs font-semibold text-brand-orange"><WorkspaceText text="LUMI Trust" /></p>
+          <h3 className="mt-1 text-lg font-semibold text-zinc-950" id="lumi-trust-profile-title"><WorkspaceText text="Current trust evidence" /></h3>
         </div>
         <div className="flex items-center gap-2">
           <LumiTrustSpark level={trustSummary.level} size="md" />
-          <span className="text-sm font-semibold">{trustSummary.mark.label}</span>
+          <span className="text-sm font-semibold"><WorkspaceText text={trustSummary.mark.label} /></span>
         </div>
       </div>
-      <p className="mt-2 text-xs leading-5 text-zinc-600">Customer feedback and returning customers determine trust together. Lifetime visit volume does not increase quality. This signal is not a guarantee of service quality or future visits.</p>
+      <p className="mt-2 text-xs leading-5 text-zinc-600"><WorkspaceText text="Customer feedback and returning customers determine trust together. Lifetime visit volume does not increase quality. This signal is not a guarantee of service quality or future visits." /></p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         {trustSummary.evidenceRows.map((row) => (
           <div className="text-xs leading-5" key={row.kind}>
-            <p className="font-semibold text-zinc-950">{row.label}{row.value ? `: ${row.value}` : ""}</p>
+            <p className="font-semibold text-zinc-950"><WorkspaceText text={row.label} />{row.value ? `: ${row.value}` : ""}</p>
             <p className="text-zinc-600">{row.detail}</p>
           </div>
         ))}
       </div>
       {!trustSummary.evidenceRows.length ? <p className="mt-3 text-xs text-zinc-600">{trustSummary.mark.detail}</p> : null}
-      {evidence ? <p className="mt-3 text-xs text-zinc-500">Feedback window: {evidence.feedbackDays} days. Return cohort: {evidence.cohortDays} days, ending {evidence.returnDays} days ago. Updated {new Date(evidence.asOf).toLocaleDateString("en-US", { timeZone: "UTC" })}.</p> : null}
-      <a className="mt-3 inline-flex min-h-9 items-center text-xs font-semibold text-brand-orange underline" href="#customer-experiences">Read customer experiences</a>
+      {evidence ? <p className="mt-3 text-xs text-zinc-500"><WorkspaceText text="Feedback window:" /> {evidence.feedbackDays} <WorkspaceText text="days. Return cohort:" /> {evidence.cohortDays} <WorkspaceText text="days, ending" /> {evidence.returnDays} <WorkspaceText text="days ago. Updated" /> <WorkspaceText text={new Date(evidence.asOf).toLocaleDateString("en-US", { timeZone: "UTC" })} />.</p> : null}
+      <a className="mt-3 inline-flex min-h-9 items-center text-xs font-semibold text-brand-orange underline" href="#customer-experiences"><WorkspaceText text="Read customer experiences" /></a>
     </section>
+    </details>
   );
 }
 
@@ -2411,10 +2629,12 @@ function ReviewReplyForm({
 }) {
   const [body, setBody] = useState("");
   const [status, setStatus] = useState("");
+  const [posted, setPosted] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isPending || posted) return;
 
     if (!body.trim()) {
       setStatus("Write a reply before posting.");
@@ -2422,6 +2642,8 @@ function ReviewReplyForm({
     }
 
     startTransition(async () => {
+      setStatus("");
+      try {
       const result = await createSalonProfileReviewReplyAction({
         body,
         reviewId: review.id,
@@ -2435,36 +2657,19 @@ function ReviewReplyForm({
 
       setBody("");
       setStatus("Reply posted.");
+      setPosted(true);
       onPosted();
+      } catch { setStatus("Your reply could not be saved. Your draft is still here. Please try again."); }
     });
   }
 
-  return (
-    <form className="mt-4 grid gap-2 border-t border-zinc-100 pt-4" onSubmit={submit}>
-      <textarea
-        className="min-h-20 resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-950 outline-none transition focus:border-zinc-950"
-        maxLength={1000}
-        onChange={(event) => setBody(event.currentTarget.value)}
-        placeholder="Reply as the salon"
-        value={body}
-      />
-      <div className="flex items-center justify-between gap-3">
-        <p aria-live="polite" className="text-sm text-zinc-600">
-          {status}
-        </p>
-        <Button disabled={isPending} type="submit" variant="secondary">
-          {isPending ? "Replying..." : "Reply"}
-        </Button>
-      </div>
-    </form>
-  );
+  if (posted) return <p role="status" className="mt-3 text-sm text-zinc-600"><WorkspaceText text="Reply posted." /></p>;
+  return <ExperienceReplyComposer body={body} onBodyChange={setBody} pending={isPending} status={status} onSubmit={submit} />;
 }
 
 function experienceStateLabel(experience: PublicSalonProfileExperience) {
   if (experience.feedbackState === "issue") {
-    return experience.issueStatus === "resolved"
-      ? "Issue resolved"
-      : "Issue shared";
+      return "Issue shared";
   }
 
   if (experience.feedbackState === "good") {
@@ -2478,69 +2683,54 @@ function ExperienceCard({
   canReplyAsSalon,
   experience,
   onPosted,
+  viewerId,
 }: {
   canReplyAsSalon: boolean;
   experience: PublicSalonProfileExperience;
   onPosted: () => void;
+  viewerId: string | null;
 }) {
-  const canReplyToExperience =
-    canReplyAsSalon && experience.source === "legacy_review";
-  const meta = [
-
-    timeAgo(experience.createdAt),
-  ]
-    .filter(Boolean)
-    .join(" / ");
-
+  const __vt = useWorkspaceTranslation();
+  const canReplyToExperience = canReplyAsSalon && experience.source === "legacy_review";
+  const date = experience.createdAt && Number.isFinite(Date.parse(experience.createdAt))
+    ? new Date(experience.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }) : null;
   return (
-    <article className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_14px_42px_rgba(24,24,27,.05)]">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="font-semibold text-zinc-950">
-            {experience.authorDisplayName}
-          </p>
-          {meta ? <p className="mt-1 text-sm text-zinc-500">{meta}</p> : null}
+    <article id={`experience-${experience.id}`} className={experienceStyles.card}>
+      <div className={experienceStyles.cardHeader}>
+        <div className="min-w-0">
+          <div className={experienceStyles.identity}>
+            <p className={experienceStyles.author}>{experience.authorDisplayName}</p>
+            <span className={experience.verificationStatus === "verified" ? experienceStyles.verified : experienceStyles.unverified}>
+              {experience.verificationStatus === "verified" ? <span aria-hidden="true">✓ </span> : null}
+              <WorkspaceText text={experience.verificationStatus === "verified" ? "Verified Visit" : "Experience"} />
+            </span>
+          </div>
+          <div className={experienceStyles.meta}>
+            {date ? <time dateTime={experience.createdAt}>{date}</time> : null}
+            {experience.editedAt ? <span><WorkspaceText text="Edited" /></span> : null}
+          </div>
         </div>
-        <span
-          className={[
-            "rounded-full px-3 py-1 text-xs font-semibold",
-            experience.verificationStatus === "verified"
-              ? "bg-emerald-50 text-emerald-800"
-              : "bg-zinc-100 text-zinc-600",
-          ].join(" ")}
-        >
-          {experience.verificationStatus === "verified"
-            ? "Verified Visit"
-            : "Experience"}
-        </span>
+        {viewerId ? <details className={experienceStyles.more}>
+          <summary aria-label={__vt("Experience options")}>•••</summary>
+          <div className={experienceStyles.menu}>
+            <SocialTextReportButton target={{kind:experience.source === "legacy_review" ? "review" : "experience",id:experience.id,salonId:experience.salonId}} />
+            {experience.authorUserId && viewerId !== experience.authorUserId ? <BlockUserButton userId={experience.authorUserId} /> : null}
+          </div>
+        </details> : null}
       </div>
-      <p className="mt-4 text-sm font-semibold text-zinc-950">
-        {experienceStateLabel(experience)}
-      </p>
-      {experience.title ? (
-        <h3 className="mt-2 font-semibold text-zinc-950">{experience.title}</h3>
-      ) : null}
-      {experience.body ? (
-        <p className="mt-3 text-sm leading-6 text-zinc-700">
-          {experience.body}
-        </p>
-      ) : (
-        <p className="mt-3 text-sm leading-6 text-zinc-500">
-          Quick feedback, no details added.
-        </p>
-      )}
-      {experience.replyBody ? (
-        <div className="mt-4 rounded-xl bg-zinc-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
-            Salon reply
-          </p>
-          <p className="mt-2 text-sm leading-6 text-zinc-700">
-            {experience.replyBody}
-          </p>
-        </div>
-      ) : canReplyToExperience ? (
-        <ReviewReplyForm onPosted={onPosted} review={experience} />
-      ) : null}
+      {experience.title ? <h3 className="mt-2 font-semibold text-zinc-950">{experience.title}</h3> : null}
+      {experience.body ? <p className={experienceStyles.body}>{experience.body}</p> : null}
+      <div className={experienceStyles.feedbackRow}>
+        <span className={experience.feedbackState === "good" ? experienceStyles.positive : experienceStyles.concern}><WorkspaceText text={experienceStateLabel(experience)} /></span>
+      </div>
+      {experience.replyBody ? <div className={experienceStyles.savedReply}>
+        <p className="text-sm font-semibold"><WorkspaceText text="Salon reply" /></p>
+        <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6">{experience.replyBody}</p>
+        {viewerId && experience.replyId ? <SocialTextReportButton target={{kind:experience.source === "legacy_review" ? "review_reply" : "experience_reply",id:experience.replyId,salonId:experience.salonId}} /> : null}
+        {experience.replyCreatedAt ? <p className="mt-1 text-xs text-zinc-500">{timeAgo(experience.replyCreatedAt)}</p> : null}
+      </div> : canReplyToExperience ? <ReviewReplyForm onPosted={onPosted} review={experience} /> : null}
+      {canReplyAsSalon && experience.source === "experience" ? <VisitReplyControls salonId={experience.salonId} experienceId={experience.id} hasReply={Boolean(experience.replyBody)} issueStatus={experience.feedbackState === "issue" ? experience.issueStatus : null} onChanged={onPosted} /> : null}
+      {experience.feedbackState === "issue" && (experience.issueStatus === "resolved" || experience.issueStatus === "acknowledged") ? <p className="mt-3 text-xs leading-5 text-zinc-600"><WorkspaceText text={experience.issueStatus === "resolved" ? "This issue was marked resolved. The original feedback remains unchanged." : "The salon has acknowledged your issue."} /></p> : null}
     </article>
   );
 }
@@ -2572,6 +2762,8 @@ function LookDetailDialog({
   saveCount: number;
   salonId: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const titleId = useId();
   const commentsPanelId = useId();
   const [commentCountState, setCommentCountState] = useState(() => ({
@@ -2585,6 +2777,7 @@ function LookDetailDialog({
     sourceType: "salon_profile_look",
     title: look.title,
   };
+  const caption = usePostCaption(commentTarget, look.caption, capabilities.currentUserId);
   const commentCount =
     commentCountState.lookId === look.id
       ? commentCountState.count
@@ -2604,31 +2797,20 @@ function LookDetailDialog({
       ?.focus({ preventScroll: true });
   }
 
-  useEffect(() => {
-    function onKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
 
   return (
-    <div
-      aria-labelledby={titleId}
-      aria-modal="true"
-      className="fixed inset-0 z-50 grid bg-zinc-950/45 p-0 backdrop-blur-sm sm:p-6"
-      role="dialog"
-    >
+    <ContentViewer aria-labelledby={titleId} onClose={onClose}>
       <div className="mt-auto grid max-h-[100dvh] overflow-auto overscroll-contain rounded-t-xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:m-auto sm:max-h-[88vh] sm:w-full sm:max-w-5xl sm:rounded-xl sm:pb-0">
         <div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,.8fr)]">
+          <div className="relative">
+
+
           <LookImage
             className="aspect-[4/3] w-full lg:h-full lg:min-h-[34rem]"
             imageUrl={look.imageUrl}
             title={look.title}
           />
+          </div>
           <div className="grid content-start gap-5 p-5 sm:p-7">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -2638,14 +2820,14 @@ function LookDetailDialog({
                   </p>
                 ) : null}
                 <h2
-                  className="mt-2 text-3xl font-semibold text-zinc-950"
+                  className="mt-2 text-sm font-normal leading-6 text-zinc-800"
                   id={titleId}
                 >
                   {look.title}
                 </h2>
-                {look.caption ? (
+                {caption ? (
                   <p className="mt-3 text-sm leading-6 text-zinc-700">
-                    <CaptionWithHashtags text={look.caption} />
+                    <CaptionWithHashtags text={caption} />
                   </p>
                 ) : null}
                 {look.hashtags.length > 0 ? (
@@ -2662,13 +2844,11 @@ function LookDetailDialog({
                   </div>
                 ) : null}
               </div>
-              <Button onClick={onClose} variant="secondary">
-                Close
-              </Button>
+              <div className="flex shrink-0 items-center gap-2"><PostActions target={commentTarget} viewerId={capabilities.currentUserId} onHidden={onClose} isFeatured={look.isPinned} /><button type="button" aria-label={__vt("Close post")} onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-full bg-zinc-100 text-2xl hover:bg-zinc-200">×</button></div>
             </div>
             <div className="grid gap-3 rounded-lg bg-zinc-50 p-4">
               <p className="text-sm text-zinc-600">
-                {[
+                <WorkspaceText text={[
                   look.serviceName,
                   formatDuration(look.durationMinutes),
                   formatMoney(look.startingPrice),
@@ -2677,72 +2857,70 @@ function LookDetailDialog({
                     : null,
                 ]
                   .filter(Boolean)
-                  .join(" / ")}
+                  .join(" / ")} />
               </p>
               {saveCount > 0 ? (
                 <p className="text-sm text-zinc-500">
-                  {saveCount} save{saveCount === 1 ? "" : "s"}
+                  {saveCount} <WorkspaceText text="save" />{saveCount === 1 ? "" : "s"}
                 </p>
               ) : null}
             </div>
-            <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+            <div className="post-action-toolbar">
               <TimelineActionButton
                 active={isSaved}
-                aria-label={isSaved ? "Remove saved look" : "Love this look"}
+                aria-label={__vt(isSaved ? "Remove saved look" : "Love this look")}
                 aria-pressed={isSaved}
-                className="border-r border-zinc-100 last:border-r-0"
                 icon="love"
                 onClick={() => onSave(look)}
-                title={isSaved ? "Saved" : "Love"}
+                title={__vt(isSaved ? "Saved" : "Love")}
               >
-                {isSaved ? "Loved" : "Love"}
+                <WorkspaceText text={isSaved ? "Loved" : "Love"} />
               </TimelineActionButton>
-              <TimelineActionButton
-                aria-label="Share"
-                className="border-r border-zinc-100 last:border-r-0"
-                icon="share"
-                onClick={onShare}
-                title="Share"
-              >
-                Share
-              </TimelineActionButton>
+
               <TimelineActionButton
                 aria-controls={commentsPanelId}
-                aria-label="Read or write comments"
-                className="border-r border-zinc-100 last:border-r-0"
+                aria-label={__vt("Read or write comments")}
                 icon="comment"
                 onClick={focusCommentsPanel}
-                title="Comment"
+                title={__vt("Comment")}
               >
-                Comment
+                <WorkspaceText text="Comment" />
               </TimelineActionButton>
               <TimelineActionButton
-                aria-label="View in timeline"
-                className="border-r border-zinc-100 last:border-r-0"
-                icon="timeline"
-                onClick={() => onViewInTimeline(`look-${look.id}`)}
-                title="View in timeline"
+                aria-label={__vt("Share")}
+                icon="share"
+                onClick={onShare}
+                title={__vt("Share")}
               >
-                Timeline
+                <WorkspaceText text="Share" />
               </TimelineActionButton>
               <TimelineActionButton
-                aria-label="Book exact look"
-                className="border-r border-zinc-100 last:border-r-0"
+                aria-label={__vt("Book exact look")}
                 disabled={!capabilities.canBook}
                 icon="book"
                 onClick={() =>
                   onBook({
                     lookId: look.id,
-                    note: look.caption ?? look.bookingNote,
+                    note: caption ?? look.bookingNote,
                     serviceId: look.serviceId,
                     staffId: look.recommendedStaffId,
                     title: "Book this exact look",
                   })
                 }
-                title="Book exact look"
+                title={__vt("Book exact look")}
                 tone="primary"
               >
-                Book
+                <span data-booking-action-label><WorkspaceText text="Book appointment" /></span>
+              </TimelineActionButton>
+            </div>
+            <div className="flex">
+              <TimelineActionButton
+                aria-label={__vt("View in timeline")}
+                icon="timeline"
+                onClick={() => onViewInTimeline(`look-${look.id}`)}
+                title={__vt("View in timeline")}
+              >
+                <WorkspaceText text="Timeline" />
               </TimelineActionButton>
             </div>
             <div id={commentsPanelId}>
@@ -2756,7 +2934,7 @@ function LookDetailDialog({
           </div>
         </div>
       </div>
-    </div>
+    </ContentViewer>
   );
 }
 
@@ -2768,7 +2946,6 @@ function FeedPostDetailDialog({
   onClose,
   onCommentCountChange,
   onShare,
-  onViewInTimeline,
   postActions,
 }: {
   capabilities: SalonProfileViewerCapabilities;
@@ -2781,16 +2958,19 @@ function FeedPostDetailDialog({
   onViewInTimeline: (targetId: string) => void;
   postActions?: ReactNode;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const titleId = useId();
   const commentsPanelId = useId();
   const [commentCountState, setCommentCountState] = useState(() => ({
     count: initialCommentCount,
     itemId: item.id,
   }));
+  const caption = usePostCaption(profileFeedCommentTarget(item, item.title), item.caption, capabilities.currentUserId);
   const title =
     item.contentType === "look"
       ? item.title
-      : item.caption || item.title || "Salon update";
+      : caption || item.title || "Salon update";
   const viewer = postCommentViewer(capabilities);
   const commentTarget = profileFeedCommentTarget(item, title);
   const meta = joinMeta([
@@ -2823,50 +3003,33 @@ function FeedPostDetailDialog({
     onCommentCountChange(commentTarget, count);
   }
 
-  useEffect(() => {
-    function onKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
 
   return (
-    <div
-      aria-labelledby={titleId}
-      aria-modal="true"
-      className="fixed inset-0 z-50 grid bg-zinc-950/45 p-0 backdrop-blur-sm sm:p-6"
-      role="dialog"
-    >
+    <ContentViewer aria-labelledby={titleId} onClose={onClose}>
       <div className="mt-auto grid max-h-[100dvh] overflow-auto overscroll-contain rounded-t-xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:m-auto sm:max-h-[88vh] sm:w-full sm:max-w-5xl sm:rounded-xl sm:pb-0">
-        <div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,.8fr)]">
+        <div className="relative grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,.8fr)]">
+          <div className="relative">
+
           {item.imageUrl ? (
             <LookImage
               className="aspect-[4/5] w-full lg:h-full lg:min-h-[34rem]"
               imageUrl={item.imageUrl}
-              title={title}
+              title={__vt(title)}
             />
           ) : (
             <div className="grid min-h-[18rem] place-items-center bg-zinc-100 p-6 text-center text-zinc-500">
-              No image attached
+              <WorkspaceText text="No image attached" />
             </div>
           )}
+          </div>
           <div className="grid content-start gap-5 p-5 sm:p-7">
             <div className="flex items-start justify-between gap-3">
-              {postActions}
               <div className="min-w-0">
                 <div className="flex min-w-0 items-center gap-3">
-                  <Avatar
-                    logoUrl={item.authorAvatarUrl}
-                    name={item.authorName}
-                    size="sm"
-                  />
+                  <ProfilePostAvatar/>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-zinc-950">
-                      {item.authorName}
+                      <ProfilePostIdentity item={item}/>
                     </p>
                     {meta ? (
                       <p className="truncate text-xs text-zinc-500">{meta}</p>
@@ -2874,14 +3037,14 @@ function FeedPostDetailDialog({
                   </div>
                 </div>
                 <h2
-                  className="mt-5 text-3xl font-semibold text-zinc-950"
+                  className="mt-3 text-sm font-normal leading-6 text-zinc-800"
                   id={titleId}
                 >
-                  {title}
+                  <WorkspaceText text={title === "New salon look" ? "new salon look" : title} />
                 </h2>
-                {item.caption ? (
+                {caption && caption !== title ? (
                   <p className="mt-3 text-sm leading-6 text-zinc-700">
-                    <CaptionWithHashtags text={item.caption} />
+                    <CaptionWithHashtags text={caption} />
                   </p>
                 ) : null}
                 {item.hashtags.length > 0 ? (
@@ -2898,50 +3061,35 @@ function FeedPostDetailDialog({
                   </div>
                 ) : null}
               </div>
-              <Button onClick={onClose} variant="secondary">
-                Close
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">{postActions}<button type="button" aria-label={__vt("Close post")} onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-full bg-zinc-100 text-2xl hover:bg-zinc-200">×</button></div>
             </div>
-            <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
-              <TimelineActionButton
-                aria-label={`Share ${title}`}
-                className="border-r border-zinc-100 last:border-r-0"
-                icon="share"
-                onClick={() => void onShare(item)}
-                title="Share"
-              >
-                Share
-              </TimelineActionButton>
+            <div className="post-action-toolbar">
+              <ProfileSavePostButton target={commentTarget} isAuthenticated={capabilities.isAuthenticated} initialSaved={item.contentType === "look" && item.isSaved} size="toolbar" />
               <TimelineActionButton
                 aria-controls={commentsPanelId}
-                aria-label="Read or write comments"
-                className="border-r border-zinc-100 last:border-r-0"
+                aria-label={__vt("Read or write comments")}
                 icon="comment"
                 onClick={focusCommentsPanel}
-                title="Comment"
+                title={__vt("Comment")}
               >
-                Comment
+                <WorkspaceText text="Comment" />
               </TimelineActionButton>
               <TimelineActionButton
-                aria-label="View in timeline"
-                className="border-r border-zinc-100 last:border-r-0"
-                icon="timeline"
-                onClick={() => onViewInTimeline(`${item.contentType}-${item.id}`)}
-                title="View in timeline"
+                aria-label={__vt(`Share ${title}`)}
+                icon="share"
+                onClick={() => void onShare(item)}
+                title={__vt("Share")}
               >
-                Timeline
+                <WorkspaceText text="Share" />
               </TimelineActionButton>
               <TimelineActionButton
-                aria-label={
-                  item.contentType === "look" ? "Book look" : "Book inspiration"
-                }
-                className="border-r border-zinc-100 last:border-r-0"
+                aria-label={__vt(item.contentType === "look" ? "Book look" : "Book inspiration")}
                 disabled={!capabilities.canBook}
                 icon="book"
                 onClick={() =>
                   onBook({
                     lookId: item.contentType === "look" ? item.id : null,
-                    note: item.caption,
+                    note: caption,
                     title:
                       item.contentType === "look"
                         ? "Book this look"
@@ -2950,12 +3098,10 @@ function FeedPostDetailDialog({
                     startAt: item.contentType === "update" && item.updateType === "last_minute_opening" ? item.startsAt : null,
                   })
                 }
-                title={
-                  item.contentType === "look" ? "Book look" : "Book inspiration"
-                }
+                title={__vt(item.contentType === "look" ? "Book look" : "Book inspiration")}
                 tone="primary"
               >
-                Book
+                <span data-booking-action-label><WorkspaceText text="Book appointment" /></span>
               </TimelineActionButton>
             </div>
             <div id={commentsPanelId}>
@@ -2969,7 +3115,7 @@ function FeedPostDetailDialog({
           </div>
         </div>
       </div>
-    </div>
+    </ContentViewer>
   );
 }
 
@@ -2990,6 +3136,8 @@ function BeautyPostDetailDialog({
   post: PublicSalonProfileBeautyPost;
   salonId: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const titleId = useId();
   const commentsPanelId = useId();
   const [commentCountState, setCommentCountState] = useState(() => ({
@@ -3009,6 +3157,7 @@ function BeautyPostDetailDialog({
     post.verificationState === "verified" ? "Verified Visit" : null,
     timeAgo(post.publishedAt),
   ]);
+  const caption = usePostCaption(commentTarget, post.caption, capabilities.currentUserId);
   const commentCount =
     commentCountState.postId === post.id
       ? commentCountState.count
@@ -3028,26 +3177,14 @@ function BeautyPostDetailDialog({
       ?.focus({ preventScroll: true });
   }
 
-  useEffect(() => {
-    function onKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
 
   return (
-    <div
-      aria-labelledby={titleId}
-      aria-modal="true"
-      className="fixed inset-0 z-50 grid bg-zinc-950/45 p-0 backdrop-blur-sm sm:p-6"
-      role="dialog"
-    >
+    <ContentViewer aria-labelledby={titleId} onClose={onClose}>
       <div className="mt-auto grid max-h-[100dvh] overflow-auto overscroll-contain rounded-t-xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:m-auto sm:max-h-[88vh] sm:w-full sm:max-w-5xl sm:rounded-xl sm:pb-0">
         <div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,.8fr)]">
+          <div className="relative">
+
+
           <BeforeAfterCompare
             after={
               after?.url
@@ -3071,6 +3208,7 @@ function BeautyPostDetailDialog({
             roundedClassName="rounded-none"
             sizes="(max-width: 1024px) 100vw, 60vw"
           />
+          </div>
           <div className="grid content-start gap-5 p-5 sm:p-7">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -3079,7 +3217,7 @@ function BeautyPostDetailDialog({
                     {post.authorAvatarUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        alt={`${post.authorDisplayName} profile`}
+                        alt={__vt(`${post.authorDisplayName} profile`)}
                         className="h-full w-full object-cover"
                         src={post.authorAvatarUrl}
                       />
@@ -3089,7 +3227,7 @@ function BeautyPostDetailDialog({
                   </span>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-zinc-950">
-                      {post.authorDisplayName}
+                      <ProfileCustomerIdentity post={post}/>
                     </p>
                     {meta ? (
                       <p className="truncate text-xs text-zinc-500">{meta}</p>
@@ -3097,56 +3235,57 @@ function BeautyPostDetailDialog({
                   </div>
                 </div>
                 <h2
-                  className="mt-5 text-3xl font-semibold text-zinc-950"
+                  className="sr-only"
                   id={titleId}
                 >
-                  Shared by customers
+                  <WorkspaceText text="Shared by customers" />
                 </h2>
-                {post.caption ? (
+                {caption ? (
                   <p className="mt-3 text-sm leading-6 text-zinc-700">
-                    {post.caption}
+                    <WorkspaceText text={caption} />
                   </p>
                 ) : null}
               </div>
-              <Button onClick={onClose} variant="secondary">
-                Close
-              </Button>
+              <div className="flex shrink-0 items-center gap-2"><PostActions target={commentTarget} viewerId={capabilities.currentUserId} onHidden={onClose} /><button type="button" aria-label={__vt("Close post")} onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-full bg-zinc-100 text-2xl hover:bg-zinc-200">×</button></div>
             </div>
-            <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+            <div className="post-action-toolbar">
               <ProfileSavePostButton
-                className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+                className="min-w-0"
                 size="toolbar"
                 target={{
                   sourceId: post.id,
                   sourceType: "beauty_post",
                 }}
               />
-              <a
-                className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 border-r border-zinc-100 px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
-                href={post.postHref}
-                title="Open Beauty post"
-              >
-                <TimelineActionIcon name="open" />
-                <span className="truncate">Open</span>
-              </a>
+
               <TimelineActionButton
                 aria-controls={commentsPanelId}
-                aria-label="Read or write comments"
-                className="border-r border-zinc-100 last:border-r-0"
+                aria-label={__vt("Read or write comments")}
                 icon="comment"
                 onClick={focusCommentsPanel}
-                title="Comment"
+                title={__vt("Comment")}
               >
-                Comment
+                <WorkspaceText text="Comment" />
               </TimelineActionButton>
+              <ProfileSharePostButton href={post.postHref} title={caption || "Beauty post"} />
+              <ExploreBookButton href={post.booking?.eligible ? post.booking.href : null} name="this salon" contactHref={"/explore/salons/" + salonId} />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a
+                className="inline-flex min-h-11 min-w-11 max-w-full flex-none items-center justify-center gap-1.5 px-2 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
+                href={post.postHref}
+                title={__vt("Open Beauty post")}
+              >
+                <TimelineActionIcon name="open" />
+                <span className="min-w-0 whitespace-normal break-words"><WorkspaceText text="Open" /></span>
+              </a>
               <TimelineActionButton
-                aria-label="View in timeline"
-                className="border-r border-zinc-100 last:border-r-0"
+                aria-label={__vt("View in timeline")}
                 icon="timeline"
                 onClick={() => onViewInTimeline(`shared-${post.id}`)}
-                title="View in timeline"
+                title={__vt("View in timeline")}
               >
-                Timeline
+                <WorkspaceText text="Timeline" />
               </TimelineActionButton>
             </div>
             <div id={commentsPanelId}>
@@ -3160,7 +3299,7 @@ function BeautyPostDetailDialog({
           </div>
         </div>
       </div>
-    </div>
+    </ContentViewer>
   );
 }
 
@@ -3179,12 +3318,14 @@ function StaffDetailDialog({
   onClose: () => void;
   onOpenLook: (look: PublicSalonProfileLook) => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const portfolio = looks
     .filter((look) => look.authorStaffId === member.id)
     .slice(0, 6);
 
   return (
-    <Modal onClose={onClose} panelClassName="sm:max-w-3xl" title={member.displayName}>
+    <Modal onClose={onClose} panelClassName="sm:max-w-3xl" title={__vt(member.displayName)}>
       <div className="grid gap-6">
         <div className="flex items-start gap-4">
           <Avatar logoUrl={member.avatarUrl} name={member.displayName} size="lg" />
@@ -3225,11 +3366,11 @@ function StaffDetailDialog({
             }
             variant="primary"
           >
-            Book with {member.displayName}
+            <WorkspaceText text="Book with" /> {member.displayName}
           </Button>
         </div>
         <section>
-          <h4 className="font-semibold text-zinc-950">Portfolio</h4>
+          <h4 className="font-semibold text-zinc-950"><WorkspaceText text="Portfolio" /></h4>
           {portfolio.length > 0 ? (
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {portfolio.map((look) => (
@@ -3252,7 +3393,7 @@ function StaffDetailDialog({
             </div>
           ) : (
             <p className="mt-3 rounded-xl border border-dashed border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
-              Portfolio looks will appear when this artist posts published work.
+              <WorkspaceText text="Portfolio looks will appear when this artist posts published work." />
             </p>
           )}
         </section>
@@ -3261,106 +3402,44 @@ function StaffDetailDialog({
   );
 }
 
-function PublicationDrawer({
-  onClose,
-  publicHref,
-  readiness,
-  setting,
-}: {
+function PublicationDrawer({ onClose, publicHref, readiness, setting }: {
   onClose: () => void;
-  publicHref: string;
+  publicHref: string | null;
   readiness: SalonProfileReadiness;
   setting: SalonProfileSetting;
 }) {
-  const nextEnabled = !setting.public_discovery_enabled;
-
-  return (
-    <Modal onClose={onClose} title="Publication settings">
-      <div className="grid gap-5">
-        <div>
-          <p className="text-sm text-zinc-600">
-            {readiness.completionPercent}% complete
-          </p>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-100">
-            <div
-              className="h-full rounded-full bg-emerald-500"
-              style={{ width: `${readiness.completionPercent}%` }}
-            />
-          </div>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {readiness.items.map((item) => (
-            <div
-              className="rounded-lg border border-zinc-200 bg-white p-3"
-              key={item.id}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-zinc-950">{item.label}</p>
-                <span
-                  className={[
-                    "rounded-md px-2 py-1 text-xs font-semibold",
-                    item.complete
-                      ? "bg-emerald-50 text-emerald-800"
-                      : "bg-amber-50 text-amber-800",
-                  ].join(" ")}
-                >
-                  {item.complete ? "Done" : "Missing"}
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-zinc-500">
-                {item.required ? "Required" : "Optional"}
-              </p>
-            </div>
-          ))}
-        </div>
-        <a
-          className="inline-flex min-h-10 w-max items-center rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50"
-          href={publicHref}
-        >
-          View public route
-        </a>
-        <form action={setSalonProfilePublicationAction} className="grid gap-2 border-t border-zinc-200 pt-4">
-          <input name="salon_id" type="hidden" value={setting.salon_id} />
-          <input
-            name="public_discovery_enabled"
-            type="hidden"
-            value={nextEnabled ? "true" : "false"}
-          />
-          <Button
-            className="w-full sm:w-auto"
-            disabled={nextEnabled && !readiness.canPublish}
-            type="submit"
-            variant={nextEnabled ? "primary" : "secondary"}
-          >
-            {nextEnabled ? "Publish profile" : "Unpublish profile"}
-          </Button>
-          {nextEnabled && !readiness.canPublish ? (
-            <p className="mt-2 text-sm text-zinc-500">
-              Complete the required items before publishing.
-            </p>
-          ) : null}
-        </form>
-      </div>
-    </Modal>
-  );
+  const t = useWorkspaceTranslation();
+  return <Modal onClose={onClose} title={t("Publication settings")}>
+    <PublicationPanel publicHref={publicHref} readiness={readiness} setting={setting} action={setSalonProfilePublicationAction} />
+  </Modal>;
 }
 
 export function SalonProfileView({
   capabilities = EMPTY_CAPABILITIES,
-  data,
+  data: initialData,
+  rewards,
   error,
   manageData,
   notice,
 }: SalonProfileViewProps) {
+  const pagination = useSalonProfilePages(initialData);
+  const data = pagination.data;
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
+  const pathname = usePathname();
   const { profile } = data;
-  const isWebsiteView = !manageData || capabilities.isOwnSalon;
+  const isWebsiteView = !manageData || capabilities.isOwnSalon || capabilities.isStaffSalon === true;
   const [editedPreferences, setEditedPreferences] = useState<SalonProfilePreferences | null>(null);
   const preferences = editedPreferences ?? data.preferences ?? DEFAULT_PROFILE_PREFERENCES;
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
+  useTransientOverlay(() => setProfileSettingsOpen(false), profileSettingsOpen);
   const [operatingHoursOpen, setOperatingHoursOpen] = useState(false);
+  useTransientOverlay(() => setOperatingHoursOpen(false), operatingHoursOpen);
   const [hoursInfoOpen, setHoursInfoOpen] = useState(false);
+  useTransientOverlay(() => setHoursInfoOpen(false), hoursInfoOpen);
   const [contentManagerOpen, setContentManagerOpen] = useState(false);
+  useTransientOverlay(() => setContentManagerOpen(false), contentManagerOpen);
   const [publishedPosts, setPublishedPosts] = useState<ProfileFeedItem[]>([]);
   const hasGalleryPhotos = [...data.feed, ...publishedPosts].some(post => post.imageUrl)
     || data.looks.some(look => look.imageUrl) || data.beautyPosts.some(post => post.media.some(media => media.url));
@@ -3371,18 +3450,20 @@ export function SalonProfileView({
     if (tab.id === "about") return !isWebsiteView || salonAboutParagraphs(profile).length > 0 || Boolean(profile.addressLine1 || profile.phone || profile.website);
     return true;
   });
-  const mainTabs = visibleTabs.filter(tab => ["discover", "gallery", "services", "team"].includes(tab.id));
+  const mainTabs = visibleTabs.filter(tab => ["discover", "gallery", "services", "team", ...(isWebsiteView ? ["experiences"] : [])].includes(tab.id));
+  const hiddenPosts = useHiddenPosts(capabilities.currentUserId);
+  const visibleBeautyPosts = data.beautyPosts.filter(post => !hiddenPosts.includes(`beauty_post:${post.id}`));
   const [publishedLooks, setPublishedLooks] = useState<PublicSalonProfileLook[]>([]);
   const sortedLooks = useMemo(
     () =>
-      mergePublishedItems(publishedLooks, data.looks).sort((left, right) => {
+      mergePublishedItems(publishedLooks, data.looks).filter(look => !hiddenPosts.includes(`salon_profile_look:${look.id}`)).sort((left, right) => {
         if (left.isPinned !== right.isPinned) {
           return left.isPinned ? -1 : 1;
         }
 
         return (right.publishedAt ?? "").localeCompare(left.publishedAt ?? "");
       }),
-    [data.looks, publishedLooks],
+    [data.looks, publishedLooks, hiddenPosts],
   );
   const lookById = useMemo(
     () => new Map(sortedLooks.map((look) => [look.id, look])),
@@ -3394,21 +3475,75 @@ export function SalonProfileView({
   const [detailLook, setDetailLook] = useState<PublicSalonProfileLook | null>(
     null,
   );
+  useTransientOverlay(() => setDetailLook(null), Boolean(detailLook));
   const [detailPost, setDetailPost] = useState<ProfileFeedItem | null>(null);
+  useTransientOverlay(() => setDetailPost(null), Boolean(detailPost));
   const [detailBeautyPost, setDetailBeautyPost] =
     useState<PublicSalonProfileBeautyPost | null>(null);
+  useTransientOverlay(() => setDetailBeautyPost(null), Boolean(detailBeautyPost));
   const [detailStaff, setDetailStaff] =
     useState<PublicSalonProfileStaff | null>(null);
+  useTransientOverlay(() => setDetailStaff(null), Boolean(detailStaff));
   const [composerType, setComposerType] = useState<ComposerType | null>(null);
+  const [composerPresented, setComposerPresented] = useState(false);
+  const [pendingPost, setPendingPost] = useState<PendingSalonPost | null>(null);
+  const [restoredPostReceipt, setRestoredPostReceipt] = useState<{ scope: string; receipt: SalonPostReceipt } | null>(null);
+  const postScope = `${capabilities.currentUserId ?? "guest"}:${profile.salonId}`;
+  const activePostScope = useRef(postScope);
+  useLayoutEffect(() => { activePostScope.current = postScope; }, [postScope]);
+  useEffect(() => {
+    if (!capabilities.currentUserId) return;
+    try {
+      const saved = readSalonPostReceipt(capabilities.currentUserId, profile.salonId);
+      if (!saved) return;
+      queueMicrotask(() => {
+        if (activePostScope.current !== postScope) return;
+        setRestoredPostReceipt({ scope: postScope, receipt: saved });
+        setComposerType(saved.input.contentType ?? "auto");
+        setComposerPresented(false);
+        setPendingPost({ authorUserId: capabilities.currentUserId!, salonId: profile.salonId,
+          requestId: saved.requestId, phase: "unknown", progress: 0, previewUrl: null,
+          caption: saved.input.caption ?? "", title: saved.input.title ?? "" });
+      });
+    } catch (receiptError) {
+      queueMicrotask(() => { if (activePostScope.current === postScope) setStatusMessage(receiptError instanceof Error ? receiptError.message : "A saved post confirmation needs attention before posting again."); });
+    }
+  }, [capabilities.currentUserId, postScope, profile.salonId]);
+  function openComposer(type: ComposerType) {
+    try {
+      const saved = capabilities.currentUserId ? readSalonPostReceipt(capabilities.currentUserId, profile.salonId) : null;
+      if (saved) {
+        setRestoredPostReceipt({ scope: postScope, receipt: saved });
+        setComposerType(saved.input.contentType ?? "auto");
+        setComposerPresented(true);
+        return;
+      }
+    } catch (receiptError) {
+      setStatusMessage(receiptError instanceof Error ? receiptError.message : "A saved post confirmation needs attention before posting again.");
+      return;
+    }
+    if (!composerType) setComposerType(type);
+    setComposerPresented(true);
+  }
+  const visiblePendingPost = pendingPost && capabilities.canCreateContent && pendingPost.authorUserId === capabilities.currentUserId
+    && pendingPost.salonId === profile.salonId ? pendingPost : null;
+  const pendingPostCard = visiblePendingPost ? <PendingSalonPostCard pending={visiblePendingPost} onResume={() => setComposerPresented(true)} /> : null;
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  useTransientOverlay(() => setProfileEditorOpen(false), profileEditorOpen);
   const [publicationOpen, setPublicationOpen] = useState(false);
+  useTransientOverlay(() => setPublicationOpen(false), publicationOpen);
   const [ownerMenuOpen, setOwnerMenuOpen] = useState(false);
+  useTransientOverlay(() => setOwnerMenuOpen(false), ownerMenuOpen);
+  const [salonReportOpen, setSalonReportOpen] = useState(false);
+  useTransientOverlay(() => setSalonReportOpen(false), salonReportOpen);
   useCloseOnNavigation(() => setOwnerMenuOpen(false), ownerMenuOpen);
   const ownerMenuButtonRef = useRef<HTMLButtonElement | null>(null);
   const ownerMenuRef = useRef<HTMLDivElement | null>(null);
   const [experienceFilter, setExperienceFilter] =
     useState<"all" | "issues" | "verified" | "good">("all");
+  const [verifiedExperiencesOnly, setVerifiedExperiencesOnly] = useState(false);
   const [commentTarget, setCommentTarget] = useState<PostCommentTarget | null>(null);
+  useTransientOverlay(() => setCommentTarget(null), Boolean(commentTarget));
   const [commentCountOverrides, setCommentCountOverrides] = useState(
     new Map<string, number>(),
   );
@@ -3431,6 +3566,40 @@ export function SalonProfileView({
     services: 0,
     team: 0,
   });
+  useRememberedExperience({
+    namespace: "salon-profile",
+    scope: capabilities.currentUserId ?? "guest",
+    key: `${profile.salonId}:${pathname}:${manageData ? "manage" : "public"}`,
+  }, {
+    enabled: !error,
+    value: () => ({ selectedTab, selectedMood, featuredLookId, experienceFilter, verifiedExperiencesOnly,
+      visibleTimelineCount: Math.min(120, visibleTimelineCount), tabScrollPositions: tabScrollPositions.current }),
+    validate: isProfileExperience,
+    onEmpty() {
+      setSelectedTab("discover");
+      setSelectedMood(null);
+      setFeaturedLookId(null);
+      setExperienceFilter("all");
+      setVerifiedExperiencesOnly(false);
+      setVisibleTimelineCount(INITIAL_TIMELINE_ITEM_COUNT);
+      for (const tab of TABS) tabScrollPositions.current[tab.id] = 0;
+    },
+    onRestore(state) {
+      const tab = visibleTabs.some(item => item.id === state.selectedTab) ? state.selectedTab : "discover";
+      setSelectedTab(tab);
+      setSelectedMood(state.selectedMood && sortedLooks.some(look => look.mood === state.selectedMood) ? state.selectedMood : null);
+      setFeaturedLookId(state.featuredLookId && lookById.has(state.featuredLookId) ? state.featuredLookId : null);
+      setExperienceFilter(state.experienceFilter);
+      setVerifiedExperiencesOnly(Boolean(state.verifiedExperiencesOnly));
+      setVisibleTimelineCount(Math.max(INITIAL_TIMELINE_ITEM_COUNT, Math.min(state.visibleTimelineCount, data.feed.length + data.looks.length + data.beautyPosts.length, 120)));
+      Object.assign(tabScrollPositions.current, state.tabScrollPositions);
+    },
+  });
+  useEffect(() => {
+    function rememberTabScroll() { tabScrollPositions.current[selectedTab] = window.scrollY; }
+    window.addEventListener("scroll", rememberTabScroll, { passive: true });
+    return () => window.removeEventListener("scroll", rememberTabScroll);
+  }, [selectedTab]);
 
   useEffect(() => {
     let cancelled = false;
@@ -3447,7 +3616,7 @@ export function SalonProfileView({
           setSelectedTab(nextTab);
           if(window.location.hash==="#feedback-good")setExperienceFilter("good");
           else if(window.location.hash==="#feedback-issue")setExperienceFilter("issues");
-          else if(window.location.hash==="#customer-experiences")setExperienceFilter("all");
+          else if(["#customer-experiences", "#reviews"].includes(window.location.hash))setExperienceFilter("all");
         }
       }, 0);
     }
@@ -3465,26 +3634,29 @@ export function SalonProfileView({
       return undefined;
     }
 
-    const hash = window.location.hash.replace(/^#/, "");
-
-    if (!["lumi-trust","lumi-trust-details","customer-experiences","feedback-good","feedback-issue"].includes(hash)) {
-      return undefined;
+    let frame = 0;
+    function scrollToAnchor() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const anchor = salonProfileAnchor(window.location.hash);
+        if (!anchor) return;
+        const target = document.getElementById(anchor.targetId);
+        if (anchor.expandTrust && target instanceof HTMLDetailsElement) target.open = true;
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     }
-
-    const timer = window.setTimeout(() => {
-      document
-        .getElementById("lumi-trust")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 80);
-
-    return () => window.clearTimeout(timer);
+    scrollToAnchor();
+    window.addEventListener("hashchange", scrollToAnchor);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("hashchange", scrollToAnchor); };
   }, [selectedTab]);
 
-  const [isFollowing, setFollowing] = useState(profile.isFollowing);
+  const followState = useSalonFollowState(profile.salonId, capabilities.currentUserId, profile.isFollowing);
+  const isFollowing = followState.following;
   const [, setFollowerCount] = useState(profile.followerCount);
   const [statusMessage, setStatusMessage] = useState("");
   const [authPromptIntent, setAuthPromptIntent] =
     useState<AuthPromptIntent | null>(null);
+  useTransientOverlay(() => setAuthPromptIntent(null), Boolean(authPromptIntent));
   const [surpriseIndex, setSurpriseIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
   function bookingHref(context: BookingContext) {
@@ -3543,8 +3715,10 @@ export function SalonProfileView({
     null;
   const primaryMobileLook = matchingLooks[0] ?? sortedLooks[0] ?? null;
   const existingFeedItems = data.feed.length
-    ? data.feed
+    ? data.feed.map(item => ({ ...item, salonName: profile.name }))
     : sortedLooks.map((look): ProfileFeedItem => ({
+        authorRole: look.authorRole,
+        salonName: profile.name,
         authorAvatarUrl: look.authorAvatarUrl,
         authorName: look.authorDisplayName || profile.name,
         authorStaffId: look.authorStaffId,
@@ -3569,12 +3743,21 @@ export function SalonProfileView({
         hashtags: look.hashtags,
         title: look.title,
       }));
-  const feedItems = visibleSalonPosts(mergePublishedItems(publishedPosts, existingFeedItems), data.directoryListing);
+  const feedItems = visibleSalonPosts(mergePublishedItems(publishedPosts, existingFeedItems), data.directoryListing).filter(item => !hiddenPosts.includes(postIdentity(profileFeedCommentTarget(item, item.title))));
   const timelineItems = buildTimelineItems({
-    beautyPosts: data.beautyPosts,
+    beautyPosts: visibleBeautyPosts,
     feedItems,
   });
   const visibleTimelineItems = timelineItems.slice(0, visibleTimelineCount);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (detailLook && hiddenPosts.includes(`salon_profile_look:${detailLook.id}`)) setDetailLook(null);
+      if (detailPost && hiddenPosts.includes(postIdentity(profileFeedCommentTarget(detailPost, detailPost.title)))) setDetailPost(null);
+      if (detailBeautyPost && hiddenPosts.includes(`beauty_post:${detailBeautyPost.id}`)) setDetailBeautyPost(null);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [hiddenPosts, detailLook, detailPost, detailBeautyPost]);
+
 
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, "");
@@ -3624,7 +3807,7 @@ export function SalonProfileView({
   }, [timelineItems]);
 
   const galleryItems = buildGalleryItems({
-    beautyPosts: data.beautyPosts,
+    beautyPosts: visibleBeautyPosts,
     feedItems,
   });
   const address = formatAddress(profile);
@@ -3634,7 +3817,8 @@ export function SalonProfileView({
       return;
     }
 
-    function onPointerDown(event: Event) {
+    function onOutsideClick(event: Event) {
+      if (event.type === "focusin" && (!(event.target instanceof Element) || !event.target.matches(":focus-visible"))) return;
       const target = event.target;
 
       if (!(target instanceof Node)) {
@@ -3660,13 +3844,13 @@ export function SalonProfileView({
       ownerMenuButtonRef.current?.focus();
     }
 
-    document.addEventListener("pointerdown", onPointerDown, true);
-    document.addEventListener("focusin", onPointerDown, true);
+    document.addEventListener("click", onOutsideClick, true);
+    document.addEventListener("focusin", onOutsideClick, true);
     document.addEventListener("keydown", onKeyDown);
 
     return () => {
-      document.removeEventListener("pointerdown", onPointerDown, true);
-      document.removeEventListener("focusin", onPointerDown, true);
+      document.removeEventListener("click", onOutsideClick, true);
+      document.removeEventListener("focusin", onOutsideClick, true);
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [ownerMenuOpen]);
@@ -3749,30 +3933,65 @@ export function SalonProfileView({
     window.requestAnimationFrame(() => {
       window.scrollTo({
         behavior: "auto",
-        top: tabScrollPositions.current[tab],
+        top: Math.max(0, (document.getElementById(`salon-profile-tab-${tab}`)?.closest('[role="tablist"]')?.getBoundingClientRect().top ?? 0) + window.scrollY - 96),
       });
     });
   }
 
-  function canFeaturePost(item: ProfileFeedItem) {
-    return Boolean(capabilities.canFeatureOwnContent && item.contentType === "look" && item.imageUrl && item.publishedAt && (manageData?.ownedLookIds?.includes(item.id) || publishedLooks.some(look=>look.id === item.id)));
-  }
   function renderPostActions(item: ProfileFeedItem) {
-    const actions = <PostActions onOpen={()=>openTimelinePost(item)} onShare={preferences.allow_sharing?()=>shareSalon(item):undefined} isFeatured={item.isPinned} onFeature={canFeaturePost(item)?async()=>{
-      const result=await setSalonProfileLookStatusDirectAction({salonId:profile.salonId,lookId:item.id,isPinned:!item.isPinned});
-      if(result.error){setStatusMessage(result.error);return;}
-      setStatusMessage("");refresh();
-    }:undefined} onArchive={capabilities.canManageContent && item.contentType === "look"?async()=>{
-      const result=await setSalonProfileLookStatusDirectAction({salonId:profile.salonId,lookId:item.id,status:"archived"});if(result.error)setStatusMessage(result.error);else{setDetailPost(null);refresh();}
-    }:undefined} onDelete={capabilities.canManageContent && item.contentType === "look"?async()=>{
-      if(!window.confirm("Delete this post? This cannot be undone."))return;
-      const result=await deleteSalonProfileLookDirectAction({salonId:profile.salonId,lookId:item.id});if(result.error)setStatusMessage(result.error);else{setDetailPost(null);refresh();}
-    }:undefined}/>;
-    return isManagedViewer ? actions : <div className="flex items-center gap-1"><SavePostButton isAuthenticated={capabilities.isAuthenticated} target={{salonId:item.salonId,sourceId:item.id,sourceType:item.contentType === "look" ? "salon_profile_look" : "salon_profile_update"}} size="compact"/><ExploreBookButton compact href={capabilities.canBook?bookingHref({lookId:item.contentType === "look"?item.id:null,updateId:item.contentType === "update"?item.id:null,title:"Book inspiration"}):null} name={profile.name} contactHref={`/explore/salons/${profile.salonId}`} phoneHref={profile.phone?`tel:${profile.phone}`:null}/>{actions}</div>;
+    const actions = <PostActions target={profileFeedCommentTarget(item, item.caption || item.title)} viewerId={capabilities.currentUserId} onChanged={refresh} onHidden={()=>{const next=feedItems.find(post=>post.id !== item.id);setDetailPost(next ?? null);}} onOpen={()=>openTimelinePost(item)} onShare={preferences.allow_sharing?()=>shareSalon(item):undefined} isFeatured={item.isPinned}/>;
+    return actions;
   }
 
   function openTimelinePost(item: ProfileFeedItem) {
     setDetailPost(item);
+  }
+
+  function openWebsiteComments(target: PostCommentTarget, count: number) {
+    updateCommentCountForTarget(target, commentCountForTarget(target, count));
+    setCommentTarget(target);
+  }
+
+  function renderWebsitePostEngagement(item: ProfileFeedItem) {
+    const target = profileFeedCommentTarget(item, item.title || item.caption || "Salon post");
+    const look = item.contentType === "look" ? lookById.get(item.id) : undefined;
+    const context: BookingContext = {
+      title: item.contentType === "look" ? "Book this look" : "Book with this inspiration",
+      lookId: item.contentType === "look" ? item.id : null,
+      updateId: item.contentType === "update" ? item.id : null,
+      startAt: item.contentType === "update" && item.updateType === "last_minute_opening" ? item.startsAt : null,
+    };
+    return <WebsitePostEngagement
+      loveButton={preferences.allow_saves ? <SavePostButton target={target} isAuthenticated={capabilities.isAuthenticated}
+        initialSaved={item.contentType === "look" ? (look ? savedLookIds.has(look.id) : item.isSaved) : undefined}
+        saveCount={item.contentType === "look" ? (saveCounts.get(item.id) ?? item.saveCount) : undefined}
+        onSavedChange={look ? active => applyLookSaveState(look, active) : undefined} size="toolbar" showZeroCount/> : null}
+      shareHref={preferences.allow_sharing ? "/explore/salons/" + profile.salonId + "#" + item.contentType + "-" + item.id : undefined}
+      shareTitle={item.title || profile.name}
+      commentCount={commentCountForTarget(target, item.commentCount)}
+      onComment={preferences.allow_comments ? () => openWebsiteComments(target, item.commentCount) : undefined}
+      bookButton={capabilities.canBook || !isManagedViewer ? <ExploreBookButton
+        href={capabilities.canBook ? bookingHref(context) : null} name={item.title || profile.name}
+        contactHref={`/explore/salons/${profile.salonId}`} phoneHref={profile.phone ? `tel:${profile.phone}` : null}/> : null}
+    />;
+  }
+
+  function renderWebsiteLibraryEngagement(photo: WebsiteLibraryPhoto) {
+    const item = galleryItems.find(item => item.id === photo.id);
+    if (!item) return null;
+    if (item.type === "feed") return renderWebsitePostEngagement(item.item);
+    const target = beautyPostCommentTarget(item.post, profile.salonId);
+    return <WebsitePostEngagement
+      loveButton={preferences.allow_saves ? <SavePostButton target={target} isAuthenticated={capabilities.isAuthenticated} size="toolbar" showZeroCount/> : null}
+      shareHref={preferences.allow_sharing ? item.post.postHref : undefined}
+      shareTitle={item.post.caption || profile.name}
+      commentCount={commentCountForTarget(target, item.post.commentCount)}
+      onComment={preferences.allow_comments ? () => openWebsiteComments(target, item.post.commentCount) : undefined}
+      bookedCount={item.post.booking?.eligible ? item.post.booking.bookedCount : null}
+      bookButton={capabilities.canBook || !isManagedViewer ? <ExploreBookButton
+        href={item.post.booking?.eligible ? item.post.booking.href : null} name={profile.name}
+        contactHref={`/explore/salons/${profile.salonId}`} phoneHref={profile.phone ? `tel:${profile.phone}` : null}/> : null}
+    />;
   }
 
   function openGalleryItem(item: GalleryItem) {
@@ -3879,7 +4098,7 @@ export function SalonProfileView({
         return;
       }
 
-      setFollowing(result.active);
+      followState.commit(result.active);
       setFollowerCount((current) =>
         Math.max(0, current + (result.active ? 1 : -1)),
       );
@@ -3918,28 +4137,33 @@ export function SalonProfileView({
 
   function renderDiscover(asTimeline = false) {
     if (!asTimeline && (!manageData || capabilities.isOwnSalon)) {
-      return <SalonWebsiteHome libraryPhotos={galleryItems} onLibraryPhoto={photo => { const item = galleryItems.find(item => item.id === photo.id); if (item) openGalleryItem(item); }} renderLibraryActions={photo => { const item = galleryItems.find(item => item.id === photo.id); return item?.type === "feed" ? renderPostActions(item.item) : <div className="flex gap-1">{item?.type === "beauty" && !isManagedViewer ? <><SavePostButton target={{sourceId:item.post.id,sourceType:"beauty_post"}} isAuthenticated={capabilities.isAuthenticated} size="compact"/><ExploreBookButton compact href={item.post.booking?.eligible?item.post.booking.href:null} name={profile.name} contactHref={`/explore/salons/${profile.salonId}`} phoneHref={profile.phone?`tel:${profile.phone}`:null}/></>:null}<PostActions onOpen={() => { if (item) openGalleryItem(item); }}/></div>; }} data={data} preferences={preferences} posts={feedItems} canBook={capabilities.canBook} onPost={openTimelinePost} onGallery={() => changeTab("gallery")} onServices={() => changeTab("services")} onTeam={() => changeTab("team")} onBook={openBooking} onStaff={setDetailStaff} onReviews={() => changeTab("experiences")} renderPostActions={renderPostActions} composer={capabilities.isOwnSalon && capabilities.canCreateContent ? <div className="grid gap-2"><ComposerCard logoUrl={profile.logoImageUrl} name={profile.name} onOpen={setComposerType}/>{capabilities.canManageContent ? <button type="button" className="justify-self-end text-xs font-medium text-zinc-500 hover:text-brand-orange" onClick={() => setContentManagerOpen(true)}>Manage posts</button> : null}</div> : null}/>;
+      return <SalonWebsiteHome libraryPhotos={galleryItems} onLibraryPhoto={photo => { const item = galleryItems.find(item => item.id === photo.id); if (item) openGalleryItem(item); }} renderPostEngagement={renderWebsitePostEngagement} renderLibraryEngagement={renderWebsiteLibraryEngagement} renderLibraryActions={photo => {
+        const item = galleryItems.find(item => item.id === photo.id);
+        return item?.type === "feed" ? renderPostActions(item.item) : item?.type === "beauty" ? <PostActions
+          target={beautyPostCommentTarget(item.post, profile.salonId)} viewerId={capabilities.currentUserId}
+          onChanged={refresh} onOpen={() => openGalleryItem(item)}/> : null;
+      }} rewards={rewards} data={data} preferences={preferences} posts={feedItems} canBook={capabilities.canBook} onPost={openTimelinePost} onGallery={() => changeTab("gallery")} onServices={() => changeTab("services")} onTeam={() => changeTab("team")} onBook={openBooking} onStaff={setDetailStaff} onReviews={() => changeTab("experiences")} renderPostActions={renderPostActions} composer={capabilities.isOwnSalon && capabilities.canCreateContent ? <div className="grid gap-2">{pendingPostCard}<ComposerCard logoUrl={profile.logoImageUrl} name={profile.name} onOpen={openComposer}/>{capabilities.canManageContent ? <button type="button" className="justify-self-end text-xs font-medium text-zinc-500 hover:text-brand-orange" onClick={() => setContentManagerOpen(true)}><WorkspaceText text="Manage posts" /></button> : null}</div> : null}/>;
     }
     return (
       <div className="mx-auto grid w-full max-w-4xl gap-3">
+        {pendingPostCard}
         {capabilities.canCreateContent ? (
           <ComposerCard
             logoUrl={profile.logoImageUrl}
             name={profile.name}
-            onOpen={setComposerType}
+            onOpen={openComposer}
           />
         ) : manageData && !capabilities.canEditProfile ? (
-          <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-            Posting is disabled for your staff profile.
+          <section className="border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 rounded-none border-0 shadow-none">
+            <WorkspaceText text="Posting is disabled for your staff profile." />
           </section>
         ) : null}
         {visibleTimelineItems.length === 0 ? (
-          <EmptyState title="No recent posts">
-            Published looks, salon updates, and customer shares will appear here
-            from newest to oldest.
+          <EmptyState title={__vt("No recent posts")}>
+            <WorkspaceText text="Published looks, salon updates, and customer shares will appear here from newest to oldest." />
           </EmptyState>
         ) : (
-          <section aria-label="Salon timeline" className="grid gap-3">
+          <section aria-label={__vt("Salon timeline")} className="grid gap-3">
             {visibleTimelineItems.map((timelineItem) => {
               if (timelineItem.type === "shared") {
                 return (
@@ -3982,7 +4206,6 @@ export function SalonProfileView({
                   onCommentCountChange={updateCommentCountForTarget}
                   onOpenPost={openTimelinePost}
                   onRefresh={refresh}
-                  canFeature={canFeaturePost(item)}
                   onSavedChange={applyLookSaveState}
                   onShare={shareSalon}
                   saved={look ? savedLookIds.has(look.id) : false}
@@ -3994,9 +4217,9 @@ export function SalonProfileView({
               className="grid min-h-24 place-items-center text-sm font-semibold text-zinc-500"
               ref={timelineSentinelRef}
             >
-              {visibleTimelineCount < timelineItems.length
+              <WorkspaceText text={visibleTimelineCount < timelineItems.length
                 ? "Loading older posts"
-                : "End of timeline"}
+                : pagination.hasMore ? "More posts available" : "End of timeline"} />
             </div>
           </section>
         )}
@@ -4016,9 +4239,8 @@ export function SalonProfileView({
 
     if (visibleGalleryItems.length === 0) {
       return (
-        <EmptyState title="Gallery is waiting">
-          Images from published posts and customer shares will build this
-          gallery automatically.
+        <EmptyState title={__vt("Gallery is waiting")}>
+          <WorkspaceText text="Images from published posts and customer shares will build this gallery automatically." />
         </EmptyState>
       );
     }
@@ -4040,7 +4262,7 @@ export function SalonProfileView({
               }}
               type="button"
             >
-              All images
+              <WorkspaceText text="All images" />
             </button>
             {moodOptions
               .filter((mood) => mood !== "Surprise me")
@@ -4065,35 +4287,31 @@ export function SalonProfileView({
           {visibleGalleryItems.map((galleryItem) => {
             const feedGalleryItem =
               galleryItem.type === "feed" ? galleryItem : null;
-            const galleryLook =
-              feedGalleryItem?.item.contentType === "look"
-                ? lookById.get(feedGalleryItem.item.id) ?? null
-                : null;
 
             return (
               <div
-                className="group relative aspect-[4/5] rounded-2xl bg-zinc-100 shadow-[0_14px_40px_rgba(24,24,27,.06)]"
+                className="group relative overflow-hidden rounded-2xl bg-zinc-100 shadow-[0_14px_40px_rgba(24,24,27,.06)]"
                 key={galleryItem.id}
               >
                 <button
-                  className="block h-full w-full overflow-hidden rounded-2xl text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                  className="relative block aspect-[4/5] w-full overflow-hidden rounded-t-2xl text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
                   onClick={() => openGalleryItem(galleryItem)}
                   type="button"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    alt={galleryItem.title}
+                    alt={__vt(galleryItem.title)}
                     className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
                     src={galleryItem.imageUrl}
                   />
                   <span className="absolute inset-x-0 bottom-0 bg-white/92 p-3 opacity-0 shadow-[0_-12px_30px_rgba(24,24,27,.08)] transition group-hover:opacity-100 group-focus-within:opacity-100">
                     <span className="block text-sm font-semibold text-zinc-950">
-                      {galleryItem.title}
+                      <WorkspaceText text={galleryItem.title} />
                     </span>
                     <span className="mt-1 block text-xs text-zinc-600">
                       {galleryItem.type === "feed"
                         ? joinMeta([
-                            galleryItem.item.authorName,
+                            resolvePostIdentity({source:"salon",salonName:profile.name,authorName:galleryItem.item.authorName,authorRole:galleryItem.item.authorRole}).primaryName,
                             galleryItem.item.contentType === "look"
                               ? galleryItem.item.mood
                               : "Salon update",
@@ -4109,39 +4327,7 @@ export function SalonProfileView({
                   </span>
                 </button>
                 <div className="absolute right-2 top-2">{feedGalleryItem ? renderPostActions(feedGalleryItem.item) : <PostActions onOpen={()=>openGalleryItem(galleryItem)}/>}</div>
-                {galleryLook && feedGalleryItem ? (
-                  <ProfileSavePostButton
-                    className="absolute bottom-3 right-3"
-                    initialSaved={savedLookIds.has(galleryLook.id)}
-                    onSavedChange={(active) =>
-                      applyLookSaveState(galleryLook, active)
-                    }
-                    saveCount={saveCounts.get(galleryLook.id) ?? 0}
-                    target={{
-                      salonId: feedGalleryItem.item.salonId,
-                      sourceId: galleryLook.id,
-                      sourceType: "salon_profile_look",
-                    }}
-                  />
-                ) : feedGalleryItem &&
-                  feedGalleryItem.item.contentType === "update" ? (
-                  <ProfileSavePostButton
-                    className="absolute bottom-3 right-3"
-                    target={{
-                      salonId: feedGalleryItem.item.salonId,
-                      sourceId: feedGalleryItem.item.id,
-                      sourceType: "salon_profile_update",
-                    }}
-                  />
-                ) : galleryItem.type === "beauty" ? (
-                  <ProfileSavePostButton
-                    className="absolute bottom-3 right-3"
-                    target={{
-                      sourceId: galleryItem.post.id,
-                      sourceType: "beauty_post",
-                    }}
-                  />
-                ) : null}
+                {renderWebsiteLibraryEngagement(galleryItem)}
               </div>
             );
           })}
@@ -4151,11 +4337,11 @@ export function SalonProfileView({
   }
 
   function renderServices() {
-    if (!manageData || capabilities.isOwnSalon) return <section className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6"><h3 className="mb-4 text-lg font-semibold">Our services</h3><WebsiteServices services={data.services} posts={feedItems} canBook={capabilities.canBook} onBook={openBooking} salonId={profile.salonId}/></section>;
+    if (!manageData || capabilities.isOwnSalon) return <section className="border-zinc-200 bg-white p-4 sm:p-6 rounded-none border-0 shadow-none"><h3 className="mb-4 text-lg font-semibold"><WorkspaceText text="Our services" /></h3><WebsiteServices services={data.services} posts={feedItems} canBook={capabilities.canBook} onBook={openBooking} salonId={profile.salonId}/></section>;
     if (data.services.length === 0) {
       return (
-        <EmptyState title="No services published">
-          Services will appear once the salon has active catalog items.
+        <EmptyState title={__vt("No services published")}>
+          <WorkspaceText text="Services will appear once the salon has active catalog items." />
         </EmptyState>
       );
     }
@@ -4164,11 +4350,11 @@ export function SalonProfileView({
   }
 
   function renderTeam() {
-    if (!manageData || capabilities.isOwnSalon) return <section className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6"><h3 className="mb-4 text-lg font-semibold">Meet our team</h3><WebsiteTeam members={data.staff} canBook={capabilities.canBook} onBook={openBooking} onOpen={setDetailStaff} salonId={profile.salonId}/></section>;
+    if (!manageData || capabilities.isOwnSalon) return <section className="border-zinc-200 bg-white p-4 sm:p-6 rounded-none border-0 shadow-none"><h3 className="mb-4 text-lg font-semibold"><WorkspaceText text="Meet our team" /></h3><WebsiteTeam members={data.staff} canBook={capabilities.canBook} onBook={openBooking} onOpen={setDetailStaff} salonId={profile.salonId}/></section>;
     if (data.staff.length === 0) {
       return (
-        <EmptyState title="Team is not published yet">
-          Artists will appear when active staff profiles are available.
+        <EmptyState title={__vt("Team is not published yet")}>
+          <WorkspaceText text="Artists will appear when active staff profiles are available." />
         </EmptyState>
       );
     }
@@ -4177,75 +4363,63 @@ export function SalonProfileView({
   }
 
   function renderExperiences() {
-    const visibleExperiences =
-      experienceFilter === "verified"
-        ? data.experiences.filter(
-            (experience) => experience.verificationStatus === "verified",
-          )
-        : experienceFilter === "issues"
-          ? data.experiences.filter(
-              (experience) => experience.feedbackState === "issue",
-            )
-          : experienceFilter === "good" ? data.experiences.filter(experience=>experience.feedbackState==="good") : data.experiences;
-
+    const visibleExperiences = data.experiences.filter(experience =>
+      (!(verifiedExperiencesOnly || experienceFilter === "verified") || experience.verificationStatus === "verified") &&
+      (experienceFilter !== "issues" || experience.feedbackState === "issue") &&
+      (experienceFilter !== "good" || experience.feedbackState === "good")
+    );
     return (
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.45fr)]">
-        <div className="grid gap-4">
-          <ExperienceSummaryPanel summary={data.reputationSummary} />
-          <div className="flex flex-wrap gap-2">
-            {(["all", "verified", "good", "issues"] as const).map((filter) => (
-              <button
-                aria-pressed={experienceFilter === filter}
-                className={[
-                  "rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
-                  experienceFilter === filter
-                    ? "border-zinc-950 bg-zinc-950 text-white"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300",
-                ].join(" ")}
-                key={filter}
-                onClick={() => setExperienceFilter(filter)}
-                type="button"
-              >
-                {filter === "all"
-                  ? "All Experiences"
-                  : filter === "verified"
-                    ? "Verified Visits"
-                    : filter === "good" ? "Good feedback" : "Concerns"}
-              </button>
-            ))}
+        <div className={experienceStyles.section} id="customer-experiences">
+          <div>
+            <h3 className={experienceStyles.heading}><WorkspaceText text="Customer experiences" /></h3>
+            <p className={experienceStyles.description}><WorkspaceText text="Shared reviews may have different totals." /></p>
+          </div>
+          <div className={experienceStyles.filters}>
+            <div className={experienceStyles.chips}>
+              {(["all", "good", "issues"] as const).map(filter => (
+                <button type="button" key={filter} aria-pressed={experienceFilter === filter || (filter === "all" && experienceFilter === "verified")}
+                  className={(experienceFilter === filter || (filter === "all" && experienceFilter === "verified")) ? experienceStyles.activeChip : experienceStyles.chip}
+                  onClick={() => { if (experienceFilter === "verified") setVerifiedExperiencesOnly(true); setExperienceFilter(filter); }}>
+                  <WorkspaceText text={filter === "all" ? "All" : filter === "good" ? "Positive" : "Concerns"} />
+                </button>
+              ))}
+            </div>
+            <label className={experienceStyles.verifiedFilter}><input type="checkbox" checked={verifiedExperiencesOnly || experienceFilter === "verified"} onChange={event => { setVerifiedExperiencesOnly(event.target.checked); if (experienceFilter === "verified") setExperienceFilter("all"); }} /><WorkspaceText text="Verified visits only" /></label>
           </div>
           {visibleExperiences.length > 0 ? (
-            <div className="grid gap-3" id="customer-experiences">
+            <ExperienceReplyGroup><div className="grid gap-3">
               {visibleExperiences.map((experience) => (
                 <ExperienceCard
                   canReplyAsSalon={capabilities.canReplyAsSalon}
                   experience={experience}
+                  viewerId={capabilities.currentUserId}
                   key={experience.id}
                   onPosted={refresh}
                 />
               ))}
-            </div>
+            </div></ExperienceReplyGroup>
           ) : (
-            <EmptyState title="No Experiences yet">
-              {experienceFilter === "verified"
+            <EmptyState title={__vt("No Experiences yet")}>
+              <WorkspaceText text={experienceFilter === "verified"
                 ? "Shared Experiences tied to Verified Visits will appear here after customers respond from their Activity."
                 : experienceFilter === "issues"
                   ? "Issue Experiences will appear here when customers report a problem."
-                  : "Customers can share a lightweight Experience after a verified POS visit."}
+                  : "Customers can share a lightweight Experience after a verified POS visit."} />
             </EmptyState>
           )}
         </div>
-        <aside className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+        <aside className="border-zinc-200/80 bg-white p-5 rounded-none border-0 shadow-none">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-            After a visit
+            <WorkspaceText text="After a visit" />
           </p>
           <h3 className="mt-3 font-semibold text-zinc-950">
-            Feedback starts from a Verified Visit.
+            <WorkspaceText text="Feedback starts from a Verified Visit." />
           </h3>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Customers see Good / Had an issue in their Activity after a completed
-            POS ticket is linked to their active account. Details are optional.
+            <WorkspaceText text="Customers see Good / Had an issue in their Activity after a completed POS ticket is linked to their active account. Details are optional." />
           </p>
+          <ExperienceSummaryPanel summary={__vt(data.reputationSummary)} />
         </aside>
       </div>
     );
@@ -4258,20 +4432,20 @@ export function SalonProfileView({
 
     return (
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.58fr)]">
-        <section className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+        <section className="border-zinc-200/80 bg-white p-6 rounded-none border-0 shadow-none">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-            About
+            <WorkspaceText text="About" />
           </p>
           <h3 className="mt-3 text-2xl font-semibold text-zinc-950">
-            {profile.name}
+            <SalonName name={profile.name} salonId={profile.salonId}/>
           </h3>
-          <p className="mt-4 text-sm leading-7 text-zinc-600">
-            {(salonAboutParagraphs(profile).length ? salonAboutParagraphs(profile) : ["This salon is still shaping its public story."]).map((text, index) => <span key={index} className="block whitespace-pre-line [&+span]:mt-4">{text}</span>)}
+          <p className="mt-4 max-w-prose text-sm leading-7 text-zinc-600">
+            {(salonAboutParagraphs(profile).length ? salonAboutParagraphs(profile) : ["This salon is still shaping its public story."]).map((text, index) => <span key={index} className="block whitespace-pre-line [&+span]:mt-4"><WorkspaceText text={text} /></span>)}
           </p>
           {serviceSummary.length > 0 ? (
             <div className="mt-6">
               <h4 className="text-sm font-semibold text-zinc-950">
-                Known for
+                <WorkspaceText text="Known for" />
               </h4>
               <div className="mt-3 flex flex-wrap gap-2">
                 {serviceSummary.map((serviceName) => (
@@ -4287,27 +4461,28 @@ export function SalonProfileView({
           ) : null}
         </section>
         <aside className="grid gap-4">
-          <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-            <h4 className="font-semibold text-zinc-950">Visit details</h4>
+          <section className="border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 rounded-none border-0 shadow-none">
+            <h4 className="font-semibold text-zinc-950"><WorkspaceText text="Visit details" /></h4>
             <div className="mt-4 grid gap-4">
-              <div><h5 className="mb-3 font-semibold text-zinc-950">Operating hours</h5><OperatingHoursDisplay salonId={profile.salonId} initialSettings={data.operatingHours} /></div>
+              <div><h5 className="mb-3 font-semibold text-zinc-950"><WorkspaceText text="Operating hours" /></h5><OperatingHoursDisplay salonId={profile.salonId} initialSettings={data.operatingHours} /></div>
               {address ? (
                 <div>
-                  <p className="font-semibold text-zinc-950">Address</p>
-                  <p className="mt-1 leading-6">{address}</p>
+                  <p className="font-semibold text-zinc-950"><WorkspaceText text="Address" /></p>
+                  <p className="mt-1 leading-6"><SalonAddressLink address={address} /></p>
                   <a
                     className="mt-2 inline-flex font-semibold text-zinc-950 underline-offset-4 hover:underline"
                     href={directionsUrl(address)}
                     rel="noreferrer"
                     target="_blank"
                   >
-                    Directions
+                    <WorkspaceText text="Directions" />
                   </a>
+                  <SalonLocationMap key={address} address={address} name={profile.name} />
                 </div>
               ) : null}
               {phone ? (
                 <div>
-                  <p className="font-semibold text-zinc-950">Phone</p>
+                  <p className="font-semibold text-zinc-950"><WorkspaceText text="Phone" /></p>
                   <a
                     className="mt-1 inline-flex underline-offset-4 hover:underline"
                     href={`tel:${profile.phone?.replace(/\D/g, "")}`}
@@ -4318,7 +4493,7 @@ export function SalonProfileView({
               ) : null}
               {profile.email ? (
                 <div>
-                  <p className="font-semibold text-zinc-950">Email</p>
+                  <p className="font-semibold text-zinc-950"><WorkspaceText text="Email" /></p>
                   <a
                     className="mt-1 inline-flex underline-offset-4 hover:underline"
                     href={`mailto:${profile.email}`}
@@ -4329,7 +4504,7 @@ export function SalonProfileView({
               ) : null}
               {website ? (
                 <div>
-                  <p className="font-semibold text-zinc-950">Website</p>
+                  <p className="font-semibold text-zinc-950"><WorkspaceText text="Website" /></p>
                   <a
                     className="mt-1 inline-flex underline-offset-4 hover:underline"
                     href={website}
@@ -4343,10 +4518,10 @@ export function SalonProfileView({
             </div>
           </section>
           {preferences.show_team && data.staff.length > 0 ? (
-            <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+            <section className="border-zinc-200/80 bg-white p-5 rounded-none border-0 shadow-none">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h4 className="font-semibold text-zinc-950">Team preview</h4>
+                  <h4 className="font-semibold text-zinc-950"><WorkspaceText text="Team preview" /></h4>
                   <p className="mt-1 text-xs text-zinc-500">
                     {formatSalonProfileTeamCount(data.staff.length)}
                   </p>
@@ -4356,7 +4531,7 @@ export function SalonProfileView({
                   onClick={() => changeTab("team")}
                   type="button"
                 >
-                  View team ({data.staff.length})
+                  <WorkspaceText text="View team (" />{data.staff.length})
                 </button>
               </div>
               <TeamPreviewRows
@@ -4371,6 +4546,12 @@ export function SalonProfileView({
   }
 
   const effectiveTab = visibleTabs.some((tab) => tab.id === selectedTab) ? selectedTab : "discover";
+  const contentPagination = pagination.hasMore ? <div className="grid justify-items-center gap-2 py-4">
+    {pagination.error ? <p role="status" className="text-sm text-red-700">{pagination.error}</p> : null}
+    <button type="button" disabled={pagination.loading} onClick={() => { void pagination.loadMore(); }} className="min-h-11 rounded-full border px-5 py-2 text-sm font-semibold">
+      <WorkspaceText text={pagination.loading ? "Loading older posts" : pagination.error ? "Try again" : "Load older posts"} />
+    </button>
+  </div> : null;
   const tabPanel =
     effectiveTab === "discover"
       ? renderDiscover()
@@ -4387,39 +4568,39 @@ export function SalonProfileView({
   const canShowBook = capabilities.canBook && (!isManagedViewer || capabilities.isOwnSalon);
 
   return (
+    <ProfileSalonIdentityContext.Provider value={{ name: profile.name, href: `/explore/salons/${profile.salonId}`, logoUrl: profile.logoImageUrl }}>
     <ProfilePreferencesContext.Provider value={preferences}>
     <div className={`min-w-0 overflow-x-hidden bg-[#f6f5f3] text-zinc-950 ${isWebsiteView ? websitePageStyles.shell : ""}`} style={effectiveTab === "services" || effectiveTab === "team" ? {backgroundColor:"white"} : undefined}>
-      <div className="mx-auto grid w-full max-w-[88rem] gap-3 px-4 pb-3 pt-3 sm:px-6 lg:px-8">
+      <div className="mx-auto grid w-full max-w-none gap-3 px-4 pb-3 pt-3 sm:px-6 lg:px-8">
         {data.directoryListing?.claimState === "unclaimed" ? (
-          <aside aria-label="Unclaimed business profile" className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-            <span className="font-semibold">Unclaimed business</span>
-            <a href={`/claim/${profile.salonId}`} className="rounded-lg bg-amber-950 px-3 py-2 text-xs font-semibold text-white">Own this salon? Claim it</a>
-            <span>Contact salon</span>
+          <aside aria-label={__vt("Unclaimed business profile")} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 rounded-none border-0 shadow-none">
+            <span className="font-semibold"><WorkspaceText text="Unclaimed business" /></span>
+            <a href={`/claim/${profile.salonId}`} className="rounded-lg bg-amber-950 px-3 py-2 text-xs font-semibold text-white"><WorkspaceText text="Own this salon? Claim it" /></a>
+            <span><WorkspaceText text="Contact salon" /></span>
             {profile.phone ? <a href={`tel:${profile.phone}`} className="font-semibold underline">{profile.phone}</a> : null}
           </aside>
-        ) : !capabilities.isOwnSalon ? (
-          <div className="flex justify-end text-xs text-zinc-500"><a href={`/claim/${profile.salonId}`} className="underline">Manage this salon? Request access</a></div>
         ) : null}
         {isWebsiteView ? <SalonWebsiteHeader
-          profile={profile} layout={preferences.layout} tabs={mainTabs} extraTabs={visibleTabs.filter(tab => !mainTabs.includes(tab))} selectedTab={effectiveTab} introVisible={preferences.show_featured !== false}
+          profile={profile} priceHint={salonPopularPrice(data.reputationSummary)} layout={preferences.layout} tabs={mainTabs} extraTabs={visibleTabs.filter(tab => !mainTabs.includes(tab))} selectedTab={effectiveTab} introVisible={preferences.show_featured !== false}
           onTab={id => changeTab(id as TabId)} onTabKeyDown={onTabKeyDown}
           verified={<SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/>}
-          trust={<SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/>}
-          priceHint={salonPopularPrice(data.reputationSummary)}
+          trust={<SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} className="text-zinc-600"/>}
           canBook={canShowBook} onBook={() => openBooking({title:"Book appointment"})}
-          canFollow={canShowFollow} following={isFollowing} followPending={isPending} onFollow={toggleFollow}
+          canFollow={canShowFollow} following={isFollowing} followPending={isPending || followState.loading} onFollow={toggleFollow}
           onHours={() => setHoursInfoOpen(true)} canShare={preferences.allow_sharing} onShare={() => { void shareSalon(); }}
+          claimHref={!capabilities.isOwnSalon && !capabilities.isStaffSalon ? `/claim/${profile.salonId}` : undefined}
+          onReport={() => setSalonReportOpen(true)}
           tools={capabilities.canEditProfile ? <div className="relative">
-              {capabilities.canEditProfile ? <button aria-label="Profile settings" title="Profile settings" aria-expanded={ownerMenuOpen} aria-haspopup="menu" ref={ownerMenuButtonRef} className="grid size-11 place-items-center rounded-xl text-zinc-700 transition-colors hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange" onClick={() => setOwnerMenuOpen((current) => !current)} type="button"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h3m4 0h11M3 12h11m4 0h3M3 18h5m4 0h9" /><circle cx="8" cy="6" r="2" /><circle cx="16" cy="12" r="2" /><circle cx="10" cy="18" r="2" /></svg></button> : null}
+              {capabilities.canEditProfile ? <button aria-label={__vt("Profile settings")} title={__vt("Profile settings")} aria-expanded={ownerMenuOpen} aria-haspopup="menu" ref={ownerMenuButtonRef} className="grid size-11 place-items-center rounded-xl text-zinc-700 transition-colors hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange" onClick={() => setOwnerMenuOpen((current) => !current)} type="button"><SettingsIcon className="size-6 shrink-0" /></button> : null}
               {ownerMenuOpen && capabilities.canEditProfile ? <div ref={ownerMenuRef} role="menu" className="absolute right-0 top-12 z-40 grid w-56 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg">
-                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setProfileSettingsOpen(true); }}>Profile settings</button>
-                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setOperatingHoursOpen(true); }}>Operating hours</button>
-                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setProfileEditorOpen(true); }}>Edit profile</button>
-                {manageData && capabilities.canPublish ? <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setPublicationOpen(true); }}>Publication settings</button> : null}
+                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setProfileSettingsOpen(true); }}><WorkspaceText text="Profile settings" /></button>
+                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setOperatingHoursOpen(true); }}><WorkspaceText text="Operating hours" /></button>
+                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setProfileEditorOpen(true); }}><WorkspaceText text="Edit profile" /></button>
+                {manageData && capabilities.canPublish ? <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setPublicationOpen(true); }}><WorkspaceText text="Publication settings" /></button> : null}
               </div> : null}
             </div> : null}
         /> : (
-        <section className="group min-w-0 rounded-2xl border border-zinc-200/80 bg-white shadow-sm">
+        <section className="group min-w-0 border-zinc-200/80 bg-white rounded-none border-0 shadow-none">
           <div className="relative h-[72px] overflow-hidden rounded-t-2xl bg-zinc-100 sm:h-24">
             <SalonCover coverImageUrl={profile.coverImageUrl} name={profile.name} />
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-12" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 55%, #fff 100%)" }} />
@@ -4432,52 +4613,55 @@ export function SalonProfileView({
               </div>
             </div>
             <div className="min-w-0 px-2 py-1">
-              <div className="flex min-w-0 items-center gap-1.5"><h2 className="min-w-0 break-words text-xl font-semibold leading-6">{profile.name}</h2><SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/></div>
+              <div className="flex min-w-0 items-center gap-1.5"><h2 className="min-w-0 flex-1 break-words text-xl font-semibold leading-6"><SalonName name={profile.name} salonId={profile.salonId}/></h2><SalonVerifiedBadge verified={data.reputationSummary.identityVerified}/>{canShowFollow ? <button type="button" aria-pressed={isFollowing} disabled={isPending || followState.loading} onClick={toggleFollow} className="inline-flex min-h-11 items-center gap-1.5 shrink-0 rounded-lg px-1 text-[11px] font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange disabled:opacity-50"><span aria-hidden="true">{isFollowing ? "✓" : "+"}</span><WorkspaceText text={isFollowing ? "Following" : "Follow salon"} /></button> : null}</div>
+
+              <p className="truncate text-[11px] leading-5 text-zinc-500"><WorkspaceText text={salonPopularPrice(data.reputationSummary)??"Salon"} />{profile.city?` · ${profile.city}${profile.state?`, ${profile.state}`:""}`:""}</p>
               <SalonTrustLine signals={data.reputationSummary} href="#lumi-trust" name={profile.name} expanded className="text-zinc-600"/>
-              <p className="truncate text-[11px] leading-5 text-zinc-500">{salonPopularPrice(data.reputationSummary)??"Salon"}{profile.city?` · ${profile.city}${profile.state?`, ${profile.state}`:""}`:""}</p>
 
 
             </div>
             <div className="relative">
-              {capabilities.canEditProfile ? <button aria-label="Profile settings" title="Profile settings" aria-expanded={ownerMenuOpen} aria-haspopup="menu" ref={ownerMenuButtonRef} className="grid size-11 place-items-center rounded-xl text-zinc-700 transition-colors hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange" onClick={() => setOwnerMenuOpen((current) => !current)} type="button"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h3m4 0h11M3 12h11m4 0h3M3 18h5m4 0h9" /><circle cx="8" cy="6" r="2" /><circle cx="16" cy="12" r="2" /><circle cx="10" cy="18" r="2" /></svg></button> : null}
+              {capabilities.canEditProfile ? <button aria-label={__vt("Profile settings")} title={__vt("Profile settings")} aria-expanded={ownerMenuOpen} aria-haspopup="menu" ref={ownerMenuButtonRef} className="grid size-11 place-items-center rounded-xl text-zinc-700 transition-colors hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange" onClick={() => setOwnerMenuOpen((current) => !current)} type="button"><SettingsIcon className="size-6 shrink-0" /></button> : null}
               {ownerMenuOpen && capabilities.canEditProfile ? <div ref={ownerMenuRef} role="menu" className="absolute right-0 top-12 z-40 grid w-56 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg">
-                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setProfileSettingsOpen(true); }}>Profile settings</button>
-                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setOperatingHoursOpen(true); }}>Operating hours</button>
-                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setProfileEditorOpen(true); }}>Edit profile</button>
-                {manageData && capabilities.canPublish ? <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setPublicationOpen(true); }}>Publication settings</button> : null}
+                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setProfileSettingsOpen(true); }}><WorkspaceText text="Profile settings" /></button>
+                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setOperatingHoursOpen(true); }}><WorkspaceText text="Operating hours" /></button>
+                <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setProfileEditorOpen(true); }}><WorkspaceText text="Edit profile" /></button>
+                {manageData && capabilities.canPublish ? <button role="menuitem" type="button" className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" onClick={() => { setOwnerMenuOpen(false); setPublicationOpen(true); }}><WorkspaceText text="Publication settings" /></button> : null}
               </div> : null}
             </div>
-              <button type="button" aria-label="View salon operating hours" aria-haspopup="dialog" className="col-span-3 mt-1 flex min-h-6 flex-wrap items-center gap-x-2 gap-y-0.5 text-left text-xs leading-4 hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange" onClick={() => setHoursInfoOpen(true)}>
-                <span className={profile.operatingStatus.isOpen ? "font-semibold text-emerald-700" : profile.operatingStatus.kind === "hours_unset" ? "font-semibold text-zinc-500" : "font-semibold text-red-600"}>{profile.operatingStatus.label}</span>
-                {profile.operatingStatus.detail ? <span className="text-zinc-500"><span aria-hidden="true" className="mr-2">·</span>{profile.operatingStatus.detail}</span> : null}
+              <button type="button" aria-label={__vt("View salon operating hours")} aria-haspopup="dialog" className="col-start-2 col-span-2 -mt-1 flex min-h-6 flex-wrap items-center gap-x-2 gap-y-0.5 text-left text-xs leading-4 hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange" onClick={() => setHoursInfoOpen(true)}>
+                <span className={profile.operatingStatus.isOpen ? "font-semibold text-emerald-700" : profile.operatingStatus.kind === "hours_unset" ? "font-semibold text-zinc-500" : "font-semibold text-red-600"}><WorkspaceText text={profile.operatingStatus.label} /></span>
+                {profile.operatingStatus.detail ? <span className="text-zinc-500"><span aria-hidden="true" className="mr-2">·</span><WorkspaceText text={profile.operatingStatus.detail} /></span> : null}
               </button>
           </div>
-          {canShowFollow || canShowBook ? <div className={`flex items-center justify-end gap-3 px-3 pb-3 sm:relative sm:-mt-11 sm:px-5 ${capabilities.canEditProfile ? "sm:pr-20" : ""}`}>{canShowFollow ? <button type="button" aria-pressed={isFollowing} disabled={isPending} onClick={toggleFollow} className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange disabled:opacity-50"><span aria-hidden="true">{isFollowing ? "✓" : "+"}</span>{isFollowing ? "Following" : "Follow salon"}</button> : null}{canShowBook ? <button type="button" onClick={() => openBooking({ title: "Book now" })} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-orange px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover">Book appointment <span aria-hidden="true">→</span></button> : null}</div> : null}
+          <a href={`/gift-cards?salon=${profile.salonId}`} className="mx-3 mb-2 inline-flex min-h-9 items-center rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800">Gift cards</a>
+          {canShowBook ? <div className={`flex items-center justify-end gap-3 px-3 pb-3 sm:px-5 ${capabilities.canEditProfile ? "sm:pr-20" : ""}`}>{canShowBook ? <button type="button" onClick={() => openBooking({ title: "Book now" })} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-orange px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover"><span data-booking-action-label><WorkspaceText text="Book appointment" /></span> <span aria-hidden="true">→</span></button> : null}</div> : null}
           <div className="relative flex min-w-0 items-center border-t border-zinc-100 px-2 sm:px-4">
-            <div aria-label="Salon profile sections" className="flex min-w-0 flex-1" onKeyDown={onTabKeyDown} role="tablist">
-              {mainTabs.map((tab) => <button aria-controls={`salon-profile-${tab.id}`} aria-selected={effectiveTab === tab.id} className={`min-h-11 min-w-0 flex-1 border-b-2 px-1 text-xs font-semibold sm:text-sm ${effectiveTab === tab.id ? "border-brand-orange text-brand-orange" : "border-transparent text-zinc-500 hover:text-zinc-950"}`} id={`salon-profile-tab-${tab.id}`} key={tab.id} onClick={() => changeTab(tab.id)} role="tab" tabIndex={effectiveTab === tab.id ? 0 : -1} type="button">{tab.label}{tab.id === "gallery" && sortedLooks.length ? <span className="ml-1 text-[10px] text-zinc-400">{sortedLooks.length}</span> : null}</button>)}
+            <div aria-label={__vt("Salon profile sections")} className="flex min-w-0 flex-1 flex-wrap" onKeyDown={onTabKeyDown} role="tablist">
+              {visibleTabs.map((tab) => <button aria-controls={`salon-profile-${tab.id}`} aria-selected={effectiveTab === tab.id} className={`min-h-11 min-w-[5.5rem] flex-1 border-b-2 px-1 text-xs font-semibold sm:text-sm ${effectiveTab === tab.id ? "border-brand-orange text-brand-orange" : "border-transparent text-zinc-500 hover:text-zinc-950"}`} id={`salon-profile-tab-${tab.id}`} key={tab.id} onClick={() => changeTab(tab.id)} role="tab" tabIndex={effectiveTab === tab.id ? 0 : -1} type="button"><WorkspaceText text={tab.label} />{tab.id === "gallery" && sortedLooks.length ? <span className="ml-1 text-[10px] text-zinc-400">{sortedLooks.length}</span> : null}</button>)}
             </div>
-            <details data-dismissible-popover className="relative shrink-0"><summary aria-label="More profile sections and actions" className="grid size-11 cursor-pointer list-none place-items-center rounded-xl text-lg text-zinc-600 hover:bg-zinc-50 [&::-webkit-details-marker]:hidden">•••</summary><div className="absolute right-0 top-12 z-40 grid w-48 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg">
-              {visibleTabs.filter((tab) => !mainTabs.includes(tab)).map((tab) => <button id={`salon-profile-tab-${tab.id}`} key={tab.id} className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" type="button" onClick={(event) => { changeTab(tab.id); event.currentTarget.closest("details")?.removeAttribute("open"); }}>{tab.label}</button>)}
-              {preferences.allow_sharing ? <button className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); void shareSalon(); }}>Share profile</button> : null}
+            <details data-dismissible-popover className="relative shrink-0"><summary aria-label={__vt("More profile sections and actions")} className="grid size-11 cursor-pointer list-none place-items-center rounded-xl text-lg text-zinc-600 hover:bg-zinc-50 [&::-webkit-details-marker]:hidden">•••</summary><div className="absolute right-0 top-12 z-40 grid w-48 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg">
+              {!capabilities.isOwnSalon && !capabilities.isStaffSalon ? <a href={`/claim/${profile.salonId}`} className="flex min-h-11 items-center rounded-lg px-3 text-sm hover:bg-zinc-50"><WorkspaceText text="Manage this salon? Request access" /></a> : null}
+              {preferences.allow_sharing ? <button className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); void shareSalon(); }}><WorkspaceText text="Share profile" /></button> : null}
+              <button className="min-h-11 rounded-lg px-3 text-left text-sm hover:bg-zinc-50" type="button" onClick={event => { event.currentTarget.closest("details")?.removeAttribute("open"); setSalonReportOpen(true); }}><WorkspaceText text="Report salon" /></button>
             </div></details>
           </div>
         </section>
         )}
-        {error || notice || statusMessage ? <section className="grid gap-3">
+        {error || notice || statusMessage || followState.error ? <section className="grid gap-3">
         {error ? (
           <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {error}
+            <WorkspaceText text={error} />
           </p>
         ) : null}
         {notice ? (
           <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            {notice}
+            <WorkspaceText text={notice} />
           </p>
         ) : null}
-        {statusMessage ? (
+        {statusMessage || followState.error ? (
           <p className="rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
-            {statusMessage}
+            <WorkspaceText text={statusMessage || followState.error} />
           </p>
         ) : null}
         </section> : null}
@@ -4485,18 +4669,21 @@ export function SalonProfileView({
 
       <section
         aria-labelledby={`salon-profile-tab-${effectiveTab}`}
-        className={effectiveTab === "services" || effectiveTab === "team" ? "mx-auto w-full max-w-[88rem] pb-24" : "mx-auto w-full max-w-[88rem] px-4 pb-24 sm:px-6 lg:px-8"}
+        className={effectiveTab === "services" || effectiveTab === "team" ? "mx-auto w-full max-w-none pb-24" : "mx-auto w-full max-w-none px-4 pb-24 sm:px-6 lg:px-8"}
         id={`salon-profile-${effectiveTab}`}
         role="tabpanel"
       >
         {tabPanel}
+        {effectiveTab === "discover" || effectiveTab === "gallery" ? contentPagination : null}
       </section>
+
+      {salonReportOpen ? <SalonReportDialog salon={{ id: profile.salonId, name: profile.name }} onClose={() => setSalonReportOpen(false)} /> : null}
 
       {primaryMobileLook && canShowBook && manageData && !capabilities.isOwnSalon ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-10px_30px_rgba(24,24,27,.12)] backdrop-blur md:hidden">
-          <div className="mx-auto grid max-w-md auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+          <div className="mx-auto max-w-md post-action-toolbar">
             <ProfileSavePostButton
-              className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+              className="min-w-0"
               initialSaved={savedLookIds.has(primaryMobileLook.id)}
               onSavedChange={(active) =>
                 applyLookSaveState(primaryMobileLook, active)
@@ -4510,8 +4697,7 @@ export function SalonProfileView({
               }}
             />
             <TimelineActionButton
-              aria-label="Comment"
-              className="border-r border-zinc-100 last:border-r-0"
+              aria-label={__vt("Comment")}
               disabled={isPending}
               icon="comment"
               onClick={() =>
@@ -4522,12 +4708,13 @@ export function SalonProfileView({
                   title: primaryMobileLook.title,
                 })
               }
-              title="Comment"
+              title={__vt("Comment")}
             >
-              Comment
+              <WorkspaceText text="Comment" />
             </TimelineActionButton>
+            <ProfileSharePostButton href={"/explore/salons/" + profile.salonId + "#look-" + primaryMobileLook.id} title={primaryMobileLook.title} />
             <TimelineActionButton
-              aria-label="Book exact look"
+              aria-label={__vt("Book exact look")}
               icon="book"
               onClick={() =>
                 openBooking({
@@ -4538,21 +4725,22 @@ export function SalonProfileView({
                   title: "Book this exact look",
                 })
               }
-              title="Book exact look"
+              title={__vt("Book exact look")}
               tone="primary"
             >
-              Book
+              <span data-booking-action-label><WorkspaceText text="Book appointment" /></span>
             </TimelineActionButton>
           </div>
         </div>
       ) : null}
 
       <p aria-live="polite" className="sr-only">
-        {statusMessage}
+        <WorkspaceText text={statusMessage} />
       </p>
 
       {authPromptIntent ? (
         <AuthIntentPrompt
+          returningUser={capabilities.isAuthenticated}
           kicker={authPromptIntent === "follow" ? "Follow intent" : "Save intent"}
           onClose={() => setAuthPromptIntent(null)}
           title={
@@ -4561,18 +4749,32 @@ export function SalonProfileView({
               : "Save this look?"
           }
         >
-          {authPromptIntent === "follow"
+          <WorkspaceText text={authPromptIntent === "follow"
             ? "Create a free ReyLUMI account to follow this shop and find it again from your discovery hub."
-            : "Create a free ReyLUMI account to keep this look, follow the shop, and return when you are ready to book."}
+            : "Create a free ReyLUMI account to keep this look, follow the shop, and return when you are ready to book."} />
         </AuthIntentPrompt>
       ) : null}
 
       {composerType ? (
         <ComposerModal
+          key={`${postScope}:${restoredPostReceipt?.scope === postScope ? restoredPostReceipt.receipt.requestId : "draft"}`}
           data={data}
           initialType={composerType}
-          onClose={() => setComposerType(null)}
+          initialReceipt={restoredPostReceipt?.scope === postScope ? restoredPostReceipt.receipt : null}
+          isCurrent={() => activePostScope.current === postScope}
+          onClose={() => { setComposerType(null); setComposerPresented(false); setRestoredPostReceipt(null); }}
+          onPendingChange={(pending, requestId) => {
+            if (activePostScope.current !== postScope) return;
+            if (pending) {
+              setPendingPost(pending);
+              setSelectedTab("discover");
+            } else setPendingPost((current) => current?.requestId === requestId ? null : current);
+          }}
+          onPresentedChange={(presented) => { if (activePostScope.current === postScope) setComposerPresented(presented); }}
+          presented={composerPresented}
+          viewerId={capabilities.currentUserId ?? ""}
           onPosted={({ post, look }) => {
+            if (activePostScope.current !== postScope) return;
             setPublishedPosts((current) => [post, ...current.filter((item) => item.id !== post.id)]);
             if (look) setPublishedLooks((current) => [look, ...current.filter((item) => item.id !== look.id)]);
             setSelectedTab("discover");
@@ -4584,17 +4786,17 @@ export function SalonProfileView({
           }}
         />
       ) : null}
-      {profileSettingsOpen ? <Modal title="Profile settings" onClose={() => setProfileSettingsOpen(false)}>
+      {profileSettingsOpen ? <Modal title={__vt("Profile settings")} onClose={() => setProfileSettingsOpen(false)}>
         <div className="grid gap-5">
-          <button type="button" className="flex min-h-11 items-center justify-between border-b border-zinc-200 py-3 text-left text-sm" onClick={() => { setProfileSettingsOpen(false); setOperatingHoursOpen(true); }}><span>Operating hours</span><span aria-hidden="true">›</span></button>
+          <button type="button" className="flex min-h-11 items-center justify-between border-b border-zinc-200 py-3 text-left text-sm" onClick={() => { setProfileSettingsOpen(false); setOperatingHoursOpen(true); }}><span><WorkspaceText text="Operating hours" /></span><span aria-hidden="true">›</span></button>
           <SalonProfilePreferencesPanel onSaved={(next) => { setEditedPreferences(next); if ((!next.show_team && selectedTab === "team") || (!next.show_services && selectedTab === "services")) setSelectedTab("discover"); }} />
-          <div className="flex flex-wrap gap-2"><MediaApplyButton kind="cover" label="Change cover" salonId={profile.salonId} /><MediaApplyButton kind="logo" label="Change logo" salonId={profile.salonId} /></div>
-          <a href="/settings?section=salon-profile" className="text-sm font-medium text-brand-orange">All profile settings</a>
+          <div className="flex flex-wrap gap-2"><MediaApplyButton kind="cover" label={__vt("Change cover")} salonId={profile.salonId} /><MediaApplyButton kind="logo" label={__vt("Change logo")} salonId={profile.salonId} /></div>
+          <a href="/settings?section=salon-profile" className="text-sm font-medium text-brand-orange"><WorkspaceText text="All profile settings" /></a>
         </div>
       </Modal> : null}
-      {operatingHoursOpen ? <Modal title="Operating hours" onClose={() => setOperatingHoursOpen(false)}><OperatingHoursQuick salonId={profile.salonId} /></Modal> : null}
-      {hoursInfoOpen ? <Modal title="Operating hours" onClose={() => setHoursInfoOpen(false)}><OperatingHoursDisplay salonId={profile.salonId} initialSettings={data.operatingHours} /></Modal> : null}
-      {contentManagerOpen ? <Modal title="Featured photo & salon posts" onClose={() => setContentManagerOpen(false)}>{renderDiscover(true)}</Modal> : null}
+      {operatingHoursOpen ? <Modal title={__vt("Operating hours")} onClose={() => setOperatingHoursOpen(false)}><OperatingHoursQuick salonId={profile.salonId} /></Modal> : null}
+      {hoursInfoOpen ? <Modal title={__vt("Operating hours")} onClose={() => setHoursInfoOpen(false)}><OperatingHoursDisplay salonId={profile.salonId} initialSettings={data.operatingHours} /></Modal> : null}
+      {contentManagerOpen ? <Modal title={__vt("Featured photo & salon posts")} onClose={() => setContentManagerOpen(false)}>{renderDiscover(true)}{contentPagination}</Modal> : null}
       {profileEditorOpen && manageData ? (
         <ProfileEditor
           onClose={() => setProfileEditorOpen(false)}
@@ -4610,7 +4812,7 @@ export function SalonProfileView({
         />
       ) : null}
       {commentTarget ? (
-        <Modal onClose={() => setCommentTarget(null)} title="Comments">
+        <Modal onClose={() => setCommentTarget(null)} title={__vt("Comments")}>
           <ProfilePostCommentThread
             initialCount={commentCountForTarget(commentTarget, 0)}
             onCountChange={(count) =>
@@ -4695,5 +4897,6 @@ export function SalonProfileView({
       ) : null}
     </div>
     </ProfilePreferencesContext.Provider>
+    </ProfileSalonIdentityContext.Provider>
   );
 }

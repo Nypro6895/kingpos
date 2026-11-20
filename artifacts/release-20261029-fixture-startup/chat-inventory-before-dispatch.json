@@ -1,0 +1,316 @@
+{
+  "scope": "Supported Codex app inventory before6d332 dispatch; cap50 non-pinned plus pinned, no raw session database",
+  "threads": [
+    {
+      "id": "01a180b5-5446-7339-943d-051cd27da015",
+      "hostId": "durable",
+      "status": "idle",
+      "updatedAt": 1793310115
+    },
+    {
+      "id": "01a18971-91b0-7770-afd1-0c3eec5be8de",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793307412
+    },
+    {
+      "id": "01a17f46-d4e7-7f91-a818-ff9669455f6a",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793306207
+    },
+    {
+      "id": "01a1894b-c9eb-73b0-9ac7-4f4d9d2e1907",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793304914
+    },
+    {
+      "id": "01a16d94-45a5-768e-84b9-3aa8ad354013",
+      "hostId": "durable",
+      "status": "idle",
+      "updatedAt": 1793304314
+    },
+    {
+      "id": "01a1893a-a3cc-70c0-8ca6-d48992618bcd",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793304197
+    },
+    {
+      "id": "01a1893d-d717-73e2-b0b9-9d6df61c1128",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793304202
+    },
+    {
+      "id": "01a1893d-5aaf-7e50-b2c2-37514e6ccdeb",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793303960
+    },
+    {
+      "id": "01a18466-5543-71e1-bcd3-e934f324aaae",
+      "hostId": "local",
+      "status": "active",
+      "updatedAt": 1793311130
+    },
+    {
+      "id": "6ae37a0d-9f70-83ea-9382-3225ce8099fb",
+      "hostId": null,
+      "status": "idle",
+      "updatedAt": 1793294148.709
+    },
+    {
+      "id": "01a1883a-3eb8-7e41-9606-09b42ecc5601",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793303436
+    },
+    {
+      "id": "01a18838-139b-74d3-95bb-eed66a1d0def",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793303461
+    },
+    {
+      "id": "01a18828-96a2-7b32-a28e-fe3fa3b4ee70",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793303479
+    },
+    {
+      "id": "01a18821-d2ef-7c23-ac01-64201666fc56",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793303532
+    },
+    {
+      "id": "01a18822-88e9-7de0-976b-31916306fd90",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793303523
+    },
+    {
+      "id": "01a187d8-89b3-7622-9f97-2c478747096d",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793303577
+    },
+    {
+      "id": "01a18661-effc-7051-8145-326632407e36",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793303556
+    },
+    {
+      "id": "01a18641-7275-72b1-91b9-5c0057f9880d",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793261374
+    },
+    {
+      "id": "01a1862e-2bb5-79c0-9007-526c95a3b3ee",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793303569
+    },
+    {
+      "id": "01a18693-3d7d-7f80-ae38-27936f528172",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793261058
+    },
+    {
+      "id": "01a18682-dbf2-7013-9024-0ed686eac3e4",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793258414
+    },
+    {
+      "id": "6ae2ed4a-4794-83ea-a809-fce6af5c904e",
+      "hostId": null,
+      "status": "idle",
+      "updatedAt": 1793257109.691
+    },
+    {
+      "id": "01a1860f-5c6d-7721-97b3-8b145d17033c",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793252918
+    },
+    {
+      "id": "01a18053-5e4e-7923-ab55-368b0de93707",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793252677
+    },
+    {
+      "id": "01a18451-d381-7f92-8478-20e5fd5f9afe",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793250955
+    },
+    {
+      "id": "6ae2d38c-4650-83e8-8ba9-7555afad7d3e",
+      "hostId": null,
+      "status": "idle",
+      "updatedAt": 1793250314.134
+    },
+    {
+      "id": "01a1718d-a637-7f33-b904-0e1952ac2df6",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793249489
+    },
+    {
+      "id": "01a185d4-0ec8-7070-802c-f1be8b9b8a4a",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793255275
+    },
+    {
+      "id": "01a185ef-aefc-7e63-9e85-4850818f50fe",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793248915
+    },
+    {
+      "id": "01a185df-a194-7a70-8fa2-ca5628a99980",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793250716
+    },
+    {
+      "id": "01a180b7-ea1d-70f2-ac1e-402d2235b0d3",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793246318
+    },
+    {
+      "id": "6ae2bde3-1f80-83ea-9ce5-6f5d56041bdc",
+      "hostId": null,
+      "status": "idle",
+      "updatedAt": 1793244793.586
+    },
+    {
+      "id": "01a1856c-d969-7443-8acc-03f40bf0fb41",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793243522
+    },
+    {
+      "id": "01a18569-8eef-7033-8fe4-bb76ced71c55",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793241530
+    },
+    {
+      "id": "01a1856b-765b-7421-8f12-a91ca97f9dfe",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793241538
+    },
+    {
+      "id": "01a18539-54f2-7d61-bd5f-04412e47368c",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793250725
+    },
+    {
+      "id": "01a18560-bbe7-74e1-8677-1e80f7e5a5bd",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793239107
+    },
+    {
+      "id": "01a18538-7d96-76d3-a7fe-aa74ce16f9f6",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793238911
+    },
+    {
+      "id": "01a184cd-565c-7c92-a9eb-67b07f5a7629",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793231329
+    },
+    {
+      "id": "01a18464-23dc-7803-b014-91e1424590f0",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793250732
+    },
+    {
+      "id": "01a1845b-6505-7001-ae8d-ec52b669d7e7",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793223060
+    },
+    {
+      "id": "01a18439-e337-71a3-b6d4-a031bbd10ed7",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793221624
+    },
+    {
+      "id": "01a18441-0f45-7123-a119-539ad98be7b2",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793250738
+    },
+    {
+      "id": "01a1843f-7f50-7ec3-8c45-2c3755493dbb",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793220473
+    },
+    {
+      "id": "01a1842f-c83f-7931-ad6f-f363812f5562",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793220118
+    },
+    {
+      "id": "01a18424-4d4f-7610-b3fd-811d78904442",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793221188
+    },
+    {
+      "id": "01a183ca-f3ea-7e61-bdb8-74f1d0aa78c5",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793214575
+    },
+    {
+      "id": "01a180c0-ad40-76b2-876a-e1be5d8b67b7",
+      "hostId": "local",
+      "status": "notLoaded",
+      "updatedAt": 1793214261
+    },
+    {
+      "id": "01a180d4-f0b7-762e-ba73-99bd8aa9e029",
+      "hostId": "durable",
+      "status": "idle",
+      "updatedAt": 1793167104
+    },
+    {
+      "id": "6ae16cc1-5620-83ea-8468-41abc380f3dc",
+      "hostId": null,
+      "status": "idle",
+      "updatedAt": 1793161210.818
+    },
+    {
+      "id": "01a186a2-60a8-78e1-bd52-d76f226111d7",
+      "hostId": "local",
+      "status": "idle",
+      "updatedAt": 1793303984
+    }
+  ],
+  "active": [
+    "01a18466-5543-71e1-bcd3-e934f324aaae"
+  ],
+  "unavailableHosts": [],
+  "unavailableSources": []
+}

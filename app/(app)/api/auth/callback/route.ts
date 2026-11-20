@@ -1,14 +1,20 @@
+import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
+import { recordAdvertisingSignup } from "@/lib/advertising-attribution";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   createSupabaseServerClient,
-  getSupabaseCookieOptions,
+  clearPendingMfaSessionCookieWriter,
 } from "@/lib/supabase/server";
+import { readMfaAssurance } from "@/lib/supabase/mfa-assurance";
+import { writePendingMfaTransition } from "@/lib/supabase/mfa-session";
+import { splitGiftAuthReturn } from "@/lib/auth-return-fragment";
 import {
   fallbackPostAuthWorkspaceNavigation,
   getPostAuthWorkspaceNavigation,
 } from "@/lib/post-auth-routing";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
+import { resumeSignupPhonePath } from "@/lib/signup-phone-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import { writeNormalizedWorkspaceContextCookies } from "@/lib/current-context";
 import { NextResponse } from "next/server";
@@ -16,7 +22,7 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const requestedPath = url.searchParams.get("next");
+  const requestedPath = splitGiftAuthReturn(url.searchParams.get("next") ?? "").serverPath;
   const nextPath = sanitizeAuthReturnPath(requestedPath);
   const supabase = createSupabaseServerClient();
 
@@ -45,9 +51,21 @@ export async function GET(request: Request) {
     );
   }
 
+  const assurance = await readMfaAssurance(supabase, data.session.access_token);
+  if (assurance === "unavailable") {
+    return NextResponse.json({ error: "Two-factor authentication status could not be checked. Please try again later." }, { status: 503, headers: { "Cache-Control": "no-store" } });
+  }
+  if (assurance === "required") {
+    // A callback never sends SMS or reads the private app before verification.
+    const response = NextResponse.redirect(new URL(`/login?mfa=1&next=${encodeURIComponent(nextPath)}`, url.origin));
+    writePendingMfaTransition(response.cookies, { accessToken: data.session.access_token, refreshToken: data.session.refresh_token, rememberLogin: true });
+    return response;
+  }
+
+  await recordAdvertisingSignup(request, data.user);
   const navigation = await getPostAuthWorkspaceNavigation({
     accessToken: data.session.access_token,
-    requestedPath,
+    requestedPath: resumeSignupPhonePath(data.user, requestedPath),
   }).catch((error: unknown) => {
     console.error("Unable to resolve post-callback workspace navigation", {
       message: error instanceof Error ? error.message : String(error),
@@ -61,16 +79,21 @@ export async function GET(request: Request) {
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     data.session.access_token,
-    getSupabaseCookieOptions(data.session.expires_in),
+    sessionCookieOptions(true),
   );
   response.cookies.set(
     REFRESH_TOKEN_COOKIE,
     data.session.refresh_token,
-    getSupabaseCookieOptions(60 * 60 * 24 * 30),
+    sessionCookieOptions(true),
   );
   if (navigation.workspace) {
-    writeNormalizedWorkspaceContextCookies(response.cookies, navigation.workspace);
+    writeNormalizedWorkspaceContextCookies(
+      response.cookies,
+      navigation.workspace,
+    );
   }
 
+  writeLoginPolicy(response.cookies, data.session.access_token, true);
+  clearPendingMfaSessionCookieWriter(response.cookies);
   return response;
 }

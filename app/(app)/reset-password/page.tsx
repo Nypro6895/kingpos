@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { ResetPasswordForm } from "@/app/reset-password/reset-password-form";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import type { Metadata } from "next";
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   description: "Choose a new ReyLUMI account password.",
 };
 
-export default async function ResetPasswordPage({
+async function ResetPasswordPage({
   searchParams,
 }: ResetPasswordPageProps) {
   const { next } = await searchParams;
@@ -56,3 +57,5 @@ export default async function ResetPasswordPage({
     </main>
   );
 }
+
+export default withExperiencePage(ResetPasswordPage);

@@ -1,0 +1,117 @@
+{
+  "kind": "change",
+  "changeId": "experience-reload-loop-fix-20261015",
+  "status": "ready",
+  "summary": "Stop read-triggered Activity/reload loops; retain page cache and scoped live refresh, fence stale authorization responses, and bound recovery without revealing rejected content.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/experience-scope.tsx",
+    "components/session-expiry-prompt.tsx",
+    "lib/experience-mutations.ts",
+    "lib/experience-reload.ts",
+    "app/pos/settings/actions.ts",
+    "app/service-relay/actions.ts",
+    "tests/experience-reload-loop-ui.test.mjs",
+    "tests/experience-scope-ui.test.mjs",
+    "tests/experience-write-invalidation.test.mjs",
+    "tests/experience-mutations.test.mjs",
+    "tests/session-expiry-prompt.test.mjs",
+    "tests/settings-save-feedback.test.mjs",
+    "tests/login-workspace-performance.test.mjs",
+    "tests/whole-site-navigation-ui.test.mjs",
+    "tests/market-navigation-race-ui.test.mjs",
+    "tests/production-startup-stream-ui.test.mjs",
+    "docs/qa/experience-reload-fix-20261015.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\reload-fix-20261015\\source-v1",
+    "baseCommit": "34ea63589e7e8caf5718bf4ffe54e403eab6775a",
+    "baselineDeploymentId": "dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Production webpack build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/reload-fix-20261015/production-build.log"
+    },
+    {
+      "name": "Final changed product ESLint",
+      "result": "passed",
+      "evidence": "artifacts/reload-fix-20261015/lint-final.log"
+    },
+    {
+      "name": "Cache, authentication, identity, data and startup regressions",
+      "result": "passed",
+      "evidence": "validation-main.json:189/193 initially; four missing claim-import fixture cases fixed and all8 login-workspace cases passed in validation-workspace.json; no product change required"
+    },
+    {
+      "name": "Preserved Explore/privacy/booking/Safari regressions",
+      "result": "passed",
+      "evidence": "artifacts/reload-fix-20261015/validation-regression.json:59/59"
+    },
+    {
+      "name": "Actual React reload/cache/security scenarios on Chromium and WebKit",
+      "result": "passed",
+      "evidence": "web-ui-regressions-chromium-final.tap; native-validation/final-scope-webkit.tap; native-validation/final-reload-loop-webkit-90s-v2.tap"
+    },
+    {
+      "name": "Read/write classifier, session fencing and save feedback",
+      "result": "passed",
+      "evidence": "artifacts/reload-fix-20261015/response-policy-settings-regressions.tap:28/28"
+    },
+    {
+      "name": "Claim, settings and service-relay integration",
+      "result": "passed",
+      "evidence": "artifacts/reload-fix-20261015/claim-settings-relay-final-tests.log:41/41"
+    },
+    {
+      "name": "Built application navigation and form retention",
+      "result": "passed",
+      "evidence": "browser-validation.json: Chromium4/4; normal WebKit navigation/DOM/credentials3/3. Separate held-HTTP-EOF startup stress remains intermittent on both baseline and candidate before React executes; it is not marked passed."
+    },
+    {
+      "name": "Final workspace/reload assembled build normal browser flows",
+      "result": "passed",
+      "evidence": "artifacts/reload-fix-20261015/final-build-browser-validation.json: Chromium3/3 and WebKit3/3, source hashes and build ID verified"
+    },
+    {
+      "name": "Actual iOS Simulator WKWebView regression and native archive",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/38775495497",
+      "commit": "26a50ecc664842ee5f8cf425c04022ea80fe12f3",
+      "fixtureSha256": "12219852ba699547d5fc73d97cc4fbf3ff049002c8dcc3ad91c15fe6a511b750"
+    },
+    {
+      "name": "Preserved deployed Explore/location and uploaded native source",
+      "result": "passed",
+      "evidence": "native-validation/assessment.json; release-source-manifest.json; release-receipt.json"
+    }
+  ],
+  "id": "2c799190-a0b0-4765-9f9c-0e889c676d8c",
+  "recordedAt": "2026-10-15T17:42:22.659Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/experience-scope.tsx": "1577f54e831948da9f39e45384a6e9dc5315f85c95de9d2bf0d4fb971b9bf8e1",
+    "components/session-expiry-prompt.tsx": "b8934afeb2dbe203dcf6518e7a28e377e20bd1201efed691a1808f572becb564",
+    "lib/experience-mutations.ts": "e35dbcc187e3e423ca9f5d6fe9af3f2a831305977293d9c8ea9a7203f442a07c",
+    "lib/experience-reload.ts": "f82c32591dc34230ecad90ba24d5e507ee9144b8d403c99e2c7101db30ec656b",
+    "app/pos/settings/actions.ts": "200951a5aa28879fe187a866be818aa7a922e480134b91a82a5ca7f623adfffb",
+    "app/service-relay/actions.ts": "17bcb083ffa0e1eb550cd70e0f4f7cc98dce7c283f4ae227e9e27bb30cad8deb",
+    "tests/experience-reload-loop-ui.test.mjs": "b3abc26dfd74a9cb3840664a8038a25e75791981ffd1564c1de4ffe906794de5",
+    "tests/experience-scope-ui.test.mjs": "ad398496f57d28e8e2f1928a2792af3fec8a4579fa79b4dab456998dc07ca4bb",
+    "tests/experience-write-invalidation.test.mjs": "cef5e33985323a00b6aa57e57b10c6856c045c61f868a8a46db271c2cb4d26b3",
+    "tests/experience-mutations.test.mjs": "e1768d100e671fc296a2cfa416c392dd585c8625586a4839d6261216041c871b",
+    "tests/session-expiry-prompt.test.mjs": "afe368ca3128d0131f41518282a7d2460bd2303deb4cc6f33f9de5cfa213f165",
+    "tests/settings-save-feedback.test.mjs": "0e4866d28e4b59eb905ea4997a3f6208181dc4bc379225481d003e388703dd71",
+    "tests/login-workspace-performance.test.mjs": "eae85042785f8c9716e38b517e9eb0b94c6bc8985998c3cc08b9a8f1405f5afb",
+    "tests/whole-site-navigation-ui.test.mjs": "291c401242107f9ec863ce1fe94d524ace52942f72c341c2ab0c6885b056d589",
+    "tests/market-navigation-race-ui.test.mjs": "d0b121ea026cca9e2112ae2873efce0607280034da3caa37c633923840851acf",
+    "tests/production-startup-stream-ui.test.mjs": "60055fab8a6f506abdd4db1919bbb2ae78209f5095a939d7e866a368287bd51d",
+    "docs/qa/experience-reload-fix-20261015.txt": "0503aba3a431b76fcc2a56ddf400e8d53ad58ec328be7d8f42e06b0facaf8f82"
+  }
+}

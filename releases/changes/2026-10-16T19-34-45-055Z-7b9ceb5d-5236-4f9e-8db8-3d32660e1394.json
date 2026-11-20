@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "ios-testflight-readonly-availability-20261016",
+  "status": "ready",
+  "summary": "Replace the existing status workflow with dispatch-only GET availability checks for an exact build and an existing internal TestFlight group; always save sanitized nonconfirmed receipts. Operational tooling only; no Apple calls, invitations, metadata writes, app changes, or workflow dispatch performed.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/check-testflight-availability.mjs",
+    "ios/scripts/check-testflight-availability.test.mjs",
+    ".github/workflows/reylumi-testflight-status.yml"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\native-distribution-audit\\tooling-frozen"
+  },
+  "validation": [
+    {
+      "name": "GET-only safety, group/version/expiry and sanitized-failure fixtures (9/9)",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-distribution-audit/tooling-tests.log"
+    },
+    {
+      "name": "Node syntax checks for checker and tests",
+      "result": "passed"
+    },
+    {
+      "name": "Workflow YAML syntax, exact build/baseline inputs, contents-read permission, sole GET checker and always-upload artifact invariants",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-distribution-audit/tooling-verification.json"
+    }
+  ],
+  "id": "7b9ceb5d-5236-4f9e-8db8-3d32660e1394",
+  "recordedAt": "2026-10-16T19:34:45.055Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/scripts/check-testflight-availability.mjs": "4a3438357ce6ab9682d61e674acfa03f81308656387a50b8daf555e368f4cbc9",
+    "ios/scripts/check-testflight-availability.test.mjs": "959593402c8c0ee600824290498cac2e44923dd7f908303ccb6f530a73a44e52",
+    ".github/workflows/reylumi-testflight-status.yml": "48426b33d3a88dd7cc85cc6cff8875969a7c0d0321a9a0ca80066ed2c590b172"
+  }
+}

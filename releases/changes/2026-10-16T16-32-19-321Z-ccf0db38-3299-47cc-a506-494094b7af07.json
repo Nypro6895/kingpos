@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "app-local-owner-page-adapters",
+  "status": "needs-integration",
+  "summary": "Package the exact existing staff management, customer CRM/create/edit/detail and payroll views behind named read adapters and original authorized commands.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-owner-page-registry.tsx",
+    "lib/app-local-owner-page-registry-server.ts",
+    "lib/app-local-owner-page-registry.json",
+    "lib/app-local-owner-page-types.ts",
+    "lib/app-local-owner-staff-view.tsx",
+    "lib/app-local-owner-customers-view.tsx",
+    "lib/app-local-owner-customer-detail-view.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "tests/app-local-owner-pages.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\owner-pages-frozen",
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Exact original JSX/helper equivalence and authorization/read adapter tests (6)",
+      "result": "passed",
+      "evidence": "tests/app-local-owner-pages.test.mjs"
+    },
+    {
+      "name": "Targeted ESLint",
+      "result": "passed",
+      "evidence": "0 errors;4 copied-original unused/helper directive warnings"
+    },
+    {
+      "name": "Shared TypeScript",
+      "result": "pending",
+      "evidence": "Own adapter errors resolved; unrelated concurrent app-local-business-server.ts errors remain"
+    },
+    {
+      "name": "Assembled bundle/browser owner page integration",
+      "result": "pending"
+    }
+  ],
+  "id": "ccf0db38-3299-47cc-a506-494094b7af07",
+  "recordedAt": "2026-10-16T16:32:19.321Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

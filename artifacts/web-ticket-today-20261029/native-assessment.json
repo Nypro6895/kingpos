@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-29T10:11:57.972Z",
+  "nativeRequired": false,
+  "sourceDelta": [
+    "app/pos/owner-workspace-frame.tsx"
+  ],
+  "sourceImport": "Only app/(app)/pos/(workspace)/layout.tsx imports this hosted frame",
+  "nativeEntry": "app/local-app/entry.tsx",
+  "actualEsbuildInputs": 841,
+  "hostedFrameInNativeGraph": false,
+  "diagnosticBeforeAfterFiles": 345,
+  "allDiagnosticResourceBytesIdentical": true,
+  "diagnosticBuildId": "ee674c4f443f998bcc0f18902747bbb1f556292af5529aba5d5cedb07a5db246",
+  "productionReadyClaim": false,
+  "nativeSourceRetained": "d20058a06c0c71a04830346b0ad444657bca2acd",
+  "nativeBuildRetained": "1.0.0(67)",
+  "scope": "Diagnostic rebuild with unchanged config and Services pilot OFF proves no bundled bytes change; actual uploaded native67 provenance/235tests/Apple/groups remain separately verified."
+}

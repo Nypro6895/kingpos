@@ -1,5 +1,8 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { SettingsDialogLayer } from "@/app/settings/settings-dialog-layer";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   beginPhoneMfaEnrollmentAction,
   beginTotpEnrollmentAction,
@@ -152,7 +155,7 @@ function StatusBadge({
   children,
   tone = "neutral",
 }: {
-  children: string;
+  children: React.ReactNode;
   tone?: "danger" | "neutral" | "success" | "warning";
 }) {
   return (
@@ -176,7 +179,7 @@ function Field({
 }) {
   return (
     <label className="grid gap-1.5">
-      <span className="text-sm font-semibold text-zinc-950">{label}</span>
+      <span className="text-sm font-semibold text-zinc-950"><WorkspaceText text={label} /></span>
       {children}
     </label>
   );
@@ -191,9 +194,12 @@ function QuickDialogShell({
   onClose: () => void;
   title: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
+    <SettingsDialogLayer onClose={onClose} zIndex={140}>
     <div
-      className="fixed inset-0 z-[140] grid place-items-end bg-zinc-950/35 px-0 sm:place-items-center sm:px-4"
+      className="absolute inset-0 grid place-items-end bg-zinc-950/35 px-0 sm:place-items-center sm:px-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -201,24 +207,26 @@ function QuickDialogShell({
       }}
     >
       <section
-        aria-label={title}
+        aria-label={__vt(title)}
         aria-modal="true"
-        className="max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl outline-none sm:max-w-lg sm:rounded-xl sm:p-5"
+        className="min-h-0 max-h-[min(92dvh,100%)] w-full overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-4 shadow-2xl outline-none sm:max-w-lg sm:rounded-xl sm:p-5"
         role="dialog"
+        tabIndex={-1}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
-          <h3 className="text-lg font-semibold text-zinc-950">{title}</h3>
+          <h3 className="text-lg font-semibold text-zinc-950"><WorkspaceText text={title} /></h3>
           <button
             className="min-h-10 rounded-md px-3 text-sm font-semibold text-zinc-600 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
             onClick={onClose}
             type="button"
           >
-            Close
+            <WorkspaceText text="Close" />
           </button>
         </div>
         {children}
       </section>
     </div>
+    </SettingsDialogLayer>
   );
 }
 
@@ -232,7 +240,9 @@ function QuickActionRow({
   onAction,
   status,
   tone = "neutral",
+  compact = false,
 }: {
+  compact?: boolean;
   actionLabel?: string;
   children?: ReactNode;
   description: string;
@@ -245,17 +255,17 @@ function QuickActionRow({
 }) {
   return (
     <div className="border-b border-zinc-100 px-4 py-3 last:border-b-0">
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-zinc-950">{label}</p>
-            <StatusBadge tone={tone}>{status}</StatusBadge>
+            <p className="text-sm font-semibold text-zinc-950"><WorkspaceText text={label} /></p>
+            {!compact?<StatusBadge tone={tone}><WorkspaceText text={status} /></StatusBadge>:null}
           </div>
-          <p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>
+          {!compact?<p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>:null}
         </div>
         {href ? (
           <Link className={secondaryButtonClassName} href={href}>
-            {actionLabel ?? "Open"}
+            <WorkspaceText text={actionLabel ?? "Open"} />
           </Link>
         ) : onAction ? (
           <button
@@ -266,7 +276,7 @@ function QuickActionRow({
             onClick={onAction}
             type="button"
           >
-            {actionLabel ?? "Edit"}
+            <WorkspaceText text={actionLabel ?? "Edit"} />
           </button>
         ) : null}
       </div>
@@ -299,7 +309,7 @@ function QuickSwitch({
     >
       <span className="min-w-0">
         <span className="block text-sm font-semibold text-zinc-950">
-          {label}
+          <WorkspaceText text={label} />
         </span>
         <span className="mt-0.5 block text-xs leading-5 text-zinc-500">
           {note}
@@ -334,7 +344,7 @@ function SessionMiniList({
   if (preview.length === 0) {
     return (
       <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
-        No active sessions were found.
+        <WorkspaceText text="No active sessions were found." />
       </p>
     );
   }
@@ -349,24 +359,24 @@ function SessionMiniList({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="truncate text-sm font-semibold text-zinc-950">
-                {session.deviceLabel}
+                <WorkspaceText text={session.deviceLabel} />
               </p>
               {session.isCurrent ? (
-                <StatusBadge tone="success">Current</StatusBadge>
+                <StatusBadge tone="success"><WorkspaceText text="Current" /></StatusBadge>
               ) : null}
               {session.trustedAt ? (
-                <StatusBadge tone="neutral">Trusted</StatusBadge>
+                <StatusBadge tone="neutral"><WorkspaceText text="Trusted" /></StatusBadge>
               ) : null}
             </div>
             <p className="mt-1 truncate text-xs font-semibold text-zinc-500">
-              {session.locationLabel} - {relativeTime(session.lastSeenAt)}
+              <WorkspaceText text={session.locationLabel} /> - <WorkspaceText text={relativeTime(session.lastSeenAt)} />
             </p>
           </div>
           <Link
             className="min-h-9 rounded-md px-2 text-sm font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
             href={detailHref}
           >
-            Detail
+            <WorkspaceText text="Detail" />
           </Link>
         </div>
       ))}
@@ -380,8 +390,11 @@ export function LoginSecurityQuickEditor({
   variant = "drawer",
   passwordOnly = false,
 }: LoginSecurityQuickEditorProps) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [dialog, setDialog] = useState<QuickDialog | null>(null);
+  useTransientOverlay(() => setDialog(null), Boolean(dialog));
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [pendingKey, setPendingKey] = useState<PendingKey | null>(null);
@@ -401,9 +414,9 @@ export function LoginSecurityQuickEditor({
 
   if (!overview) {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
-        Login security could not be loaded in this session.
-      </div>
+      <div className="settings-style"><div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
+        <WorkspaceText text="Login security could not be loaded in this session." />
+      </div></div>
     );
   }
 
@@ -685,7 +698,7 @@ export function LoginSecurityQuickEditor({
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="settings-style"><div className="grid gap-4">
       {overview.dataUnavailableReason ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
           {overview.dataUnavailableReason}
@@ -697,7 +710,7 @@ export function LoginSecurityQuickEditor({
           className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"
           role="alert"
         >
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
       {message ? (
@@ -705,7 +718,7 @@ export function LoginSecurityQuickEditor({
           className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800"
           role="status"
         >
-          {message}
+          <WorkspaceText text={message} />
         </p>
       ) : null}
 
@@ -713,19 +726,20 @@ export function LoginSecurityQuickEditor({
         {variant === "page" && !passwordOnly ? (
           <div className="mb-2">
             <h2 className="text-base font-semibold text-zinc-950">
-              Quick actions
+              <WorkspaceText text="Quick actions" />
             </h2>
             <p className="mt-1 text-sm leading-6 text-zinc-500">
-              Open a row, change one thing, save, and stay in context.
+              <WorkspaceText text="Open a row, change one thing, save, and stay in context." />
             </p>
           </div>
         ) : null}
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
           <QuickActionRow
+            compact={passwordOnly}
             actionLabel="Change"
-            description="Update the email password. Other sessions are signed out after saving."
+            description={__vt("Update the email password. Other sessions are signed out after saving.")}
             disabled={isBusy || !overview.account.email}
-            label="Change password"
+            label={__vt("Change password")}
             onAction={() => setDialog("password")}
             status={overview.account.email ? "Available" : "No email password"}
             tone={overview.account.email ? "success" : "warning"}
@@ -734,9 +748,9 @@ export function LoginSecurityQuickEditor({
           {!passwordOnly ? <>
           <QuickActionRow
             actionLabel="Detail"
-            description="A short view of active devices and browsers."
+            description={__vt("A short view of active devices and browsers.")}
             href={`${detailHref}#sessions`}
-            label="Where you're logged in"
+            label={__vt("Where you're logged in")}
             status={`${overview.sessions.length} session${
               overview.sessions.length === 1 ? "" : "s"
             }`}
@@ -755,9 +769,9 @@ export function LoginSecurityQuickEditor({
                   ? "Refresh"
                   : "Enable"
             }
-            description="Remember this device, or remove trust from the current device."
+            description={__vt("Remember this device, or remove trust from the current device.")}
             disabled={isBusy || !currentSession}
-            label="Trusted device"
+            label={__vt("Trusted device")}
             onAction={toggleCurrentDeviceTrust}
             status={currentDeviceTrusted ? "Enabled" : "Not enabled"}
             tone={currentDeviceTrusted ? "success" : "warning"}
@@ -765,9 +779,9 @@ export function LoginSecurityQuickEditor({
 
           <QuickActionRow
             actionLabel={hasVerifiedMfa ? "Manage" : "Enable"}
-            description="Enable SMS/authenticator 2FA or disable an existing method."
+            description={__vt("Enable SMS/authenticator 2FA or disable an existing method.")}
             disabled={isBusy || Boolean(overview.mfa.unavailableReason)}
-            label="Two-factor authentication"
+            label={__vt("Two-factor authentication")}
             onAction={() => {
               if (hasVerifiedMfa) {
                 setDialog("mfa");
@@ -789,18 +803,18 @@ export function LoginSecurityQuickEditor({
 
           <div className="grid gap-2 border-b border-zinc-100 px-4 py-3">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-semibold text-zinc-950">Login alerts</p>
+              <p className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Login alerts" /></p>
               <StatusBadge
                 tone={preferences.loginAlertsEnabled ? "success" : "warning"}
               >
-                {preferences.loginAlertsEnabled ? "On" : "Off"}
+                <WorkspaceText text={preferences.loginAlertsEnabled ? "On" : "Off"} />
               </StatusBadge>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               <QuickSwitch
                 checked={preferences.loginAlertsEnabled}
                 disabled={isBusy}
-                label="In-app alerts"
+                label={__vt("In-app alerts")}
                 note="Save immediately when toggled."
                 onToggle={() =>
                   savePreferencePatch({
@@ -814,7 +828,7 @@ export function LoginSecurityQuickEditor({
                   preferences.smsLoginAlertsEnabled && Boolean(overview.account.phone)
                 }
                 disabled={isBusy || !overview.account.phone}
-                label="SMS alerts"
+                label={__vt("SMS alerts")}
                 note={
                   overview.account.phone
                     ? `Send to ${maskPhone(overview.account.phone)}.`
@@ -832,8 +846,8 @@ export function LoginSecurityQuickEditor({
 
           <QuickActionRow
             actionLabel="Edit"
-            description="Recovery email and phone used for risky login and access recovery."
-            label="Recovery contacts"
+            description={__vt("Recovery email and phone used for risky login and access recovery.")}
+            label={__vt("Recovery contacts")}
             onAction={() => setDialog("recovery-contact")}
             status={recoveryContactStatus}
             tone={recoveryContactStatus === "Saved" ? "success" : "warning"}
@@ -841,9 +855,9 @@ export function LoginSecurityQuickEditor({
 
           <QuickActionRow
             actionLabel="Generate"
-            description="Create one-time backup codes. New codes replace unused old codes."
+            description={__vt("Create one-time backup codes. New codes replace unused old codes.")}
             disabled={isBusy}
-            label="Recovery codes"
+            label={__vt("Recovery codes")}
             onAction={generateRecoveryCodes}
             status={
               overview.recoveryCodes.unused > 0
@@ -855,18 +869,18 @@ export function LoginSecurityQuickEditor({
 
           <QuickActionRow
             actionLabel="Request"
-            description="Open a recovery case for lost access, a lost device, or account takeover."
+            description={__vt("Prepare recovery while signed in, or request help if you lost an email, phone or another device. If signed out everywhere, use the help shown after a failed login.")}
             disabled={isBusy}
-            label="Account recovery"
+            label={__vt("Account recovery")}
             onAction={() => setDialog("recovery-request")}
             status={`${overview.recoveryRequests.length} recent`}
           />
 
           <QuickActionRow
             actionLabel="Start"
-            description="Use this when a password, phone, or device may be compromised."
+            description={__vt("Use this when a password, phone, or device may be compromised.")}
             disabled={isBusy}
-            label="Secure my account"
+            label={__vt("Secure my account")}
             onAction={() => setDialog("secure-account")}
             status="High impact"
             tone="danger"
@@ -880,14 +894,14 @@ export function LoginSecurityQuickEditor({
           className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
           href={detailHref}
         >
-          Open full security setup
+          <WorkspaceText text="Open full security setup" />
         </Link>
       ) : null}
 
       {dialog === "password" ? (
-        <QuickDialogShell onClose={closeDialog} title="Change password">
+        <QuickDialogShell onClose={closeDialog} title={__vt("Change password")}>
           <form className="grid gap-3" onSubmit={submitPassword}>
-            <Field label="Current password">
+            <Field label={__vt("Current password")}>
               <input
                 autoComplete="current-password"
                 className={inputClassName}
@@ -896,7 +910,7 @@ export function LoginSecurityQuickEditor({
                 type="password"
               />
             </Field>
-            <Field label="New password">
+            <Field label={__vt("New password")}>
               <input
                 autoComplete="new-password"
                 className={inputClassName}
@@ -906,7 +920,7 @@ export function LoginSecurityQuickEditor({
                 type="password"
               />
             </Field>
-            <Field label="Confirm new password">
+            <Field label={__vt("Confirm new password")}>
               <input
                 autoComplete="new-password"
                 className={inputClassName}
@@ -922,14 +936,14 @@ export function LoginSecurityQuickEditor({
                 onClick={closeDialog}
                 type="button"
               >
-                Cancel
+                <WorkspaceText text="Cancel" />
               </button>
               <button
                 className={primaryButtonClassName}
                 disabled={isBusy}
                 type="submit"
               >
-                {pendingKey === "password" ? "Saving..." : "Save"}
+                <WorkspaceText text={pendingKey === "password" ? "Saving..." : "Save"} />
               </button>
             </div>
           </form>
@@ -937,9 +951,9 @@ export function LoginSecurityQuickEditor({
       ) : null}
 
       {dialog === "recovery-contact" ? (
-        <QuickDialogShell onClose={closeDialog} title="Recovery contacts">
+        <QuickDialogShell onClose={closeDialog} title={__vt("Recovery contacts")}>
           <form className="grid gap-3" onSubmit={submitRecoveryContact}>
-            <Field label="Recovery email">
+            <Field label={__vt("Recovery email")}>
               <input
                 autoComplete="email"
                 className={inputClassName}
@@ -948,7 +962,7 @@ export function LoginSecurityQuickEditor({
                 type="email"
               />
             </Field>
-            <Field label="Recovery phone">
+            <Field label={__vt("Recovery phone")}>
               <input
                 autoComplete="tel"
                 className={inputClassName}
@@ -963,14 +977,14 @@ export function LoginSecurityQuickEditor({
                 onClick={closeDialog}
                 type="button"
               >
-                Cancel
+                <WorkspaceText text="Cancel" />
               </button>
               <button
                 className={primaryButtonClassName}
                 disabled={isBusy}
                 type="submit"
               >
-                {pendingKey === "preferences" ? "Saving..." : "Save"}
+                <WorkspaceText text={pendingKey === "preferences" ? "Saving..." : "Save"} />
               </button>
             </div>
           </form>
@@ -978,7 +992,7 @@ export function LoginSecurityQuickEditor({
       ) : null}
 
       {dialog === "mfa" ? (
-        <QuickDialogShell onClose={closeDialog} title="Two-factor authentication">
+        <QuickDialogShell onClose={closeDialog} title={__vt("Two-factor authentication")}>
           <div className="grid gap-4">
             {verifiedFactors.length > 0 ? (
               <div className="overflow-hidden rounded-lg border border-zinc-200">
@@ -989,10 +1003,10 @@ export function LoginSecurityQuickEditor({
                   >
                     <div>
                       <p className="text-sm font-semibold text-zinc-950">
-                        {factorLabel(factor)}
+                        <WorkspaceText text={factorLabel(factor)} />
                       </p>
                       <p className="mt-1 text-xs font-semibold text-zinc-500">
-                        Enabled {formatDateTime(factor.createdAt)}
+                        <WorkspaceText text="Enabled" /> <WorkspaceText text={formatDateTime(factor.createdAt)} />
                       </p>
                     </div>
                     <button
@@ -1008,14 +1022,14 @@ export function LoginSecurityQuickEditor({
                       }
                       type="button"
                     >
-                      {pendingKey === "mfa-disable" ? "Disabling..." : "Disable"}
+                      <WorkspaceText text={pendingKey === "mfa-disable" ? "Disabling..." : "Disable"} />
                     </button>
                   </div>
                 ))}
               </div>
             ) : (
               <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
-                No two-factor method is connected.
+                <WorkspaceText text="No two-factor method is connected." />
               </p>
             )}
 
@@ -1026,7 +1040,7 @@ export function LoginSecurityQuickEditor({
                 onClick={beginTotpEnrollment}
                 type="button"
               >
-                {pendingKey === "mfa-begin" ? "Starting..." : "Use authenticator"}
+                <WorkspaceText text={pendingKey === "mfa-begin" ? "Starting..." : "Use authenticator"} />
               </button>
               <button
                 className={secondaryButtonClassName}
@@ -1034,12 +1048,12 @@ export function LoginSecurityQuickEditor({
                 onClick={beginPhoneMfaEnrollment}
                 type="button"
               >
-                {pendingKey === "mfa-phone-begin" ? "Sending..." : "Use SMS"}
+                <WorkspaceText text={pendingKey === "mfa-phone-begin" ? "Sending..." : "Use SMS"} />
               </button>
             </div>
             {!overview.account.phone ? (
               <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
-                Verify a profile phone before using SMS 2FA.
+                <WorkspaceText text="Verify a profile phone before using SMS 2FA." />
               </p>
             ) : null}
 
@@ -1056,7 +1070,7 @@ export function LoginSecurityQuickEditor({
                 {totpEnrollment.qrCode ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    alt="Authenticator QR code"
+                    alt={__vt("Authenticator QR code")}
                     className="h-36 w-36 rounded-md border border-zinc-200 bg-white p-2"
                     src={totpEnrollment.qrCode}
                   />
@@ -1066,7 +1080,7 @@ export function LoginSecurityQuickEditor({
                     {totpEnrollment.secret}
                   </p>
                 ) : null}
-                <Field label="Authenticator code">
+                <Field label={__vt("Authenticator code")}>
                   <input
                     autoComplete="one-time-code"
                     className={inputClassName}
@@ -1081,7 +1095,7 @@ export function LoginSecurityQuickEditor({
                   disabled={isBusy}
                   type="submit"
                 >
-                  {pendingKey === "mfa-verify" ? "Verifying..." : "Enable"}
+                  <WorkspaceText text={pendingKey === "mfa-verify" ? "Verifying..." : "Enable"} />
                 </button>
               </form>
             ) : null}
@@ -1102,9 +1116,9 @@ export function LoginSecurityQuickEditor({
                   value={phoneMfaEnrollment.challengeId}
                 />
                 <p className="text-sm font-semibold text-zinc-950">
-                  Code sent to {phoneMfaEnrollment.phone}
+                  <WorkspaceText text="Code sent to" /> {phoneMfaEnrollment.phone}
                 </p>
-                <Field label="SMS code">
+                <Field label={__vt("SMS code")}>
                   <input
                     autoComplete="one-time-code"
                     className={inputClassName}
@@ -1119,7 +1133,7 @@ export function LoginSecurityQuickEditor({
                   disabled={isBusy}
                   type="submit"
                 >
-                  {pendingKey === "mfa-phone-verify" ? "Verifying..." : "Enable"}
+                  <WorkspaceText text={pendingKey === "mfa-phone-verify" ? "Verifying..." : "Enable"} />
                 </button>
               </form>
             ) : null}
@@ -1128,17 +1142,17 @@ export function LoginSecurityQuickEditor({
       ) : null}
 
       {dialog === "recovery-codes" ? (
-        <QuickDialogShell onClose={closeDialog} title="Recovery codes">
+        <QuickDialogShell onClose={closeDialog} title={__vt("Recovery codes")}>
           <div className="grid gap-3">
             {pendingKey === "recovery-codes" ? (
               <p className="text-sm font-semibold text-zinc-600">
-                Generating codes...
+                <WorkspaceText text="Generating codes..." />
               </p>
             ) : null}
             {recoveryCodes.length > 0 ? (
               <>
                 <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950">
-                  Save these codes now. They will not be shown again.
+                  <WorkspaceText text="Save these codes now. They will not be shown again." />
                 </p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {recoveryCodes.map((code) => (
@@ -1158,28 +1172,28 @@ export function LoginSecurityQuickEditor({
               onClick={generateRecoveryCodes}
               type="button"
             >
-              Generate again
+              <WorkspaceText text="Generate again" />
             </button>
           </div>
         </QuickDialogShell>
       ) : null}
 
       {dialog === "recovery-request" ? (
-        <QuickDialogShell onClose={closeDialog} title="Account recovery">
+        <QuickDialogShell onClose={closeDialog} title={__vt("Account recovery")}>
           <form className="grid gap-3" onSubmit={submitRecoveryRequest}>
-            <Field label="Recovery issue">
+            <Field label={__vt("Recovery issue")}>
               <select
                 className={inputClassName}
                 defaultValue="lost_access"
                 name="request_type"
               >
-                <option value="lost_access">Lost email or phone</option>
-                <option value="lost_device">Lost device</option>
-                <option value="account_compromised">Account taken over</option>
+                <option value="lost_access"><WorkspaceText text="Lost email or phone" /></option>
+                <option value="lost_device"><WorkspaceText text="Lost device" /></option>
+                <option value="account_compromised"><WorkspaceText text="Account taken over" /></option>
               </select>
             </Field>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Contact email">
+              <Field label={__vt("Contact email")}>
                 <input
                   autoComplete="email"
                   className={inputClassName}
@@ -1188,7 +1202,7 @@ export function LoginSecurityQuickEditor({
                   type="email"
                 />
               </Field>
-              <Field label="Contact phone">
+              <Field label={__vt("Contact phone")}>
                 <input
                   autoComplete="tel"
                   className={inputClassName}
@@ -1198,11 +1212,11 @@ export function LoginSecurityQuickEditor({
                 />
               </Field>
             </div>
-            <Field label="Details">
+            <Field label={__vt("Details")}>
               <textarea
                 className={textareaClassName}
                 name="details"
-                placeholder="What happened?"
+                placeholder={__vt("What happened?")}
               />
             </Field>
             <div className="flex justify-end gap-2 pt-2">
@@ -1211,14 +1225,14 @@ export function LoginSecurityQuickEditor({
                 onClick={closeDialog}
                 type="button"
               >
-                Cancel
+                <WorkspaceText text="Cancel" />
               </button>
               <button
                 className={primaryButtonClassName}
                 disabled={isBusy}
                 type="submit"
               >
-                {pendingKey === "recovery-request" ? "Creating..." : "Create"}
+                <WorkspaceText text={pendingKey === "recovery-request" ? "Creating..." : "Create"} />
               </button>
             </div>
           </form>
@@ -1226,10 +1240,10 @@ export function LoginSecurityQuickEditor({
       ) : null}
 
       {dialog === "secure-account" ? (
-        <QuickDialogShell onClose={closeDialog} title="Secure my account">
+        <QuickDialogShell onClose={closeDialog} title={__vt("Secure my account")}>
           <form className="grid gap-3" onSubmit={submitSecureAccount}>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Safe contact email">
+              <Field label={__vt("Safe contact email")}>
                 <input
                   autoComplete="email"
                   className={inputClassName}
@@ -1238,7 +1252,7 @@ export function LoginSecurityQuickEditor({
                   type="email"
                 />
               </Field>
-              <Field label="Safe contact phone">
+              <Field label={__vt("Safe contact phone")}>
                 <input
                   autoComplete="tel"
                   className={inputClassName}
@@ -1248,11 +1262,11 @@ export function LoginSecurityQuickEditor({
                 />
               </Field>
             </div>
-            <Field label="What looks wrong?">
+            <Field label={__vt("What looks wrong?")}>
               <textarea
                 className={textareaClassName}
                 name="details"
-                placeholder="Unknown login, lost phone, password shared..."
+                placeholder={__vt("Unknown login, lost phone, password shared...")}
               />
             </Field>
             <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-between">
@@ -1261,19 +1275,19 @@ export function LoginSecurityQuickEditor({
                 onClick={() => setDialog("recovery-contact")}
                 type="button"
               >
-                Edit recovery contact
+                <WorkspaceText text="Edit recovery contact" />
               </button>
               <button
                 className={dangerButtonClassName}
                 disabled={isBusy}
                 type="submit"
               >
-                {pendingKey === "secure-account" ? "Securing..." : "Start"}
+                <WorkspaceText text={pendingKey === "secure-account" ? "Securing..." : "Start"} />
               </button>
             </div>
           </form>
         </QuickDialogShell>
       ) : null}
-    </div>
+    </div></div>
   );
 }

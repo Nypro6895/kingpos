@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "owner-forum-20261103",
+  "status": "ready",
+  "summary": "Forum follow-up: moderation queues ignore reading filters; delayed publication respects navigation. Core forum is already published in baseline dpl_2B6ifdfLS4T1pxBjGLzoP1sBM1qd.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/forum/forum.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\owner-forum-20261103\\artifacts\\owner-forum\\polish\\frozen-ready",
+    "commit": "c5e79c4b9cfd7e5c6644d60330215658e0df83e2",
+    "baselineDeploymentId": "dpl_2B6ifdfLS4T1pxBjGLzoP1sBM1qd"
+  },
+  "validation": [
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/polish/build.txt"
+    },
+    {
+      "name": "Browser regression tests including filter isolation and delayed submission",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/browser-tests-final.txt"
+    },
+    {
+      "name": "Focused lint",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/lint-final.txt"
+    }
+  ],
+  "dependencies": [],
+  "id": "90d55dcb-1144-4b11-9e85-da933e4a8a15",
+  "recordedAt": "2026-11-03T18:26:08.811Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/forum/forum.tsx": "a0aa9be5e45ae55fa7bc8a6877354ecda85136f52508196d37b1371bd51d93d2"
+  }
+}

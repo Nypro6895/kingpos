@@ -1,0 +1,69 @@
+{
+  "kind": "change",
+  "changeId": "personal-qr-explicit-app-handoff-20261030",
+  "status": "ready",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Correct actual73 warm/cold Safari handoff loss:queue exact hosted-only /qr until scene attachment,retain installed controller and text exit;verified signed replacement on actual TestFlight device",
+  "files": [
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Reylumi.entitlements",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\repair-ready-source",
+    "commit": "9f2244340a0d47737021ac40abea738fed4e2f6c"
+  },
+  "supersedesEvents": [
+    "1f826618-044d-416e-b35f-616e805f2957"
+  ],
+  "dependencies": [
+    "customer-display-qr-fallback-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Exact source-bound238 runtime XCTest cases14isolated hosts,signed archive,upload accepted",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/native-verified.json"
+    },
+    {
+      "name": "AppleVALID and both existing TestFlight groups",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/availability-verified.json"
+    },
+    {
+      "name": "Actual TestFlight Safari Open app warm+cold reaches correct salon catalog before Confirm",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/physical74-verified.json"
+    },
+    {
+      "name": "Live web3655exactfiles and actual refreshed Portable readable QR card decoded",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/web-live-source-verified.json; artifacts/release-20261030/portable-live-qa.json"
+    }
+  ],
+  "releaseLimits": [
+    "Explicit custom scheme and web fallback only;Associated Domains capability/profile not changed",
+    "No full Camera/login/signup/repeat scan or App Store acceptance claimed"
+  ],
+  "id": "a9e10055-7b94-4d66-924d-6d383777ce9e",
+  "recordedAt": "2026-10-30T08:07:21.405Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "fileHashes": {
+    "ios/Reylumi/NavigationPolicy.swift": "f792d414071b559c971ef0438f602557d777c043caea47744a08a108a915ceb1",
+    "ios/Reylumi/ReylumiApp.swift": "a28551eb26077fd44d2bb9a8292af4705e586ce18f2834db6116daaf87fbcb63",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "0ae286ad476ab0566f451d503eaa59996a04a430165dcfecb16085999b9aa314",
+    "ios/Reylumi/ReylumiViewController.swift": "ded2d048df994a11f1428261dae03d859db3d92f0e9ddb7f5f0310a88bbe1288",
+    "ios/Reylumi/Reylumi.entitlements": "5347aca90c4c9744091f4893ec0677281a519b5d28b76044270c16f3c677f96e",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "4147c641ccf1322793395024e5ae5dd0a1fd643755544d5498e289d3976b881f",
+    "ios/project.yml": "fb9693581bbbfb648b3c01a1faf852442356f6c2df31fa43979e4d54701e31eb",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "a3fadd06727e1011b3b96f2237b96053872e3787a7cd8b8dd9428e94c093bcf0"
+  }
+}

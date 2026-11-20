@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "pending-release-integration-20261023",
+  "status": "ready",
+  "summary": "Validated Owner Reports navigation release source. Customer identity excluded: full-schema acceptance cannot execute because local Docker fails during startup; no Customer migrations or merge operation included. Preserve Market and Services exclusions.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pending-release-20261023\\frozen-source",
+    "baselineDeploymentId": "dpl_Fhgc3cDW4WN8DiSXC3cBPZDtFq5J"
+  },
+  "validation": [
+    {
+      "name": "11 navigation and notification regressions on assembled source",
+      "result": "passed",
+      "evidence": "node scripts/test.mjs absolute source tests; 11/11 passed"
+    },
+    {
+      "name": "Scoped ESLint on assembled navigation-shell",
+      "result": "passed",
+      "evidence": "npx eslint app/navigation-shell.tsx; exit 0"
+    },
+    {
+      "name": "Exact baseline integration and native import review",
+      "result": "passed",
+      "evidence": "Three-way merge against original task before; app-local shell imports NavigationShell. Hosted full build and native CI remain release gates."
+    }
+  ],
+  "dependencies": [
+    "owner-bottom-reports-20261023"
+  ],
+  "id": "ffcb843d-c842-4b15-9e96-a5464da7876d",
+  "recordedAt": "2026-10-23T15:12:45.746Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/navigation-shell.tsx": "adc7c520ac848b12a9d86e4d48b634f573bdc4ba9b950c3dbf6f4986cbf952ed"
+  }
+}

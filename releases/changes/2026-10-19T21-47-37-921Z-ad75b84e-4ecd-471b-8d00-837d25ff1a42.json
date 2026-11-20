@@ -1,0 +1,34 @@
+{
+  "dependencies": [],
+  "kind": "change",
+  "summary": "Repair iOS session and guest transitions, stale-scope authority recovery, and role handoff while preserving server permissions and business commands; no deployment",
+  "validation": [
+    {
+      "name": "Regressions, native tests/archive, web build and independent review",
+      "result": "pending"
+    }
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "components/app-local-session-expiry-prompt.tsx",
+    "app/local-app/entry.tsx",
+    "lib/app-local-context-recovery.ts",
+    "lib/app-local-resource.ts"
+  ],
+  "source": {
+    "commit": "1647461cd8e820f07da2dcc3048c665fbad32842",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/ios-trace-release-20261019/frozen-1647461"
+  },
+  "status": "working",
+  "changeId": "ios-session-role-stability-20261019",
+  "id": "ad75b84e-4ecd-471b-8d00-837d25ff1a42",
+  "recordedAt": "2026-10-19T21:47:37.921Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-session-role-stability-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

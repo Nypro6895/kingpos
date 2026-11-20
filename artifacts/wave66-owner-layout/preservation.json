@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-29T09:17:07.015Z",
+  "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710",
+  "baselineWeb": "8ede4591f6ad77b7ec072e4a14cb40f33db1072f",
+  "baselineNative": "f4e6104fab5ecf2468b7ff624f5e9da9673cdd6b",
+  "selected": 114,
+  "webDelta": 114,
+  "nativeDelta": 126,
+  "preservedCompatibleWebSecurityFiles": [
+    "app/(app)/admin/post-safety/spam/page.tsx",
+    "lib/abuse-server.ts",
+    "lib/post-comments.ts",
+    "lib/vietnamese-workspace-copy.json",
+    "supabase/migrations/20261029021000_social_monitor_only.sql",
+    "tests/abuse-prevention.integration.test.mjs",
+    "tests/abuse-signals.test.mjs",
+    "tests/comment-idempotency-runtime.test.mjs",
+    "tests/fixtures/social-monitor-apply.sql",
+    "tests/fixtures/social-monitor-production-functions.json",
+    "tests/social-monitor-only.integration.test.mjs",
+    "tests/social-monitor-server.test.mjs"
+  ],
+  "canonicalFilesByteUnchanged": [
+    "lib/payroll.ts",
+    "app/payroll/actions.ts",
+    "types/payroll.ts",
+    "app/payroll/payroll-change-history.tsx",
+    "lib/payroll-live-history-presentation.ts",
+    "lib/abuse-server.ts",
+    "lib/post-comments.ts",
+    "app/(app)/admin/post-safety/spam/page.tsx",
+    "lib/vietnamese-workspace-copy.json"
+  ],
+  "unexpectedWeb": [],
+  "unexpectedNative": [],
+  "ownerLayout": {
+    "topAdd": true,
+    "topReset": true,
+    "bottomServicesPencil": true
+  },
+  "developerMarketExcluded": true,
+  "unfinishedPayrollHistoryExcluded": true
+}

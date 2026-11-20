@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "store-operator-contact-20261120",
+  "status": "working",
+  "summary": "Expose the confirmed Reylumi LLC operator and existing support email on initial public Support and Contact pages; prepare source-bound Store facts without changing legal promises or contact workflows.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/public-support-landing.tsx",
+    "app/(legal)/contact-support/page.tsx",
+    "docs/store-operator-contact-20261120.md"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/store-operator-contact-20261120-r1",
+    "commit": "51fcd99b22206c7128c67507e5599ad98d431afa"
+  },
+  "validation": [
+    {
+      "name": "Fresh current-source and official Apple Support URL audit",
+      "result": "passed",
+      "evidence": "Existing public pages do not display the confirmed support email before form submission. This is a narrow contact-information addition; no provider operation or redesign."
+    },
+    {
+      "name": "Scoped lint and frozen patch review",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "legal-entry-scroll-target-20261120"
+  ],
+  "id": "83ece892-1e93-41d7-a0c1-c6bb4a819fa6",
+  "recordedAt": "2026-11-20T05:59:43.811Z",
+  "worktree": "C:\\Reylumi-worktrees\\store-operator-contact-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

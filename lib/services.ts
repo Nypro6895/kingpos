@@ -21,7 +21,7 @@ import type {
 import type { Staff } from "@/types/staff";
 
 export const SERVICE_SELECT =
-  "id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
+  "id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at, booking_parent_service_id, booking_add_on_group";
 const SERVICE_ADD_ON_LINK_SELECT =
   "id, parent_service_id, add_on_service_id, is_active, display_order";
 
@@ -135,8 +135,14 @@ export async function getCurrentSalonServicesWorkspace(
       onlineBookingEnabled: member.online_booking_enabled,
     }),
   );
-  const services = rawServices.map((service) => ({
+  const services = rawServices.filter(service => !service.booking_parent_service_id).map((service) => ({
     ...service,
+    bookingAddOns: addOnLinks.filter(link => link.parent_service_id === service.id && link.is_active)
+      .flatMap(link => {
+        const child = rawServices.find(candidate => candidate.id === link.add_on_service_id);
+        return child ? [{ serviceId: child.id, name: child.name, basePrice: Number(child.base_price),
+          durationMinutes: child.duration_minutes, group: child.booking_add_on_group ?? "many" as const }] : [];
+      }),
     addOnServiceIds: addOnLinks
       .filter(
         (link) => link.parent_service_id === service.id && link.is_active,
@@ -194,9 +200,13 @@ export async function saveServiceConfigurations(inputs: ServiceConfigInput[]) {
     throw new Error("Each service can appear only once in a save batch.");
   }
 
-  const { data, error } = await supabase.rpc("save_service_config_batch", {
+  const { data, error } = await supabase.rpc("save_owned_service_config_batch", {
     p_configs: inputs.map((input) => ({
       add_on_service_ids: input.addOnServiceIds,
+      ...(input.bookingAddOns !== undefined ? { booking_add_ons: input.bookingAddOns.map(item => ({
+        service_id: item.serviceId || null, name: item.name.trim(), base_price: item.basePrice,
+        duration_minutes: item.durationMinutes, selection_group: item.group,
+      })) } : {}),
       base_price: input.basePrice,
       booking_staff_ids: input.bookingStaffIds,
       category: input.category?.trim() || null,

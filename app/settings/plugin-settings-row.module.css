@@ -1,0 +1,3 @@
+.active { color: #15803d; font-size: 12px; }
+.links { display: flex; flex-wrap: wrap; gap: 12px; margin-left: auto; font-size: 13px; }
+.links a { color: #3730a3; text-decoration: underline; min-height: 44px; display: inline-flex; align-items: center; }

@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-29T20:55:47.907Z",
+  "commit": "3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631",
+  "rows": [
+    {
+      "id": "4c5e1651-5a06-44dc-ab48-959d2bf3cff2",
+      "changeId": "pos-status-main-only-20261029",
+      "files": 4,
+      "mismatches": []
+    },
+    {
+      "id": "3d8fa869-b8fd-4c64-af8f-b8d6ec7dffe8",
+      "changeId": "native-wk-fixture-resource-release-20261029",
+      "files": 2,
+      "mismatches": []
+    }
+  ]
+}

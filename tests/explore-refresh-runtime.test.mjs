@@ -16,6 +16,7 @@ function harness() {
       return [snapshot, next => { snapshot = next; changed = true; }];
     } };
     if (name === "react/jsx-runtime") return { jsx: (type, props, key) => ({ type, props, key }) };
+    if (name === "@/components/experience-scope") return { useExperienceScope: () => null };
     return {};
   } });
   return props => {

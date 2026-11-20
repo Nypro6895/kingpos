@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "ios-commerce-return-acceptance-20261118",
+  "status": "working",
+  "summary": "Expand approved commerce scope to preserve webhook retry when ad-credit expiry update fails",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/market-payment-return.ts",
+    "app/market/payment-return-actions.ts",
+    "tests/ios-commerce-return-acceptance.test.mjs",
+    "docs/ios-commerce-implementation-20261118.md",
+    "lib/campaign-payments.ts"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26"
+  },
+  "validation": [
+    {
+      "name": "Focused synthetic commerce acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "priorWorkingEvent": "46c240a3-db03-4ef5-aef7-8075149f3bcf",
+  "id": "69ff4362-bc6c-4ffa-b031-b5b75834f059",
+  "recordedAt": "2026-11-18T21:03:56.705Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

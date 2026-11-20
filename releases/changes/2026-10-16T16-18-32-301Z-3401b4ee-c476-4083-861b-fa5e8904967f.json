@@ -1,0 +1,32 @@
+{
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "kind": "change",
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Closing read exact adapter regression"
+    }
+  ],
+  "summary": "Add the original owner daily closing GET used after financial correction, preserving existing authority and response",
+  "files": [
+    "lib/app-local-http-client.ts",
+    "lib/app-local-http-server.ts",
+    "tests/app-local-http-adapters.test.mjs"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "status": "working",
+  "changeId": "app-local-owner-http-20261016",
+  "id": "3401b4ee-c476-4083-861b-fa5e8904967f",
+  "recordedAt": "2026-10-16T16:18:32.301Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

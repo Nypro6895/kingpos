@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "local-first-pos-staff-20261016",
+  "status": "working",
+  "summary": "Implement authorized local-first POS/staff and role-scoped customer/read-model persistence, safe offline bootstrap, reconnect/background reconciliation; preserve financial rules; web and iOS release requested.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/portable-operations.ts",
+    "lib/experience-resource-cache.ts",
+    "lib/use-live-experience-refresh.ts",
+    "components/experience-scope.tsx",
+    "ios/Reylumi/ReylumiViewController.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+    "commit": "94f0b1408b83cc15ef64acbdf401ec72a5f79369"
+  },
+  "validation": [
+    {
+      "name": "Durable offline/restart/account/mutation regression and actual assembled build",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "77f7f668-b357-467d-ba32-deda7f9180ea",
+  "recordedAt": "2026-10-16T03:34:23.418Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

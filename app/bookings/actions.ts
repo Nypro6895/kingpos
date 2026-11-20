@@ -167,8 +167,8 @@ function failure(
   options?: { code?: string; field?: string },
 ): BookingActionResult {
   return {
-    code: options?.code,
-    field: options?.field,
+    ...(options?.code ? { code: options.code } : {}),
+    ...(options?.field ? { field: options.field } : {}),
     message,
     ok: false,
   };
@@ -1247,6 +1247,7 @@ export async function updateBookingSettingsAction(
     }
 
     revalidatePath("/bookings");
+    revalidatePath(`/book/${context.data.salon.id}`);
     after(() => broadcastPosStaffChange(context.data.salon.id, "booking"));
     return success("Booking settings saved.");
   } catch (error) {
@@ -1255,4 +1256,27 @@ export async function updateBookingSettingsAction(
       { code: "database_error" },
     );
   }
+}
+
+/** Monthly markers use the same booking view permission and salon clock as the agenda. */
+export async function readBookingMonthCounts(month: string): Promise<{counts?: Record<string,number>; error?: string}> {
+  try {
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw Error("Choose a valid month.");
+    const context = await getCurrentBusinessContext();
+    await requirePermission(BOOKING_PERMISSIONS.view, context);
+    if (!isSalonManageContext(context) || !context.currentSalon) throw Error("Salon access required.");
+    const { getContextBusinessTimezone } = await import("@/lib/salon-business-clock");
+    const timezone = await getContextBusinessTimezone(context);
+    const db = await createAuthenticatedSupabaseServerClient();
+    if (!db) throw Error("Reconnect to load booking dates.");
+    const { zonedDateTimeToUtcIso } = await import("@/lib/bookings");
+    const [year, number] = month.split("-").map(Number);
+    const next = new Date(Date.UTC(year, number, 1)).toISOString().slice(0,10);
+    const {data,error} = await db.from("bookings").select("start_at").eq("salon_id",context.currentSalon.id).not("status","in","(cancelled,no_show)").gte("start_at",zonedDateTimeToUtcIso({date:month+"-01",time:"00:00",timeZone:timezone})).lt("start_at",zonedDateTimeToUtcIso({date:next,time:"00:00",timeZone:timezone})).limit(5001);
+    if(error || !data || data.length>5000) throw Error("Booking markers could not be loaded.");
+    const counts: Record<string,number> = {};
+    const formatter = new Intl.DateTimeFormat("en-CA",{timeZone:timezone,year:"numeric",month:"2-digit",day:"2-digit"});
+    for(const row of data){const date=formatter.format(new Date(row.start_at));counts[date]=(counts[date]??0)+1;}
+    return {counts};
+  }catch(error){return {error:error instanceof Error?error.message:"Booking markers could not be loaded."};}
 }

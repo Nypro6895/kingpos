@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "openai-photo-consented-wiring-20261118",
+  "status": "needs-integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Reconciled obsolete provider/key/consent-UI blockers after owner manual setup, actual benign-image acceptance and approved UI; exact frozen source still awaits combined hosted/native integration",
+  "files": [
+    "lib/beauty.ts",
+    "lib/salon-profile.ts",
+    "types/beauty.ts",
+    "lib/legal-policies.ts",
+    "tests/public-photo-consented-wiring.test.mjs",
+    "docs/openai-photo-consented-wiring-20261118.md",
+    "releases/changes/2026-11-18T21-27-10-199Z-ae846731-88d6-4cef-b8d9-7df8d44c398c.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-store-completion-20261118\\photo-gates-reconciled-source",
+    "sourceSha256": "d2ab276339f7cc1b98e7fa7efcf404dc96422ae70a7b8cd67d49844c4d6b2853",
+    "manifest": "artifacts/ios-store-completion-20261118/photo-gates-reconciled-manifest.json"
+  },
+  "dependencies": [
+    "public-image-safety-20261116",
+    "openai-public-photo-verifier-20261118",
+    "public-photo-processing-consent-20261118",
+    "ios-privacy-terms-implementation-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Owner selected OpenAI and manually saved the dedicated local key outside Git; no renewed setup request",
+      "result": "passed",
+      "evidence": "docs/openai-photo-live-acceptance-20261118.md"
+    },
+    {
+      "name": "Actual adapter single benign synthetic-image probe; connectivity/schema/verdict only, not accuracy or latency guarantee",
+      "result": "passed",
+      "evidence": "artifacts/openai-photo-live-acceptance-20261118/acceptance.json"
+    },
+    {
+      "name": "Owner-approved scoped Beauty/Salon photo permission UI and immutable retry",
+      "result": "passed",
+      "evidence": "docs/ios-approved-ui-implementation-20261118.md"
+    },
+    {
+      "name": "Exact-source assembled Next/TypeScript/offline-assets build",
+      "result": "passed",
+      "evidence": "artifacts/ios-steps-234-20261118/combined-build-result-r10.json"
+    },
+    {
+      "name": "Hosted environment/provider operations and final native/device/Store acceptance",
+      "result": "pending",
+      "evidence": "docs/ios-store-completion-20261118.md"
+    }
+  ],
+  "id": "6af74d91-5e61-42df-bed4-e8e60a273a49",
+  "recordedAt": "2026-11-19T05:51:37.629Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

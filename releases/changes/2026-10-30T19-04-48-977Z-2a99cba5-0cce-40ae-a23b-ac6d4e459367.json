@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "gift-entry-links-20261030",
+  "status": "ready",
+  "summary": "Complete original first-party Gift entry links in Account and salon profile using narrow additions; no financial, profile layout or Market change.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/account/page.tsx",
+    "app/salon-profile/salon-profile-view.tsx"
+  ],
+  "dependencies": [
+    "gift-reward-sale-integration-20261030"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030\\artifacts\\gift-sale-integration-20261030\\entry-source"
+  },
+  "validation": [
+    {
+      "name": "Fresh production build/TypeScript after narrow entry links",
+      "result": "passed",
+      "evidence": "artifacts/gift-sale-integration-20261030/build-entry-links.log"
+    },
+    {
+      "name": "Exact original Gift source links integrated without wholesale older profile overwrite",
+      "result": "passed",
+      "evidence": "artifacts/gift-sale-integration-20261030/add-gift-entry-links.mjs"
+    },
+    {
+      "name": "Native assessment: bundled salon view requires revised binary",
+      "result": "passed"
+    }
+  ],
+  "id": "2a99cba5-0cce-40ae-a23b-ac6d4e459367",
+  "recordedAt": "2026-10-30T19:04:48.977Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/account/page.tsx": "9cd09e734cc5272b6dd467ca6d4c45d00e5d9157e593db3011b3c92fa3ddb4e4",
+    "app/salon-profile/salon-profile-view.tsx": "9bd8ef9d8cdb6f601eb9766c06de0b6b974440c3c0c86b8658b2435ad8fa3e64"
+  }
+}

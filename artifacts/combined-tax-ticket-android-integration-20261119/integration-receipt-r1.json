@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "kind": "local-scoped-integration-provenance",
+  "verifiedAt": "2026-11-19T06:32:46.913Z",
+  "baselineCommit": "57c18befbc33add98d90cb9dffc1fd431e889c7b",
+  "upstreamProductionProductCommit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+  "storeAggregate": "afe80ef",
+  "productMutationsOnly": "Selected frozen5pack scopes plus explicit Ticket presentation reconciliation and synthetic regressions.",
+  "protectedBaseline": {
+    "allMatch": true,
+    "rows": [
+      {
+        "file": "supabase/migrations/20261116210000_tax_profile_account_erasure.sql",
+        "baselineSha256": "468c13b9e735ae3c3ec07a79060b96db57881ed015a22814e7dbdec56000f2c7",
+        "currentSha256": "468c13b9e735ae3c3ec07a79060b96db57881ed015a22814e7dbdec56000f2c7"
+      },
+      {
+        "file": "supabase/migrations/20261116211000_lifecycle_export_expiry.sql",
+        "baselineSha256": "39811d080e7b7c6968b54c3d94e8d3100512a70354e5d57e346ba30b1966e8f6",
+        "currentSha256": "39811d080e7b7c6968b54c3d94e8d3100512a70354e5d57e346ba30b1966e8f6"
+      },
+      {
+        "file": "supabase/migrations/20261116215000_retained_storage_ownership.sql",
+        "baselineSha256": "c5d3708079ae32d3da93160322fe1be78bd3a5166e98a242c304374e37e34389",
+        "currentSha256": "c5d3708079ae32d3da93160322fe1be78bd3a5166e98a242c304374e37e34389"
+      },
+      {
+        "file": "supabase/migrations/20261116220000_public_image_safety.sql",
+        "baselineSha256": "05d16dd4243f83fd0bb8148d1291c3cb3c7ee27bb90a3076d3424b34b45870d2",
+        "currentSha256": "05d16dd4243f83fd0bb8148d1291c3cb3c7ee27bb90a3076d3424b34b45870d2"
+      },
+      {
+        "file": "supabase/migrations/20261116221000_salon_post_submission.sql",
+        "baselineSha256": "e4f2e0c3ee9fb355ed8fa72cf0565bb09cee32c6e71b00c557209a5bdd0df2fa",
+        "currentSha256": "e4f2e0c3ee9fb355ed8fa72cf0565bb09cee32c6e71b00c557209a5bdd0df2fa"
+      },
+      {
+        "file": "supabase/migrations/20261118210000_moderation_operations.sql",
+        "baselineSha256": "cfade24178bbc50836b7ffd1ff97557e55e033965ccea76b9ebcf568812b30b2",
+        "currentSha256": "cfade24178bbc50836b7ffd1ff97557e55e033965ccea76b9ebcf568812b30b2"
+      },
+      {
+        "file": "supabase/migrations/20261118220000_public_post_media_deletion.sql",
+        "baselineSha256": "0892e6467d5a2b0b5837ad4bd10401fa43d969b789a27e1a2f5031ba13a61c93",
+        "currentSha256": "0892e6467d5a2b0b5837ad4bd10401fa43d969b789a27e1a2f5031ba13a61c93"
+      },
+      {
+        "file": "supabase/migrations/20261118230000_admin_exact_text_moderation.sql",
+        "baselineSha256": "ebe4e2970a3e0a1a99ea6eca86b59ab7fe1af516d40eb47ff151a7428b108572",
+        "currentSha256": "ebe4e2970a3e0a1a99ea6eca86b59ab7fe1af516d40eb47ff151a7428b108572"
+      },
+      {
+        "file": "supabase/migrations/20261119010000_rights_image_evidence.sql",
+        "baselineSha256": "d27e3c7dc3dcb6b1c38e4bcc1cb058d032a4d5245c00ca1c5623c469a94db007",
+        "currentSha256": "d27e3c7dc3dcb6b1c38e4bcc1cb058d032a4d5245c00ca1c5623c469a94db007"
+      },
+      {
+        "file": "supabase/migrations/20261119011000_rights_case_evidence_query.sql",
+        "baselineSha256": "af445c6fdd00bbd3965c9af8002f8dddd446fea159a44c50bf2aaf69df3c3b5c",
+        "currentSha256": "af445c6fdd00bbd3965c9af8002f8dddd446fea159a44c50bf2aaf69df3c3b5c"
+      },
+      {
+        "file": "supabase/migrations/20261119020000_ad_reporting_transparency.sql",
+        "baselineSha256": "7d92216cdfab417a41b464bb392b403c36cff846e83e096f6c33ebcc23b97d93",
+        "currentSha256": "7d92216cdfab417a41b464bb392b403c36cff846e83e096f6c33ebcc23b97d93"
+      },
+      {
+        "file": "supabase/migrations/20261119021000_owner_ad_disclosure_trace.sql",
+        "baselineSha256": "9ef38d37e8966ff9781bd2aa79965b08cb8c5dec73f7d68cbfa0a65b70d0c396",
+        "currentSha256": "9ef38d37e8966ff9781bd2aa79965b08cb8c5dec73f7d68cbfa0a65b70d0c396"
+      },
+      {
+        "file": "supabase/migrations/20261119022000_platform_ad_disclosure_trace.sql",
+        "baselineSha256": "b2e21c141864a6863b725d98a703cbce0d080451c7c11e4a6afdff13a79ba799",
+        "currentSha256": "b2e21c141864a6863b725d98a703cbce0d080451c7c11e4a6afdff13a79ba799"
+      },
+      {
+        "file": "lib/pos-ticket-financial-view.ts",
+        "baselineSha256": "183acae116c5f72eae7e5a80bbe148a61f685e09cda65350d41fb8d8aa772533",
+        "currentSha256": "183acae116c5f72eae7e5a80bbe148a61f685e09cda65350d41fb8d8aa772533"
+      },
+      {
+        "file": "lib/pos-ticket-calculations.ts",
+        "baselineSha256": "3e261c970e5a8b49fb3e2c8dc3936be68b66627a3afe772e9f548b9401da9e56",
+        "currentSha256": "3e261c970e5a8b49fb3e2c8dc3936be68b66627a3afe772e9f548b9401da9e56"
+      },
+      {
+        "file": "lib/pos-ticket-receipt.ts",
+        "baselineSha256": "60a0af2f33f3542cbd0fb352d3bab2ead0de9e0dc107f362852be0d0643f6282",
+        "currentSha256": "60a0af2f33f3542cbd0fb352d3bab2ead0de9e0dc107f362852be0d0643f6282"
+      },
+      {
+        "file": "app/pos-tickets/actions.ts",
+        "baselineSha256": "9c9c64ede9a4b88c35c3927218105f70a905a7af13795ffb05e75b815a26416d",
+        "currentSha256": "9c9c64ede9a4b88c35c3927218105f70a905a7af13795ffb05e75b815a26416d"
+      },
+      {
+        "file": "desktop/package.json",
+        "baselineSha256": "c31f6deb2d6e13090de82defcd387ee6c77da0717ca5d71181bb53908f4e821f",
+        "currentSha256": "c31f6deb2d6e13090de82defcd387ee6c77da0717ca5d71181bb53908f4e821f"
+      }
+    ]
+  },
+  "desktopVersion": "0.7.6",
+  "generatedIosBundleChanges": [],
+  "schema": {
+    "staticFunctionCollision": "none between selected Tax2 and Store13 named/direct/guarded function targets",
+    "combinedReplay": "pending coordinator; no schema/provider operations performed"
+  },
+  "validation": {
+    "nodeTests": {
+      "pass": 151,
+      "fail": 0,
+      "skip": 0,
+      "evidence": "scoped-node-tests-freeze.log"
+    },
+    "actualComponentBrowser": {
+      "checks": 5,
+      "passed": true,
+      "evidence": "browser/result.json",
+      "onlySyntheticTransport": true,
+      "physicalAcceptance": false
+    },
+    "nativeHostedDestination": {
+      "passed": true,
+      "test": "actual native registry and hosted transport preserve Edit plus the exact safe return query",
+      "syntheticTransport": true
+    }
+  },
+  "native": {
+    "generatedResourcesExcluded": 26,
+    "regenerateAfterFinalSource": true,
+    "windowsVersionPreserved": "0.7.6",
+    "newWindowsDistributionVersionDecision": "coordinator: later release packaging only",
+    "ticketPresentation": {
+      "inputTicket19Channel": "web",
+      "nativePlainTicket": "older AppLocalTicketDetail + new receipt controls",
+      "editOrReturnContext": "existing host.openOnline fallback, source traced; hosted physical acceptance pending",
+      "queryGuardPreserved": true,
+      "presentationParity": "Approved phase boundary: web professional + existing secure hosted editor; plain native older renderer remains; no query gate widening.",
+      "queryDestinationPreserved": true
+    }
+  },
+  "externalWrites": false,
+  "inputs": [
+    {
+      "eventId": "850780e8-728c-4369-a43a-5f371ba9421f",
+      "changeId": "owner-tax-readonly-mirror-20261114",
+      "declaredBase": "23e66abd5a197d66fd9d2e9fbb358b160af06307",
+      "sourceCommit": "3f9fbd1532447ed4120f9ffb5d3a9b01d3951e2c",
+      "patchSha256": "852d00508124779ac82473ab492a323715d654c9e2b00a59b1b7125e5536bf53",
+      "scopeFiles": 20,
+      "excludedGenerated": 0
+    },
+    {
+      "eventId": "77387343-3f01-4ddb-a518-e859492e7d6e",
+      "changeId": "tax-shared-figures-20261117",
+      "declaredBase": "4d1e22d60d2203a557ec015a8cd7ea8529a9f590",
+      "sourceCommit": "a0de2f7190a65b6320b92e69bdf93f2248efc368",
+      "patchSha256": "df5b21b99454673ab858094bccc57e30368818204309826ef20f555c0ac8d94a",
+      "scopeFiles": 43,
+      "excludedGenerated": 0
+    },
+    {
+      "eventId": "0608d5da-48de-4ef5-ba49-67e90d234dcf",
+      "changeId": "android-windows-qa-six-fixes-20261117",
+      "declaredBase": "23e66abd5a197d66fd9d2e9fbb358b160af06307",
+      "sourceCommit": "2d7d0930ae0d2cff659874611e0ecaa4dbb565e1",
+      "patchSha256": "eeeeed477384f4116d788717192374367476e137e011e9a3a20e110c05285098",
+      "scopeFiles": 20,
+      "excludedGenerated": 0
+    },
+    {
+      "eventId": "6af73ca9-2db2-4c61-b78b-8a7bceba156a",
+      "changeId": "android-portable-pos-shared-receipts-20261118",
+      "declaredBase": "1fd395c33f277032fe8d36f407ec2e6ca2edce48",
+      "sourceCommit": "aeba8f820fefa580801697a1f3a60afaf3cbbb64",
+      "patchSha256": "616eae5a1e3a8a458dadb98429a867ad6c4149aa0d73895740b7c6a9da34fd58",
+      "scopeFiles": 108,
+      "excludedGenerated": 26
+    },
+    {
+      "eventId": "341e4563-8c37-4117-aa17-4f6db0ad6d51",
+      "changeId": "ticket-detail-professional-20261114",
+      "declaredBase": "per-file original scoped.patch old blob",
+      "sourceCommit": null,
+      "patchSha256": "ad51c1cb47b82d9aef1c0841cbf866510ef0fe51bf222cce36dde666307947f0",
+      "scopeFiles": 19,
+      "excludedGenerated": 0
+    }
+  ],
+  "manualConflicts": [
+    "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "app/(app)/pos-tickets/page.tsx",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/bookings/booking-workspace-client.tsx",
+    "lib/customers.ts",
+    "lib/vietnamese-dictionary.ts"
+  ],
+  "peerReview": {
+    "reviewer": "ios_store_audit",
+    "sourceOnly": true,
+    "webOwnerGiftRevision": "no concrete blocker",
+    "nativePresentation": "explicit gap recorded above"
+  },
+  "frozen": {
+    "fileCount": 174,
+    "sourceSha256": "bee1b1d140cf27a580c783937304d2c62b63a872c4cf5959704a0b0c70e62687",
+    "manifest": "artifacts/combined-tax-ticket-android-integration-20261119/frozen-manifest-r1.json",
+    "completionEventId": "5122d7f5-ef10-4044-83cd-cbc4255d8351",
+    "status": "needs-integration"
+  }
+}

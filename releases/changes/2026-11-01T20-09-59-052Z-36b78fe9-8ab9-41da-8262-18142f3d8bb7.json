@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "combined-today-integration-20261101",
+  "status": "working",
+  "summary": "Integrate Today Statistics and exact staff filtering with verified live progressive loaders/financial history; preserve native82 compatibility and queued web/native scroll containment",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/pos-tickets/page.tsx",
+    "app/globals.css",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/reports/quick-expense.tsx",
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-statistics.module.css",
+    "app/staff/today/today-statistics.tsx",
+    "lib/payroll-read-args.ts",
+    "lib/today-dashboard-sections.ts",
+    "lib/today-dashboard.ts",
+    "lib/today-statistics-server.ts",
+    "lib/today-statistics.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-today-statistics.json",
+    "tests/today-statistics-runtime.test.mjs",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "tests/native-today-first-load.test.mjs"
+  ],
+  "source": {
+    "baselineDeploymentId": "dpl_Dkt56igv5fjsTWHpiJFEcqfRRLki",
+    "baselineNativeCommit": "7fea54bb5c6f071de03d70fabb33e17d421f15f8"
+  },
+  "validation": [],
+  "dependencies": [
+    "today-statistics-20261101",
+    "today-staff-navigation-20261101",
+    "app-scroll-containment-20261101"
+  ],
+  "occurredAt": "2026-11-01T20:03:02.555Z",
+  "id": "36b78fe9-8ab9-41da-8262-18142f3d8bb7",
+  "recordedAt": "2026-11-01T20:09:59.052Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

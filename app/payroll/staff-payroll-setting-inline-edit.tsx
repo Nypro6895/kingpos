@@ -1,6 +1,9 @@
 "use client";
 
+import { getStaffLegalName, staffHasPersonalAccount } from "@/lib/staff-legal-name";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
+import { PayrollTaxItemFields } from "./payroll-tax-item-fields";
 
 import { saveStaffPayrollSettingWithEffectiveDateAction } from "@/app/payroll/actions";
 import type {
@@ -12,7 +15,9 @@ import type {
 import type { Staff } from "@/types/staff";
 import Link from "next/link";
 import type { KeyboardEvent, ReactNode } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { payrollSettingPeriod, nextPayrollSettingPeriod } from "@/lib/payroll-setting-period";
+import type { SalonPayrollSetting } from "@/types/payroll";
 
 type ActiveField =
   | "bonusPayout"
@@ -20,13 +25,9 @@ type ActiveField =
   | "commissionRate"
   | "effectiveFrom"
   | "fixedPay"
-  | "legalName"
   | "payType"
-  | "taxBonus"
-  | "taxCash"
   | "taxFixed"
   | "taxRate"
-  | "taxTip"
   | "tipPayout"
   | null;
 
@@ -65,10 +66,6 @@ function formatPayoutMethod(value: PayrollPayoutMethod) {
   return value === "check" ? "Check" : "Cash";
 }
 
-function formatOnOff(value: boolean) {
-  return value ? "On" : "Off";
-}
-
 function formatYesNo(value: boolean) {
   return value ? "Yes" : "No";
 }
@@ -90,12 +87,14 @@ function StaffProfileAvatar({
   displayName: string;
   imageUrl: string | null;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          alt=""
+          alt={__vt("")}
           className="h-full w-full rounded-full object-cover"
           src={imageUrl}
         />
@@ -116,7 +115,7 @@ function SettingGroup({
   return (
     <section className="grid gap-2">
       <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-        {title}
+        <WorkspaceText text={title} />
       </h4>
       <div className="grid gap-1.5">{children}</div>
     </section>
@@ -129,15 +128,12 @@ function HiddenSettingInputs({
   commissionRate,
   effectiveFrom,
   fixedPayAmount,
-  legalName,
   payType,
   returnPath,
   staffId,
   taxCash,
   taxFixed,
-  taxBonus,
   taxRate,
-  taxTip,
   tipPayout,
 }: {
   bonusPayout: PayrollPayoutMethod;
@@ -145,22 +141,18 @@ function HiddenSettingInputs({
   commissionRate: string;
   effectiveFrom: string;
   fixedPayAmount: string;
-  legalName: string;
   payType: StaffPayType;
   returnPath: string;
   staffId: string;
   taxCash: boolean;
   taxFixed: boolean;
-  taxBonus: boolean;
   taxRate: string;
-  taxTip: boolean;
   tipPayout: PayrollPayoutMethod;
 }) {
   return (
     <>
       <input name="return_to" type="hidden" value={returnPath} />
       <input name="staff_id" type="hidden" value={staffId} />
-      <input name="legal_name" type="hidden" value={legalName} />
       <input name="pay_type" type="hidden" value={payType} />
       <input name="commission_rate" type="hidden" value={commissionRate} />
       <input name="fixed_pay_amount" type="hidden" value={fixedPayAmount} />
@@ -171,8 +163,6 @@ function HiddenSettingInputs({
         type="hidden"
         value={taxFixed ? "true" : "false"}
       />
-      <input name="tax_tips" type="hidden" value={taxTip ? "true" : "false"} />
-      <input name="tax_bonus" type="hidden" value={taxBonus ? "true" : "false"} />
       <input
         name="cash_to_tax_company"
         type="hidden"
@@ -239,38 +229,6 @@ function InlineNumberInput({
   );
 }
 
-function InlineTextInput({
-  autoFocus = false,
-  onChange,
-  onDone,
-  value,
-}: {
-  autoFocus?: boolean;
-  onChange: (value: string) => void;
-  onDone: () => void;
-  value: string;
-}) {
-  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== "Enter") {
-      return;
-    }
-
-    event.preventDefault();
-    onDone();
-  }
-
-  return (
-    <input
-      autoFocus={autoFocus}
-      className="h-8 w-full max-w-48 rounded border border-zinc-300 bg-white px-2 text-sm text-zinc-950 outline-none"
-      onBlur={onDone}
-      onChange={(event) => onChange(event.target.value)}
-      onKeyDown={handleKeyDown}
-      value={value}
-    />
-  );
-}
-
 function InlineDateInput({
   autoFocus = false,
   onChange,
@@ -333,7 +291,7 @@ function EditableSetting({
   if (active) {
     return (
       <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
-        <span className="shrink-0 text-zinc-500">{label}:</span>
+        <span className="shrink-0 text-zinc-500"><WorkspaceText text={label} />:</span>
         {children}
       </div>
     );
@@ -345,13 +303,14 @@ function EditableSetting({
       onClick={onClick}
       type="button"
     >
-      <span className="shrink-0 text-zinc-500">{label}:</span>
+      <span className="shrink-0 text-zinc-500"><WorkspaceText text={label} />:</span>
       <span className="min-w-0 font-medium text-zinc-900">{value}</span>
     </button>
   );
 }
 
 export function StaffPayrollSettingInlineEdit({
+  salonPayrollSetting,
   period,
   returnPath,
   setting,
@@ -359,6 +318,7 @@ export function StaffPayrollSettingInlineEdit({
   staffProfileAvatarUrl,
   staffProfileDisplayName,
 }: {
+  salonPayrollSetting: SalonPayrollSetting;
   period: PayrollPeriod;
   returnPath: string;
   setting: StaffPayrollSetting | null;
@@ -366,7 +326,8 @@ export function StaffPayrollSettingInlineEdit({
   staffProfileAvatarUrl: string | null;
   staffProfileDisplayName: string;
 }) {
-  const currentEffectiveFrom = setting?.effective_from ?? period.startDate;
+  const __vt = useWorkspaceTranslation();
+
   const [activeField, setActiveField] = useState<ActiveField>(null);
   const [payType, setPayType] = useState<StaffPayType>(
     setting?.pay_type ?? "commission",
@@ -379,55 +340,54 @@ export function StaffPayrollSettingInlineEdit({
   );
   const [checkRate, setCheckRate] = useState(String(setting?.check_rate ?? 60));
   const [taxRate, setTaxRate] = useState(String(setting?.tax_rate ?? 0));
-  const [taxTip, setTaxTip] = useState(setting?.tax_tips ?? false);
-  const [taxBonus, setTaxBonus] = useState(setting?.tax_bonus ?? false);
   const [taxFixed, setTaxFixed] = useState(
     setting?.apply_tax_to_fixed_pay ?? true,
   );
-  const [taxCash, setTaxCash] = useState(setting?.cash_to_tax_company ?? false);
   const [tipPayout, setTipPayout] = useState<PayrollPayoutMethod>(
     setting?.tip_payout_method ?? "cash",
   );
   const [bonusPayout, setBonusPayout] = useState<PayrollPayoutMethod>(
     setting?.bonus_payout_method ?? "check",
   );
-  const [effectiveFrom, setEffectiveFrom] = useState(currentEffectiveFrom);
-  const [legalName, setLegalName] = useState(setting?.legal_name ?? "");
+  const periodStart = payrollSettingPeriod(salonPayrollSetting, period.startDate).startDate;
+  const nextPeriod = nextPayrollSettingPeriod(salonPayrollSetting, period.startDate);
+  const [effectiveFrom, setEffectiveFrom] = useState(nextPeriod.startDate);
+  const legalName = getStaffLegalName(staff) ?? "";
+  const settingRequestField = useRef<HTMLInputElement>(null);
 
   const closeField = () => setActiveField(null);
 
   return (
-    <form
+    <div className="settings-style"><form
       action={saveStaffPayrollSettingWithEffectiveDateAction}
       className="grid gap-4"
       onSubmit={(event) => {
+        if (settingRequestField.current && !settingRequestField.current.value) settingRequestField.current.value = crypto.randomUUID();
         if (
-          effectiveFrom === currentEffectiveFrom &&
+          effectiveFrom === periodStart &&
           !window.confirm(
-            `You are saving changes with the same effective date. This may update the current payroll setting from ${formatDateLabel(
-              currentEffectiveFrom,
-            )}. Continue?`,
+            __vt(`Apply these settings to the ENTIRE selected payroll period starting ${formatDateLabel(periodStart)}? Published statements remain unchanged until you publish an updated statement.`),
           )
         ) {
           event.preventDefault();
         }
       }}
     >
+      <input type="hidden" name="expected_setting_id" value={setting?.id ?? ""}/>
+      <input type="hidden" name="setting_request_id" defaultValue="" ref={settingRequestField}/>
+      <input type="hidden" name="expected_setting_updated_at" value={setting?.updated_at ?? ""}/>
       <HiddenSettingInputs
         bonusPayout={bonusPayout}
         checkRate={checkRate}
         commissionRate={commissionRate}
         effectiveFrom={effectiveFrom}
         fixedPayAmount={fixedPayAmount}
-        legalName={legalName}
         payType={payType}
         returnPath={returnPath}
         staffId={staff.id}
-        taxCash={taxCash}
+        taxCash={Boolean(setting?.cash_to_tax_company)}
         taxFixed={taxFixed}
-        taxBonus={taxBonus}
         taxRate={taxRate}
-        taxTip={taxTip}
         tipPayout={tipPayout}
       />
 
@@ -443,19 +403,19 @@ export function StaffPayrollSettingInlineEdit({
             </h3>
             {legalName ? (
               <p className="mt-0.5 truncate text-xs text-zinc-500">
-                Legal name: {legalName}
+                <WorkspaceText text="Legal name:" /> {legalName}
               </p>
             ) : null}
             <div className="mt-1">
               <EditableSetting
                 active={activeField === "effectiveFrom"}
-                label="Effective from"
+                label={__vt("Effective from")}
                 onClick={() => setActiveField("effectiveFrom")}
                 value={formatDateLabel(effectiveFrom)}
               >
                 <InlineDateInput
                   autoFocus
-                  onChange={setEffectiveFrom}
+                  onChange={(date) => { if (date) setEffectiveFrom(payrollSettingPeriod(salonPayrollSetting, date).startDate); }}
                   onDone={closeField}
                   value={effectiveFrom}
                 />
@@ -468,19 +428,26 @@ export function StaffPayrollSettingInlineEdit({
             className="rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50"
             href={returnPath}
           >
-            Cancel
+            <WorkspaceText text="Cancel" />
           </Link>
           <SubmitButton className="rounded bg-zinc-950 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800">
-            Save
+            <WorkspaceText text="Save" />
           </SubmitButton>
         </div>
       </div>
 
+      <div className="rounded border border-zinc-200 bg-zinc-50 p-3 text-sm">
+        <p>Settings apply to a whole payroll period. A date you choose is aligned to that period’s first day. Published statements do not change until an updated statement is published.</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button type="button" onClick={() => setEffectiveFrom(periodStart)} className="rounded border px-3 py-2">Entire selected period · {formatDateLabel(periodStart)}</button>
+          <button type="button" onClick={() => setEffectiveFrom(nextPeriod.startDate)} className="rounded border px-3 py-2">Next period · {formatDateLabel(nextPeriod.startDate)}</button>
+        </div>
+      </div>
       <div className="grid gap-5 md:grid-cols-3">
-        <SettingGroup title="Compensation">
+        <SettingGroup title={__vt("Compensation")}>
           <EditableSetting
             active={activeField === "payType"}
-            label="Pay type"
+            label={__vt("Pay type")}
             onClick={() => setActiveField("payType")}
             value={payType === "fixed" ? "Fixed" : "Commission"}
           >
@@ -492,14 +459,14 @@ export function StaffPayrollSettingInlineEdit({
               }}
               value={payType}
             >
-              <option value="commission">Commission</option>
-              <option value="fixed">Fixed</option>
+              <option value="commission"><WorkspaceText text="Commission" /></option>
+              <option value="fixed"><WorkspaceText text="Fixed" /></option>
             </InlineSelect>
           </EditableSetting>
           {payType === "commission" ? (
             <EditableSetting
               active={activeField === "commissionRate"}
-              label="Commission split rate"
+              label={__vt("Commission split rate")}
               onClick={() => setActiveField("commissionRate")}
               value={formatPercent(commissionRate)}
             >
@@ -515,7 +482,7 @@ export function StaffPayrollSettingInlineEdit({
           ) : (
             <EditableSetting
               active={activeField === "fixedPay"}
-              label="Fixed pay"
+              label={__vt("Fixed pay")}
               onClick={() => setActiveField("fixedPay")}
               value={formatMoney(fixedPayAmount)}
             >
@@ -530,7 +497,7 @@ export function StaffPayrollSettingInlineEdit({
           )}
           <EditableSetting
             active={activeField === "checkRate"}
-            label="Check split"
+            label={__vt("Check split")}
             onClick={() => setActiveField("checkRate")}
             value={formatPercent(checkRate)}
           >
@@ -545,10 +512,10 @@ export function StaffPayrollSettingInlineEdit({
           </EditableSetting>
         </SettingGroup>
 
-        <SettingGroup title="Tax reporting">
+        <SettingGroup title={__vt("Tax reporting")}>
           <EditableSetting
             active={activeField === "taxRate"}
-            label="Tax rate"
+            label={__vt("Default tax rate")}
             onClick={() => setActiveField("taxRate")}
             value={formatPercent(taxRate)}
           >
@@ -561,66 +528,12 @@ export function StaffPayrollSettingInlineEdit({
               value={taxRate}
             />
           </EditableSetting>
-          <EditableSetting
-            active={activeField === "taxCash"}
-            label="Tax cash"
-            onClick={() => setActiveField("taxCash")}
-            value={formatOnOff(taxCash)}
-          >
-            <InlineSelect
-              autoFocus
-              onChange={(value) => {
-                setTaxCash(value === "true");
-                closeField();
-              }}
-              value={taxCash ? "true" : "false"}
-            >
-              <option value="false">Off</option>
-              <option value="true">On</option>
-            </InlineSelect>
-          </EditableSetting>
-          <EditableSetting
-            active={activeField === "taxTip"}
-            label="Tax tip"
-            onClick={() => setActiveField("taxTip")}
-            value={formatYesNo(taxTip)}
-          >
-            <InlineSelect
-              autoFocus
-              onChange={(value) => {
-                setTaxTip(value === "true");
-                closeField();
-              }}
-              value={taxTip ? "true" : "false"}
-            >
-              <option value="false">No</option>
-              <option value="true">Yes</option>
-            </InlineSelect>
-          </EditableSetting>
-          <EditableSetting
-            active={activeField === "taxBonus"}
-            label="Tax bonus"
-            onClick={() => setActiveField("taxBonus")}
-            value={formatYesNo(taxBonus)}
-          >
-            <InlineSelect
-              autoFocus
-              onChange={(value) => {
-                setTaxBonus(value === "true");
-                closeField();
-              }}
-              value={taxBonus ? "true" : "false"}
-            >
-              <option value="false">No</option>
-              <option value="true">Yes</option>
-            </InlineSelect>
-          </EditableSetting>
         </SettingGroup>
 
-        <SettingGroup title="Payout">
+        <SettingGroup title={__vt("Payout")}>
           <EditableSetting
             active={activeField === "tipPayout"}
-            label="Tip payout"
+            label={__vt("Tip payout")}
             onClick={() => setActiveField("tipPayout")}
             value={formatPayoutMethod(tipPayout)}
           >
@@ -632,13 +545,13 @@ export function StaffPayrollSettingInlineEdit({
               }}
               value={tipPayout}
             >
-              <option value="cash">Cash</option>
-              <option value="check">Check</option>
+              <option value="cash"><WorkspaceText text="Cash" /></option>
+              <option value="check"><WorkspaceText text="Check" /></option>
             </InlineSelect>
           </EditableSetting>
           <EditableSetting
             active={activeField === "bonusPayout"}
-            label="Bonus payout"
+            label={__vt("Bonus payout")}
             onClick={() => setActiveField("bonusPayout")}
             value={formatPayoutMethod(bonusPayout)}
           >
@@ -650,35 +563,27 @@ export function StaffPayrollSettingInlineEdit({
               }}
               value={bonusPayout}
             >
-              <option value="check">Check</option>
-              <option value="cash">Cash</option>
+              <option value="check"><WorkspaceText text="Check" /></option>
+              <option value="cash"><WorkspaceText text="Cash" /></option>
             </InlineSelect>
           </EditableSetting>
         </SettingGroup>
       </div>
 
+      <PayrollTaxItemFields setting={{ ...setting, pay_type: payType, apply_tax_to_fixed_pay: taxFixed, tax_rate: numberValue(taxRate) }} />
       <details className="pt-1">
         <summary className="w-fit cursor-pointer text-xs font-medium text-zinc-600 hover:text-zinc-900">
-          More details
+          <WorkspaceText text="More details" />
         </summary>
         <div className="mt-3 grid gap-1.5 sm:max-w-md">
-          <EditableSetting
-            active={activeField === "legalName"}
-            label="Legal name"
-            onClick={() => setActiveField("legalName")}
-            value={legalName || "Not set"}
-          >
-            <InlineTextInput
-              autoFocus
-              onChange={setLegalName}
-              onDone={closeField}
-              value={legalName}
-            />
-          </EditableSetting>
+          <div className="text-xs text-zinc-600">
+            <WorkspaceText text="Legal name:" /> {legalName || <WorkspaceText text="Not set" />} {" · "}
+            {staffHasPersonalAccount(staff) ? <WorkspaceText text="Managed in Personal" /> : <Link className="underline" href="/staff"><WorkspaceText text="Edit staff" /></Link>}
+          </div>
           {payType === "commission" ? (
             <EditableSetting
               active={activeField === "fixedPay"}
-              label="Fixed pay"
+              label={__vt("Fixed pay")}
               onClick={() => setActiveField("fixedPay")}
               value={formatMoney(fixedPayAmount)}
             >
@@ -693,7 +598,7 @@ export function StaffPayrollSettingInlineEdit({
           ) : null}
           <EditableSetting
             active={activeField === "taxFixed"}
-            label="Tax fixed"
+            label={__vt("Default tax on fixed pay")}
             onClick={() => setActiveField("taxFixed")}
             value={formatYesNo(taxFixed)}
           >
@@ -705,12 +610,14 @@ export function StaffPayrollSettingInlineEdit({
               }}
               value={taxFixed ? "true" : "false"}
             >
-              <option value="true">Yes</option>
-              <option value="false">No</option>
+              <option value="true"><WorkspaceText text="Yes" /></option>
+              <option value="false"><WorkspaceText text="No" /></option>
             </InlineSelect>
           </EditableSetting>
         </div>
       </details>
-    </form>
+      <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="notify_staff" value="true" /><WorkspaceText text="Notify Staff about these changes" /></label>
+    </form></div>
   );
 }
+

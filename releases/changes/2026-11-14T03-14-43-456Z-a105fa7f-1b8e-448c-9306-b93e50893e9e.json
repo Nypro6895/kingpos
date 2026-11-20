@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "gift-ticket-qa-seller-20261113",
+  "status": "working",
+  "summary": "QA shared Gift/service checkout, tickets and reconciliation; remove unsupported Gift salesperson attribution while retaining the recording-operator audit",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "components/app-local-ticket-detail.tsx",
+    "lib/pos-ticket-receipt.ts",
+    "types/pos-ticket.ts",
+    "tests/gift-ticket-financial-view.test.mjs",
+    "tests/gift-ticket-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/gift-ticket-unified-20261113",
+    "commit": "b676bc6"
+  },
+  "dependencies": [
+    "gift-ticket-unified-20261113"
+  ],
+  "validation": [
+    {
+      "name": "Related flow and regression QA",
+      "result": "pending"
+    }
+  ],
+  "notes": "Owner requested QA and explicitly permits an empty Gift seller. Performing a service and recording a transaction do not prove who sold a Gift. Preserve financial and operator audit facts. Local isolated QA only; no deployment or hosted writes.",
+  "id": "a105fa7f-1b8e-448c-9306-b93e50893e9e",
+  "recordedAt": "2026-11-14T03:14:43.456Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-ticket-unified-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,32 @@
+PORTABLE: BÀN PHÍM BỔ SUNG THEO TỪNG MÁY — CHỜ DEPLOY CHUNG
+Ngày: 2026-10-26 (America/Chicago)
+Change ID: portable-device-supplemental-keyboard-20261026
+Yêu cầu: gộp vào đợt deploy chung; không deploy/upload độc lập.
+
+Hành vi:
+- Bàn phím bổ sung mặc định TẮT, không lấy giá trị bật cũ từ pos_settings hoặc session.
+- Lưu tự động trong localStorage của app/browser profile trên máy hiện tại, cùng origin. Không gửi lên salon settings, không đồng bộ sang máy khác. Electron dùng partition persist hiện có; không cần thay bridge/native binary.
+- Giữ lựa chọn khi tải lại, đăng xuất/đăng nhập và khởi động lại Electron. Cửa sổ cùng profile cập nhật qua storage event.
+- Settings > POS > Windows app & devices: một checkbox cùng kiểu/spacing với các cài đặt khác. Bỏ checkbox salon-wide khỏi nhóm Checkout ở cả hai màn hình Settings.
+- Portable có nút Device settings trong cụm công cụ thiết bị; màn hình đăng nhập portable cũng mở được. Login tài khoản chỉ hiện nút này trong Windows app.
+- POS tạo khách và dịch vụ tùy chỉnh theo lựa chọn của máy; bàn phím nổi cho ô tìm kiếm, booking, ghi chú, report và đăng nhập theo cùng lựa chọn.
+- Khi tắt, trả inputMode về ô nhập thông thường. Tắt bàn phím nổi sẽ bỏ editor, padding và chiều cao bàn phím cũ.
+- Giữ bàn phím số nhập giá/tip/discount của POS, popup điều chỉnh, PIN staff và bàn phím của khách. Không thay số tiền, luồng PIN hay luồng khách.
+- Lỗi lưu lựa chọn phải báo lỗi, không báo lưu thành công.
+
+Kiểm tra local:
+- 24/24 tests passed trong 8 bộ test: device preference, touch keyboard, login/MFA, Electron persistence, compact POS, Booking, custom service/saved tickets, staff check-in contracts.
+- Thử trực tiếp POS với setting off/on: bàn phím tạo khách/dịch vụ đổi đúng, bàn phím số vẫn hiện; tip/discount, Apply/Cancel và tổng tiền đúng.
+- Staff PIN: nhập/xóa số bình thường ở cả hai trạng thái; không bật bàn phím nổi bổ sung.
+- Kiểm tra cô lập hai profile, đồng bộ hai cửa sổ, reload, Electron restart, lỗi đọc/ghi storage, khôi phục inputMode và padding.
+- Ảnh thật từ browser fixture, dùng CSS app: dialog căn giữa và không tràn ở 1024x768 và 390x844.
+- ESLint của helper/device settings/touch keyboard passed. Source TypeScript check passed với cấu hình loại các generated types cũ .next-readiness-check và Explore QA output; lệnh tsc mặc định còn tham chiếu Help route cũ trong cache sinh sẵn.
+- Sửa assertion cũ của staff settings để kiểm tra đúng nhãn đã đi qua __vt; giữ các assertion quyền/save-path hiện có.
+
+Bàn giao và tích hợp:
+- Evidence, task-only.patch, frozen-source và hashes: C:/Reylumi/output/portable-device-keyboard-20261026/
+- Trạng thái journal: needs-integration. Workspace có các sửa Service Catalog/POS/Settings từ phiên khác; patch này đã tách riêng thay đổi bàn phím, không nhận các sửa đó là phạm vi của task này.
+- Dùng task-only.patch khi ghép với source production mới nhất; frozen-source chỉ là ngữ cảnh chính xác của các file tại lúc bàn giao, không copy nguyên file ghi đè baseline.
+- Không có migration, đổi cấu hình native hoặc bridge. Kênh web; không yêu cầu build iOS/Windows riêng cho patch này.
+- Chưa build candidate production, chưa publish web, chưa upload app. Coordinator phải fresh-build nguồn đã ghép và xác minh live sau đợt deploy chung.
+- Windows tự mở bàn phím hệ thống còn tùy thiết lập máy. Đã kiểm tra nhập keyboard và inputMode trong browser/Electron; chưa thử trên màn hình touch vật lý.

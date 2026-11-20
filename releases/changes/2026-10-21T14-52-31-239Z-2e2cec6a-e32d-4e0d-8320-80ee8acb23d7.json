@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "payroll-hide-review-notices-20261021",
+  "status": "working",
+  "summary": "Remove historical-review banner and adjustment notification badges from payroll presentation only; preserve ledger guards, accounting, audit and paid history.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "app/payroll/payroll-ledger-panel.tsx",
+    "app/payroll/tax-company-table.tsx",
+    "app/staff/my-work/staff-pay-analysis.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\before",
+    "commit": "d75cf764215adbd97b34a473929b480e9edf6528"
+  },
+  "dependencies": [
+    "payroll-period-ledger-20261015"
+  ],
+  "validation": [],
+  "id": "2e2cec6a-e32d-4e0d-8320-80ee8acb23d7",
+  "recordedAt": "2026-10-21T14:52:31.239Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\candidate",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

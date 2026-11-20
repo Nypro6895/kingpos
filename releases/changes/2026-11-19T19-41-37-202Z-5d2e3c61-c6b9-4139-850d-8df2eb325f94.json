@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-completion-20261118",
+  "status": "ready",
+  "summary": "Local implementation/source integration only: Local authored implementation and reviewed final-source integration only",
+  "channels": [
+    "ios",
+    "web"
+  ],
+  "files": [
+    "docs/ios-store-completion-20261118.md",
+    "docs/openai-photo-consented-wiring-20261118.md",
+    "docs/openai-public-photo-verifier-20261118.md",
+    "docs/public-image-safety-20261116.md",
+    "lib/legal-policies.ts",
+    "lib/reylumi-config.ts",
+    "supabase/migrations/20261119020000_ad_reporting_transparency.sql",
+    "tests/ad-reporting-database.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "dependencies": [
+    "ads-reporting-transparency-implementation-20261118",
+    "rights-image-evidence-backend-20261118"
+  ],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-40bc-r2",
+    "commit": "40bc21be6bd1ccf6c31528fa15d23b2e29e3871d",
+    "scope": "local-authored-implementation-and-source-integration-only",
+    "frozenManifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json",
+    "frozenManifestSha256": "9e6e208195ffb67db2c6404e36b5e225a3d74dc5dd70b92abd019060e62e3e75"
+  },
+  "validation": [
+    {
+      "name": "Frozen authored40bc scoped Git blobs and reviewed final-source composition verified",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\proofs-r2\\base-30.json"
+    },
+    {
+      "name": "Scope/source exclusions and standard checkout EOL differences explicitly reconciled; prior pending checks not promoted to passed",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    },
+    {
+      "name": "Hash-bound local integration evidence retained; final Next/TS runtime inputs unchanged from accepted full compile and inherited SQL bound by450-source rehearsal",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\coordinator-ready-drafts-r1\\frozen-source-manifest-r2.json"
+    }
+  ],
+  "originalEvents": [
+    "d2be04b3-d6ed-4bac-90bc-7345526218d3"
+  ],
+  "scopeBoundaries": {
+    "productionProviderAcceptance": false,
+    "productionMigrationApplied": false,
+    "physicalDeviceAcceptance": false,
+    "testFlightOrStorePublication": false,
+    "externalGatesRemainPending": true
+  },
+  "notes": "Local authored implementation/source integration revision. Existing frozen historical authorities and overlap resolutions remain bound. Historical pending/failed provider, physical-device and publication checks are not converted into passes; those wider acceptance gates remain separately tracked.",
+  "coordinatorRecordBatchId": "7c343c04-2ec7-4159-9d26-37f41df5e547",
+  "coordinatorSlot": "base-30",
+  "id": "5d2e3c61-c6b9-4139-850d-8df2eb325f94",
+  "recordedAt": "2026-11-19T19:41:37.202Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-final-publish-20261119-r1",
+  "fileHashes": {
+    "docs/ios-store-completion-20261118.md": "4dab88c6b8e76a162ec3c9ca5147fcbaa72564d291dd3b2f8d0fcfdc62a006f4",
+    "docs/openai-photo-consented-wiring-20261118.md": "6d5f2bea0cc8443a5f98d23f30893beae13d1d3a32847bfa4908568db344ad94",
+    "docs/openai-public-photo-verifier-20261118.md": "174d1a67e495cae7a82008432bcb01f3c89323a2be916ebd23072eb7b53c853e",
+    "docs/public-image-safety-20261116.md": "0eb97883342d0ad4d30645edaace491b2a64d10ae68ad5a5198bb5241520edd5",
+    "lib/legal-policies.ts": "b642afdf1f0f602b6eb5c02fe08b5d1bf92c471598c608ca9540d55176d14a1e",
+    "lib/reylumi-config.ts": "d19f1bdd15d4132d163170ed5b68cfca9f2138956107bdeab8fd1132b27907d5",
+    "supabase/migrations/20261119020000_ad_reporting_transparency.sql": "7d92216cdfab417a41b464bb392b403c36cff846e83e096f6c33ebcc23b97d93",
+    "tests/ad-reporting-database.integration.test.mjs": "a25371925ccb43248ab3e188cdee080daebbd8808969698df8963760070c8597"
+  }
+}

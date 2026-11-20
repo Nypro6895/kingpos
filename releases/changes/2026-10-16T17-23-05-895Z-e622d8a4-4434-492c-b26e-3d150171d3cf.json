@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "app-local-customer-display-20261016",
+  "status": "working",
+  "summary": "Exact Customer Display client under original owner or paired-device authority; unchanged HTTPS token/PIN pairing; canonical public QR links on installed custom scheme only.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-display-metadata.ts",
+    "lib/app-local-display-server.ts",
+    "lib/app-local-display-registry.tsx",
+    "lib/app-local-display-http-client.ts",
+    "lib/browser-public-origin.ts",
+    "app/service-relay/customer-relay.tsx",
+    "tests/app-local-display-server.test.mjs",
+    "tests/app-local-display-ui.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "display authority/transport and actual original UI fixtures",
+      "result": "pending"
+    }
+  ],
+  "id": "e622d8a4-4434-492c-b26e-3d150171d3cf",
+  "recordedAt": "2026-10-16T17:23:05.895Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

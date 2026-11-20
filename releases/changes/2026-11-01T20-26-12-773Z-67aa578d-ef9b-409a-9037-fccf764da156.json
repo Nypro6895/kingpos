@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-today-release-20261101\\artifacts\\release\\frozen-integrated",
+    "commit": "42b48f0bdd75b0c93a698c5391481eb9d23d2fec"
+  },
+  "validation": [
+    {
+      "name": "Production build and remote READY candidate",
+      "result": "passed",
+      "evidence": "artifacts/release/build-web-final.txt"
+    },
+    {
+      "name": "Exact 3765 deployed source content hashes",
+      "result": "passed",
+      "evidence": "artifacts/release/candidate-source-verified.json"
+    },
+    {
+      "name": "TypeScript and scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release/typecheck-final.txt"
+    },
+    {
+      "name": "23 integration tests including money aggregation and progressive merge",
+      "result": "passed",
+      "evidence": "artifacts/release/integration-tests.txt"
+    },
+    {
+      "name": "Responsive Statistics chart, pie selector and empty states",
+      "result": "passed",
+      "evidence": "artifacts/release/browser-results.json"
+    },
+    {
+      "name": "Source-bound installed bundle, current and legacy read-only DTO",
+      "result": "passed",
+      "evidence": "artifacts/release/installed-current.txt"
+    }
+  ],
+  "changeId": "app-scroll-containment-20261101",
+  "summary": "Scoped web overscroll containment and iOS scroll indicators/bounce behavior, preserving uploaded native82 viewport behavior.",
+  "files": [
+    "app/globals.css",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/AppViewportTests.swift"
+  ],
+  "dependencies": [],
+  "id": "67aa578d-ef9b-409a-9037-fccf764da156",
+  "recordedAt": "2026-11-01T20:26:12.773Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-today-release-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/globals.css": "93520b8eb8cb3b5d367b5533fba07deb950985fd7f581e448ec3e3721f1afa8e",
+    "ios/Reylumi/ReylumiViewController.swift": "6a003e996bd320cbf83acd986c70b33ab3446195b031f561d921d9e9083d535e",
+    "ios/ReylumiTests/AppViewportTests.swift": "9fa78589b855da6b2c53909d49799eccabd8c39a89df66fc2d0bb0dec76193b8"
+  }
+}

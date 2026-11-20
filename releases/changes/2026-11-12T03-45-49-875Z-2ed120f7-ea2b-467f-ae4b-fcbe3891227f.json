@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "pos-gift-shared-design-20261110",
+  "status": "working",
+  "summary": "Owner now explicitly authorizes publication of the held POS/Gift shared layout; reconcile the task-only patch with the verified live post-97 source. Preserve current approved customer renderer/artwork and fix legacy-host optional archive loading so saved tickets remain visible.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/pos-desk-client.tsx",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/gift-card/gift-card.css",
+    "app/api/gift-cards/route.ts",
+    "tests/pos-gift-shared-ui.test.mjs",
+    "tests/pos-compact-checkout-ui.test.mjs",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "tests/portable-desktop.test.mjs"
+  ],
+  "source": {
+    "commit": "79043c7"
+  },
+  "id": "2ed120f7-ea2b-467f-ae4b-fcbe3891227f",
+  "recordedAt": "2026-11-12T03:45:49.875Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-29T22:20:05.437Z",
+  "measuredColdProcessLine": "2026-10-29 21:34:22.421970+0000 Reylumi[10166:33099] [Process] WebContent process (0x11d000d00) took 31.729825 seconds to launch",
+  "measuredSource": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+  "sourceRun": 40955399412,
+  "attempt": 2,
+  "isolatedSourceFailure": [
+    "/Users/runner/work/kingpos/kingpos/ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift:35: error: -[ReylumiTests.NativeCookieAuthorityWKTests testParentDomainPersonalSwitchDeletesStoredAliasesAndCommitsDestination] : failed: caught error: \"Error Domain=NSURLErrorDomain Code=-1001 \"(null)\"\"",
+    "Test Case '-[ReylumiTests.NativeCookieAuthorityWKTests testParentDomainPersonalSwitchDeletesStoredAliasesAndCommitsDestination]' failed (12.649 seconds)."
+  ],
+  "isolatedSource": "b76b5181d93bab8fca115df4849eb8bfd84c2989",
+  "isolatedRun": 40960193239,
+  "scope": "Empty local HTML fixture preparation before cookie seeding, not an application performance or authority deadline",
+  "change": {
+    "beforeSeconds": 5,
+    "afterSeconds": 45,
+    "stillFinite": true
+  },
+  "allAssertionsAndBehaviorDeadlinesUnchanged": true,
+  "currentRealRuntimeProof": "artifacts/release-20261029-fixture-startup/native-evidence/test-execution-receipt.json",
+  "currentRun": 40962263505
+}

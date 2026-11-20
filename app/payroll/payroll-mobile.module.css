@@ -1,0 +1,303 @@
+.page { min-width:0;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right)); }
+.heading { display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap; }
+.heading h1 { font-size:24px;font-weight:650;letter-spacing:-.6px; }
+.context { font-size:13px;color:#626b65;overflow-wrap:anywhere; }
+.status { background:#f0f4f1;color:#35533f;border-radius:99px;padding:6px 10px;font-size:12px; }
+.mobileNav { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid #e4e4e7; }
+.mobileNav a { min-height:46px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;line-height:1.3;padding:8px 3px;border-bottom:2px solid transparent; }
+.mobileNav a[aria-current=page] { border-bottom-color:#23392d;color:#23392d;font-weight:650; }
+.desktopNav { display:none; }
+.disclosure { min-width:0; }
+.disclosureSummary { display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;list-style:none;cursor:pointer;padding:12px 14px;font-size:14px; }
+.disclosureSummary::-webkit-details-marker { display:none; }
+.disclosureSummary:focus-visible { outline:2px solid #42634a;outline-offset:2px; }
+.chevron { flex-shrink:0;color:#667369; }
+.disclosure[open]>.disclosureSummary .chevron { transform:rotate(180deg); }
+.disclosureBody { min-width:0; }
+.staffCard { min-width:0;border:0;border-top:1px solid #e2e7e3;border-radius:0;background:white; }
+.staffSummary { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;width:100%;align-items:center; }
+.staffSummary strong { display:block;overflow-wrap:anywhere; }
+.staffSummary small { display:block;font-size:12px;color:#626b65; }
+.staffMoney { text-align:right;font-variant-numeric:tabular-nums; }
+.periodRails { min-width:0;display:grid;gap:8px; }
+.scrollRail { position:relative;display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:3px 2px 7px;touch-action:pan-x pan-y;cursor:grab; }
+.scrollRail:active { cursor:grabbing; }
+.periodChip { flex:0 0 auto;min-width:76px;min-height:54px;display:grid;place-content:center;text-align:center;gap:1px;padding:7px 14px;border:1px solid #e2e7e3;border-radius:10px;background:#fff;color:#626b65;user-select:none; }
+.periodChip span { white-space:nowrap;font-size:13px;font-weight:550; }
+.periodChip small { font-size:11px; }
+.periodChip[aria-current=date] { background:#23392d;color:#fff;border-color:#23392d; }
+.periodChip[data-center=true]:not([aria-current=date]) { border-color:#7a9081;background:#f2f5f3;color:#23392d; }
+.periodChip:focus-visible { outline:2px solid #42634a;outline-offset:2px; }
+.periodCaption { font-size:12px;color:#626b65; }
+.takeHomeMoney { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;text-align:right;font-variant-numeric:tabular-nums; }
+.takeHomeMoney strong { white-space:nowrap;font-size:14px;font-weight:650; }
+.takeHomeMoney small { font-size:11px;margin-bottom:3px; }
+.staffIdentity { min-width:0; }
+.takeHomeBody { padding:0 16px 16px;display:grid;gap:14px; }
+.earningsTotals { display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 0;border-bottom:1px solid #ecefec; }
+.earningsTotals dt { font-size:12px;color:#626b65; }
+.earningsTotals dd { font-size:23px;font-weight:650;font-variant-numeric:tabular-nums; }
+.earningsTotals small { font-size:11px;color:#626b65; }
+.staffSettings { display:flex;flex-wrap:wrap;gap:6px 14px;border-top:1px solid #ecefec;padding-top:12px;font-size:12px;color:#626b65; }
+.staffSettings b { font-weight:550;color:#293e31; }
+@media(max-width:420px){.takeHomeCard>.disclosureSummary{padding:16px 10px;gap:6px}.takeHomeMoney{gap:8px}.takeHomeMoney strong{font-size:13px}.staffSummary{gap:6px}.staffIdentity strong{font-size:14px}.takeHomeBody{padding-inline:12px}}
+@media(max-width:540px){.longPayout{grid-template-columns:1fr;gap:3px}.longPayout>div{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.longPayout small{margin:0}.earningsTotals dd{overflow-wrap:anywhere}}
+@media(min-width:1024px){.takeHomeCard>.disclosureSummary{display:flex!important}.takeHomeCard{max-width:none}.takeHomeMoney{gap:32px}.takeHomeBody{max-width:760px}}
+.staffBody { padding:0 14px 14px;display:grid;gap:16px; }
+.ledger { display:grid;gap:6px; }
+.ledger>div { display:flex;justify-content:space-between;align-items:baseline;gap:16px;font-size:14px; }
+.ledger dt { color:#626b65; }
+.ledger dd { text-align:right;font-variant-numeric:tabular-nums; }
+.staffSection { border-top:1px solid #ecefec;padding-top:12px;min-width:0; }
+.staffSection h3 { font-size:13px;font-weight:650;margin-bottom:8px; }
+.output { min-width:0;border:0;border-top:1px solid #dfe5df;border-radius:0;background:#fff;padding:12px 0; }
+.output fieldset>div { display:flex;flex-wrap:wrap;gap:8px; }
+.output form { flex:1; }
+.output button { width:100%;min-height:44px; }
+.tools { display:grid;gap:12px; }
+.toolLink { display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid #e2e7e3;border-radius:12px;background:#fff;padding:16px;min-height:72px; }
+.toolLink strong { display:block;font-size:15px; }
+.toolLink small { display:block;color:#626b65;font-size:13px;margin-top:4px; }
+.panel { min-width:0;border:0;border-top:1px solid #e2e7e3;border-radius:0;background:#fff;padding:16px 0;display:grid;gap:12px; }
+.panel h2 { font-size:16px;font-weight:650; }
+.panel p { font-size:14px; }
+.action { display:inline-flex;justify-content:center;align-items:center;min-height:44px;border:1px solid #dfe5df;border-radius:8px;padding:10px 14px;font-size:14px; }
+.primary { background:#23392d;color:#fff;border-color:#23392d; }
+.warning { border-radius:10px;background:#fff5e4;color:#815318;padding:12px;font-size:14px; }
+.desktopOnly { display:none; }
+.mobileOnly { display:block; }
+.mobileDays { display:grid;gap:12px;padding:12px 0; }
+.mobileDays details { border:0;border-top:1px solid #e2e7e3;border-radius:0;background:#fff;min-width:0; }
+.mobileDays summary { list-style:none;padding:12px 0;cursor:pointer;min-height:48px; }
+.mobileDays summary::-webkit-details-marker { display:none; }
+.mobileDayTitle { display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px; }
+.mobileDayAmounts { display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:#626b65;padding-top:8px; }
+.mobileDayBody { padding:0 0 12px;display:grid;gap:12px; }
+.taxCards { display:grid;gap:12px; }
+.taxCard { min-width:0;border:0;border-top:1px solid #e2e7e3;border-radius:0;padding:14px 0;background:#fff; }
+.taxCard summary { min-height:44px;cursor:pointer;font-size:14px; }
+.taxCard h3 { font-size:15px;font-weight:650;overflow-wrap:anywhere; }
+.taxCard details { margin-top:12px;border-top:1px solid #e2e7e3; }
+.taxCard dl { margin-block:10px; }
+.snapshot { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+.snapshot>div { min-width:0; }
+.snapshot [data-metric="Staff Payout"] { grid-column:1/-1;grid-row:1;background:#23392d;color:#fff; }
+.snapshot [data-metric="Staff Payout"] p { color:inherit; }
+.snapshot [data-metric="POS Revenue"],.snapshot [data-metric="Over / Short"] { display:none; }
+.snapshot [data-metric] svg,.snapshot [data-metric]>p { display:none; }
+.snapshot [data-metric] p { overflow-wrap:anywhere; }
+.snapshot [data-metric]>div>div>p:nth-child(2) { font-size:22px; }
+.analytics { min-width:0;border:0;border-radius:0;background:transparent; }
+.analytics>.disclosureBody { padding:0;display:grid;gap:24px; }
+.analytics>.disclosureSummary { padding-inline:0;border-bottom:1px solid #e2e7e3;margin-bottom:16px; }
+.compactNote { border:0;border-top:1px solid #e2e7e3;border-radius:0;background:white; }
+.compactNote>.disclosureSummary { padding-inline:0; }
+.compactNote>.disclosureBody { padding:0 0 14px; }
+@media(max-width:1023px){
+ .page input:not([type=hidden]):not([type=checkbox]),.page select,.page textarea { min-height:44px;font-size:16px;max-width:100%; }
+ .page input[type=date],.page input[type=month] { min-width:0;width:100%; }
+ .page label { max-width:100%; }
+ .page :global(.min-w-64) { min-width:0;width:100%; }
+ .page summary { min-height:44px; }
+ .page button,.page a { touch-action:manipulation; }
+ .page button { min-height:44px; }
+ .responsiveTable thead { display:none; }
+ .responsiveTable,.responsiveTable tbody { display:block;width:100%; }
+ .responsiveTable tr { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding-block:12px; }
+ .responsiveTable td { display:block;white-space:normal;text-align:left;padding:0!important;overflow-wrap:anywhere; }
+ .responsiveTable td:first-child { grid-column:1/-1;font-weight:650; }
+ .responsiveTable td::before { content:attr(data-label);display:block;color:#626b65;font-weight:400;font-size:12px; }
+ .responsiveTable td:first-child::before { display:none; }
+}
+@media(min-width:640px){
+ .page { padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right)); }
+}
+@media(min-width:1024px){
+ .mobileNav,.mobileOnly,.mobileDays,.taxCards { display:none; }
+ .desktopNav,.desktopOnly { display:block; }
+ .disclosure>.disclosureSummary { display:none; }
+ .staffBody { grid-template-columns:repeat(3,minmax(0,1fr));padding:14px; }
+ .staffSection { border-top:0;padding-top:0; }
+ .output { position:static;box-shadow:none;border:0;border-top:1px solid #e4e4e7;border-radius:0; }
+ .output form { flex:0 1 auto; }
+ .tools { grid-template-columns:repeat(3,minmax(0,1fr)); }
+ .snapshot { grid-template-columns:repeat(5,minmax(0,1fr)); }
+ .snapshot [data-metric="Staff Payout"] { grid-column:auto;grid-row:auto;background:white;color:inherit; }
+ .snapshot [data-metric="Staff Payout"] p { color:#626b65; }
+ .snapshot [data-metric="Staff Payout"]>div>div>p:nth-child(2) { color:#a16207; }
+ .snapshot [data-metric="POS Revenue"],.snapshot [data-metric="Over / Short"],.snapshot [data-metric] svg,.snapshot [data-metric]>p { display:block; }
+ .analytics,.compactNote { border:0;background:transparent; }
+ .analytics>.disclosureBody,.compactNote>.disclosureBody { padding:0; }
+}
+
+/* Identical Payroll sections and financial content at every viewport. */
+.mobileNav{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:0}.mobileNav a{font-size:12px;min-height:46px}.page{background:#fff}.periodNav{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:stretch;border:1px solid #e2e5e3;border-radius:9px;background:white}.periodNav>a{display:grid;place-items:center;min-height:44px;font-size:24px}.periodPicker{min-width:0;border-inline:1px solid #e2e5e3}.periodPicker>summary{min-height:44px;display:flex;align-items:center;justify-content:center;padding:8px;font-size:14px;font-weight:650;cursor:pointer;list-style:none;text-align:center}.periodPicker>summary::-webkit-details-marker{display:none}.periodPicker[open]{grid-column:2}.periodPicker>div{padding:12px}.periodModes{display:flex;align-items:center;gap:5px;margin-top:10px}.periodModes>a,.periodModes>details>summary{padding:9px 14px;font-size:12px;border:1px solid #e5e5e8;border-radius:7px;min-height:40px;display:flex;align-items:center}.periodModes>a[aria-current=page]{background:#244633;color:white;border-color:#244633}.periodModes>details>form{display:grid;gap:8px;padding:12px}.periodModes>details[open]{position:relative}.periodModes>details>form{position:absolute;z-index:20;right:0;background:white;border:1px solid #e2e5e3;border-radius:10px;box-shadow:0 8px 24px #0001}.periodModes small{margin-left:auto;font-size:11px;color:#71757a}.output{display:flex;gap:10px;flex-wrap:wrap}@media(min-width:1024px){.mobileNav a{font-size:14px;justify-content:flex-start;padding:12px 20px}.periodNav{max-width:600px}.periodModes{max-width:600px}}
+.compactPeriod{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;border-block:1px solid #e2e7e3;touch-action:pan-y}
+.compactPeriod button{min-height:46px;background:white;cursor:pointer}
+.compactPeriod button:nth-child(2){font-size:14px;font-weight:600}
+.compactPeriod button:first-child,.compactPeriod button:last-child{font-size:24px}
+.compactPeriod button:disabled{opacity:.3;cursor:default}
+.periodOptions{display:grid;max-height:320px;overflow-y:auto;border-bottom:1px solid #e2e7e3;padding:8px 12px}
+.periodOptions a{display:block;padding:12px;font-size:14px}
+.periodOptions a[aria-current=date]{background:#edf3ef;font-weight:650}
+.periodOptions summary{padding:12px;font-size:14px;cursor:pointer}
+.dailyListing{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.dailyListing th,.dailyListing td{padding:12px 0;border-bottom:1px solid #ecefec;text-align:right}
+.dailyListing th{font-size:12px;color:#626b65;font-weight:400}
+.dailyListing th:first-child,.dailyListing td:first-child{text-align:left}
+@media(max-width:639px){.page{padding-inline:0!important;max-width:none}.takeHomeCard>.disclosureSummary{padding-inline:12px}.takeHomeBody{padding-inline:12px;max-width:none}.page>.output{padding-inline:12px}}
+
+/* Payroll sections stay on one horizontal rail at every viewport. */
+.mobileNav{display:flex!important;flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:thin}.mobileNav a{flex:0 0 auto;min-width:74px;padding-inline:12px;white-space:nowrap}
+
+/* Reference styling shared by Shop, Staff and all Tools destinations. */
+.page { gap:16px; }
+.mobileNav { border-bottom:1px solid var(--payroll-line); scrollbar-width:none; }
+.mobileNav a { flex:1 0 auto; min-height:44px; padding:10px 8px; font-size:13px; }
+.mobileNav a[aria-current=page] { color:var(--payroll-green); border-bottom-color:var(--payroll-green); }
+.compactPeriod { border-color:var(--payroll-line); }
+.compactPeriod button:nth-child(2) { font-size:13px; }
+.staffCard { border-color:var(--payroll-line); }
+.takeHomeCard>.disclosureSummary { padding:16px 0; }
+.takeHomeMoney strong { color:var(--payroll-green); }
+.takeHomeBody { padding:0 0 16px; gap:12px; }
+.earningsTotals { margin:0; padding:12px; gap:12px; border:0; border-radius:5px; background:var(--payroll-total); }
+.earningsTotals dd { font-size:24px; color:var(--payroll-green); }
+.staffSettings { border-color:var(--payroll-line); gap:6px 12px; padding-top:10px; }
+.ledger { gap:0; }
+.ledger>div { min-height:34px; padding:6px 0; border-bottom:1px solid var(--payroll-line); }
+.ledger dd { color:var(--payroll-ink); }
+.toolLink { min-height:68px; border:0; border-bottom:1px solid var(--payroll-line); border-radius:0; padding:14px 0; }
+.toolLink strong { font-size:16px; font-weight:600; }
+.toolLink small { font-size:12px; color:var(--payroll-muted); }
+.toolLink>span:last-child { color:var(--payroll-muted); }
+.tools { gap:0; }
+.panel { border-color:var(--payroll-line); padding:16px 0; }
+.action { border-color:#dcdeda; border-radius:6px; min-height:40px; padding:8px 14px; font-size:13px; }
+.primary { background:var(--payroll-peach); border-color:var(--payroll-peach); color:#fff; }
+.output { gap:8px; padding:12px 0; border-color:var(--payroll-line); }
+.output>a { flex:0 1 auto; }
+.page form { min-width:0; }
+.page :global(.settings-style) { border-radius:6px; }
+.page :global(#download)>form { padding:14px; border-radius:6px; background:var(--payroll-form); }
+.page :global(#download)>form>button { background:var(--payroll-peach); color:#fff; }
+.page :global(#download)>form>label { flex:1 1 180px; }
+.page :global(#download)>form>fieldset { flex-basis:100%; }
+.page :global(table) { font-variant-numeric:tabular-nums; }
+.page :global(thead) { color:var(--payroll-muted); }
+.page :global(tfoot) { background:var(--payroll-total); color:var(--payroll-green); }
+.page :global(tfoot td) { font-weight:650; }
+.checkShortcut { align-self:flex-end; width:fit-content; display:inline-flex; align-items:center; min-height:32px; padding:5px 10px; border:1px solid var(--payroll-line); border-radius:6px; font-size:12px; }
+.schedulePanel { border:0; border-bottom:1px solid var(--payroll-line); padding:0 0 16px; box-shadow:none; }
+.schedulePanel form { padding:12px; background:var(--payroll-form); border-radius:6px; }
+.page :global([data-payroll-autosave=true]) { padding:12px; background:var(--payroll-form); border-radius:6px; }
+.page :global([data-payroll-autosave=true])>div { grid-template-columns:64px minmax(0,1fr); font-size:13px; }
+.page :global([data-payroll-autosave=true]) input:not([type=hidden]) { min-height:36px; background:white; }
+@media(max-width:639px) {
+ .page { padding-block:12px; gap:14px; }
+ .page>.output { padding-inline:0; }
+ .takeHomeCard>.disclosureSummary { padding:14px 0; }
+ .takeHomeMoney { gap:9px; }
+ .takeHomeMoney strong { font-size:13px; }
+ .staffIdentity strong { font-size:14px; }
+ .takeHomeBody { padding-inline:0; }
+}
+@media(min-width:1024px) {
+ .page { width:100%; max-width:1440px; padding:24px 32px; gap:18px; }
+ .mobileNav { max-width:680px; }
+ .mobileNav a { flex:0 0 auto; min-width:110px; justify-content:center; padding:12px 20px; }
+ .compactPeriod { max-width:none; }
+ .tools { grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+ .takeHomeBody { max-width:none; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px 28px; }
+ .earningsTotals,.takeHomeBody>.staffSettings { grid-column:1/-1; }
+ .takeHomeMoney { gap:40px; }
+ .takeHomeMoney strong { font-size:16px; }
+ .page :global(#download)>form { max-width:960px; }
+}
+.compactPeriod button:nth-child(2){display:flex;align-items:center;justify-content:center;gap:7px}.periodIcon{width:15px;height:15px;flex:none}
+
+/* A page owns one gutter; hosted iOS already receives it from the app shell. */
+@media(max-width:767px){
+ .page[data-payroll-page=true]{padding-left:max(16px,env(safe-area-inset-left))!important;padding-right:max(16px,env(safe-area-inset-right))!important;max-width:none}
+ :global([data-salon-manage-gutters=true]) .page[data-payroll-page=true]{padding-left:0!important;padding-right:0!important}
+}
+/* Keep existing group spacing and page gutters. */
+.staffCard,.takeHomeCard,.panel,.taxCard,.toolLink,.output,.schedulePanel{border:0;border-radius:12px;background:#fff;box-shadow:0 2px 10px #18251e12,0 0 1px #18251e16}
+.staffCard,.takeHomeCard{overflow:hidden}
+.panel,.taxCard,.toolLink,.output,.schedulePanel{padding:14px}
+.tools{gap:12px}
+.takeHomeCard>.disclosureSummary{padding-inline:12px}
+.takeHomeBody{padding-inline:12px}
+.mobileDays details{border:0;border-radius:10px;padding-inline:12px;box-shadow:0 1px 8px #18251e10}
+
+/* Flat sections: full-width surfaces, text aligned with the app gutter. */
+.staffCard,.takeHomeCard,.panel,.taxCard,.toolLink,.output,.schedulePanel{border-radius:0;border-bottom:1px solid #e4e7e5;box-shadow:none}
+.mobileDays details{border-radius:0;box-shadow:none;padding-inline:0}
+@media(max-width:767px){
+.staffCard,.takeHomeCard,.panel,.taxCard,.toolLink,.output,.schedulePanel{margin-inline:-16px;width:calc(100% + 32px)}
+.staffCard,.takeHomeCard{padding-inline:16px}
+.panel,.taxCard,.toolLink,.output,.schedulePanel{padding-inline:16px}
+.takeHomeCard>.disclosureSummary,.takeHomeBody{padding-inline:0}
+}
+
+/* One compact payroll row; only this card changes, shared disclosures retain their layout. */
+.compactStaffCard { margin-inline:0;width:100%;padding-inline:0; }
+.staffDetailsHeader { display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:6px;padding-block:8px; }
+.staffDetailsHeader > .compactStaffSummary { padding-top:12px; }
+.staffDetailsButton { min-width:44px;min-height:44px;padding:8px 4px;border:0;background:transparent;color:#68766e;font:inherit;font-size:12px;text-decoration:underline;text-underline-offset:3px;cursor:pointer; }
+.staffDetailsButton:focus-visible { outline:2px solid #42634a;outline-offset:2px; }
+.compactStaffCard > .disclosureSummary { align-items:flex-start;gap:6px;padding-block:12px; }
+.compactStaffCard > .disclosureSummary > .chevron { margin-top:1px; }
+.compactStaffSummary { min-width:0;width:100%;display:grid;gap:5px;font-variant-numeric:tabular-nums; }
+.compactPayoutRow { display:grid;grid-template-columns:minmax(42px,.65fr) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start; }
+.compactStaffName { font-weight:650;overflow-wrap:anywhere; }
+.compactPayout { min-width:0; }
+.compactPayoutValue { display:flex;align-items:baseline;justify-content:flex-end;gap:3px;flex-wrap:wrap;font-size:13px; }
+.compactPayoutValue strong { color:var(--payroll-green,#174e3d);white-space:nowrap; }
+.compactPayoutValue .negativePayout { color:#be123c; }
+.compactFormula { display:block;text-align:right;font-size:11px;line-height:1.4;color:#626b65;margin-top:2px;overflow-wrap:anywhere; }
+.compactExtras,.compactRules,.compactWarnings { display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px; }
+.compactExtras { font-size:12px;line-height:1.5; }
+.compactExtras b { font-weight:550; }
+.compactExtraRule,.compactRules,.compactIncludedNote { color:#626b65; }
+.compactRules { font-size:11px;line-height:1.5;gap:2px 6px; }
+.compactRules > span + span::before { content:'·';margin-right:6px; }
+.compactWarnings { font-size:11px; }
+.compactIncludedNote { font-size:12px; }
+@media(min-width:768px) {
+ .compactPayoutRow { grid-template-columns:minmax(100px,1fr) minmax(160px,1fr) minmax(160px,1fr); }
+ .compactPayoutValue { font-size:14px; }
+ .compactFormula,.compactRules { font-size:12px; }
+}
+
+/* Approved payment ledger: every amount is supplied by the existing calculator. */
+.compactStaffCard[data-open=true] > .staffDetailsHeader { background:#eff7ec; }
+.compactStaffCard .takeHomeBody { display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:0 0 12px; }
+.paymentTotals { display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 16px;font-size:14px; }
+.paymentTotals strong,.commissionTotal strong { color:var(--payroll-green,#174e3d);font-weight:650; }
+.commissionTotal { font-size:13px; }
+.paymentTable { width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums; }
+.paymentTable th,.paymentTable td { padding:7px 3px;border-bottom:1px solid #d8dfdf;text-align:right;vertical-align:middle;overflow-wrap:anywhere; }
+.paymentTable thead th { background:#dce9ec;color:#28372f;font-weight:600; }
+.paymentTable th:first-child { text-align:left;width:20%; }
+.paymentTable th:last-child,.paymentTable td:last-child { text-align:center; }
+.paymentTable tbody th { font-weight:550; }
+.paymentTable small { display:block;font-size:11px;color:#626b65;font-weight:400; }
+.page form.paymentForm[data-payroll-autosave],.paymentForm { display:grid;grid-template-columns:minmax(0,1fr);gap:8px;background:transparent;border:0;padding:0;border-radius:0;min-width:0; }
+.bonusInput { display:flex;align-items:center;gap:1px;border:1px solid #aab7b0;border-radius:4px;padding-inline:3px;background:#fff;min-width:0;max-width:90px;margin-left:auto; }
+.page .bonusInput input,.bonusInput input { width:100%;min-width:0;max-width:100%;border:0!important;box-shadow:none;background:transparent;border-radius:0;padding:5px 0;text-align:right;font:inherit;font-size:16px;min-height:36px;appearance:textfield; }
+.bonusInput input::-webkit-inner-spin-button,.bonusInput input::-webkit-outer-spin-button { appearance:none;margin:0; }
+.bonusInput:focus-within { outline:2px solid #42634a;outline-offset:1px; }
+.checkNumberRow { display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;font-size:12px;min-width:0; }
+.page .paymentForm > .checkNumberRow { grid-template-columns:auto minmax(0,1fr) auto; }
+.checkNumberRow input { min-width:0;width:100%;padding:7px; }
+.checkNumberRow a { display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;color:#336b60; }
+.paymentStatus { font-size:11px;color:#626b65; }
+.paymentBreakdown h3 { font-size:14px;font-weight:600;margin-bottom:6px; }
+.paymentDayHeader,.paymentDay { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.85fr) 36px;align-items:center;gap:6px;font-size:12px;font-variant-numeric:tabular-nums; }
+.paymentDayHeader { background:#dce9ec;padding:7px 4px;font-weight:550; }
+.paymentDay { padding:0 4px;border-bottom:1px solid #d8dfdf;min-height:38px; }
+.paymentDay > span,.paymentDayHeader > span:nth-child(n+2) { text-align:right;overflow-wrap:anywhere; }
+.paymentDay > button { min-width:36px;min-height:44px;display:grid;place-items:center;padding:0;border:0;background:transparent; }
+.paymentDay > form,.dayHistory { grid-column:1/-1;min-width:0; }
+@media(min-width:768px) { .paymentTable { font-size:13px; }.paymentTable th,.paymentTable td { padding:9px 6px; }.paymentTotals { font-size:16px; } }

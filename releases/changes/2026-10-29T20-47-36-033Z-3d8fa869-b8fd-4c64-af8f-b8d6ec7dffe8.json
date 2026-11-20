@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "native-wk-fixture-resource-release-20261029",
+  "status": "ready",
+  "summary": "Test-only cleanup releases retained isolated WK profile/store references after bounded cleanup and owner close; no product code, authority assertions, tests or timeout budgets changed",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029\\artifacts\\release-20261029-wk-cleanup\\frozen",
+    "commit": "2be04668359fff41a1032ee15adf34a98d2e59a8"
+  },
+  "dependencies": [
+    "pos-status-main-only-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Reviewed test-only diff:84 assertions unchanged, timeout budgets unchanged, no skips, no product/pipeline changes",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-wk-cleanup/review.json"
+    },
+    {
+      "name": "Frozen exact Git source bytes for both test files",
+      "result": "passed",
+      "evidence": "artifacts/release-20261029-wk-cleanup/frozen"
+    }
+  ],
+  "nativeGate": {
+    "required": true,
+    "status": "pending",
+    "criterion": "Existing complete235 tests must pass before archive/sign/upload; no disabled check or retry loop"
+  },
+  "id": "3d8fa869-b8fd-4c64-af8f-b8d6ec7dffe8",
+  "recordedAt": "2026-10-29T20:47:36.033Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift": "650532c0c89a24b5ac83ccb555702cf4bc49b142ddbb1ec647502360e65efe1f",
+    "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift": "f5ff8df0e71e74d44184fccce37d384a300acf81a963f8b3a7101b33714eb012"
+  }
+}

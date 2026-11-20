@@ -1,0 +1,115 @@
+{
+  "kind": "change",
+  "changeId": "ios-device-report-handoff-20261019",
+  "status": "ready",
+  "summary": "Fix physical build40 cold-guest Explore hidden-post command401 and native event-before-reply Owner handoff self-cancellation; preserve original guest device safety, private authorization, mutation and accounting logic. Validated candidate only; no production/TestFlight publication.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/command/route.ts",
+    "app/local-app/entry.tsx",
+    "app/saved-post/save-post-button.tsx",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/index.html",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/LocalAppBundle/market/features/booking-deposit.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/booking-policy.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/campaigns.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/checkin-receipt.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/payroll-data-download.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/service-relay.svg",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "lib/app-local-guest-read-policy.ts",
+    "tests/app-local-workspace-recovery-ui.test.mjs",
+    "tests/post-safety-guest-ui.test.mjs",
+    "tests/saved-post-guest-ui.test.mjs",
+    "tests/workspace-selection-contract.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\ios-device-report-20261019\\frozen-6b662672-raw",
+    "commit": "6b662672e7bf9af43216a0bfbcbd95a4cd6e113a",
+    "sourceSha256": "c81b00d51ec70ed215cbdc719411d2eb60e4b516aaa47470779c5ed2f2a1630d",
+    "overlaySha256": "94e388d5949c2b695597d51daeb387fa8ffa09177b9f6691bebf9bab73a73fe6",
+    "bundleBuild": "148f53dba33625ff1e46259964e0308c45fac843a89127a028b42dc8dac3a6d9"
+  },
+  "validation": [
+    {
+      "name": "released-regressions-reproduce-before-fix",
+      "result": "passed",
+      "evidence": "workspace-handoff-regression-evidence.json; guest-command-root-cause-evidence.json; original RED logs"
+    },
+    {
+      "name": "chromium-ui",
+      "result": "passed",
+      "evidence": "58/58, no failures/cancellations/skips; chrome-sequential-ui.log + chrome-safety-today.log"
+    },
+    {
+      "name": "webkit-ui",
+      "result": "passed",
+      "evidence": "58/58, no failures/cancellations/skips; webkit-sequential-ui.log"
+    },
+    {
+      "name": "auth-cache-workspace-contracts",
+      "result": "passed",
+      "evidence": "88/88, no failures/cancellations/skips; regression-sequential.log"
+    },
+    {
+      "name": "eslint",
+      "result": "passed",
+      "evidence": "lint-final.log; exit0"
+    },
+    {
+      "name": "production-build-typecheck",
+      "result": "passed",
+      "evidence": "production-build-final.log; exit0; 238 static pages; 430 offline assets"
+    },
+    {
+      "name": "xcode-installed-bridge-tests-and-unsigned-archive",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/39295504978; exact commit6b662672; 144 tests/0 failures/0 skips; real native handoff case passed; 404 source hashes and345 archived bundle resources match frozen source"
+    },
+    {
+      "name": "exact-frozen-source-and-bundle",
+      "result": "passed",
+      "evidence": "frozen-source-evidence.json; 3066 raw Git blobs; native-bundle-integrity.json; native-ci-attestation.json"
+    }
+  ],
+  "dependencies": [],
+  "limitations": [
+    "No post-fix physical-iPhone verification.",
+    "Phone diagnostics omit command identities; the source-proven unprompted guest path is reproduced, but cannot be assigned to each opaque phone401 individually.",
+    "One phone command503 lasted10.5s; its endpoint is absent from this diagnostic, so its independent origin remains unconfirmed.",
+    "Earlier overloaded parallel harness runs were inconclusive; final sequential runs preserve original assertions/timeouts and pass."
+  ],
+  "evidence": "C:/Users/giuse/kingpos/work/ios-device-report-20261019/artifacts/ios-device-report-20261019/verification-report.json",
+  "nativeBuildRequired": true,
+  "id": "86cf513c-aa88-4b79-86de-5eee4fae3964",
+  "recordedAt": "2026-10-19T17:45:58.647Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-device-report-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/app-local/command/route.ts": "ed950618a1b822bbc252a2e8832fee194595a8ed38450dc45106ec65826dee66",
+    "app/local-app/entry.tsx": "a69237b79d4984cca9e0e49eb360e30157388117f19a1d4713f40767e99e73eb",
+    "app/saved-post/save-post-button.tsx": "d26434cbf77573c59bdb21e4fe9de8964afe6f2a0f13910a54cf204634b14327",
+    "ios/Reylumi/LocalAppBundle/app.css": "334cdfe2a95ebb4b0e072d3a3cc93b5befc47ef1c1ae7866b0c40c41f6ffbea0",
+    "ios/Reylumi/LocalAppBundle/app.js": "c923083ad62cbffadabc4aea51f7a072d819993f80778061e79fe501bba33cf4",
+    "ios/Reylumi/LocalAppBundle/index.html": "d5d25fa0c096d5e1824ae72cd997a41fd2d0720e01daf22b3ecd805231313b83",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "f1f7d9d4b0b2fbaeb9e7a837280a193b202c24eb41c85bae1c60db3d234b814f",
+    "ios/Reylumi/LocalAppBundle/market/features/booking-deposit.svg": "fd4420aa76362835330e8a4ecfd81f585373337071dd2c72acfcae4c57dd8b32",
+    "ios/Reylumi/LocalAppBundle/market/features/booking-policy.svg": "05575ff532858a48d7f5730ab8c0851d3a0b3ce08d2e4c74c074c54b06ab7c37",
+    "ios/Reylumi/LocalAppBundle/market/features/campaigns.svg": "e6bd5e220a769adbb25f69df79adb2876063ff3afebd32c1e74515a39fb39394",
+    "ios/Reylumi/LocalAppBundle/market/features/checkin-receipt.svg": "2003812370592af87f8af27ec852e6d65e2d9a855a96d6dd53b7f97be1ed09a1",
+    "ios/Reylumi/LocalAppBundle/market/features/payroll-data-download.svg": "67fedbff77fff537b9450d667b09320d8d447baf7ff2ae57168401e480c937cc",
+    "ios/Reylumi/LocalAppBundle/market/features/service-relay.svg": "41f321ddb74af23046f9c199764ba2438991d7c272633dbe071db1d05ab51e7f",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift": "9c643b902401dcdbdca4e46057146eeba36d5fc20971507e3cae9762dcf06d05",
+    "lib/app-local-guest-read-policy.ts": "7a83c8b0449f94d49ee4d2f7fc6637a10c0db128687e9eb87ec6c960d16c0e44",
+    "tests/app-local-workspace-recovery-ui.test.mjs": "06b0b17ba559a4fba247506c5e085aaedc37690673326582ebc6a3b3895445f2",
+    "tests/post-safety-guest-ui.test.mjs": "e0e30ee28071ee88b7248bb0a87af19030ad49da92280ee2378068f59ad6784a",
+    "tests/saved-post-guest-ui.test.mjs": "13e697f2bd7716b0d5278962c097f9a3c4d1ef371ffa842e4d75d9cd1610642a",
+    "tests/workspace-selection-contract.test.mjs": "a238a82ac060710e96be6dcc3a15e3a895ae22f8970bdd686264c763f9116273"
+  }
+}

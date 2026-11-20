@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-privacy-remediation-20261116",
+  "status": "working",
+  "summary": "Prepare iOS store privacy remediation: Tax personal profile erasure, lifecycle export expiry, truthful policy and reviewable declarations",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/legal-policies.ts",
+    "lib/account-erasure-worker.ts",
+    "lib/lifecycle-export-storage.ts",
+    "lib/account-retention-policy.ts",
+    "app/account/account-deletion-panel.tsx",
+    "docs/ios-store-privacy-remediation-20261116.md"
+  ],
+  "source": {
+    "commit": "23e66abd5a197d66fd9d2e9fbb358b160af06307"
+  },
+  "validation": [
+    {
+      "name": "Implementation and candidate checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "scopeBoundary": "Local preparation only; no production data cleanup, public policy publication, Apple declarations or submission.",
+  "id": "fbf81fce-1b89-4408-afd5-f9ef49964884",
+  "recordedAt": "2026-11-16T20:32:44.449Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

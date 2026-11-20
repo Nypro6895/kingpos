@@ -1,0 +1,86 @@
+Services local-first measurement protocol — 2026-10-22
+
+Scope and acceptance
+Use the exact integrated candidate on iOS Simulator with actual Swift transport,
+native session/cookies and an authorized nonproduction backend. Simulator is the
+user-approved pre-deploy standard. Physical iPhone is optional after deploy.
+This protocol is a proposal for measurement, not authorization to deploy or to
+change production architecture. Current synthetic transport fixtures establish
+ordering/correctness only; they do not supply the authenticated latency baseline.
+
+Keep the server authorization checks, fresh admission on every entry/restart,
+30-second maximum admission and 15-minute catalog TTL identical across modes.
+Admission is never restored from disk. Persistent payload can still help after
+restart or after 30 seconds: a new successful admission can unlock the old valid
+payload before the separate catalog response is ready. Measure that difference.
+If admission dominates, quantify it before proposing a separate optimization.
+
+Matched modes
+P: shared Services view/controller and current persistent IndexedDB adapter.
+M: same view/controller and reads with a test-only memory adapter preserving the
+   same partition, validation, TTL, bounds and purge rules; clear on process exit.
+C: same view/controller and reads with test-only cache misses/writes disabled.
+Use QA harness dependency injection for M/C; do not add production switches or
+change server endpoints. The ordinary flag-off manager loads a broader DTO and
+editor UI. If measured, label it a separate product comparison, not matched C.
+
+Before collecting samples
+Bind candidate commit/tree, QA bundle hash, backend revision, build configuration,
+Xcode/iOS Simulator model/runtime, Mac model, synthetic QA dataset and catalog
+size, account/salon/effective-role test labels, warm-up/cache preparation rules,
+process state, and app/test-level network profile. Do not record credentials or
+real customer payloads. Preserve existing QA sessions. User enters login directly
+if needed. Never change system network settings to enable this protocol.
+
+Per-run trace (null means a stage did not occur)
+Use one navigation/refresh start with monotonic durations within each process.
+Correlate native/backend spans with test request IDs; do not subtract unrelated
+clock bases. Record:
+- firstDOM: shell first observed in the DOM.
+- firstDataDOM: first visible authorized service rows, with cache/fresh source.
+- cacheRender: first cached-row DOM observation and the existing component metric.
+- freshDataReady: fresh authorized catalog accepted/validated by the controller.
+- freshDOM: first DOM observation of the fresh test revision.
+- admission: start/end/status for initial admission and every confirmation.
+- catalog: start/end/status, transfer size, cancellation and retry attempts.
+- requestCount: admission, catalog and total host.read calls separately.
+- storage: open/read/write durations, hit/miss/rejection reason and entry age.
+- correctness: cross-account/tenant leakage result, admission expiry, known-denial
+  disposition, late-response outcome, and expected cache revision.
+DOM/effect timings are not a physical display-paint measurement. Report that limit.
+Server query counts require backend instrumentation; never derive them from
+host.read counts. A 304 still has authorization/reader cost; this pilot uses 200.
+
+Scenario cells, identical Services data in every mode
+Empty cold fetch; warm same-salon return; salon A-B-A; role change within a salon;
+full process restart immediately and on both sides of 30 seconds; exact 15-minute
+payload TTL boundary; local successful mutation then return; logout then another
+account. For cold/role switch/return/restart, report all first/fresh/request/leakage
+fields, including missing stages. Restart always requires a new admission.
+Separate correctness traces cover 401/403 then 503 then a newly requested 200,
+late 200 after purge, account/scope change in flight, revoke while DTO is visible,
+network loss versus ambiguous 5xx, corruption/eviction/unavailable/hung storage,
+and default-off rollback. Synthetic fault injection remains labelled separately
+from actual authenticated backend transport evidence.
+
+Sampling and interpretation
+Start by measuring the real authenticated Services baseline. Alternate or
+randomize paired P/M/C order; declare warm-up/exclusion rules before collection
+and preserve failures/raw samples. Choose additional repetitions based on the
+observed variability and uncertainty. No mandatory 30 samples, 100 ms storage
+budget or 50 ms performance threshold is adopted from external advice.
+Report n, median, range and paired differences; tail estimates need enough data
+and an uncertainty caveat. Define any meaningful improvement threshold from the
+Services UX and baseline before making an acceptance claim.
+Historical roughly eight-second My Work timings and fixture call reductions are
+not Services baselines. Do not extrapolate Simulator latency to physical iPhone.
+If persistent storage adds no measured benefit over M for restart/return, report
+that result and keep default-off; changing storage strategy is a separate choice.
+
+Release gate
+Any unauthorized display, cross-account/tenant leakage, revival after known
+denial, or failed rollback blocks acceptance regardless of speed. Complete the
+integrated authenticated Simulator correctness and rollback checks before any
+deployment decision. No remote kill switch, native database/bridge, endpoint,
+server permission version, production migration or relaxed admission is proposed
+as part of this delta.

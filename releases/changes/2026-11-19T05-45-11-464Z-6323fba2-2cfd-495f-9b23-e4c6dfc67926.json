@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "app-local-advertising-transport-20261118",
+  "status": "working",
+  "summary": "Revision 2: fix native shell command TypeScript narrowing with explicit stable input guard; preserve runtime validation and original frozen revision",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-advertising-input.ts",
+    "lib/app-local-command-trace-names.generated.json",
+    "app/api/app-local/command/route.ts",
+    "tests/app-local-advertising-transport.test.mjs",
+    "tests/app-local-shell-auxiliary.test.mjs",
+    "docs/app-local-advertising-transport-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "ads-reporting-transparency-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Original R9 build rejected unknown-property TypeScript check",
+      "result": "failed"
+    },
+    {
+      "name": "Scoped semantic TypeScript + 25 behavior checks + ESLint",
+      "result": "pending"
+    }
+  ],
+  "id": "6323fba2-2cfd-495f-9b23-e4c6dfc67926",
+  "recordedAt": "2026-11-19T05:45:11.464Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

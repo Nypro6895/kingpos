@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "local-first-services-native-delta-r6",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Connect frozen Services pilot to native Services registry through existing host.read; QA only; no auth policy changes or release.",
+  "files": [
+    "app/services/services-catalog-pilot.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-types.ts",
+    "lib/app-local-platform-resources-server.ts",
+    "app/api/services/catalog-pilot/route.ts",
+    "lib/services-catalog-native-runtime.ts",
+    "lib/services-catalog-native-flag.ts",
+    "scripts/build-app-local-bundle.mjs",
+    "tests/app-local-page-admission-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "5d6558c1675f33dddbfa3281d1dddac53bee6ce1"
+  },
+  "dependencies": [
+    "Frozen pilot dbad6b0e661c4ba59939207bfb407549ecbde4c1",
+    "Auth specialist R6 classification remains separate; reconcile notify:false reset hook during integration"
+  ],
+  "validation": [
+    {
+      "name": "frozen previous artifacts53 SHA256 verification",
+      "result": "passed"
+    }
+  ],
+  "releaseHeld": true,
+  "id": "31ed7437-3777-4b62-b021-4ff5908978e3",
+  "recordedAt": "2026-10-21T23:34:15.802Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\services-native-delta",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

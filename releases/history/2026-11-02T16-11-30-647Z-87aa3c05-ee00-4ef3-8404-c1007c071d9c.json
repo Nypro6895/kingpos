@@ -1,0 +1,49 @@
+{
+  "kind": "release",
+  "summary": "Publish combined compact Salon/All Settings, Staff hours, salon profile header and Payroll/Today dividers; includes accurate online-booking permission and compact description preview",
+  "changes": [
+    "20eee3b2-2c03-42d8-b757-9d6d2cc03743",
+    "7dd319b8-6049-4d3b-98b4-e320a113449b",
+    "4524c660-d4da-40b3-bede-4e668e946859",
+    "5c8633cd-5c7f-4723-aae7-c42cd2b185fd"
+  ],
+  "targets": {
+    "web": {
+      "at": "2026-11-02T16:09:56.909Z",
+      "verified": true,
+      "format": "Vercel direct source content hashes",
+      "mode": "live",
+      "deploymentId": "dpl_ANW87cmn5LVuD2qTGLRxtYoy8e9y",
+      "url": "kingpos-58zf5ipj0-kingpos.vercel.app",
+      "aliasDeploymentId": "dpl_ANW87cmn5LVuD2qTGLRxtYoy8e9y",
+      "commit": "08d0a17e4b6a97185a7f76893ccf70059d613197",
+      "files": 3781,
+      "sourceSha256": "e69821a3352bc37e899bd30dcea424fb2b610dade45131479e31e1626ff12185",
+      "overlaySha256": "d3be3e81f76ecf06c9973d0578ad16d51a7f3fb7a042b15f8fae4b7bb2be849e",
+      "baselineDeploymentId": "dpl_FiioYgasbrUphi7ZV7Ji5ErkJfF3",
+      "status": "published",
+      "initialBaselineDeploymentId": "dpl_HqmigxW39vxi2SRAoYM1y4KjzB6G",
+      "intermediateDeploymentId": "dpl_FiioYgasbrUphi7ZV7Ji5ErkJfF3",
+      "evidence": "releases/evidence/settings-combined-release-20261102/live-source-verified.json"
+    }
+  },
+  "nativeAssessment": {
+    "required": false,
+    "reason": "Only web-compatible UI and existing server-action/schema contracts changed; no native bridge, Swift, bundled or signing change"
+  },
+  "validation": {
+    "testsPassed": 21,
+    "testsSkipped": 0,
+    "productionBuild": "passed",
+    "authenticatedOwnerBrowser": "passed",
+    "physicalIPhone": "not-verified"
+  },
+  "rollback": {
+    "deploymentId": "dpl_FiioYgasbrUphi7ZV7Ji5ErkJfF3",
+    "initialBaselineDeploymentId": "dpl_HqmigxW39vxi2SRAoYM1y4KjzB6G",
+    "condition": "Only restore this release after checking no unrelated deployment has replaced the live alias"
+  },
+  "id": "87aa3c05-ee00-4ef3-8404-c1007c071d9c",
+  "recordedAt": "2026-11-02T16:11:30.647Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-combined-release-20261102"
+}

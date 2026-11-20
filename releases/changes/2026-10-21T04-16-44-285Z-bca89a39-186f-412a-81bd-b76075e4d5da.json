@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "ios-background-cookie-authority-20261020",
+  "status": "needs-integration",
+  "summary": "Background cookie delivery now uses the canonical foreground production writer; six real-WK synthetic background cases are authored. Native compilation and expected180-test integration run remain pending.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiBackgroundSync.swift",
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/bg-cookie-d5ecb7a-source",
+    "commit": "d5ecb7a51e7ccd313e1e79c73d2adf823608955b",
+    "snapshotSha256": "518dac93252a4ba772762b025eb043837899da04adb604b2f3909d1e2bdab2ee"
+  },
+  "fileHashes": {
+    "ios/Reylumi/ReylumiBackgroundSync.swift": "6df08a434652f080b4c7252c8baf7a9d2614c6425f377d322a60053ab3aff1dc",
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift": "5900150af2be4661c2a844fc5b7a38d5cda5c5465318fca684248bac51fa9cae"
+  },
+  "validation": [
+    {
+      "name": "Minimal writer integration and unchanged raw source from registerScheduler through all read/authority/epoch/cancellation guards and EOF",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/bg-cookie-source-review.json"
+    },
+    {
+      "name": "Independent iOS source review found no concrete compiler, test or permission-widening blocker; actual runtime not claimed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/mac-mini-ios-audit-20261020/bg-cookie-source-review.json"
+    },
+    {
+      "name": "Native compile and expected180-test suite with six actual isolated-WK synthetic background cases",
+      "result": "pending"
+    },
+    {
+      "name": "Assembled app-local bundle and Release Simulator build",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-workspace-cookie-deletion-20261020"
+  ],
+  "supersedesEvents": [],
+  "id": "bca89a39-186f-412a-81bd-b76075e4d5da",
+  "recordedAt": "2026-10-21T04:16:44.285Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-bg-cookie-20261020",
+  "deletedFiles": []
+}

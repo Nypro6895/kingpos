@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "help-context-dismiss-20261020",
+  "status": "working",
+  "summary": "Repair retained account drawer dismissal during local Help navigation without changing workspace or write authority.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "components/app-local-shell.tsx",
+    "tests/app-local-help-dismiss-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "d73afd529b6b5b3c0ba3437efcb6e225d5f1269c"
+  },
+  "dependencies": [
+    "ios-workspace-cookie-20261020",
+    "auth-session-missing-20261020"
+  ],
+  "validation": [
+    {
+      "name": "DOM regression and targeted lint",
+      "result": "pending"
+    },
+    {
+      "name": "Rebundle and real candidate role QA",
+      "result": "pending"
+    }
+  ],
+  "id": "bb20a3dc-f74d-4e22-af7b-6a316d8c81dd",
+  "recordedAt": "2026-10-21T04:10:06.881Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-help-dismiss-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

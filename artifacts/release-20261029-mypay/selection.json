@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-29T21:09:47.446Z",
+  "ready": "ed191f56-53e9-40df-8ee4-39817fca6943",
+  "producer": "61a9a430-1afd-478b-bc54-0a383a997a1f",
+  "files": [
+    "app/staff/my-work/staff-pay-analysis.tsx"
+  ],
+  "baselineDeployment": "dpl_2y9eNg7nYiVU5pSx1zBLZ5PM7EvE",
+  "baselineCommit": "abd50d9b653b1f75013f9937436324fc08a4b24a",
+  "nativeBaselineCommit": "3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631",
+  "nativeBaselineBuild": "70",
+  "deferred": [
+    {
+      "changeId": "market-publishers-20261029",
+      "reason": "Underlying independent Developer Market platform not present in production; required older chain remains needs-integration with commerce/provider acceptance pending. Never overlay publisher-only files."
+    },
+    {
+      "changeId": "payroll-compact-income-20261029",
+      "reason": "Owner explicitly requires history audit and logic agreement before implementation/publication; display-only portions already shipped."
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "reason": "Disabled-compatible code already live; sales activation/financial keys/provider readiness not part of this release."
+    }
+  ]
+}

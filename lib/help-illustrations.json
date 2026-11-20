@@ -1,0 +1,704 @@
+{
+  "welcome": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/welcome-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/welcome-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/welcome-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/welcome-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "signup": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/signup-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/signup-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/signup-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/signup-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "explore": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/explore-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/explore-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/explore-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/explore-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "booking": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/booking-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/booking-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/booking-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/booking-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "booking-confirmed": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/booking-confirmed-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/booking-confirmed-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/booking-confirmed-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/booking-confirmed-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "salon-new": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/salon-new-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/salon-new-mobile.jpg",
+        "width": 390,
+        "height": 958
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/salon-new-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/salon-new-mobile.jpg",
+        "width": 390,
+        "height": 958
+      }
+    }
+  },
+  "claim": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/claim-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/claim-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/claim-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/claim-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "connections": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/connections-desktop.jpg",
+        "width": 1440,
+        "height": 967
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/connections-mobile.jpg",
+        "width": 390,
+        "height": 1088
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/connections-desktop.jpg",
+        "width": 1440,
+        "height": 967
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/connections-mobile.jpg",
+        "width": 390,
+        "height": 1088
+      }
+    }
+  },
+  "staff-daily": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/staff-daily-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/staff-daily-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/staff-daily-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/staff-daily-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "staff-appointments": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/staff-appointments-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/staff-appointments-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/staff-appointments-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/staff-appointments-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "services": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/services-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/services-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/services-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/services-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "staff-setup": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/staff-setup-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/staff-setup-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/staff-setup-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/staff-setup-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "booking-settings": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/booking-settings-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/booking-settings-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/booking-settings-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/booking-settings-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "pos-setup": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/pos-setup-desktop.jpg",
+        "width": 1440,
+        "height": 965
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/pos-setup-mobile.jpg",
+        "width": 390,
+        "height": 1089
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/pos-setup-desktop.jpg",
+        "width": 1440,
+        "height": 965
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/pos-setup-mobile.jpg",
+        "width": 390,
+        "height": 1141
+      }
+    }
+  },
+  "display-pair": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/display-pair-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/display-pair-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/display-pair-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/display-pair-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "customer-display": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/customer-display-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/customer-display-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/customer-display-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/customer-display-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "check-in": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/check-in-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/check-in-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/check-in-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/check-in-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "checkout": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/checkout-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/checkout-mobile.jpg",
+        "width": 390,
+        "height": 859
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/checkout-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/checkout-mobile.jpg",
+        "width": 390,
+        "height": 859
+      }
+    }
+  },
+  "payroll": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/payroll-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/payroll-mobile.jpg",
+        "width": 390,
+        "height": 934
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/payroll-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/payroll-mobile.jpg",
+        "width": 390,
+        "height": 934
+      }
+    }
+  },
+  "tax": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/tax-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/tax-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/tax-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/tax-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "reports": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/reports-desktop.jpg",
+        "width": 1440,
+        "height": 997
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/reports-mobile.jpg",
+        "width": 390,
+        "height": 1102
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/reports-desktop.jpg",
+        "width": 1440,
+        "height": 997
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/reports-mobile.jpg",
+        "width": 390,
+        "height": 1102
+      }
+    }
+  },
+  "beauty-profile": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/beauty-profile-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/beauty-profile-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/beauty-profile-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/beauty-profile-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "salon-profile": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/salon-profile-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/salon-profile-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/salon-profile-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/salon-profile-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "support": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/support-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/support-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/support-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/support-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "money-flow": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/money-flow-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/money-flow-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/money-flow-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/money-flow-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "external-card": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/external-card-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/external-card-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/external-card-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/external-card-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  },
+  "owner-remote": {
+    "en": {
+      "desktop": {
+        "src": "/help/2026-10-16/en/owner-remote-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/en/owner-remote-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    },
+    "vi": {
+      "desktop": {
+        "src": "/help/2026-10-16/vi/owner-remote-desktop.jpg",
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "src": "/help/2026-10-16/vi/owner-remote-mobile.jpg",
+        "width": 390,
+        "height": 844
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+name: Reylumi iPad simulator check
+on:
+  workflow_dispatch:
+    inputs:
+      ios_source_ref:
+        description: 'Exact immutable commit of the selected iOS candidate (must contain ios/)'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  ipad:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ios_source_ref }}
+          path: native-source
+      - name: Generate project and select available iPad
+        working-directory: native-source/ios
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew install xcodegen
+          xcodegen generate
+          mkdir -p build
+          xcodebuild -version | tee build/ipad-xcode.txt
+          xcrun simctl list devices available --json > build/ipad-devices.json
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import json
+          with open('build/ipad-devices.json') as f:
+              devices = json.load(f)['devices']
+          for runtime, entries in devices.items():
+              if '.iOS-' in runtime:
+                  for device in entries:
+                      if device.get('isAvailable') and device['name'].startswith('iPad'):
+                          print('REYLUMI_IPAD_ID=' + device['udid'])
+                          raise SystemExit(0)
+          raise SystemExit('No available iPad Simulator')
+          PY
+      - name: Test existing native source on iPad
+        working-directory: native-source/ios
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild test -project Reylumi.xcodeproj -scheme Reylumi \
+            -destination "platform=iOS Simulator,id=$REYLUMI_IPAD_ID" \
+            -resultBundlePath build/iPadTests.xcresult CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee build/ipad-test.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reylumi-ipad-check
+          path: native-source/ios/build/
+          retention-days: 14

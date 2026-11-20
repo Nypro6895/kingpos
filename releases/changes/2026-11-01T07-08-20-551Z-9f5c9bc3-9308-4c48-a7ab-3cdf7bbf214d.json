@@ -1,0 +1,95 @@
+{
+  "kind": "change",
+  "changeId": "owner-attention-payroll-polish-20261101",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Full-width flat financial groups, list-style Attention, uncached native Shop reads separate from writes and precise save/refresh status",
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/api/shop-money/route.ts",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/shop-money-workspace.tsx",
+    "app/payroll/shop-money.module.css",
+    "app/staff/today/attention-detail.tsx",
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/owner-attention.module.css",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-layout.module.css",
+    "docs/owner-attention-payroll-polish-20261101.md",
+    "lib/app-local-owner-page-registry-server.ts",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/app-local-platform-types.ts",
+    "lib/app-local-role-http-server.ts",
+    "lib/payroll-page-load-plan.ts",
+    "lib/payroll.ts",
+    "tests/owner-attention-browser.mjs",
+    "tests/owner-attention-native.test.mjs",
+    "tests/owner-payroll-polish-browser.mjs",
+    "tests/payroll-load-concurrency.test.mjs",
+    "tests/payroll-load-plan.test.mjs",
+    "tests/shop-money-live-read.test.mjs"
+  ],
+  "dependencies": [
+    "owner-financial-attention-20261101",
+    "payroll-style-reference-20261101"
+  ],
+  "source": {
+    "commit": "01c681fa08af8dba39e11c8e4c53e554a4faf547",
+    "snapshot": "C:\\Reylumi-worktrees\\owner-attention-payroll-polish-20261101\\artifacts\\owner-payroll-polish\\flat-frozen",
+    "baseline": "4931ef6",
+    "payrollBaseline": "154c0ce"
+  },
+  "validation": [
+    {
+      "name": "20 owner API/native/financial regressions",
+      "result": "passed"
+    },
+    {
+      "name": "64 browser views, full-width flat bands, single save/refresh and refresh-failure state",
+      "result": "passed"
+    },
+    {
+      "name": "Five Attention browser widths, plain list and compact right action",
+      "result": "passed"
+    },
+    {
+      "name": "Full TypeScript, scoped ESLint zero errors, Safari16 source bundle verify",
+      "result": "passed"
+    }
+  ],
+  "supersedesEvents": [
+    "80aa639e-f6ab-46a3-befc-02472e93120b"
+  ],
+  "id": "9f5c9bc3-9308-4c48-a7ab-3cdf7bbf214d",
+  "recordedAt": "2026-11-01T07:08:20.551Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-attention-payroll-polish-20261101",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "7763a7d5a1050562dda4ed2e53b35f8a336b49749c28bd2946e2a610de496a09",
+    "app/api/shop-money/route.ts": "30f3febc0d3a2fff570f17e9f27728c67efd0a84008a175d66e592ccb6cd6435",
+    "app/payroll/payroll-mobile.module.css": "b07f224660b999b6a4961bc39b22a556633c5c3bede4bb2a8315303ac12ff6f5",
+    "app/payroll/shop-money-workspace.tsx": "421910c14c07bc41ec78952461cb441afae3c486ac347ff2723535fd66436aa9",
+    "app/payroll/shop-money.module.css": "239a5c575f8b2684749262256ce87b3b73542727887fa289b443950c918f0cda",
+    "app/staff/today/attention-detail.tsx": "284712f41261f592c2fc8baefed3517cbac252fddd4a7a70d6b293a74698bbc4",
+    "app/staff/today/owner-attention-panel.tsx": "d252e59ad1b1eb482ff8636ff6742bf59531924a1ff9443b7b79827d1192cc1d",
+    "app/staff/today/owner-attention.module.css": "ba637afd71cc9969e52e2b8dd93783e4092bfee21c079e854d4ebad598ed1642",
+    "app/staff/today/today-dashboard-view.tsx": "d1ec2115565f10b70133f0c8ab68be5f89878d0a71fe811a09c0a0b104759797",
+    "app/staff/today/today-layout.module.css": "35d4e47365b7d84a51723778793755510f023415ee3fe2395952e7004869ffca",
+    "docs/owner-attention-payroll-polish-20261101.md": "aa56bec2a3248c50684c6568b399cdaf9d91dcfd12581130a3628b8ada21a922",
+    "lib/app-local-owner-page-registry-server.ts": "587240e1a5b6572ba3dc628ab01b97bb866031badf3cf869a4d75e07cf862ada",
+    "lib/app-local-owner-payroll-view.tsx": "1aaabbd891bd6506b8b8165db180cf4927eebdcfbdb990c9b9c2da422c296960",
+    "lib/app-local-platform-types.ts": "52940af8d6e6ff3e2ec96142857455e33737b6b1db07430c443cd9b5f0728ad1",
+    "lib/app-local-role-http-server.ts": "0d2b0e6415677875bf0cd43e629da12eef0fe59221bf993cbbb631f0658ade70",
+    "lib/payroll-page-load-plan.ts": "00595bfc4a4c618aafbd4de9fe06f58c6529c2962684ddefcdfecc1eb852f51d",
+    "lib/payroll.ts": "4a1d31db142936d4c0994c7b1d21807ea294d0d259610df4f910a35ed88fac8b",
+    "tests/owner-attention-browser.mjs": "e5964bbb12a16b642b2737014037a82c8a84cd4b41606e197e6a7b393dfe1c77",
+    "tests/owner-attention-native.test.mjs": "5df825a4f94a23187f1e9804ecec0fdd64792a2eea9f50ab1292cc750af3e3f8",
+    "tests/owner-payroll-polish-browser.mjs": "8fb18d8ffab1318032948c23c7fc8eca72502a85590f932b2b78fa9e4e85c54e",
+    "tests/payroll-load-concurrency.test.mjs": "2aba9048f4bdabacda31cfc4e2be1fa4b097b58c9364ca45ac8886dd09bdff28",
+    "tests/payroll-load-plan.test.mjs": "33ebc7b6d826aeef0bd51ade5fbfc41ebd600184668aa990aed86be592e856e0",
+    "tests/shop-money-live-read.test.mjs": "bd6f2dcae7a0236c1e40bf1084c75392420af0325c550884df617f730b946393"
+  }
+}

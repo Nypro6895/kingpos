@@ -1,6 +1,13 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
+import { SubmitButton } from "@/components/submit-button";
 import { useActionState } from "react";
+import { PortableTouchKeyboard } from "./touch-keyboard";
+import { PortableFullscreenButton } from "./portable-fullscreen-button";
+import { PortableInstallHelp } from "./portable-install-help";
+import { PortableNativeModeSettings } from "./portable-native-mode-settings";
+import "./device-input-settings.css";
 import {
   forgetPortablePosAccessIdAction,
   signInPortablePosAction,
@@ -27,21 +34,23 @@ export function PortablePosLoginForm({
   const hasRememberedId = Boolean(rememberedAccessId);
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-sm" data-portable-login-shell>
+      <PortableFullscreenButton cornerExit />
+      <PortableTouchKeyboard scopeSelector="[data-portable-login-shell]" />
       <form
         action={formAction}
         className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm"
       >
         {state.error ? (
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
-            {state.error}
+            <WorkspaceText text={state.error} />
           </p>
         ) : null}
 
         {hasRememberedId ? (
           <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2">
             <p className="text-xs font-semibold uppercase text-zinc-500">
-              Saved POS ID
+              <WorkspaceText text="Saved POS ID" />
             </p>
             <p className="mt-1 truncate text-sm font-semibold text-zinc-950">
               {rememberedAccessId}
@@ -50,7 +59,7 @@ export function PortablePosLoginForm({
           </div>
         ) : (
           <label className="block">
-            <span className="text-sm font-semibold text-zinc-700">POS ID</span>
+            <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="POS ID" /></span>
             <input
               autoComplete="username"
               className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-950 outline-none focus:border-zinc-950"
@@ -61,7 +70,7 @@ export function PortablePosLoginForm({
         )}
 
         <label className="block">
-          <span className="text-sm font-semibold text-zinc-700">Passcode</span>
+          <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Passcode" /></span>
           <input
             autoComplete="current-password"
             className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-950 outline-none focus:border-zinc-950"
@@ -79,7 +88,7 @@ export function PortablePosLoginForm({
               name="remember_id"
               type="checkbox"
             />
-            Save POS ID
+            <WorkspaceText text="Save POS ID" />
           </label>
         ) : (
           <input name="remember_id" type="hidden" value="on" />
@@ -91,20 +100,22 @@ export function PortablePosLoginForm({
           disabled={pending}
           type="submit"
         >
-          {pending ? "Opening" : submitLabel}
+          <WorkspaceText text={pending ? "Opening" : submitLabel} />
         </button>
       </form>
 
       {hasRememberedId ? (
         <form action={forgetPortablePosAccessIdAction} className="mt-3 text-center">
-          <button
+          <SubmitButton pendingLabel="Opening…"
             className="text-sm font-semibold text-zinc-600 underline-offset-4 hover:text-zinc-950 hover:underline"
             type="submit"
           >
-            Use different POS ID
-          </button>
+            <WorkspaceText text="Use different POS ID" />
+          </SubmitButton>
         </form>
       ) : null}
+      {returnTo === "/pos/portable" && <PortableInstallHelp />}
+      {returnTo === "/pos/portable" && <PortableNativeModeSettings />}
     </div>
   );
 }

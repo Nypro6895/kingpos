@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "market-owner-browser-fixture-env-20261120",
+  "status": "working",
+  "summary": "Fix the canonical Market owner-target browser fixture's missing process.env define without changing product behavior, assertions or timeouts.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/market-owner-target-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/ios-market-owner-fixture-20261120-r1",
+    "commit": "29c3c11bf10c3ed86bda4e8e44264c2c9f25472d"
+  },
+  "validation": [
+    {
+      "name": "Previously isolated pre-mount fixture failure",
+      "result": "passed",
+      "evidence": "Existing fixture lacked process.env substitution; the already-owned isolated artifact with an empty process.env define passed original assertions. No real provider/config values copied."
+    },
+    {
+      "name": "Canonical and retained-workspace regressions",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-auto-credit-first-release-20261120"
+  ],
+  "id": "b8a11f45-d20b-4812-a769-b11c3f14ad5c",
+  "recordedAt": "2026-11-20T17:11:31.188Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-market-owner-fixture-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

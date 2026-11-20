@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "retained-storage-ownership-20261116",
+  "status": "needs-integration",
+  "summary": "Verified independent Storage COPY ownership correction; all four retained buckets preserve bytes and private ACLs, strict Auth erasure completes; not hosted or published",
+  "channels": [
+    "web"
+  ],
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116"
+  ],
+  "validation": [
+    {
+      "name": "Standalone SQL tests without image schema dependency (2/2)",
+      "result": "passed",
+      "evidence": "tests/retained-storage-ownership.integration.test.mjs"
+    },
+    {
+      "name": "Actual Storage all-four-bucket byte hashes, private ACLs, ownership checkpoints and Auth hard-delete/final completion",
+      "result": "passed",
+      "evidence": "artifacts/public-image-safety-20261116/full-schema/public-image-safety-acceptance.json"
+    },
+    {
+      "name": "Hosted baseline integration and provider acceptance",
+      "result": "pending"
+    }
+  ],
+  "files": [
+    "docs/retained-storage-ownership-20261116.md",
+    "releases/changes/2026-11-16T23-51-26-672Z-7437d70d-ed8f-40a5-9ae0-20f527169b6f.json",
+    "supabase/migrations/20261116215000_retained_storage_ownership.sql",
+    "tests/retained-storage-ownership.integration.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/public-image-safety-20261116/frozen-r2/retained",
+    "commit": "16ff6cb50419324da98279cd898ca96b910b3fcf"
+  },
+  "snapshotSha256": "4c67b0c76e9a41a9df521325e9ecdb131e5900f23c4005ceffeaf240d120f89a",
+  "id": "7842fe92-f7d7-42a6-ba72-c7d4cac8a76e",
+  "recordedAt": "2026-11-16T23:57:44.543Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "r10-native-reset-pending-20261022",
+  "status": "working",
+  "summary": "Keep normal native explicit-reset revalidation pending briefly instead of premature failure; preserve authority withdrawal, no extra reads or commands, bounded manual fallback.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "tests/app-local-entry-recovery-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos-r10-native-reset-pending-20261022",
+    "commit": "7e284b8749d79a990abedf8dade33c6909949903"
+  },
+  "validation": [
+    {
+      "name": "Actual authenticated trace and frozen-source cause review",
+      "result": "passed",
+      "evidence": "artifacts/pc-ios-reliability-20261021/r10-runtime/auth-existing-js-readonly-20261022T163743168581Z/result.json; SHA1c58a6ab8359b5564ab9479be43851e3a45c4f9668f401b47b3c53eb0a9315cb; local reset error83xxms before valid authority; visible button attribution remains unconfirmed."
+    },
+    {
+      "name": "Chromium/WebKit actual-entry regressions, scoped lint and full TypeScript",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "occurredAt": "2026-10-22T16:45:57.600Z",
+  "id": "c1b5b107-63da-4923-ab9f-888605a15c48",
+  "recordedAt": "2026-10-22T16:46:01.408Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

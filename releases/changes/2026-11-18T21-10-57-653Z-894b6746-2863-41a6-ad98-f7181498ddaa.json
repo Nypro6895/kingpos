@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "ios-commerce-return-acceptance-20261118",
+  "status": "needs-integration",
+  "summary": "Fixed Market return pending reporting and ad-credit expiry webhook retry; 123 synthetic/local commerce checks passed, held for combined release integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/market-payment-return.ts",
+    "app/market/payment-return-actions.ts",
+    "tests/ios-commerce-return-acceptance.test.mjs",
+    "docs/ios-commerce-implementation-20261118.md",
+    "lib/campaign-payments.ts",
+    "tests/market-tax-reconciliation.test.mjs",
+    "tests/market-card-foreground-ui.test.mjs",
+    "tests/market-safari-booking-deposit-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-commerce-implementation-20261118\\frozen",
+    "sourceSha256": "65804e0965ef437db7c1d3f97646bcab7e32fccc53d88ff829a1c5cd390ef501",
+    "manifest": "artifacts/ios-commerce-implementation-20261118/frozen-manifest.json"
+  },
+  "validation": [
+    {
+      "name": "Combined scoped synthetic/PGlite/browser acceptance",
+      "result": "passed",
+      "evidence": "artifacts/ios-commerce-implementation-20261118/final-acceptance.log (123/123, zero skipped)"
+    },
+    {
+      "name": "Baseline regression reproduction",
+      "result": "passed",
+      "evidence": "artifacts/ios-commerce-implementation-20261118/baseline-regression-final.log (four expected failures before corrections)"
+    },
+    {
+      "name": "Scoped ESLint and CRLF-aware whitespace",
+      "result": "passed",
+      "evidence": "artifacts/ios-commerce-implementation-20261118/eslint-final.log"
+    },
+    {
+      "name": "Coordinator combined full build and release integration",
+      "result": "pending",
+      "evidence": "Coordinator owns full combined build after all agents/key flow; no separate build or publication."
+    }
+  ],
+  "dependencies": [],
+  "scopeBoundary": "No real payments/messages/ads/provider GET/customer-bank reads. No price, flags, entitlement, refund/debit policy changes. Source is local and not publication.",
+  "nativeAssessment": "Status and commerce routes participate in bundled app-local experiences; coordinator must assess/rebuild exact combined native candidate and verify Safari/physical return flow.",
+  "id": "894b6746-2863-41a6-ad98-f7181498ddaa",
+  "recordedAt": "2026-11-18T21:10:57.653Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

@@ -1,0 +1,29 @@
+✔ booking view denial prevents every protected settings/setup read (1.4052ms)
+✔ independent reads overlap only after view approval and preserve restricted management (2.0164ms)
+✔ missing settings preserve original defaults and setup failures return no partial DTO (0.6787ms)
+✔ settings database failure cannot return a successful partial result (0.4327ms)
+✔ staff online toggle uses salon-settings permission independently from booking rule management (0.4192ms)
+✔ compact profile identity, owner controls, Experiences rail and publication state (6213.6106ms)
+✔ compact Settings: nested navigation, lazy editors, salon drafts, failed saves, retry and viewport fit (6929.2396ms)
+✔ all ten salon panels render consistently across phone, narrow Windows and desktop; edits retain targets, drafts and confirmations (18199.8392ms)
+✔ grouped salon, staff and payroll editors keep their original save payloads and cancel behavior (5943.6308ms)
+✔ grouped Settings retains drafts, scopes saves, uses distinct icons, and restores history at phone and desktop sizes (7593.0382ms)
+✔ deep links and Vietnamese search open the correct editor without extra navigation (1580.4211ms)
+✔ notification groups share switches and preserve state after a failed save (939.9666ms)
+✔ one tap remains open when Next synchronizes search params after pushState (912.8053ms)
+✔ owners and closure records show concrete identities and perform inline target actions (1508.6183ms)
+✔ account security and deletion overviews are never durable native reads (0.5968ms)
+✔ inactive retained sections do not restart readers when their parent page returns (1215.6159ms)
+✔ section reveal refreshes its own reader while retaining a draft and viewer change discards it (508.9154ms)
+✔ the actual Settings hub uses the retained section boundary (0.7322ms)
+✔ booking action enforces salon and permission, changes only booking fields, preserves assignment metadata (24.7386ms)
+✔ inline online booking: toggle, failure, assignment save and responsive permissions (2631.3901ms)
+✔ compact availability uses local disclosure, protects drafts and saves without a second refresh (2863.5917ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18655.4082

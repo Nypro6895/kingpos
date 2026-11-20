@@ -93,8 +93,8 @@ import { getCurrentSalonMapLocationState } from "@/lib/location/salon-map-locati
 import { getTodayQuickAccessConfiguration } from "@/lib/today-quick-accesses";
 import { getSalonProfileMediaUrl, getCurrentSalonProfileIdentitySettings } from "@/lib/salon-profile";
 import { getSettingsOwnerHistory } from "@/lib/settings-owner-history";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { getWindowsPosRelease } from "@/lib/windows-pos-release";
+import { runWithReadContext } from "@/lib/read-context-scope";
 
 export type DirectSettingsKind =
   | "salon-profile"
@@ -130,7 +130,7 @@ async function salonContext(expectedSalonId?: string) {
 }
 
 export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId?: string) {
- return withSettingsTarget(targetSalonId, async () => {
+ return runWithReadContext(() => withSettingsTarget(targetSalonId, async () => {
   if (kind === "recovery-back-office") {
     const overview = await loadRecoveryBackOfficeOverview();
     if (!overview?.authorized)
@@ -203,12 +203,17 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
     } as const;
   }
   const { context, supabase, salon } = await salonContext();
-  const common = { salonId: salon.id, salonName: salon.name };
+  const canViewBooking = await hasPermission("booking.view",context);
+  const canViewSalonInformation = await hasPermission("salon_settings.view",context);
+  const common = { canViewBooking, canViewSalonInformation, salonId: salon.id, salonName: salon.name, salonStatus: salon.status, canManagePlugins: isOwnerMembership(context.currentMembership) && isSalonManageContext(context) && salon.status === "active" };
   switch (kind) {
     case "public-profile": {
       const setting=await getCurrentSalonProfileIdentitySettings(context);
       const canManageSalon=await hasPermission('salon_settings.manage',context);
-      return {kind,...common,setting,profileIdentity:setting,canManageSalon,canManage:await hasPermission('salon_profile.manage',context),readiness:canManageSalon?await getCurrentSalonDiscoveryReadiness(setting):{canEnable:false,missingLabels:[]},logoUrl:getSalonProfileMediaUrl(setting.public_profile_logo_path),coverUrl:getSalonProfileMediaUrl(setting.public_profile_cover_path)} as const;
+      const availability = setting.public_discovery_enabled
+        ? await supabase.rpc("salon_profile_public_salon_exists", { target_salon_id: salon.id })
+        : { data: false, error: null };
+      return {kind,...common,setting,profileIdentity:setting,canManageSalon,canManage:await hasPermission('salon_profile.manage',context),publicProfileAvailable:availability.error ? null : availability.data === true,readiness:canManageSalon?await getCurrentSalonDiscoveryReadiness(setting):{canEnable:false,missingLabels:[],items:[]},logoUrl:getSalonProfileMediaUrl(setting.public_profile_logo_path),coverUrl:getSalonProfileMediaUrl(setting.public_profile_cover_path)} as const;
     }
     case "salon-profile": {
       const { setting } = await getCurrentSalonSetting();
@@ -231,11 +236,17 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
       } as const;
     case "booking": {
       await requirePermission("booking.view", context);
-      const { data, error } = await supabase
+      const [settingsResult, setup, canManage, canManageStaffOnlineBooking] = await Promise.all([
+        supabase
         .from("booking_settings")
         .select(BOOKING_SETTINGS_SELECT)
         .eq("salon_id", salon.id)
-        .maybeSingle<BookingSettings>();
+        .maybeSingle<BookingSettings>(),
+        getCurrentSalonBookingSetup(context),
+        hasPermission("booking.manage", context),
+        hasPermission("salon_settings.manage", context),
+      ]);
+      const { data, error } = settingsResult;
       if (error) throw new Error(error.message);
       return {
         kind,
@@ -247,20 +258,28 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
             salonId: salon.id,
             timezone: "America/Chicago",
           }),
-        setup: await getCurrentSalonBookingSetup(context),
-        canManage: await hasPermission("booking.manage", context),
+        setup,
+        canManage,
+        canManageStaffOnlineBooking,
       } as const;
     }
     case "staff-team": {
       const canManage=await hasPermission("staff.manage",context);
-      const [directory, requests] = await Promise.all([
+      const [directory, requests, setup, canManageStaffOnlineBooking, contacts] = await Promise.all([
         getCurrentSalonStaffDirectory(),
         canManage?getSalonStaffConnectionRequests():Promise.resolve({requests:[]}),
+        getCurrentSalonBookingSetup(context),
+        hasPermission("salon_settings.manage",context),
+        supabase.rpc("salon_staff_customer_contacts", {p_salon: salon.id}),
       ]);
       return {
         kind,
         ...common,
         staff: directory.staff,
+        setup,
+        canManageStaffOnlineBooking,
+        customerContactsVisible: contacts.error ? null : contacts.data?.visible === true,
+        canManageCustomerContacts: isOwnerMembership(context.currentMembership),
         requests: requests.requests,
         canManage,
         canManagePublicTeam:await hasPermission("salon_settings.manage",context),
@@ -294,14 +313,7 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
           .maybeSingle(),
       ]);
       if (snapshot.error) throw new Error(snapshot.error.message);
-      const manifest = await readFile(
-        path.join(process.cwd(), "public/desktop-updates/latest.yml"),
-        "utf8",
-      ).catch(() => "");
-      const version = manifest.match(/^version:\s*["']?([\d.]+)/m)?.[1] ?? "";
-      const installer = /^\d+\.\d+\.\d+$/.test(version)
-        ? `/desktop-updates/${encodeURIComponent(`KingPOS Portable Test-Setup-${version}.exe`)}`
-        : null;
+      const installer = (await getWindowsPosRelease())?.href ?? null;
       return {
         kind,
         ...common,
@@ -356,7 +368,7 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
       throw new Error("Unknown settings section.");
   }
 
- }, kind === "staff-workspace" || kind === "staff-schedule" ? "staff" : "manage");
+ }, kind === "staff-workspace" || kind === "staff-schedule" ? "staff" : "manage"));
 }
 
 export async function saveDirectSalonProfile(
@@ -459,11 +471,13 @@ export async function saveDirectStaff(
  return withSettingsTarget(salonId, async () => {
   try {
     await salonContext(salonId);
-    if ("staff_id" in input)
+      let staffId: string;
+      if ("staff_id" in input) {
       await updateStaffDirectoryBatch({ changes: [input] });
-    else await createStaff(input);
+        staffId = input.staff_id;
+      } else staffId = (await createStaff(input)).id;
     revalidatePath("/", "layout");
-    return { ok: true as const };
+      return { ok: true as const, staffId };
   } catch (error) {
     return {
       ok: false as const,

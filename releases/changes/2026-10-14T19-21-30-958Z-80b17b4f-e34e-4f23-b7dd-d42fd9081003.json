@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "project-release-coordination",
+  "status": "ready",
+  "summary": "Quy tắc deploy được cấp quyền trước; tự tìm/tích hợp thay đổi, ghi ngày và nguồn từng revision; khóa phát hành dùng chung; tự đánh giá/cập nhật app và xác minh đúng kênh.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "AGENTS.md",
+    "docs/release-policy.txt",
+    "releases/README.md",
+    "scripts/release-journal.mjs",
+    "tests/release-journal.test.mjs"
+  ],
+  "scopeComplete": true,
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\release-policy-2026-10-14T19-21-30-740Z-b5fbafbf-f776-4dad-9964-139f7a74c6c0",
+    "sourceSha256": "1d550efca6cba39f6cb2f2f80519cf0710a5350ab5657c23237afb839c5df22a"
+  },
+  "validation": [
+    {
+      "name": "10 release-journal tests",
+      "result": "passed",
+      "evidence": "artifacts/release-policy/validation-receipt.json"
+    },
+    {
+      "name": "2 existing production-baseline tests",
+      "result": "passed",
+      "evidence": "artifacts/release-policy/validation-receipt.json"
+    },
+    {
+      "name": "Node syntax and ESLint helper/tests",
+      "result": "passed",
+      "evidence": "artifacts/release-policy/validation-receipt.json"
+    },
+    {
+      "name": "Standing authorization and preservation policy reviewed",
+      "result": "passed",
+      "evidence": "docs/release-policy.txt"
+    }
+  ],
+  "notes": [
+    "Các quy tắc có hiệu lực trong project ngay khi được lưu; đây là công cụ/tài liệu repository, không phải thay đổi app và không cần tăng native version.",
+    "Task này không deploy web hoặc upload iOS. Trạng thái ready phục vụ việc đưa các file quy tắc vào nguồn release kế tiếp.",
+    "Phần cache lịch sử có event riêng, vẫn needs-integration cho web và iOS."
+  ],
+  "id": "80b17b4f-e34e-4f23-b7dd-d42fd9081003",
+  "recordedAt": "2026-10-14T19:21:30.958Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "AGENTS.md": "9222411b365bd2935752b259f07f8ab31885b13c0c155a587fd9430910f72ea6",
+    "docs/release-policy.txt": "48a68aa4555770bb854722186f8d0efcdcac9e79441c9ebc7596ac5399b817a1",
+    "releases/README.md": "461cd53463d6b63f0624391ad7b558c909331d2b1e2e7c5f725ea26c8ae1040e",
+    "scripts/release-journal.mjs": "edbe5d332e93e66fd6d3e6675ac6b136ed3a07894fba3eca5cfc59e6b37dd7ec",
+    "tests/release-journal.test.mjs": "c645f8998a0a2840300a726045f610e715c17c21e93836f7368665148cf7d134"
+  }
+}

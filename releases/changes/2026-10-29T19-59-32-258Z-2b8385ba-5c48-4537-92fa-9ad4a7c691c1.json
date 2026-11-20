@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "owner-check-in-remove-duplicate-branding",
+  "status": "ready",
+  "summary": "Remove redundant check mark row and salon branding from owner Check In content; preserve clock and staff cards.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/portable/check-in/portable-check-in-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/(app)/pos/(workspace)/check-in/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\check-in-remove-branding-20261029\\source"
+  },
+  "validation": [
+    {
+      "name": "Targeted ESLint for all three changed files",
+      "result": "passed",
+      "evidence": "Exit 0; seven existing warnings in shared client, no errors."
+    },
+    {
+      "name": "Scoped change review",
+      "result": "passed",
+      "evidence": "Owner route disables duplicate salon logo/name; clock retained. Owner Check In omits redundant top navigation; shared Portable default remains enabled. Before and after copies retained for integration."
+    }
+  ],
+  "dependencies": [],
+  "id": "2b8385ba-5c48-4537-92fa-9ad4a7c691c1",
+  "recordedAt": "2026-10-29T19:59:32.258Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos/portable/check-in/portable-check-in-client.tsx": "f2c18c5eb53bb8735345027b8c165eeef0db92326a44bbd05ff0c7293580af94",
+    "app/pos/owner-workspace-frame.tsx": "8941289c9593f0768cca8582f3ae5aeed5bda95329be99a58fa946cfadccad90",
+    "app/(app)/pos/(workspace)/check-in/page.tsx": "518bf69eef4837a85364eb35c1c59296bed92ee8c88b0a44894c7bc3208af29e"
+  }
+}

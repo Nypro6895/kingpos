@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "combined-pos-device-integration-20261028",
+  "status": "working",
+  "summary": "Prepare one POS device-layout source on actual uploaded64/liveJB; hold old gesture repair pending replacement and owner visual review; no dispatch",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css"
+  ],
+  "source": {
+    "commit": "509985dec00091f285c28b7dcb079460da104249"
+  },
+  "dependencies": [
+    "pos-ios-tablet-layout-20261028"
+  ],
+  "validation": [
+    {
+      "name": "Current baseline integration, owner visual review, actual-page and native validation",
+      "result": "pending"
+    }
+  ],
+  "id": "9c2d6032-2009-43f8-a067-4bab7ab93748",
+  "recordedAt": "2026-10-29T04:26:26.931Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-pos-device-layout-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "restore-original-reylumi-logo-native-20261016",
+  "summary": "Restore original Reylumi logos on the latest uploaded iPhone source, preserving all other shipped features.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/icon.png",
+    "app/apple-icon.png",
+    "app/favicon.ico",
+    "public/brand/reylumi-favicon.png",
+    "public/brand/reylumi-app-192.png",
+    "public/brand/reylumi-app-512.png",
+    "ios/Reylumi/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+    "ios/Reylumi/Assets.xcassets/LoadingLogo.imageset/LoadingLogo.png",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-favicon.png",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-192.png",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-512.png",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "dependencies": [],
+  "baselineCommit": "e26bf766e3bd072421340adfa022a7652ebb6243",
+  "status": "working",
+  "source": {
+    "commit": "e26bf766e3bd072421340adfa022a7652ebb6243"
+  },
+  "validation": [
+    {
+      "name": "Exact original asset recovery and bundled manifest validation",
+      "result": "pending"
+    }
+  ],
+  "id": "1332cd41-4b99-4c12-9754-dba1026b1ae2",
+  "recordedAt": "2026-10-17T00:04:16.391Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\reylumi-glass-logo\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

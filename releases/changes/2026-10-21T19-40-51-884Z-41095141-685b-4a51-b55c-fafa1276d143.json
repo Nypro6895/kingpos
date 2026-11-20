@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "campaign-credit-lifecycle-r5-20261021",
+  "status": "working",
+  "summary": "Expanded implementation receipt within owner-confirmed lifecycle: retained Pause reserve/status, active-demand/manual pending recovery, processing-start monthly reservation and immutable provider claim payload/observable retries. No rate/cap increases or production actions.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/campaign-preview.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/credit-panel.tsx",
+    "lib/campaign-payments.ts",
+    "lib/campaign-status.ts",
+    "supabase/migrations/20261021100000_campaign_paused_reserve_lifecycle.sql",
+    "supabase/migrations/20261021110000_campaign_credit_demand_and_budget.sql",
+    "tests/campaign-credit-demand-budget.test.mjs",
+    "tests/campaign-owner-status-ui.test.mjs",
+    "tests/campaign-paused-reserve-lifecycle.test.mjs",
+    "tests/campaign-pending-claim-worker.test.mjs",
+    "tests/campaign-status-presentation.test.mjs",
+    "tests/fixtures/campaign-owner-status-ui.mjs",
+    "tests/fixtures/campaign-search-preview-ui.mjs"
+  ],
+  "dependencies": [
+    "unified-owner-guest-integration-20261021"
+  ],
+  "source": {
+    "commit": "a9d05ae6ee52baed9e31dce1b6a5fa1e07501cfb",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-lifecycle-r5"
+  },
+  "validation": [
+    {
+      "name": "combined-regression-build-real-postgresql-races",
+      "result": "pending"
+    }
+  ],
+  "id": "41095141-685b-4a51-b55c-fafa1276d143",
+  "recordedAt": "2026-10-21T19:40:51.884Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-lifecycle-r5",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

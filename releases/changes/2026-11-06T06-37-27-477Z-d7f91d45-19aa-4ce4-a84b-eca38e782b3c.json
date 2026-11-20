@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "more-single-settings-20261106",
+  "status": "needs-integration",
+  "summary": "More menus use one All Settings entry; remove separate Salon Settings shortcut across owner shared menu and More directory. Preserve operational tools.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "components/role-more-content.tsx",
+    "app/(app)/more/page.tsx",
+    "tests/pos-more-settings-browser.mjs",
+    "tests/owner-workspace-ui.test.mjs",
+    "tests/plugin-navigation-ui.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "All role navigation audit and single settings link",
+      "result": "passed",
+      "evidence": "artifacts/more-single-settings-20261106/verification.json"
+    },
+    {
+      "name": "POS More/settings local browser fixture 26 checks",
+      "result": "passed"
+    },
+    {
+      "name": "Advertising More navigation browser test",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\more-single-settings-20261106\\snapshot",
+    "patch": "C:\\Reylumi\\kingpos\\artifacts\\more-single-settings-20261106\\task-only.patch"
+  },
+  "id": "d7f91d45-19aa-4ce4-a84b-eca38e782b3c",
+  "recordedAt": "2026-11-06T06:37:27.477Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

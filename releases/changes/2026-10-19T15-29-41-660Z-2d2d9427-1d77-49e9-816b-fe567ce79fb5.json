@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "ios-auth-lifecycle-observability-20261019",
+  "status": "working",
+  "summary": "Implement privacy-safe device diagnostics and verified Auth/workspace/cache contract repairs following build39 audit; no deployment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "app/local-app/entry.tsx"
+  ],
+  "source": {
+    "commit": "fe233c9c3244f762914c2d7a9944795f40925ccc"
+  },
+  "validation": [
+    {
+      "name": "Audit completed on shipped build39 source",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/ios-operation-audit-20261019/audit-report.md"
+    },
+    {
+      "name": "Physical-iPhone failing trace",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "2d2d9427-1d77-49e9-816b-fe567ce79fb5",
+  "recordedAt": "2026-10-19T15:29:41.660Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-auth-lifecycle-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

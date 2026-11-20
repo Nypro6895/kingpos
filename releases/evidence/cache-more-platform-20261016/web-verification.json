@@ -1,0 +1,165 @@
+{
+  "at": "2026-10-16T19:49:01.135Z",
+  "status": "web-live-verified",
+  "live": {
+    "at": "2026-10-16T19:47:03.526Z",
+    "deploymentId": "dpl_DzRmvhU35S4yYQigxeR3xwWhSMWd",
+    "label": "live",
+    "url": "kingpos-3qaumbsyt-kingpos.vercel.app",
+    "readyState": "READY",
+    "aliasDeploymentId": "dpl_DzRmvhU35S4yYQigxeR3xwWhSMWd",
+    "commit": "d1347e535a43e953b57cd2d1ea89c3b63767078e",
+    "sourceSha256": "2605de54cc52232486ba0451320e9acc100820c3fe556dffe2bb5c6cd9eb4167",
+    "deploySourceSha256": "40c1d6d1524c38ac31ccac3549d8ef774e2ac0506e08b6e3def7eb2657fa19e7",
+    "overlaySha256": "69af70116058eae80c6d654efb4fe3a6d6801ebc8a28dd034e1c322052781f7f",
+    "sourceFiles": 2747,
+    "allHashesMatch": true
+  },
+  "source": {
+    "baselineDeploymentId": "dpl_3ayR1ZKNggz4XmwhCAQjp1cC7Fye",
+    "baselineSourceCommit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52",
+    "baselineSourceSha256": "578a0c657b2d92bfe0dd42f4c1753b0d940b888f6e2739451694aefb052efe62",
+    "commit": "d1347e535a43e953b57cd2d1ea89c3b63767078e",
+    "branch": "codex/cache-more-release-20261016",
+    "sourceSha256": "2605de54cc52232486ba0451320e9acc100820c3fe556dffe2bb5c6cd9eb4167",
+    "deploySourceSha256": "40c1d6d1524c38ac31ccac3549d8ef774e2ac0506e08b6e3def7eb2657fa19e7",
+    "overlaySha256": "69af70116058eae80c6d654efb4fe3a6d6801ebc8a28dd034e1c322052781f7f",
+    "authorizedOverlaySha256": "8b19a6af8ec523065bf90a23f936fac8ac2219d45bd26877126930fa2c628626",
+    "selectedEvents": [
+      "6b0d34bb-5b3f-4046-be45-bf5596001978",
+      "49e2505b-71f1-46c9-8af6-b617d716b3e0",
+      "06c27386-c1ef-4206-9318-d0c453647b17",
+      "270039d9-9785-43d0-ab31-6ce70068e6ea",
+      "13651a77-36f3-4bf6-aeac-0fd802636dd5",
+      "88ea2278-6725-471a-b064-e67057c2be86",
+      "d579aee5-93e8-4934-8310-fcb883cc2f96",
+      "3c5c0e27-368d-4cdb-8bbc-de5bc46158ea",
+      "bbdfc0a1-19e9-408e-bba5-87f0ab3864d5",
+      "9d920902-442b-4f38-ac9d-9d2f7d715048",
+      "f6ab0797-5a04-4c26-a838-d88fcede1498",
+      "8ee09165-1492-4624-b201-b73417700145",
+      "2bf07c7b-cb67-4ded-808a-c57f917ebbcf",
+      "73eb9a6b-542a-416a-b018-ad6191290da2",
+      "71667a66-8710-426b-9f00-3d44bba1fa41",
+      "1b7eed93-251e-404e-94db-b9b08f5f30c7",
+      "1e2d51e9-7192-422f-836b-a929a899840e",
+      "d198a438-3ce5-4730-b508-abe98050923f",
+      "ee009ae6-8928-42de-8b98-bb7bd974c5c3",
+      "5e0bb548-66a0-4a1a-912d-fa1e171d36fa",
+      "7bb7eaa0-54a3-47d6-a393-af2bb069bf88",
+      "3886822f-d0d7-4757-84a3-142cc6dc0d24",
+      "3ec292bd-d1a0-4fde-a968-b5f46911b067",
+      "7b9ceb5d-5236-4f9e-8db8-3d32660e1394"
+    ],
+    "selectedWebEvents": [
+      "6b0d34bb-5b3f-4046-be45-bf5596001978",
+      "49e2505b-71f1-46c9-8af6-b617d716b3e0",
+      "06c27386-c1ef-4206-9318-d0c453647b17",
+      "13651a77-36f3-4bf6-aeac-0fd802636dd5",
+      "88ea2278-6725-471a-b064-e67057c2be86",
+      "d579aee5-93e8-4934-8310-fcb883cc2f96",
+      "3c5c0e27-368d-4cdb-8bbc-de5bc46158ea",
+      "bbdfc0a1-19e9-408e-bba5-87f0ab3864d5",
+      "9d920902-442b-4f38-ac9d-9d2f7d715048",
+      "f6ab0797-5a04-4c26-a838-d88fcede1498",
+      "8ee09165-1492-4624-b201-b73417700145",
+      "2bf07c7b-cb67-4ded-808a-c57f917ebbcf",
+      "73eb9a6b-542a-416a-b018-ad6191290da2",
+      "71667a66-8710-426b-9f00-3d44bba1fa41",
+      "1b7eed93-251e-404e-94db-b9b08f5f30c7",
+      "1e2d51e9-7192-422f-836b-a929a899840e",
+      "ee009ae6-8928-42de-8b98-bb7bd974c5c3",
+      "5e0bb548-66a0-4a1a-912d-fa1e171d36fa",
+      "7bb7eaa0-54a3-47d6-a393-af2bb069bf88",
+      "3886822f-d0d7-4757-84a3-142cc6dc0d24",
+      "3ec292bd-d1a0-4fde-a968-b5f46911b067"
+    ],
+    "preservedBaselineUnchanged": 2105,
+    "changedBaselineFiles": 39,
+    "requiredExploreFiles": [
+      "app/api/explore/search/route.ts",
+      "app/api/explore/feed/route.ts",
+      "app/api/explore/area/route.ts",
+      "app/explore/explore-discovery-feed.tsx",
+      "lib/explore-search.ts",
+      "lib/explore-search-rpc.ts",
+      "lib/explore-search-client.ts",
+      "lib/explore-feed-client.ts",
+      "lib/explore-visitor.ts",
+      "lib/explore-feed-discovery.ts",
+      "lib/explore-social-feed.ts",
+      "lib/explore-social-feed-ranking.ts",
+      "lib/explore-query-intent.ts",
+      "lib/explore-query-routing.ts",
+      "lib/location/address.ts",
+      "lib/location/area-provider-request.ts",
+      "lib/location/census-address-match.ts",
+      "lib/location/coordinate-validity.ts",
+      "lib/location/directory-geocode-worker.ts",
+      "lib/location/distance.ts",
+      "lib/location/explore-gps-area-client.ts",
+      "lib/location/explore-gps-area-data.ts",
+      "lib/location/explore-gps-area.ts",
+      "lib/location/geocoding-backfill.ts",
+      "lib/location/geocoding-service.ts",
+      "lib/location/providers/census-address-geocoder.ts",
+      "lib/location/providers/census-area-reverse.ts",
+      "lib/location/providers/maptiler-area-reverse.ts",
+      "lib/location/providers/maptiler-geocoder.ts",
+      "lib/location/salon-map-location.ts"
+    ],
+    "excludedGeneratedInputs": [
+      "public/experience-build-assets.json"
+    ]
+  },
+  "tests": {
+    "implementation": {
+      "passed": 179,
+      "failed": 0,
+      "skipped": 0
+    },
+    "installedBundle": {
+      "buildId": "bb391378d9a9b5a6ab3a8e00ff042abdcf10e379c8954db7c902d71ce3caa963",
+      "files": 344,
+      "ordinaryPages": 85,
+      "hashesVerified": true
+    },
+    "assembledProductionBuild": "passed",
+    "candidateProductionBuild": "passed",
+    "candidateBrowser": 24,
+    "liveBrowser": 24,
+    "readOnly": true,
+    "publicLiveAuthenticationFixture": "Only local interception; no real login/money/booking changes",
+    "isolatedRetest": "11/12 unmodified concurrent subset; 10s fake-clock wall-time race diagnosed with 3/3 paused-clock artifact diagnostics; original full179 passed"
+  },
+  "migration": {
+    "version": "20261016170000",
+    "sourceSha256": "7e6d69fb697fc6863c6e6adb7ab200e48f4dab7a2d79ad030810729a02d6e524",
+    "historySha256": "7e6d69fb697fc6863c6e6adb7ab200e48f4dab7a2d79ad030810729a02d6e524",
+    "passed": 6,
+    "failed": 0,
+    "noBusinessRowsWritten": true
+  },
+  "exclusions": [
+    {
+      "changeId": "reylumi-glass-app-logo-20261016",
+      "reason": "Separate unshipped logo assets outside explicit cache/More release scope; retained for later integration."
+    },
+    {
+      "changeId": "payroll-period-ledger-20261015",
+      "reason": "Separate financial ledger rules outside cache/More scope; existing financial behavior preserved."
+    },
+    {
+      "changeId": "help-local-draft-20261015",
+      "reason": "Obsolete blocked placeholder; newer shipped full bilingual Help is preserved."
+    }
+  ],
+  "rollback": {
+    "previousDeploymentId": "dpl_3ayR1ZKNggz4XmwhCAQjp1cC7Fye",
+    "guard": "Only roll back this release if live alias still belongs to this release; preserve external updates."
+  },
+  "limitations": [
+    "No physical iPhone timing measurement.",
+    "Native publication is recorded separately only after the exact uploaded source and Apple/TestFlight availability are verified."
+  ]
+}

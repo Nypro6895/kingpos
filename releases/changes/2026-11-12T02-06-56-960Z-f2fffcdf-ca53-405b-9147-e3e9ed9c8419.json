@@ -1,0 +1,101 @@
+{
+  "kind": "change",
+  "changeId": "booking-terminology-step2-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Unify Bookings/Lich hen navigation and Book appointment customer CTAs with wrapping and aligned toolbar icons; preserve booking handlers, routes and permission keys Original handoff 23e7f51a-fdbf-4642-8535-69e4c33669d9. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/beauty/beauty-profile-client.tsx",
+    "app/globals.css",
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-windows-compact-menu.tsx",
+    "app/pos/portable/book/booking-views.tsx",
+    "app/role-navigation.ts",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-home.module.css",
+    "app/salon-profile/salon-website-home.tsx",
+    "app/salon-profile/service-menu.module.css",
+    "app/salon-profile/service-menu.tsx",
+    "app/salon-profile/team-menu.module.css",
+    "app/salon-profile/team-menu.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-secondary-registry.tsx",
+    "lib/explore-feed.ts",
+    "lib/explore-showcase-content.ts",
+    "lib/pos-portable-capabilities.ts",
+    "lib/pos-portable-routes.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-terminology-copy.json"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "terminology-step1-20261110"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "f2fffcdf-ca53-405b-9147-e3e9ed9c8419",
+  "recordedAt": "2026-11-12T02:06:56.960Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/beauty/beauty-profile-client.tsx": "b7718cc2c85a03b62fa6a2e058eff7e8cb062929bbb44fa8d75ddcc46032bfba",
+    "app/globals.css": "2a665467de1916c51c6d8c9fe7321e249098094f1ed7d55ef05d9197f74aaf72",
+    "app/pos/owner-notebook-menu.tsx": "4ab43f93bc27608be302e81fc65eec87ca4ccf9057fa2273c82c4d19df1676a6",
+    "app/pos/owner-pos-tabs.tsx": "447ac1f57e7b07ec8534650094029afe995978c2883893a55500c25bcbf9296c",
+    "app/pos/owner-windows-compact-menu.tsx": "4462ca746b502b5dc74878fefd0386079a16669dcfc15074ae07d7faca96bbba",
+    "app/pos/portable/book/booking-views.tsx": "0cde93ad90530844d30ec0ad4a585c94e6e5a73339db9f331437e8fc42560ef3",
+    "app/role-navigation.ts": "62c4738f763c42b1cbfd58d4a5ca97849263024e2cfcfa30b96e723c0d0a6c5a",
+    "app/salon-profile/salon-profile-view.tsx": "8854fcd954017d3684b754450a3b3ed74bcac2e202bce9dc3f5a3d646510f336",
+    "app/salon-profile/salon-website-home.module.css": "899bf299d439d90d1f078f2bd929237a14638dc6f42d2680cafc45b34095d2b9",
+    "app/salon-profile/salon-website-home.tsx": "117f4cd6eee7c3d461f1915bd2de64ffb453c02af7d8bdf3aa40d9d2a6519535",
+    "app/salon-profile/service-menu.module.css": "e3515ac8ff57a5f723f910d6ed254400c3e3e05229fb44744ed9b2eb7d2d94ec",
+    "app/salon-profile/service-menu.tsx": "130cfc3fb1017c6499281f02f067f1c146535a95d84b10bece8462ed5803b5bb",
+    "app/salon-profile/team-menu.module.css": "dfd24d81814a49b33e7d075dd6c41f25ab71e0cf2c790414d2dd7c2b41ec573a",
+    "app/salon-profile/team-menu.tsx": "aec0cbb831e30ba5745cbb9102ec6b2ba1c9d00169403a786141132a66d648be",
+    "app/staff/today/today-dashboard-view.tsx": "9abfc8e1306dfb5e50815345f199b04ccd83ce95f970662a7b1752d036c7a5a0",
+    "app/staff/today/today-progressive-client.tsx": "bb2f11779030d9af5c2892be47e79cdcd118c779437c364a2e83596ae558d062",
+    "lib/app-local-page-registry.tsx": "caf3a07dd01960a5628d5754a47c5b2091ab61ea05e022d978d77eb16d74985b",
+    "lib/app-local-secondary-registry.tsx": "532b6a6d3beb29f0b7db77253a841c9d88c366da903f489741849064bd9ee696",
+    "lib/explore-feed.ts": "753805239b4e87eb8d52b33b2274a68c62517fc9ed5fd87d94f8031354803bea",
+    "lib/explore-showcase-content.ts": "7edede2071bb34387892299712e6b3f410d370f3bd57940f968adacaed26e219",
+    "lib/pos-portable-capabilities.ts": "b33c017e1522efc1e64f5747c78de36ce347360ea3d840cde5ac843a114bc098",
+    "lib/pos-portable-routes.ts": "4abf888820e08f80a04f9fe666468fd4a73c46d8c96bcd38ed85d3f63e07f804",
+    "lib/vietnamese-dictionary.ts": "5e80dcca2251f596feabdf786989ca111d3dd468624f7001e3ae620c0e4a22a6",
+    "lib/vietnamese-terminology-copy.json": "aae8c2509d46d3817b65cc9f0e94a9b7183b8d34a1bf0f55f697298b5f5a7d6e"
+  }
+}

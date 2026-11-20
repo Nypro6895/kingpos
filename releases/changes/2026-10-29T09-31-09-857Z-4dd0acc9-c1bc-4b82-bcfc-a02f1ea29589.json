@@ -1,0 +1,68 @@
+{
+  "kind": "change",
+  "changeId": "iphone-ui-proposals-20261029",
+  "status": "ready",
+  "summary": "Approved A1–A4 presentation: numbered booking progress, one-row Ticket calendar/Today and icon search, compact Today header/aligned KPI cards, grouped More list. Settings excluded; no business logic or loading/animation changes.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/ticket-filters.module.css",
+    "app/bookings/booking-workspace-client.tsx",
+    "app/bookings/appointment-progress.module.css",
+    "app/(app)/more/page.tsx",
+    "app/(app)/more/more-layout.module.css",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-layout.module.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integration": {
+    "originalEvents": [
+      "a8e889be-eedf-49ca-921e-4182ad1c0137"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "4dd0acc9-c1bc-4b82-bcfc-a02f1ea29589",
+  "recordedAt": "2026-10-29T09:31:09.857Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos-tickets/ticket-filters.tsx": "caee309f98d69780c3689c7373e7cdddba8354b7d37bc7e39bf217807bc9de1c",
+    "app/pos-tickets/ticket-filters.module.css": "f9ffb5098172bf0af8879f6752447b17a70764aa04c789429dd26fe3875211ed",
+    "app/bookings/booking-workspace-client.tsx": "ff4be14319ff70205f14ff34cba961244a7199a90fdbd28851ad2cde2d39418b",
+    "app/bookings/appointment-progress.module.css": "82eb40de841c9fd6942881f4dec60fa51d93a2ce5b80b034ade998bf10c5eec4",
+    "app/(app)/more/page.tsx": "eb3b90c6802370b4c5917cf6492cbf6c6e18893ed0099ff5031dfcdae12f9697",
+    "app/(app)/more/more-layout.module.css": "b23fb6db90690d5a0e677bd4e4bb1315dc7e518155e5962a7b3e69c7ffd41705",
+    "app/staff/today/today-dashboard-view.tsx": "8a6edc5a44c252a574de38a41e55b1247f67fef4224084842353ac9a30640e4d",
+    "app/staff/today/today-layout.module.css": "4c0dac886febe324ab540e1817a4fc47ac59c61f1ce5e3b32865e8c69b142392"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "ios-auto-credit-first-release-20261120",
+  "status": "working",
+  "summary": "Implement owner-approved option A: defer new automatic-credit enrollment and setup edits only in native Reylumi iOS; preserve existing authorizations, Stop/Block, manual purchases, web management and server billing.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/credit-panel.tsx",
+    "lib/vietnamese-campaign-copy.json",
+    "tests/campaign-ios-auto-credit-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/ios-auto-credit-first-release-20261120-r1",
+    "commit": "5b84d3d3236bbae4d682a69f1b5f6e75282d8b34"
+  },
+  "validation": [
+    {
+      "name": "Approved option A and existing native payment/client boundary review",
+      "result": "passed",
+      "evidence": "Owner approved option A; use exact ReylumiIOS/version marker, never generic iPhone/iPad UA. No server/payment worker/SQL change."
+    },
+    {
+      "name": "Actual-component browser cases, scoped lint and frozen source",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "store-operator-contact-20261120"
+  ],
+  "id": "6aade067-6a62-4ee6-ad29-1881587d99a8",
+  "recordedAt": "2026-11-20T16:40:24.564Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-auto-credit-first-release-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

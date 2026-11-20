@@ -1,4 +1,6 @@
 "use client";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
 
 import {
   useEffect,
@@ -98,7 +100,7 @@ export function Section({
   children,
 }: {
   title: string;
-  count: number;
+  count: ReactNode;
   action?: ReactNode;
   children: ReactNode;
 }) {
@@ -126,7 +128,7 @@ export function Sheet({
   onClose,
   children,
 }: {
-  title: string;
+  title: ReactNode;
   subtitle?: string;
   busy: boolean;
   dirty: boolean;
@@ -134,6 +136,8 @@ export function Sheet({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  useOverlayViewport(ref, true, "frame");
+  useNativeDialogNavigation(ref);
   const backdropPointer = useRef(false);
   const titleId = useId();
   useEffect(() => {
@@ -218,7 +222,7 @@ export function FormFooter({
   label?: string;
 }) {
   return (
-    <div className="sticky bottom-0 -mx-5 border-t border-[#eee5df] bg-white px-5 pb-1 pt-4">
+    <div data-overlay-sticky-edge="bottom" className="sticky bottom-0 -mx-5 border-t border-[#eee5df] bg-white px-5 pb-1 pt-4">
       <button
         className={`${primaryButton} w-full`}
         disabled={busy}

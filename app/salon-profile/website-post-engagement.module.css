@@ -1,0 +1,7 @@
+.engagement{margin-top:auto;padding:12px;border-top:1px solid #eee8e2;background:#fff;color:#57534e}
+.engagement .booked{margin:0 0 8px;font-size:12px;color:#78716c}
+.engagement button[aria-pressed=true]{color:#da552a}
+.engagement button:hover{filter:brightness(.92)}
+.engagement .book button{background:#177f7b;color:white;box-shadow:none}
+.count{font-size:11px;font-variant-numeric:tabular-nums}
+.engagement button:focus-visible{outline:2px solid #177f7b;outline-offset:2px}

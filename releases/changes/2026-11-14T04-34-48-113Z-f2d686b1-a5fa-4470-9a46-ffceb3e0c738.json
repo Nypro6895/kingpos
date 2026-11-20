@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "changeId": "basic-page-loading-20261113",
+  "status": "needs-integration",
+  "summary": "Implemented eight basic loading groups, prioritizing Scan QR; 63 regressions, production build/TypeScript, Safari16 bundle check and 14 actual local QA visits pass. Frozen source pending current-baseline integration/native packaging, no deployment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/customers/page.tsx",
+    "app/(app)/more/[section]/page.tsx",
+    "app/(app)/qr/loading.tsx",
+    "app/(app)/qr/page.tsx",
+    "app/(app)/staff/scan/loading.tsx",
+    "app/(app)/staff/scan/page.tsx",
+    "app/(legal)/membership/page.tsx",
+    "app/(legal)/membership/website.tsx",
+    "app/qr/personal-qr-loading.tsx",
+    "app/staff/scan/staff-scan-client.tsx",
+    "app/staff/scan/staff-scan-loading.tsx",
+    "components/experience-page-boundary.tsx",
+    "components/experience-page.tsx",
+    "docs/basic-page-loading-20261113.txt",
+    "lib/app-local-page-registry.tsx",
+    "lib/experience-route-policies.ts",
+    "tests/basic-directory-streaming.test.mjs",
+    "tests/basic-membership-rewards-runtime.test.mjs",
+    "tests/basic-more-loading.test.mjs",
+    "tests/basic-qr-frame-runtime.test.mjs",
+    "tests/staff-scan-loading-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\basic-page-loading-20261113\\artifacts\\basic-page-loading\\frozen",
+    "commit": "3d0c91405bf16f4bd1c874ba8b08e408c654327a"
+  },
+  "validation": [
+    {
+      "name": "63 assembled scoped regressions",
+      "result": "passed",
+      "evidence": "artifacts/basic-page-loading/targeted-tests.log"
+    },
+    {
+      "name": "Production build, TypeScript, 566 offline assets",
+      "result": "passed",
+      "evidence": "artifacts/basic-page-loading/build.log"
+    },
+    {
+      "name": "20-file ESLint zero errors/warnings and CRLF-aware diff",
+      "result": "passed",
+      "evidence": "artifacts/basic-page-loading/eslint.log"
+    },
+    {
+      "name": "Safari16 native bundle verification, no unsupported actions, assets not activated",
+      "result": "passed",
+      "evidence": "artifacts/basic-page-loading/native-bundle-check.log"
+    },
+    {
+      "name": "14 actual loopback-only QA visits across Guest/Personal/Staff/Owner",
+      "result": "passed",
+      "evidence": "artifacts/basic-page-loading/actual-qa-recheck/page-results.json"
+    },
+    {
+      "name": "Actual hydrated Scan extra read comparison 1 to 0, bounded local scope",
+      "result": "passed",
+      "evidence": "artifacts/basic-page-loading/actual-scan-comparison.json"
+    },
+    {
+      "name": "Independent assembled scope/draft/camera/authority review",
+      "result": "passed",
+      "evidence": "docs/basic-page-loading-20261113.txt"
+    }
+  ],
+  "dependencies": [
+    "forum-tab-performance-20261112"
+  ],
+  "id": "f2d686b1-a5fa-4470-9a46-ffceb3e0c738",
+  "recordedAt": "2026-11-14T04:34:48.113Z",
+  "worktree": "C:\\Reylumi-worktrees\\basic-page-loading-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

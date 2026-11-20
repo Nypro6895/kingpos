@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "customer-service-audit-20261017",
+  "status": "ready",
+  "summary": "Resolved all three reported stale regression contracts without changing application behavior. Full-project TypeScript now passes on existing Services wiring; 37 CRM/privacy/waiting/add-on tests pass including real browser fixture tests. Offline booking fixture avoids loopback network dependency. No application or database logic changed; not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/beauty-customer-relationship-contract.test.mjs",
+    "tests/customer-visits-contract.test.mjs",
+    "tests/service-addon-booking-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\customer-service-audit-20261017\\source",
+    "patch": "artifacts/customer-service-audit-20261017/change.patch",
+    "baselineSnapshot": "artifacts/customer-service-audit-20261017/before"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Full-project TypeScript noEmit",
+      "result": "passed",
+      "evidence": "node node_modules/typescript/bin/tsc --noEmit --pretty false, exit 0"
+    },
+    {
+      "name": "ESLint three changed tests",
+      "result": "passed"
+    },
+    {
+      "name": "CRM Beauty waiting and Services/add-on regression suite",
+      "result": "passed",
+      "evidence": "37/37 passed, 0 failed/skipped; artifacts/customer-service-audit-20261017/verified.log"
+    },
+    {
+      "name": "Mutation sensitivity",
+      "result": "passed",
+      "evidence": "All three intentional in-memory wiring failures rejected; mutation-result.json"
+    }
+  ],
+  "id": "c1c136e4-1447-4956-918a-7da45abd2174",
+  "recordedAt": "2026-10-17T20:11:05.306Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "tests/beauty-customer-relationship-contract.test.mjs": "3cc4bd64f66880111df964a2ab3be4c650565ab21d6fdfd612c66159322360d7",
+    "tests/customer-visits-contract.test.mjs": "edf109e69dec09e55f18378b1b66905fbc6a71bc3f4e46ad60c42c41e3fe4e0e",
+    "tests/service-addon-booking-ui.test.mjs": "e7946b57ed28221e5e3d49bb68d6ba44d38d22eb354c167a70c7814eeb0af519"
+  }
+}

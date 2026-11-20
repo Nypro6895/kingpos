@@ -1,0 +1,109 @@
+{
+  "kind": "change",
+  "changeId": "r6-confirmed-auth-rejection-20261021",
+  "status": "needs-integration",
+  "summary": "Completed local R6 confirmed-auth-rejection correction: preserve opt-in proven401/403 through Staff admission/final validation and My Work routes; unknown outages remain503. Server-only delta, no permissions/business/cache/native changes. Frozen verified source; release held pending coordinator integration and actual authenticated iOS QA.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/supabase/server.ts",
+    "lib/supabase/auth-rejection.ts",
+    "lib/staff-portal-identity.ts",
+    "tests/read-auth-coalescing.test.mjs",
+    "tests/staff-my-work-verified-read-identity.test.mjs",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/app-local-read-auth-rejection.test.mjs",
+    "app/api/experience/my-work/route.ts",
+    "tests/live-workspace-experience.test.mjs",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/owner-today-failure-causality.test.mjs",
+    "tests/session-restart-credential-contract.test.mjs"
+  ],
+  "dependencies": [
+    "reylumi-final-r6-integration-20261021"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\delivery-20261021T233505722271Z\\source",
+    "commit": "8776d0b52d7e5526a0814cec794cfde9f2ee7eb4",
+    "baseCommit": "6e0a61bd5f1469c2ba79514f70f4b649a35619b8",
+    "overlayManifestSha256": "2130580861a0d6b3a9e181660e58597ca2deb37cf2c4f014415fa86b1f49f5f6",
+    "functionalSourceManifestSha256": "ba76b34725d651691dbedeb4134c320f7c87bbdd2a8255e01fdd48fa3bd2bf43"
+  },
+  "fileHashes": {
+    "app/api/experience/my-work/route.ts": "fdab514551b83bc72d39fa51df9526f833ccc94d24537d4b29bcfebe57f1bb58",
+    "lib/staff-portal-identity.ts": "cfd69ca7b752b687a9cd25175aefe6c552af47c4dd50ad8a575eca5a914e85a9",
+    "lib/supabase/auth-rejection.ts": "feaf459628625493783d6127263f573f8c8f4926bedc88b0934c4a9108302e2f",
+    "lib/supabase/server.ts": "07641eceb4ff8b0fb05fece1369363ef01a257bd2483c8911ab8de251f4db44c",
+    "tests/app-local-read-auth-rejection.test.mjs": "cc829e703246c50832a59b33dbdb73c1f87d4dce84f8b5c08ad98b6691c85cb1",
+    "tests/experience-auth-availability.test.mjs": "70ea9765bb92184a14b7bcd2dc9ee27d32c9735efb8f8cf855eac700da36b398",
+    "tests/live-workspace-experience.test.mjs": "e9305373fa1be6cb0b0a03a3c2ddf8d077b9aa809a95202f39c72d27f815642a",
+    "tests/owner-today-failure-causality.test.mjs": "0931e0b9785ae5ddb5c783429b93e24bcb900ae4ba8d3971f18d8ef6a68f3916",
+    "tests/read-auth-coalescing.test.mjs": "3226ee1eb0e6b7e7998be2fee38dc60439b6e23c978e78168fcc9b6f7521fcf9",
+    "tests/session-restart-credential-contract.test.mjs": "a2e9d90089ef5015789bb3ebec35da6bed2a489011edd89814c81ca0929690dd",
+    "tests/staff-my-work-critical-path.test.mjs": "34159e1be69a9a067a53f18a23415d5e8152cd0227b8522ae729e5bcd6633799",
+    "tests/staff-my-work-verified-read-identity.test.mjs": "b329ab677fa6b1cf6d008dd27896054a2ed140cd5b1264b10b619c0275409cdc"
+  },
+  "validation": [
+    {
+      "name": "Baseline known-revocation acceptance test fails before product fix (RED)",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\baseline-red-20261021T231535061681Z\\receipt.json"
+    },
+    {
+      "name": "53 server/unit +10 Chromium +10 WebKit specialized tests; lint and full TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\canonical-validation-20261021T232154554987Z\\results.json"
+    },
+    {
+      "name": "147 regressions:127 affected groups rerun plus20 earlier same-task tests with unchanged import closure; original26 bootstrap failures retained",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\independent-regression-r2-20261021T233418015778Z\\final-independent-review.json"
+    },
+    {
+      "name": "Production build238 pages on same four product files and prior9 canonical inputs; only3 fixture maps amended afterward",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\production-build-20261021T232307183109Z\\result.json"
+    },
+    {
+      "name": "Extra3 fixture lint, real module mapping review and unchanged assertions",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\root-fixture-review.json"
+    },
+    {
+      "name": "Frozen12 afterimages, exact forward/inverse Git tree roundtrip and raw rollback before-images",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r6-auth-rejection\\delivery-20261021T233505722271Z\\freeze-receipt.json"
+    },
+    {
+      "name": "Authenticated Simulator and physical iPhone end-to-end validation on final R6 plus delta",
+      "result": "pending",
+      "evidence": "Not executed. Current Mac app remains c701 with manual sign-in pending; no claim of live/native acceptance."
+    }
+  ],
+  "releaseHold": true,
+  "deploymentPerformed": false,
+  "nativeBuildRequiredForThisDelta": false,
+  "nativeAssessment": "No Swift or bundled JavaScript changed. The integrated R6 role cache independently still requires its new native build; this server-only delta does not satisfy that gate.",
+  "implementationCommits": [
+    "1b7f191abf74a9c9ea0ea03e28d66e42b2e089bc",
+    "8776d0b52d7e5526a0814cec794cfde9f2ee7eb4"
+  ],
+  "workingEvents": [
+    "83ebc3d4-b091-4083-a091-8be5846ded7a",
+    "529c2df6-af70-44d2-91fb-b4dc63022ed4",
+    "0cc06541-ebd9-4788-9634-8bd6a5afb302",
+    "cf96bc69-0c2a-4e9e-9b85-11ad6e000f50"
+  ],
+  "scopeLimits": [
+    "Known revocation or explicit account denial is now typed; no blanket purge on503 or scope text.",
+    "Legacy experience My Work propagates typed initial denial only; no new final-read validation contract added there.",
+    "The named-read actual backend route/loader/SDK and real clients were exercised with synthetic transport; no production revocation/data change performed.",
+    "No claim that this server correction resolves every original Today503 or proves physical-iPhone performance."
+  ],
+  "id": "94ea46f7-b835-42c7-be0e-4f80878ebf25",
+  "recordedAt": "2026-10-21T23:36:00.349Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

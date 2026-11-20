@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "owner-forum-numeric-order-20261103",
+  "status": "ready",
+  "summary": "Backend-only forum migration: keep bigint IDs precision-safe as strings but sort chat/audit numerically. No Next.js runtime source changed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261103183500_forum_numeric_order.sql",
+    "tests/forum-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\owner-forum-20261103\\artifacts\\owner-forum\\numeric-order\\frozen-ready",
+    "commit": "c4828c5f5753eb467d5d34fc99e0a933e9676450"
+  },
+  "validation": [
+    {
+      "name": "14 PostgreSQL runtime tests including 99/100 chat and 9/10 audit boundaries",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/database-tests-final.txt"
+    },
+    {
+      "name": "Exact deployed migration source and function sort/grant checks",
+      "result": "passed",
+      "evidence": "artifacts/owner-forum/numeric-order/production-verification.json"
+    }
+  ],
+  "dependencies": [
+    "owner-forum-20261103"
+  ],
+  "id": "892ab8ff-8358-47e8-9291-9cae8d277790",
+  "recordedAt": "2026-11-03T18:33:24.292Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "supabase/migrations/20261103183500_forum_numeric_order.sql": "62598db6ddf6cfad252a89bafa9b571be47d378fcb962041828214b758a7ce35",
+    "tests/forum-runtime.test.mjs": "89599471c41648b48c2eeed66b5ecc69a1744fffe7aaad120921dc729d7ee917"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "ios-21-1-runtime-repairs-20261016",
+  "status": "needs-integration",
+  "summary": "Test-only correction after actual90-case Mac CI: simulate only existing DeskRelay loadServiceRelay(true) with installed:false, record exact command names/arguments/scope and assert one per cold mount while forbidding all other commands. Original financial draft/checkpoint/outbox assertions and all product bytes remain unchanged.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/LocalAppWebViewTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\experience-regression-21-1\\native-repair-source-r2",
+    "manifest": "artifacts\\experience-regression-21-1\\native-repair-source-manifest-r2.json",
+    "sha256": "427b591e578638d39546a1ba9c0ce32896e7cd2940a74d02861ce1d0ac96c51d"
+  },
+  "fileHashes": {
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "f2ca8714b161b4213993938b0794fb840002ebc0b7e697bc8427b4aee0deb8df"
+  },
+  "validation": [
+    {
+      "name": "Initial Mac CI90 tests:89 passed,1 fixture-count failure; original evidence retained",
+      "result": "failed",
+      "evidence": "artifacts/pos-menu-recovery-release-20261016/native-check-38965888458-failed.log"
+    },
+    {
+      "name": "Pinned generated-action mapping, mount contract, unchanged money/checkpoint/outbox assertions and diff checks",
+      "result": "passed"
+    },
+    {
+      "name": "Independent exact test-correction review",
+      "result": "passed"
+    },
+    {
+      "name": "Pinned macOS90-case XCTest and unsigned archive rerun",
+      "result": "pending"
+    }
+  ],
+  "id": "ae4e1dd1-cce4-4933-808d-50b7cbcc2427",
+  "recordedAt": "2026-10-16T21:09:16.301Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

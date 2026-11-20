@@ -1,0 +1,85 @@
+{
+  "kind": "change",
+  "changeId": "signup-release-integration-20261015",
+  "status": "ready",
+  "summary": "Reconcile completed booking and Explore changes against exact current live source and retain unrelated shipped modules.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/helpers/isolated-supabase-fixture.mjs",
+    "tests/booking-access.integration.test.mjs",
+    "supabase/migrations/20261015050000_booking_access_guards.sql",
+    "lib/customer-bookings.ts",
+    "lib/beauty.ts",
+    "tests/customer-booking-projection.test.mjs",
+    "supabase/migrations/20261015163000_customer_booking_privacy.sql",
+    "supabase/migrations/20261015173000_booking_notification_access_guards.sql",
+    "tests/booking-notification-outbox.integration.test.mjs",
+    "tests/booking-notification-dispatch.test.mjs",
+    "app/explore/nail-inspiration.tsx",
+    "components/explore-account-actions.tsx",
+    "app/salon-profile/post-actions.tsx",
+    "tests/nail-salon-navigation-runtime.test.mjs",
+    "tests/nail-discovery-runtime.test.mjs",
+    "tests/nail-book-card-ui.test.mjs",
+    "tests/explore-account-actions-ui.test.mjs",
+    "tests/post-report-actions-ui.test.mjs",
+    "tests/explore-save-runtime.test.mjs",
+    "tests/salon-report-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\signup-inline-security-20261015\\source-v1",
+    "baselineDeploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA"
+  },
+  "dependencies": [
+    "booking-access-review-20261015",
+    "booking-customer-privacy-20261015",
+    "booking-notification-review-20261015",
+    "explore-book-love-report-20261015"
+  ],
+  "validation": [
+    {
+      "name": "Final production webpack build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/signup-inline-security-20261015/production-build.log"
+    },
+    {
+      "name": "Assembled product ESLint",
+      "result": "passed",
+      "evidence": "artifacts/signup-inline-security-20261015/assembled-eslint.log"
+    },
+    {
+      "name": "Integrated booking and Explore verification",
+      "result": "passed",
+      "evidence": "booking-integration-verification-summary.json;Explore59/59; exact baseline preserved"
+    }
+  ],
+  "id": "59eec755-5b13-4448-8a17-0e839929d199",
+  "recordedAt": "2026-10-15T18:21:12.470Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "tests/helpers/isolated-supabase-fixture.mjs": "625eea3b591a4642d9084b95084feab941843dfdec1bd9a72f53d78c62dec849",
+    "tests/booking-access.integration.test.mjs": "8281501ea572db4f892c11532e27d05718a722d7447e0b6da086ec36f1055266",
+    "supabase/migrations/20261015050000_booking_access_guards.sql": "55c2e87eaea6a0a1da1ee032b8c4d299b7fdccb9f826192a27913e840e8ca65b",
+    "lib/customer-bookings.ts": "29969183186081bebc6d33956cd19fddebb6bc60c0c0ab94cfd02b56a25fdff1",
+    "lib/beauty.ts": "5b195b059c1b2e453daa145488e1578c15fc5f783ee38deb93e6426e6813e1fa",
+    "tests/customer-booking-projection.test.mjs": "768d3bc790e23bdcada5bd2271776144e4f35d7f94641c48be1f1ac019e3a071",
+    "supabase/migrations/20261015163000_customer_booking_privacy.sql": "dbbdaeb3707438626033a3b38b996a418f08a41f4b66228ab2565f1c6abd7881",
+    "supabase/migrations/20261015173000_booking_notification_access_guards.sql": "84bcf7bdb111db68c8876aec0bf413e77f8535b11ca0c8b78db55b6f04de0f6b",
+    "tests/booking-notification-outbox.integration.test.mjs": "31f22e21d43b55841492b1ff3f65595b4a4f41cbfecbc97ca4e4fcc0867241a9",
+    "tests/booking-notification-dispatch.test.mjs": "5c9d069e8ec17000274c9c736d7281fc7bd67c406855dea9c5c663a383004a76",
+    "app/explore/nail-inspiration.tsx": "2d42707316cee83de1c2fd0855212c497cd861497e824871d506ea1eb1fcdd35",
+    "components/explore-account-actions.tsx": "68d30adb30ee60813a76175517c1ea7bbdb83cb64872247df1b69d619653ba41",
+    "app/salon-profile/post-actions.tsx": "4ce3bf19192dd74320c9d7eec8917d7513ca663ccfa64dd90dceb487bb7343b0",
+    "tests/nail-salon-navigation-runtime.test.mjs": "64821cf69729100e1474f79c93fddaaf186141375feb9ac71fe086eaf5735a07",
+    "tests/nail-discovery-runtime.test.mjs": "325e31009c96edf11a6dfd385427438a21818cabbeb05e5af1b7946372560276",
+    "tests/nail-book-card-ui.test.mjs": "e21e2f81684260b4510d16e625d77ccf2feb1a02169e2702abc5fcd80e600755",
+    "tests/explore-account-actions-ui.test.mjs": "cd3d880cd348d99f9bdbf48acf1a77b0788c0cd568adbacc99210b6b568b4d8c",
+    "tests/post-report-actions-ui.test.mjs": "87f956e55002da00480138f317193e53d4982d75c3a3814bc5efce9a51e20593",
+    "tests/explore-save-runtime.test.mjs": "2a6ad5be3dad0cd9f2e0f3f8630e9651eddf777ec182ec54b8ababbccfae6938",
+    "tests/salon-report-ui.test.mjs": "4480ab106c53ca194eb1d58bf9ef3941b49a3b91f65e3fd4e6558693a131292e"
+  }
+}

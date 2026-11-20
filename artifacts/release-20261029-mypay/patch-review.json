@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-29T21:09:16.864Z",
+  "file": "app/staff/my-work/staff-pay-analysis.tsx",
+  "producerEvent": "61a9a430-1afd-478b-bc54-0a383a997a1f",
+  "producerHash": "a8e6f958c10eade1764fabd7d2d84793e35d4d556611b8a8192f4059784fb8a5",
+  "integratedHash": "a8e6f958c10eade1764fabd7d2d84793e35d4d556611b8a8192f4059784fb8a5",
+  "normalizedSourceIdentical": true,
+  "linesRemoved": 2,
+  "nativeRequired": true,
+  "reason": "StaffMyWorkView imported by lib/app-local-page-registry.tsx; StaffMyPay within view",
+  "financialLogicChanged": false
+}

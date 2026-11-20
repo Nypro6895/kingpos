@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "macqa-help-background-integration-20261020",
+  "status": "working",
+  "summary": "Assemble local-only iOS QA source: preserved uploaded45 baseline plus cookie replacement, typed missing-session rejection, Help dismissal and background cookie helper. No publication or session installation.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "components/app-local-shell.tsx",
+    "lib/supabase/auth-rest.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiBackgroundSync.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift",
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "dependencies": [
+    "ios-workspace-cookie-deletion-20261020",
+    "auth-session-missing-rejection-20261020",
+    "help-context-dismiss-20261020",
+    "background-cookie-authority-20261020"
+  ],
+  "source": {
+    "commit": "5ade00ba2d8200117c2d839c2db8b8862091fec5",
+    "baselineNativeCommit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89",
+    "selectedBackgroundCommits": [
+      "d5ecb7a51e7ccd313e1e79c73d2adf823608955b",
+      "25493875ce4bb7f344c448e4fef4853826cee145"
+    ]
+  },
+  "validation": [
+    {
+      "name": "Combined native180 tests and authenticated candidate UI",
+      "result": "pending"
+    }
+  ],
+  "id": "3868251f-7ce9-4a1c-af2d-6b35dd189fa1",
+  "recordedAt": "2026-10-21T04:26:01.614Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-macqa-integrated-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,41 @@
+Phone check-in and automatic salon customer consolidation — 2026-10-26
+
+Owner request: queue for the next combined deployment; do not publish separately.
+Change ID: phone-checkin-auto-merge-20261026.
+Implementation worktree: C:/Reylumi/kingpos-phone-checkin-20261026.
+Source baseline: production source commit 9a427d7712a3ea0cce847b8e3e5da4f322b222ee.
+The release coordinator must recapture current production and integrate this scoped
+patch; never replace newer production with this older baseline wholesale.
+
+Apply 20261026230000_phone_customer_consolidation.sql with its matching web change.
+It depends on the existing customer identity, signup phone and Personal QR migrations.
+The transaction backfills same-phone duplicates within each salon, preserving the
+existing merger's customer snapshots, source ID aliases, tickets, visits and amounts.
+Names no longer prevent a merge. Distinct already linked accounts remain separate.
+Separate active visits remain untouched; consolidation retries when a visit ends.
+Capture a normal database backup and before/after customer/dependency/payment counts
+for the release receipt. Do not run a second manual cleanup outside this migration.
+Reversing function definitions alone does not split already consolidated records;
+the retained audit snapshots and aliases are the evidence for any targeted recovery.
+
+History stays attached to customer/account IDs when account phone changes. The old
+number is released as a contact/proof without transferring owned history. Existing
+unowned bookings of an already linked customer gain that customer's account link;
+bookings already owned by a different account are never reassigned.
+
+Kiosk: ready screen shows the salon QR; phone lookup greets the customer by name;
+services show selection and estimated total; Confirm saves the selection and shows
+the service summary, wait message and canonical queue number. Receipt printing uses
+the existing bridge, with a compact screen rather than duplicate QR/receipt panels.
+The salon QR uses /check-in/[entry] -> /qr?entry=... -> existing login/signup/phone
+onboarding -> the same account check-in and requested services.
+
+Native assessment: no Swift, Electron, native bridge or packaged native code changed.
+Windows 0.7.2 loads the customer display from config.origin, and existing offline
+asset generation refreshes hashed web assets online. No new native binary is required
+for these web-compatible changes. Native hardware/printer acceptance was not run;
+browser coverage uses the real receipt component and a mocked print bridge.
+
+Verification evidence and the frozen source are linked by the completion journal.
+Full-schema tests use isolated PostgreSQL/Auth/PostgREST/RLS with network disabled;
+no production data, external messages, payments or real printing are used in tests.

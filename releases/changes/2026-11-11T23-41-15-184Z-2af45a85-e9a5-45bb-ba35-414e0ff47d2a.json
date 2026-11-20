@@ -1,0 +1,126 @@
+{
+  "kind": "change",
+  "changeId": "recovery-completion-20261111",
+  "status": "ready",
+  "summary": "Verified recovery contact, linked admin/support cases, native session containment, customer password change and fresh-login/MFA completion; conditional login and personal preparation preserved.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "types/admin-users-workspace.ts",
+    "lib/account-security-backoffice.ts",
+    "lib/platform-admin/user-identity.ts",
+    "app/navigation-shell.tsx",
+    "app/account-recovery/account-recovery-form.tsx",
+    "app/account-recovery/actions.ts",
+    "app/reset-password/reset-password-form.tsx",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/login-security/login-security-quick-editor.tsx",
+    "app/settings/recovery-back-office/recovery-back-office-panel.tsx",
+    "app/(legal)/contact-support/contact-form.tsx",
+    "app/(legal)/contact-support/page.tsx",
+    "app/(legal)/api/contact-support/route.ts",
+    "app/(app)/admin/inbox/actions.ts",
+    "app/(app)/admin/users/user-drawer-content.tsx",
+    "app/(app)/admin/users/user-operation-form.tsx",
+    "app/(app)/admin/users/workspace-actions.ts",
+    "app/(app)/account-recovery/verify-contact/page.tsx",
+    "app/account-recovery/confirm-contact-form.tsx",
+    "app/account-recovery/verify-contact-actions.ts",
+    "app/api/auth/recovery-password/route.ts",
+    "app/api/support/access/route.ts",
+    "lib/recovery-completion.ts",
+    "lib/support-email-access.ts",
+    "supabase/migrations/20261111233000_recovery_completion.sql",
+    "tests/recovery-fixture.mjs",
+    "tests/recovery-completion.integration.test.mjs",
+    "tests/recovery-completion-runtime.test.mjs",
+    "tests/recovery-full-schema.integration.test.mjs",
+    "tests/recovery-browser.test.mjs",
+    "tests/helpers/isolated-supabase-fixture.mjs",
+    "tests/password-reset-contract.test.mjs",
+    "tests/account-recovery-backoffice-contract.test.mjs",
+    "tests/auth-session-parallel-validation.test.mjs",
+    "tests/staff-salon-connections-contract.test.mjs"
+  ],
+  "dependencies": [
+    "hostinger-smtp-20261110"
+  ],
+  "validation": [
+    {
+      "name": "Full 404-migration schema and real isolated Auth recovery; no real email",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/full-stack-final.txt"
+    },
+    {
+      "name": "Focused security and SMTP runtime integration",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/final-focused-tests.txt"
+    },
+    {
+      "name": "Related login, deletion, staff, booking regressions",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/regression-tests-third.txt"
+    },
+    {
+      "name": "Actual browser components, mobile and desktop; recovery/password contracts",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/browser-final.txt"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/lint.txt"
+    },
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/recovery-release/stage-build.txt"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\recovery-completion-20261111\\artifacts\\recovery-release\\snapshot"
+  },
+  "id": "2af45a85-e9a5-45bb-ba35-414e0ff47d2a",
+  "recordedAt": "2026-11-11T23:41:15.184Z",
+  "worktree": "C:\\Reylumi-worktrees\\recovery-completion-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "types/admin-users-workspace.ts": "331499af100e66a62ca02a8a7dccb0d7c9299fe60024e22dbc9fcc6d1eb60730",
+    "lib/account-security-backoffice.ts": "98105378a000152ef9e6e9154e9fff9811dd65f0ad0f810b40e336e6f197f825",
+    "lib/platform-admin/user-identity.ts": "960a292d7c1097afb24e6aa963d490ed45fea6f92718f0c1def96779519176ad",
+    "app/navigation-shell.tsx": "7cf835979e45d25321e22a2c3a01690475cc96352663377e51e0ec3197576e3b",
+    "app/account-recovery/account-recovery-form.tsx": "fffdbba3b49383b8ea4c6d907534c2d0d2add1672c4a0a9db0e06003158b3d70",
+    "app/account-recovery/actions.ts": "bf3eac4d6e0f735d01e2b7ceeb607974ea534fc2eed4724ee67bd9b87fb278b1",
+    "app/reset-password/reset-password-form.tsx": "5bb8bee559bc84cfa4540ec0b16baddf208ff4af783bb2c2c3fb5766003a82cc",
+    "app/settings/login-security/login-security-panel.tsx": "6256c81fa5b8660ed90c8bc02a4e1bc4eef59ff31b4fc53c60c44b7ae63b45ba",
+    "app/settings/login-security/login-security-quick-editor.tsx": "1ba13a0a6702b4b49bb3db6778ec8377a8a14b8a481c7e9f360557f4ef768032",
+    "app/settings/recovery-back-office/recovery-back-office-panel.tsx": "886e8e17a0dfe301db8548d9b791852749032e2bcf058a64668ae09c18d5997f",
+    "app/(legal)/contact-support/contact-form.tsx": "0c87eca0d8b8cc08cfb757d33eaac02e649494bf5404c150e696497634c00192",
+    "app/(legal)/contact-support/page.tsx": "704c755dfddf216d2292fb02e8cfc2630a22925eb18e033a81724e0aa866196b",
+    "app/(legal)/api/contact-support/route.ts": "261dd13d8c01a623c5e4b1e42ab903b4203b7c18596b8b7c8f9503896775f624",
+    "app/(app)/admin/inbox/actions.ts": "8a7ce8aebd6e736bb1a407814287bc5b1117c3526864201d6b709f34b6757eea",
+    "app/(app)/admin/users/user-drawer-content.tsx": "0688cd28b5d6e2fbb4311067eedbe21e4fdc3a8fda274bc72f8f52b355af0b1e",
+    "app/(app)/admin/users/user-operation-form.tsx": "bda412970b40dd7e1526e6b38855cd05f4938d1a88018abb5555ff2942087fa5",
+    "app/(app)/admin/users/workspace-actions.ts": "fa86c2aebc46f9e00b46ffc07edf863bf1cd3eeb27235040272e35ff3fcfaa08",
+    "app/(app)/account-recovery/verify-contact/page.tsx": "f4065b2d7a43f8abaea7a2cf6da4b1e3947baf9459a16035b5c61d4237ea92eb",
+    "app/account-recovery/confirm-contact-form.tsx": "1a920b91ca98aada9d7595df088e43c66396a1591d7abbff8ebb3adb79a01457",
+    "app/account-recovery/verify-contact-actions.ts": "1a332916e1f8b41ea655cf6e859d9946506bbd6666152680524086b4a9d7972b",
+    "app/api/auth/recovery-password/route.ts": "57b7303c003ab1f50134170bbf238f556dadecb72bb86b1aaf656000151534bf",
+    "app/api/support/access/route.ts": "af2cc135de0497ed531829d095a752c66a3a33fec1f16055bfaa4e3696e780c6",
+    "lib/recovery-completion.ts": "f87f04664600464521ad7a56e1ec8ef091887ca16ca43bf3e5184e91f3c58838",
+    "lib/support-email-access.ts": "7d8ef8bb655fd658e2405d0b6b8821a904cdc880b547a36d5eefef7ff5212f38",
+    "supabase/migrations/20261111233000_recovery_completion.sql": "9fef1f80a3f96b72f7d8999ff6e474975aa02d9dd77f29f66d94197d71a32bd0",
+    "tests/recovery-fixture.mjs": "fe90e05cc38a0c0d22fb6dd45bb42f4b1528f5dcee4e87db46e76dc761daf3d4",
+    "tests/recovery-completion.integration.test.mjs": "2bf8ccf30be2e4a9100e5ee7eb97a755c229c22021590ecdf9fefe55e51bbf14",
+    "tests/recovery-completion-runtime.test.mjs": "eadfbd1534094c451f2bded3b05836280566350e19cb5c9c5cbd61238dea71bd",
+    "tests/recovery-full-schema.integration.test.mjs": "433c32a947bb44e595ddcc72ff726fd4bcc40f1a327983239deb81c05bd92030",
+    "tests/recovery-browser.test.mjs": "f03bf6746182b46d41897551112f9254912282df77bb68f8ca7478b121199fbe",
+    "tests/helpers/isolated-supabase-fixture.mjs": "e75fb0174be34904c0aface22725e6c33619993064c5c1c224ed3ffff779781c",
+    "tests/password-reset-contract.test.mjs": "7f51eaef3eeb898458138897db67bdaf09f9ef223dc62f28c5097c2997fbde0f",
+    "tests/account-recovery-backoffice-contract.test.mjs": "be26fb33dc00165831cca73dccded1d8638defd9794710c58e43e4ae1d39df3d",
+    "tests/auth-session-parallel-validation.test.mjs": "2865ef2e05fe289dc2c29bdd82a06ce0e413a4f1649ca766ee07c490157dd659",
+    "tests/staff-salon-connections-contract.test.mjs": "cf3e5cbc6e5b5c4757b806a3a8f5060eb2560a75dea362010923fc688e5c7b74"
+  }
+}

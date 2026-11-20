@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "personal-layout-followup-20261029",
+  "status": "working",
+  "summary": "Owner-authorized narrow layout repairs: constrain Explore search to existing page gutters and restore reachable Personal profile Save/Cancel. Preserve static More pages, account-wide notifications, and Bookings/Activity semantics pending proposal.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/explore/explore-client.tsx",
+    "app/account/account-profile-editor.tsx",
+    "app/account/account-profile-editor.module.css"
+  ],
+  "source": {
+    "commit": "f4e645fda38d7d9e478ddfe18b00e608c4417f17"
+  },
+  "validation": [
+    {
+      "name": "responsive layout verification",
+      "result": "pending"
+    }
+  ],
+  "id": "352e46fe-8245-4b0a-9b07-029de61fcbad",
+  "recordedAt": "2026-10-30T00:03:16.500Z",
+  "worktree": "C:\\Reylumi-worktrees\\personal-audit-fixes-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

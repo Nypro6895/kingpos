@@ -111,9 +111,11 @@ const QUICK_ACCESS_SOURCES: readonly TodayQuickAccessSource[] = [
   },
   {
     id: "settings",
+    href: "/settings",
+    icon: "gear",
     label: "Settings",
     permissionCodes: ["salon_settings.view"],
-    roleMoreItemId: "owner-setting",
+    description: "Profile, discovery, ownership, and setup for the current salon.",
   },
   {
     description: "Account permission catalog and role permission matrix.",

@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "browser-idle-loading-20261023",
+  "status": "ready",
+  "summary": "Keep continuously visible admitted web pages intact during idle focus checks; retain real resume/access gates and render one shared Lumi route loader.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/experience-scope.tsx",
+    "tests/browser-idle-focus-ui.test.mjs",
+    "app/(app)/loading.tsx",
+    "tests/app-loading-indicator.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\browser-idle-loading-20261023\\frozen-source",
+    "commit": "11a5d9d79f82298ee2419759adbf1dd64b1d321b",
+    "fullSourceWorktree": "C:\\Users\\giuse\\kingpos-browser-idle-loading-20261023",
+    "baselineCommit": "ba9664be3207a6735f680280dd83f51b4ad10472"
+  },
+  "validation": [
+    {
+      "name": "Fourteen focus/resume scenarios each on Chromium and WebKit; prior auth/scope regressions2/2",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\browser-idle-loading-20261023\\FOCUS-IMPLEMENTATION-VERIFICATION.json SHA256 578f5b89539b4fbe099e53a7f65df290e01ff81763cf07a35620b12df73ad00c"
+    },
+    {
+      "name": "Actual loading chain regression2marks before,1mark after; scoped lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\browser-idle-loading-20261023\\loading-indicator-implementation-receipt.json SHA256 0883f63870cf2371321e9dd5f5b17de4fc4a1496e4fb30a1be23a6f4ed0db8b2"
+    },
+    {
+      "name": "Full TypeScript and scoped ESLint; exact source and commit hashes",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\browser-idle-loading-20261023\\freeze-receipt.json SHA256 6517d5e760f9da21caceb3e02b6740fa0cd4eb3627b5528b1888bbc304244cc4"
+    },
+    {
+      "name": "Independent security and root combined source review",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\browser-idle-loading-20261023\\freeze-receipt.json; reviewer focus_security_review bound d6809221/66ea5b89, no blocking findings."
+    }
+  ],
+  "dependencies": [],
+  "id": "b2f809ed-547f-4982-8506-fbe45dc4b245",
+  "recordedAt": "2026-10-23T07:42:36.963Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/experience-scope.tsx": "d6809221886d161c6a6dd647cb3fd7e7fd52b2997d3c7f7fd3d29dbc0803db81",
+    "tests/browser-idle-focus-ui.test.mjs": "66ea5b89512120931417d5496fd3e3be8224895e42415dc0028d4a78e438c88d",
+    "app/(app)/loading.tsx": "54eece27c09088f86de78d23fb34e3e18f2e3d52cd30483a61cde25fd075f11d",
+    "tests/app-loading-indicator.test.mjs": "5fb20754cf85f9444815f6c990b4e5985c9936a183f7c18a6ca3f401b0fd1836"
+  }
+}

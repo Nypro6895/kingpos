@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "ios-background-cookie-authority-20261020",
+  "status": "working",
+  "summary": "Use the same canonical actual-WebKit response cookie writer for background reads, preserving existing authority, epoch, cancellation and read-only sync behavior.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiBackgroundSync.swift",
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos-bg-cookie-20261020",
+    "commit": "d73afd529b6b5b3c0ba3437efcb6e225d5f1269c"
+  },
+  "validation": [
+    {
+      "name": "Minimal writer integration and unchanged authority/epoch/cancellation guards",
+      "result": "pending"
+    },
+    {
+      "name": "Real isolated WK cookie storage with synthetic background transport and negative authority/cancellation cases",
+      "result": "pending"
+    },
+    {
+      "name": "Actual native compile and contract suite",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-workspace-cookie-deletion-20261020"
+  ],
+  "id": "ad7521eb-061c-41f5-9bb7-6fc1a703f2ad",
+  "recordedAt": "2026-10-21T04:12:47.631Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-bg-cookie-20261020",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

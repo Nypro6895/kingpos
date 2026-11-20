@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "ios-my-work-critical-path-20261021",
+  "status": "working",
+  "summary": "Option A: prove and remove avoidable My Work read serialization; preserve authoritative snapshot date, server access, deadlines and complete payload. Add fixed per-request caller spans and composed SDK controls. Local verification only; release held. Corrected dependency name to the verified integration change; prior working record retained. Add one actual-source dependency-loader mapping in inherited legacy fixture so existing MyWork regression can execute; no product scope expansion.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/staff-my-work-resource-server.ts",
+    "lib/app-local-role-resources-server.ts",
+    "lib/read-request-timing.ts",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/live-workspace-experience.test.mjs"
+  ],
+  "dependencies": [
+    "unified-owner-guest-integration-20261021"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/kingpos-ios-production-path-qa-20261021",
+    "commit": "cf458316d827a4d765f1f0c27f1c13f101d8ca5c"
+  },
+  "validation": [
+    {
+      "name": "Baseline composed scheduling RED control",
+      "result": "pending"
+    },
+    {
+      "name": "Targeted scheduling and auth/scope/date/error regression",
+      "result": "pending"
+    },
+    {
+      "name": "Real hosted login and current-source iOS data journey",
+      "result": "pending"
+    }
+  ],
+  "id": "9bf90fd8-cb63-4048-bdf9-b342efaa644a",
+  "recordedAt": "2026-10-21T21:03:21.064Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

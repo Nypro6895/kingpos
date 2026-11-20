@@ -1,4 +1,5 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
@@ -19,6 +20,7 @@ export function BookingDayCalendar({appointments,data,date,openingHours,select,f
   const [zoom,setZoom]=useState(112);
   const [scaleReady,setScaleReady]=useState(false);
   const [hover,setHover]=useState<{item:PortableBookAppointment;x:number;y:number}|null>(null);
+  useTransientOverlay(() => setHover(null), Boolean(hover));
   const hovered=hover ? appointments.find(item=>item.id===hover.item.id) : null;
   const scroller=useRef<HTMLDivElement>(null);
   const previousScale=useRef<{start:number;zoom:number}|null>(null);

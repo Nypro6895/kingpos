@@ -1,0 +1,89 @@
+{
+  "kind": "change",
+  "changeId": "combined-search-integration-20261119",
+  "status": "working",
+  "summary": "Integrate exact frozen final Search source into combined native/store candidate with scoped three-way merge; no deployment",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-salon-card.module.css",
+    "docs/explore-local-quality-benchmark.md",
+    "docs/explore-local-search-20261118.txt",
+    "docs/explore-local-search-results-20261118.md",
+    "lib/explore-query-intent.ts",
+    "lib/explore-query-routing.ts",
+    "lib/explore-search-metrics.ts",
+    "lib/explore-search-refresh.ts",
+    "lib/explore-search-rpc.ts",
+    "lib/explore-search.ts",
+    "lib/use-explore-search-media.ts",
+    "scripts/backfill-explore-local-quality.mjs",
+    "scripts/benchmark-explore-local-quality.mjs",
+    "scripts/profile-explore-local-quality.mjs",
+    "scripts/test-explore-local-quality-browser.mjs",
+    "scripts/test-explore-local-quality-native-cursors.mjs",
+    "scripts/test-explore-local-quality-native-overlay.mjs",
+    "scripts/test-explore-local-quality-native-sorts.mjs",
+    "scripts/test-explore-local-quality-regressions.mjs",
+    "scripts/test-explore-local-quality-rich-profile.mjs",
+    "scripts/test-explore-local-quality-write-pressure.mjs",
+    "supabase/migrations/20261119042923_explore_local_quality_search.sql",
+    "supabase/migrations/20261119052341_explore_local_quality_preparation.sql",
+    "tests/explore-anywhere-ui-runtime.test.mjs",
+    "tests/explore-bounded-refresh-runtime.test.mjs",
+    "tests/explore-coordinate-validity-runtime.test.mjs",
+    "tests/explore-coordinate-validity-sql.test.mjs",
+    "tests/explore-local-quality-name-probe.integration.test.mjs",
+    "tests/explore-local-quality-preparation-runtime.test.mjs",
+    "tests/explore-local-quality-preparation.integration.test.mjs",
+    "tests/explore-local-quality-routing.test.mjs",
+    "tests/explore-local-quality-scope-regressions.integration.test.mjs",
+    "tests/explore-local-quality.integration.test.mjs",
+    "tests/explore-query-intent.test.mjs",
+    "tests/explore-query-routing-runtime.test.mjs",
+    "tests/explore-refresh-runtime.test.mjs",
+    "tests/explore-request-cancellation.test.mjs",
+    "tests/explore-search-media-refresh-runtime.test.mjs",
+    "tests/explore-search-metrics.test.mjs",
+    "tests/explore-search-refresh-runtime.test.mjs",
+    "tests/explore-search-rpc.test.mjs",
+    "tests/explore-search-service-runtime.test.mjs",
+    "tests/explore-unified-search-api.test.mjs",
+    "tests/fixtures/explore-coordinate-validity-bootstrap.sql",
+    "tests/fixtures/explore-local-quality-catalog-fingerprint.mjs",
+    "tests/fixtures/explore-local-quality-effective-identity.mjs",
+    "tests/fixtures/explore-local-quality-migration-manifest.mjs",
+    "tests/fixtures/explore-local-quality-native-bootstrap.mjs",
+    "tests/fixtures/explore-local-quality-native-preparation.mjs",
+    "tests/fixtures/explore-local-quality-regression-manifest.json",
+    "tests/fixtures/explore-query-production-entities-20261016.json",
+    "tests/fixtures/explore-social-bootstrap.sql",
+    "tests/fixtures/explore-unified-search-bootstrap.mjs",
+    "types/explore.ts"
+  ],
+  "source": {
+    "commit": "045dfa2278548787c1abb434b0362ef83b90afec"
+  },
+  "dependencies": [
+    "local-search-quality-20261118"
+  ],
+  "validation": [
+    {
+      "name": "incoming-final-snapshot-113file-sha256",
+      "result": "passed",
+      "evidence": "artifacts/search-integration-r1/incoming-verification.json"
+    },
+    {
+      "name": "combined-source-tests-and-SQL-compatibility",
+      "result": "pending"
+    }
+  ],
+  "id": "874bfb99-bfcd-4567-85e4-4715f4490743",
+  "recordedAt": "2026-11-19T07:28:47.695Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,34 @@
+/* Scoped to this editor so the generic Settings form grid cannot split time ranges. */
+.settings-child-pages[data-settings-child-open] form.settings-opening-hours{padding:0;margin:0;border:0;border-radius:0}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-zone{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;min-height:68px;padding:6px 8px 10px;border:0}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-zone>span{font-size:11px;color:#746c66}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-zone>select{width:100%;max-width:100%;min-width:0;min-height:44px;border:1px solid #e9e4df;border-radius:7px;padding:8px 10px;background:#fff;text-align:left;font-size:16px}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-week{display:block;border-top:1px solid #e9e4df}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-day{display:block;border:0;border-bottom:1px solid #e9e4df;border-radius:0;padding:0;margin:0;background:transparent;overflow:visible}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-day>summary{display:grid;grid-template-columns:minmax(78px,1fr) minmax(0,auto) 12px;align-items:center;gap:8px;min-height:52px;padding:10px 8px;list-style:none;cursor:pointer;font-size:13px}
+.settings-opening-hours summary::-webkit-details-marker{display:none}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-day>summary::after{content:none}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-day-name{font-weight:500}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-summary{display:grid;gap:3px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-closed{color:#746c66}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-chevron{font-size:19px;text-align:center;color:#968b82;transition:transform .12s}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-day[open]>summary{background:#fcf5f0}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-day[open] .opening-hours-chevron{transform:rotate(90deg)}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-day-editor{padding:0 8px 8px}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-open{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:0;border:0}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-open>span{flex:1;font-size:13px}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-open>input{flex:none;cursor:pointer}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-range{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;align-items:end;padding:4px 0 8px}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-time{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;min-width:0;min-height:0;border:0;padding:0}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-time>span{font-size:11px;color:#746c66}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-time>input{display:block;appearance:none;min-width:0;width:100%;max-width:100%;min-height:44px;border:1px solid #e9e4df;border-radius:7px;padding:8px 4px;background:#fff;text-align:center;font-size:16px}
+.settings-opening-hours input[type=time]::-webkit-date-and-time-value{min-width:0;text-align:center}
+.settings-opening-hours input[type=time]::-webkit-datetime-edit{padding:0}
+.settings-opening-hours input[type=time]::-webkit-calendar-picker-indicator{width:14px;padding:0;margin:0}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-remove{width:44px;height:44px;min-height:44px;padding:0;border:1px solid #e9e4df;border-radius:7px;background:#fff;color:#746c66;font-size:20px}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-add{display:block;min-height:44px;padding:8px 0;border:0;background:transparent;color:#b84d27;text-align:left;font-size:13px}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-help>summary{display:flex;align-items:center;min-height:44px;padding:8px;color:#746c66;font-size:12px;list-style:none;cursor:pointer}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-help{padding:0;border:0;border-radius:0;background:transparent}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-help>summary:after{content:'›';margin-left:auto;font-size:18px}
+.settings-child-pages[data-settings-child-open] .settings-opening-hours .opening-hours-help p{padding:0 8px 12px;color:#746c66;font-size:12px}
+.settings-opening-hours :where(summary,button,select,input):focus-visible{outline:2px solid #b84d27;outline-offset:2px}

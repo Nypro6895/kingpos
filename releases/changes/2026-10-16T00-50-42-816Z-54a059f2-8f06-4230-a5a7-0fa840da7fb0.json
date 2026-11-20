@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "performance-coldlaunch-feedback-completion-20261015",
+  "status": "ready",
+  "summary": "Native useful shell paints before WebKit initialization, restores responsive Lumi orbit, queues latest public startup intent, preserves bridge/security/Safari flows.28 XCTest, signed archive/export/upload and fresh Apple VALID + internal TestFlight available verified.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLaunchView.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/LaunchAppearanceTests.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    "ios/ReylumiTests/SecurityChallengeWebViewTests.swift",
+    "ios/.gitignore"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\performance-native-frozen-20261016",
+    "commit": "9215fe50d2249597df82aa291a3c52ad63438604",
+    "uploadedBaselineCommit": "e4be37f0aa3d6e43767b3d7bc2573145f477d708"
+  },
+  "validation": [
+    {
+      "name": "28 XCTest pass;5 new first-frame/orbit cases;unsigned and signed archives pass",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos\\artifacts\\native-coldlaunch-20261015\\native-live-verification.json"
+    },
+    {
+      "name": "25 frozen commit source hashes,24 Simulator archive and14 signed runtime/asset source hashes match",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos\\artifacts\\native-coldlaunch-20261015\\native-live-verification.json"
+    },
+    {
+      "name": "1.0.1(18.1) upload accepted;fresh Apple VALID + IN_BETA_TESTING;GET only",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos\\artifacts\\native-coldlaunch-20261015\\upload-18-1\\testflight-processing.json"
+    }
+  ],
+  "id": "54a059f2-8f06-4230-a5a7-0fa840da7fb0",
+  "recordedAt": "2026-10-16T00:50:42.816Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/ReylumiLaunchView.swift": "74fd8534000aaece39765c1eacf935b60d60cd3937b07c287b705b7dde78a8b1",
+    "ios/Reylumi/ReylumiViewController.swift": "4690294d8d3c5fbc4fd375f455421281111306c4a54083c6bcea2f3101b5ff2a",
+    "ios/ReylumiTests/LaunchAppearanceTests.swift": "c395c63f66e34bfe91df91b19e043b4c8217670fb9f84877519cf9f39d92b770",
+    "ios/ReylumiTests/AppViewportTests.swift": "da7ce77fdbb37154e9bf0f289fe5d3b318a3d345b57b4c5d59a99735ffd3a155",
+    "ios/ReylumiTests/SecurityChallengeWebViewTests.swift": "c3574e44c340cb9c901c4414d7bfc8f2ac3b196d0c339e21cf09f4f01488cc6d",
+    "ios/.gitignore": "0493fc480dbc3312ee442f7ef6bd0eaf9532dac9eab40400ef913f031d076e01"
+  }
+}

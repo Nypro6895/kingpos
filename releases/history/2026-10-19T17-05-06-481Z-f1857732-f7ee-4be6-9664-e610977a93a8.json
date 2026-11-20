@@ -1,0 +1,93 @@
+{
+  "kind": "release",
+  "releaseId": "auth-lifecycle-release-20261019",
+  "summary": "Verified Auth lifecycle web release and matching TestFlight update; physical iPhone cold-start/workspace/idle testing remains with owner.",
+  "changes": [
+    "1c4c27da-b40c-4266-a48e-624b3c9e032a"
+  ],
+  "source": {
+    "commit": "eab825088f71ff0a5d4ac0951c2aa633cc29ab10",
+    "baselineCommit": "62f22d20c5fe9e048a679f9ba6c648d2115cd632",
+    "baselineDeploymentId": "dpl_HjXf9xNajTaZv272kDTqAhFRU3yx",
+    "sourceSha256": "6ce2eda1bc9dec9d5165efa0b0710df8f3eddf4440d1bfd2755250fe9ce10bf0",
+    "deploySourceSha256": "40069a1191c5138e7ec47f13bda26c09bedadf0622e8d77879bc76e53ca6824c",
+    "overlaySha256": "2ff386f5608188ad9fee8c6d530334239497438aa443389d248c1a826efd9a50",
+    "assembly": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/assembled-source.json"
+  },
+  "preReleaseNativeInvestigation": {
+    "obsoleteResetAssertionCorrected": true,
+    "initialWarmFixtureFailure": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/native-failed-55-classification.json",
+    "independentReview": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/offline-fixture-failure-review.json",
+    "priorLegacyStartupCauseConfirmed": false
+  },
+  "verification": {
+    "webTests": 137,
+    "chromium": 27,
+    "webkit": 27,
+    "swift": 143,
+    "physicalIPhone": false,
+    "businessLogicPreserved": true,
+    "sourceReview": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/integration-review.json"
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_cMPbdECybwJ3PZHpuBun1Vu4f4Hf",
+      "baselineDeploymentId": "dpl_HjXf9xNajTaZv272kDTqAhFRU3yx",
+      "sourceSha256": "6ce2eda1bc9dec9d5165efa0b0710df8f3eddf4440d1bfd2755250fe9ce10bf0",
+      "overlaySha256": "2ff386f5608188ad9fee8c6d530334239497438aa443389d248c1a826efd9a50",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/live-source-verification.json",
+      "smoke": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/live-http-smoke.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "40",
+      "commit": "eab825088f71ff0a5d4ac0951c2aa633cc29ab10",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/auth-lifecycle-release-20261019/native-release-verification.json",
+      "uploadWorkflow": {
+        "runId": "39288788744",
+        "url": "https://github.com/Nypro6895/kingpos/actions/runs/39288788744",
+        "headSha": "eab825088f71ff0a5d4ac0951c2aa633cc29ab10",
+        "headShaVerified": true,
+        "reportedAPIStatus": "completed",
+        "reportedAPIConclusion": "success",
+        "APIStateMatchesCompletedEvidence": true,
+        "executionProof": "Required receipts and job-log assertions below; API status alone is insufficient",
+        "metadataSha256": "2adeae00bb2a28493abade970bcccf6127e60a40c7e83072026d419d838f1605",
+        "jobLogSha256": "26ada1cf138ba5987c755edffec9edf3a825c691042af17483600b77a472e32f"
+      },
+      "availabilityWorkflow": {
+        "runId": "39290727883",
+        "url": "https://github.com/Nypro6895/kingpos/actions/runs/39290727883",
+        "headSha": "eab825088f71ff0a5d4ac0951c2aa633cc29ab10",
+        "headShaVerified": true,
+        "reportedAPIStatus": "completed",
+        "reportedAPIConclusion": "success",
+        "APIStateMatchesCompletedEvidence": true,
+        "executionProof": "Required receipts and job-log assertions below; API status alone is insufficient",
+        "metadataSha256": "44e27249a7a02cf2ec8a0f6faf139e99958fee5f3bb8cd055011d129eaddebfb",
+        "jobLogSha256": "542423c19beb3b7bb3ed22cd8c79c0ba212b41d2455173a8c4be4bb025269197"
+      }
+    }
+  },
+  "limitations": [
+    "Physical iPhone installation and behavior remain unverified.",
+    "Simulator scenarios do not prove actual weak mobile network or OS suspend/resume behavior.",
+    "Archive binary/resource folders are not uploaded by this workflow; direct signed archive resource inspection is not claimed unless separately provided.",
+    "No App Store publication, tester invitations, tester/group or distribution changes are performed by this verifier."
+  ],
+  "rollback": {
+    "webBaselineDeploymentId": "dpl_HjXf9xNajTaZv272kDTqAhFRU3yx",
+    "nativeBaselineVersion": "1.0.0",
+    "nativeBaselineBuild": "39"
+  },
+  "remaining": [
+    "Owner physical-iPhone test: cold open, Staff to Owner, idle/resume, weak network."
+  ],
+  "id": "f1857732-f7ee-4be6-9664-e610977a93a8",
+  "recordedAt": "2026-10-19T17:05:06.481Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\auth-lifecycle-live-20261019"
+}

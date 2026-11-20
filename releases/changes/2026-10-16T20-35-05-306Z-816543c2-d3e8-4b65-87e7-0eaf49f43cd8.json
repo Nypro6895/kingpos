@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "ios-21-1-runtime-repairs-20261016",
+  "status": "working",
+  "summary": "Repair installed-client cached-context delivery, confirmation/back navigation parity, UI-thread asset work and encrypted read-cache amplification; verify the actual bundled POS initializer with synthetic data and preserve all financial drafts/checkpoints/outbox.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Source and focused native regression checks",
+      "result": "pending"
+    },
+    {
+      "name": "Actual macOS Simulator XCTest and unsigned archive on pinned repair source",
+      "result": "pending"
+    }
+  ],
+  "id": "816543c2-d3e8-4b65-87e7-0eaf49f43cd8",
+  "recordedAt": "2026-10-16T20:35:05.306Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

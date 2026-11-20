@@ -1,3 +1,4 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import {
   getCurrentBusinessContext,
@@ -6,9 +7,15 @@ import {
 } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
 import { NOTIFICATION_CATEGORIES } from "@/lib/notification-categories";
+import { headers as requestHeaders } from "next/headers";
 const headers = { "Cache-Control": "private, no-store" };
 export async function GET() {
-  const client = await createAuthenticatedSupabaseServerClient();
+  if ((await requestHeaders()).get("x-reylumi-auth-unavailable") === "1") return Response.json({ error: "Authentication temporarily unavailable" }, { status: 503, headers });
+  try { return await loadPreferences(); }
+  catch { return Response.json({ error: "Notification settings are temporarily unavailable." }, { status: 503, headers }); }
+}
+async function loadPreferences() {
+  const client = await createAuthenticatedSupabaseServerClient({ throwOnUnavailable: true });
   if (!client)
     return Response.json(
       { error: "Please sign in again." },
@@ -51,7 +58,7 @@ export async function GET() {
   );
 }
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin)
+  if (!isSameOriginMutation(request))
     return Response.json(
       { error: "Invalid origin." },
       { status: 403, headers },

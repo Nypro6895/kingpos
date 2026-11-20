@@ -1,0 +1,35 @@
+REYLUMI — SYSTEM MESSAGING AND BOOKSMS
+
+Implementation boundaries
+- /admin/settings/twilio manages the system provider and master delivery policy.
+- Authentication SMS (personal phone verification, change/resend, phone MFA enrollment/login), login SMS alerts, business profile verification and ownership claim SMS/voice use the system policy.
+- Supabase Auth still creates and validates authentication OTP. Its signed Send SMS hook calls /api/auth/sms-hook, which sends using the encrypted admin Twilio configuration.
+- Claim uses Twilio Verify. Existing pending challenges remain checkable when new delivery is disabled.
+- Password reset remains email-based. This change does not introduce an SMS account recovery method.
+
+BookSMS
+- New Market plugin id: booksms. Owner-only configuration is in the plugin panel.
+- Booking confirmations/updates/cancellations and SMS reminders use salon-specific encrypted Twilio credentials, never the platform system sender.
+- Database enqueue, claim and pre-send quota reservation check paid access, installation, enabled policy, selected message type and allowance. Application sending also checks plugin credentials.
+- SMS options have been removed from general booking settings. Existing reminder settings are labeled as email reminders; BookSMS owns its SMS reminder policy independently.
+- Monthly price and allowance are pending. The catalog is initialized with fulfillment_ready=false, zero draft price and zero allowance; checkout cannot open in this state.
+- Admin Market billing provides BookSMS monthly price, SMS allowance and a switch to open purchases after approval. The database refuses ready plans without a positive price and allowance.
+- The quoted allowance is frozen in the bank order snapshot and granted only after verified settlement. It cannot be increased by a salon owner.
+- Usage counts attempts before provider sending, including uncertain sends, against a UTC calendar-month allowance. No automatic retry of interrupted provider sends. Full paid-period expiry/refund continues to use the existing Market billing lifecycle.
+- Sender information is visible only to the salon owner; Auth Tokens remain encrypted and are never returned to browser state.
+
+Required production setup (not applied by this source change)
+1. Assemble deployment using the current reylumi.com production source baseline and verify-production-base procedure in AGENTS.md.
+2. Apply supabase/migrations/20261011130001_system_messaging_booksms.sql after existing Market and booking migrations.
+3. Configure a server-only SUPABASE_SEND_SMS_HOOK_SECRET using the Supabase Send SMS HTTP hook signing secret (v1,whsec_... supported). Keep PLATFORM_SETTINGS_ENCRYPTION_KEY unchanged.
+4. In hosted Supabase Auth, enable the Send SMS HTTP hook pointing to https://reylumi.com/api/auth/sms-hook, using the same signing secret. Do not enable automatic phone confirmation.
+5. Confirm the admin Messaging & OTP SMS sender and Verify Service. The Test Verify connection button checks Verify metadata, not real SMS sender delivery.
+6. Validate an authorized authentication SMS and each intended method after deployment. This implementation's tests send no real SMS/calls.
+7. Leave BookSMS purchases closed until price and allowance have been approved. Salon owners then purchase, activate and configure their sender in the plugin.
+
+Operational notes
+- Authentication hook signatures expire after five minutes; delivery IDs are stored without phone/OTP content to prevent retries from sending duplicate codes. Accepted IDs return success; uncertain/in-progress IDs do not resend.
+- Expired auth_sms_hook_deliveries older than seven days can be removed by a service-role maintenance job; no client role can access that table.
+- Provider configuration and plan changes do not guarantee carrier delivery. Admin inventory distinguishes application integration from hosted hook configuration.
+
+Validation: final production build passed; lint and 33 related tests passed, including SQL billing/access/quota, signed hook replay protection, plugin sender isolation and desktop/mobile UI. Production was not changed and no real SMS/call was sent.

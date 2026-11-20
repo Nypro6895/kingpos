@@ -1,0 +1,99 @@
+{
+  "kind": "change",
+  "changeId": "post-actions-unification-20261017",
+  "status": "needs-integration",
+  "summary": "Unify Beauty/Salon/Explore post menus and mutation authority; remove dead duplicate edit/delete UI; preserve Salon revalidation, existing role permissions, reports, bookings, media evidence and campaign accounting. No deploy.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/beauty/actions.ts",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-feed.tsx",
+    "app/explore/explore-inspiration-post.tsx",
+    "app/post-moderation/actions.ts",
+    "app/salon-profile/post-actions.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/explore-social.tsx",
+    "components/post-change-state.tsx",
+    "components/post-safety.tsx",
+    "components/salon-post-preview.tsx",
+    "lib/beauty.ts",
+    "lib/salon-profile.ts",
+    "supabase/migrations/20261017040000_post_actions_canonical_caption.sql",
+    "tests/beauty-profile-contract.test.mjs",
+    "tests/explore-auto-load-runtime.test.mjs",
+    "tests/explore-post-change-ui.test.mjs",
+    "tests/explore-social-ui.test.mjs",
+    "tests/post-action-dialogs-ui.test.mjs",
+    "tests/post-actions-mutations-ui.test.mjs",
+    "tests/post-actions-mutations.integration.test.mjs",
+    "tests/post-actions-salon-service.test.mjs",
+    "tests/post-report-actions-ui.test.mjs",
+    "tests/salon-profile-publish.test.mjs",
+    "tests/salon-report-ui.test.mjs",
+    "tests/salon-website-interactions.test.mjs",
+    "tests/salon-website-redesign.test.mjs",
+    "tests/website-post-engagement.test.mjs",
+    "types/post-actions.ts"
+  ],
+  "source": {
+    "snapshot": "artifacts/post-actions-unification-20261017/snapshot-v2",
+    "manifest": "artifacts/post-actions-unification-20261017/source-manifest-v2.json",
+    "patch": "artifacts/post-actions-unification-20261017/changes-v2.patch",
+    "sourceSha256": "5c9146e7f37a337179e53a3de2fd6a68fc78f2f0b97b28d165e9e7a1e52d37f1",
+    "patchSha256": "ce8ac4b3c21e3cd65fb9f214593111c63b4b8c486d85b773b9e6c7e5a9550e40"
+  },
+  "dependencies": [
+    "ad-media-performance-20261017"
+  ],
+  "audit": "artifacts/post-actions-unification-20261017/audit.md",
+  "validation": [
+    {
+      "name": "Core contracts, actual SQL/service behavior and Chrome/mobile WebKit UI: 60 tests",
+      "result": "passed",
+      "evidence": "artifacts/post-actions-unification-20261017/test-verification.json"
+    },
+    {
+      "name": "Explore cross-view updates, automatic continuation and final shared UI rerun after caption race fix",
+      "result": "passed",
+      "evidence": [
+        "artifacts/post-actions-unification-20261017/caption-race-regressions.log",
+        "artifacts/post-actions-unification-20261017/caption-race-autoload.log"
+      ]
+    },
+    {
+      "name": "Campaign lifecycle/payment gate/delivery deduplication and post safety regressions: 3 tests",
+      "result": "passed",
+      "evidence": "artifacts/post-actions-unification-20261017/connected-regressions.log"
+    },
+    {
+      "name": "TypeScript and ESLint (31 pre-existing warnings, zero errors); final shared files lint clean",
+      "result": "passed",
+      "evidence": [
+        "artifacts/post-actions-unification-20261017/typecheck.log",
+        "artifacts/post-actions-unification-20261017/lint.log",
+        "artifacts/post-actions-unification-20261017/final-shared-lint.log",
+        "artifacts/post-actions-unification-20261017/caption-race-lint.log"
+      ]
+    },
+    {
+      "name": "Production build against matching isolated product source",
+      "result": "passed",
+      "evidence": "artifacts/post-actions-unification-20261017/production-build.log",
+      "isolatedConfig": "cpus=1; webpackMemoryOptimizations=true; exclude historical build types"
+    }
+  ],
+  "integrationNotes": [
+    "Apply the additive 20261017040000 migration with the web change; not applied to production. The editor fails closed if canonical caption is unavailable.",
+    "Task patch is relative to the captured before files. Full frozen files contain existing unrelated workspace edits; integrate the task patch into the exact future production baseline, preserving shipped work.",
+    "No tables/storage files dropped; no production data changes; no campaign price, view or credit ledger modification.",
+    "No native code, bundled native assets or bridge contract changes. WebKit mobile tested; physical iPhone/binary testing was not performed."
+  ],
+  "id": "5cfc5228-c4f8-43dc-81a3-78450ae0363a",
+  "recordedAt": "2026-10-17T19:29:12.469Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

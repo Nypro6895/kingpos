@@ -1,0 +1,18 @@
+{
+  "kind": "change",
+  "changeId": "after97-owner-portable-command-boundary-20261111",
+  "status": "working",
+  "summary": "Keep authenticated Owner held-ticket commands outside paired Portable admission, whose dedicated device handlers retain their own identity and token checks.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-portable-actions.generated.json",
+    "tests/after97-native-adapters.test.mjs"
+  ],
+  "id": "cc3e57e6-eb05-47c7-93d1-cd8bacf04744",
+  "recordedAt": "2026-11-12T02:17:10.778Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

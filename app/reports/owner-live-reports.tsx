@@ -1,13 +1,29 @@
 "use client";
-import {useState,useEffect,useRef,useCallback} from 'react';
-import {useSearchParams} from 'next/navigation';
+import { PosCollectionBreakdown } from "@/components/pos-collection-breakdown";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { CompactFilters } from "@/components/compact-filters";
+import styles from "./reports.module.css";
+import { ReportDetails, ReportIcon } from "./report-ui";
+import {useState,useEffect,useLayoutEffect,useRef,useCallback,useMemo} from 'react';
+import {useSearchParams,usePathname} from 'next/navigation';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
+import {useExperienceScope} from '@/components/experience-scope';
+import {experienceResourceCache} from '@/lib/experience-resource-cache';
+import {fetchWorkspaceResource} from '@/lib/fetch-workspace-resource';
+import {useExperienceResource} from '@/lib/use-experience-resource';
+import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
+import { PayrollPeriodRail } from "@/app/payroll/payroll-period-rail";
+import { reportExpensePeriodHref, type ReportExpensePeriod } from "@/lib/report-expense-period";
 import {ClosingDateForm,ReportTabs} from './report-controls';
 import {DailyClosingForm} from './daily-closing-form';
-import {OperationalReportDashboard} from './operational-report-dashboard';
+import {DailyAccountingOverview,DailyAccountingDate} from './daily-accounting-overview';
+import type {DailyReportOverview} from '@/types/daily-report-overview';
 import type {OperationalReportData} from '@/lib/operational-report';
 import type {DailyPosReport,DailyPosReportStaffRow} from '@/types/pos-daily-closing';
 import Link from 'next/link';
+import { StaffDayFinancialEditor } from "@/app/payroll/staff-day-financial-editor";
+import {FinancialHistoryProvider,InlineFinancialHistory,inlineHistoryEditedClassName,useFinancialHistoryContext} from "@/app/payroll/inline-financial-history";
+import {financialHistoryForObject} from "@/lib/inline-financial-history";
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
@@ -15,7 +31,7 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
-function getReportHref(date: string, reportOverview?: OperationalReportData) {
+function getReportHref(date: string, reportOverview?: Pick<OperationalReportData,"range">, reportPath = "/reports") {
   const params = new URLSearchParams({ date });
 
   if (reportOverview) {
@@ -24,23 +40,14 @@ function getReportHref(date: string, reportOverview?: OperationalReportData) {
     params.set("end", reportOverview.range.endDate);
   }
 
-  return `/reports?${params.toString()}#daily-closing`;
-}
-
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase text-zinc-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
-    </section>
-  );
+  return `${reportPath}?${params.toString()}#daily-closing`;
 }
 
 function NoPermissionState() {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-        You do not have permission to view reports.
+      <p className="bg-zinc-50 p-5 text-sm text-zinc-600">
+        <WorkspaceText text="You do not have permission to view reports." />
       </p>
     </main>
   );
@@ -51,11 +58,17 @@ function DateSelector({
   selectedDate,
   today,
 }: {
-  reportOverview: OperationalReportData;
+  reportOverview: Pick<OperationalReportData,"range">;
   selectedDate: string;
   today: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
+  const reportPath = usePathname().startsWith("/pos/report") ? "/pos/report" : "/reports";
   return (
+    <div className={styles.date}>
+      <ReportIcon kind="calendar" /><span>{selectedDate}</span>
+      <CompactFilters label={__vt("Closing date")} active={selectedDate !== today} icon={<ReportIcon kind="filter" />}>
     <ClosingDateForm>
       <input name="preset" type="hidden" value={reportOverview.range.preset} />
       <input
@@ -64,12 +77,13 @@ function DateSelector({
         value={reportOverview.range.startDate}
       />
       <input name="end" type="hidden" value={reportOverview.range.endDate} />
-      <label className="block sm:w-56">
-        <span className="text-xs font-medium uppercase text-zinc-500">
-          Business Date
+      <label className="block min-w-0">
+        <span >
+          <WorkspaceText text="Business Date" />
         </span>
         <input
           className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
+          key={selectedDate}
           defaultValue={selectedDate}
           name="date"
           type="date"
@@ -79,64 +93,78 @@ function DateSelector({
         className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white"
         type="submit"
       >
-        Load
+        <WorkspaceText text="Load" />
       </button>
       <Link
         className="inline-flex h-11 items-center px-3 text-sm font-medium text-teal-700 hover:underline"
-        href={getReportHref(today, reportOverview)}
+        href={getReportHref(today, reportOverview, reportPath)}
       >
-        Today
+        <WorkspaceText text="Today" />
       </Link>
     </ClosingDateForm>
+      </CompactFilters>
+    </div>
   );
 }
 
-function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
+function StaffReportRow({row,salonId,businessDate,canEdit}:{row:DailyPosReportStaffRow;salonId:string;businessDate:string;canEdit:boolean}){
+ const history=useFinancialHistoryContext();
+ // A ticket rename/note belongs to its ticket. Only a captured monetary change
+ // belongs to the aggregate staff/day input row.
+ const changes=financialHistoryForObject(history.changes,{staffId:row.staffId,businessDate,sourceKinds:["staff_day","pos_ticket_staff_earnings","ticket"]}).filter(change=>change.source_table!=="ticket"||["service_total","tip_amount"].some(field=>JSON.stringify(change.before_values[field])!==JSON.stringify(change.after_values[field])));
+ return <li><details className={changes.length?inlineHistoryEditedClassName:undefined} data-staff-input-date={businessDate} data-staff-input={row.staffId}>
+  <summary className="grid min-h-11 cursor-pointer list-none grid-cols-12 gap-1 px-4 py-3 text-sm">
+   <div className="col-span-4 min-w-0 break-words font-medium text-zinc-950">{row.staffName}{changes.length>0&&<span className="block text-xs font-normal"><WorkspaceText text="Edited"/> · {changes.length}</span>}</div>
+   <div className="col-span-3 text-right text-zinc-950">{formatMoney(row.totalEarned)}</div>
+   <div className="col-span-3 text-right text-zinc-700">{formatMoney(row.tipAmount)}</div>
+   <div className="col-span-2 text-right text-zinc-700">{row.totalTurns}</div>
+  </summary>
+  <div className="min-w-0 px-4 pb-3"><InlineFinancialHistory changes={changes}/>{history.error&&<p role="status" className="text-xs"><WorkspaceText text={history.error}/><button type="button" className="ml-2 min-h-11 underline" onClick={history.retry}><WorkspaceText text="Retry"/></button></p>}{canEdit&&<StaffDayFinancialEditor salonId={salonId} staffId={row.staffId} businessDate={businessDate} serviceTotal={row.totalEarned} tipAmount={row.tipAmount}/>}</div>
+ </details></li>;
+}
+
+function StaffReportTable({ rows, salonId, businessDate, canEdit }: { rows: DailyPosReportStaffRow[]; salonId: string; businessDate: string; canEdit: boolean }) {
   if (rows.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+      <div className="mt-4 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950">
-          No finalized staff rows for this date.
+          <WorkspaceText text="No finalized staff rows for this date." />
         </h2>
       </div>
     );
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <div className="mt-4 min-w-0 overflow-hidden border-y border-zinc-200 bg-white">
       <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-        <div className="col-span-6">Staff</div>
-        <div className="col-span-3 text-right">Total Earned</div>
-        <div className="hidden text-right sm:col-span-2 sm:block">Tip</div>
-        <div className="col-span-3 text-right sm:col-span-1">Turns</div>
+        <div className="col-span-4"><WorkspaceText text="Staff" /></div>
+        <div className="col-span-3 text-right"><WorkspaceText text="Gross service" /></div>
+        <div className="col-span-3 text-right"><WorkspaceText text="Tip" /></div>
+        <div className="col-span-2 text-right"><WorkspaceText text="Turns" /></div>
       </div>
       <ul className="divide-y divide-zinc-200">
-        {rows.map((row) => (
-          <li className="grid grid-cols-12 px-4 py-3 text-sm" key={row.staffId}>
-            <div className="col-span-6 font-medium text-zinc-950">
-              {row.staffName}
-            </div>
-            <div className="col-span-3 text-right text-zinc-950">
-              {formatMoney(row.totalEarned)}
-            </div>
-            <div className="hidden text-right text-zinc-700 sm:col-span-2 sm:block">
-              {formatMoney(row.tipAmount)}
-            </div>
-            <div className="col-span-3 text-right text-zinc-700 sm:col-span-1">
-              {row.totalTurns}
-            </div>
-          </li>
-        ))}
+        {rows.map(row=><StaffReportRow key={row.staffId} row={row} salonId={salonId} businessDate={businessDate} canEdit={canEdit}/>)}
       </ul>
     </div>
   );
 }
 
 
-type Props={snapshotAt?:number;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:OperationalReportData;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
+type Props={expensePeriod?:ReportExpensePeriod|null;viewerId:string;snapshotAt?:number;query?:string;managedRead?:boolean;accountingOverview?:DailyReportOverview;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:Pick<OperationalReportData,"range">;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
 export function OwnerLiveReports(initial:Props){
- const [live,setLive]=useState<{base:Props;data:Props}|null>(null);const params=useSearchParams();
- const data=live?.base===initial?live.data:initial;
+ const routeParams=useSearchParams();
+ const pathname=usePathname();
+ const params=useMemo(()=>initial.query===undefined?routeParams:new URLSearchParams(initial.query),[initial.query,routeParams]);
+ const scope=useExperienceScope()?.context.scope;
+ const snapshotKey='owner-reports?'+params.toString();
+ const [mountedAt]=useState(()=>Date.now());
+ const [oversize,setOversize]=useState<{base:Props;data:Props}|null>(null);
+ const retained=useExperienceResource({scope:scope??'unavailable',key:snapshotKey,initialData:initial,
+   initialUpdatedAt:initial.snapshotAt??mountedAt,tags:['report'],freshForMs:30000,retainForMs:30*60000,
+   enabled:false,fetcher:async()=>({data:initial})});
+ const data=oversize?.base===initial?oversize.data:retained.data??initial;
+ const latest=useRef(data);
+ useLayoutEffect(()=>{latest.current=data;},[data]);
  const generation=useRef(0);
  useEffect(()=>{generation.current++;},[initial]);
  const {salonId,salonName,today,report,reportOverview,canEdit,canApplyCorrection,canRequestCorrection}=data;
@@ -144,6 +172,7 @@ export function OwnerLiveReports(initial:Props){
  const dirtyViews=useRef({overview:false,closing:false});
  const running=useRef(false);
  const queued=useRef(false);
+ const runQueued=useRef<()=>Promise<void>>(async()=>{});
  const refreshView=useCallback(async()=>{
    if(running.current){queued.current=true;return;}
    running.current=true;
@@ -155,83 +184,59 @@ export function OwnerLiveReports(initial:Props){
    query.set('end',initial.reportOverview.range.endDate);
    query.set('view',view);
    try {
-     const response=await fetch('/api/pos/owner/reports?'+query.toString(),{cache:'no-store',signal:AbortSignal.timeout(15000)});
-     if(response.ok){const next=await response.json();if(next.salonId===salonId&&snapshotGeneration===generation.current){
-       setLive(previous=>({base:initial,data:{...(previous?.base===initial?previous.data:initial),...next}}));dirtyViews.current[view]=false;
-     }}
-   } finally {running.current=false;}
- },[params,initial,salonId]);
+     if(!scope)return;
+     const url='/api/pos/owner/reports?'+query.toString();
+     const policy={tags:['report'],freshForMs:30000,retainForMs:30*60000};
+     const next=await experienceResourceCache.load({scope,key:url},fetchWorkspaceResource<Partial<Props>&{salonId:string;closingScope:string}>(url,scope),{...policy,force:true});
+     if(next.salonId===salonId&&next.closingScope===`${salonId}:${initial.viewerId}`&&snapshotGeneration===generation.current&&experienceResourceCache.isAvailable({scope,key:snapshotKey})){
+       const previous=experienceResourceCache.get<Props>({scope,key:snapshotKey})?.data??latest.current;
+       const merged={...previous,...next};
+       if(experienceResourceCache.seed({scope,key:snapshotKey},merged,policy))setOversize(null);
+       else setOversize({base:initial,data:merged});
+       dirtyViews.current[view]=false;
+     }
+   } finally {
+     running.current=false;
+     if(queued.current){queued.current=false;queueMicrotask(()=>{void runQueued.current().catch(()=>{});});}
+   }
+ },[params,initial,salonId,scope,snapshotKey]);
  const onViewChange=useCallback((view:"overview"|"closing")=>{
    activeView.current=view;
    if(dirtyViews.current[view])void refreshView().catch(()=>{});
  },[refreshView]);
- useEffect(()=>{
-   if(queued.current){queued.current=false;void refreshView().catch(()=>{});}
- },[data,refreshView]);
+ useLayoutEffect(()=>{runQueued.current=refreshView;},[refreshView]);
  usePosResourceRefresh(salonId,'report',async()=>{
    dirtyViews.current.overview=true;dirtyViews.current.closing=true;
    await refreshView();
- },{initialReconcile:false,snapshotAt:initial.snapshotAt});
+ },{enabled:!initial.managedRead,initialReconcile:false,freshForMs:30000,snapshotAt:Math.max(initial.snapshotAt??0,scope?experienceResourceCache.get({scope,key:snapshotKey})?.updatedAt??0:0)||initial.snapshotAt});
+ if(!retained.available)return null;
   return (
-    <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-6 text-zinc-950 sm:px-6">
+    <FinancialHistoryProvider salonId={salonId} surface="reports" start={reportOverview.range.startDate<report.reportDate?reportOverview.range.startDate:report.reportDate} end={reportOverview.range.endDate>report.reportDate?reportOverview.range.endDate:report.reportDate} scope={`${salonId}:${data.viewerId}`} refreshKey={data.snapshotAt} query={initial.query}>
+    <main className={styles.page}>
+      <h1 className="sr-only"><WorkspaceText text="Reports" /></h1>
       <ReportTabs
+        expenses={data.expensePeriod === null ? undefined : data.expensePeriod && "period" in data.expensePeriod && !data.expensePeriod.needsAnchor ? <ShopMoneyWorkspace salonId={salonId} start={data.expensePeriod.period.startDate} end={data.expensePeriod.period.endDate} view="expenses" compactExpenses/> : <p role="status"><WorkspaceText text={data.expensePeriod && "error" in data.expensePeriod ? data.expensePeriod.error : data.expensePeriod?.needsAnchor ? "Every-2-weeks payroll needs an anchor date. Update it in Settings." : "Payroll schedule is unavailable. Reopen Reports to retry."}/></p>}
+        expenseTools={data.expensePeriod && "period" in data.expensePeriod && !data.expensePeriod.needsAnchor ? <div><PayrollPeriodRail period={data.expensePeriod.period} months={data.expensePeriod.months} periods={data.expensePeriod.periods} activeTab="expenses" optionsId="report-expense-period-options" hrefForPeriod={period=>reportExpensePeriodHref(period,pathname,params.toString())}/></div> : undefined}
         onViewChange={onViewChange}
+        overviewTools={<DailyAccountingDate date={report.reportDate} today={today} timeZone={reportOverview.range.timeZone}/>}
+        closingTools={<DateSelector reportOverview={reportOverview} selectedDate={report.reportDate} today={today} />}
         overview={
-          <OperationalReportDashboard
-            report={reportOverview}
-            salonName={salonName}
-            selectedClosingDate={report.reportDate}
-          />
+          data.accountingOverview ? <DailyAccountingOverview overview={data.accountingOverview} report={report} query={initial.query} updatedAt={data.snapshotAt} onClosing={()=>{window.history.replaceState(null,"",`${window.location.pathname}${window.location.search}#daily-closing`);window.dispatchEvent(new HashChangeEvent("hashchange"));}}/> : <p role="status"><WorkspaceText text="Loading report details…"/></p>
         }
       >
-        <section className="grid gap-5">
-          <div>
-            <h2 className="text-xl font-semibold text-zinc-950">
-              Daily Closing
-            </h2>
-            <p className="mt-1 text-sm text-zinc-600">
-              Cash reconciliation, correction requests, and staff daily rows for
-              a single business date.
-            </p>
-          </div>
+        <section>
+          <h2 className="sr-only"><WorkspaceText text="Daily Closing" /></h2>
 
-          <DateSelector
-            reportOverview={reportOverview}
-            selectedDate={report.reportDate}
-            today={today}
-          />
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <SummaryCard
-              label="Total Staff Earned"
-              value={formatMoney(report.totals.totalStaffEarned)}
-            />
-            <SummaryCard
-              label="Total Tip"
-              value={formatMoney(report.totals.totalTip)}
-            />
-            <SummaryCard
-              label="Total Discount"
-              value={formatMoney(report.totals.totalDiscount)}
-            />
-            <SummaryCard
-              label="Gift Card"
-              value={formatMoney(report.totals.totalGiftCard)}
-            />
-            <SummaryCard
-              label="Expected Total"
-              value={formatMoney(report.totals.expectedTotal)}
-            />
-          </div>
-
-          {report.lock.liveTotalsDifferFromSnapshot ? (
+          {report.lock.isLocked && report.lock.liveTotalsDifferFromSnapshot ? (
             <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Current POS data differs from the locked snapshot. Corrections are
-              recorded through adjustment records.
+              <WorkspaceText text="Tickets changed after this day was locked. The locked closing is kept; later corrections are listed in Closing Inputs history." />
             </p>
           ) : null}
 
           <DailyClosingForm
+            salonId={salonId}
+            scope={`${salonId}:${data.viewerId}`}
             adjustmentTotals={report.adjustmentTotals}
             canApplyCorrection={canApplyCorrection}
             canEdit={canEdit}
@@ -239,76 +244,63 @@ export function OwnerLiveReports(initial:Props){
             closingInputs={report.closingInputs}
             corrections={report.corrections}
             expectedTotal={report.totals.expectedTotal}
-            key={report.reportDate}
+            expectedTip={report.totals.expectedTip ?? report.totals.totalTip}
+            key={`${salonId}:${data.viewerId}:${report.reportDate}`}
             lock={report.lock}
             reportDate={report.reportDate}
+            timeZone={reportOverview.range.timeZone}
             snapshotTotals={report.snapshotTotals}
-          />
+          >
+            <ReportDetails title="Closing breakdown">
+          <PosCollectionBreakdown service={report.totals.totalStaffEarned} gift={report.totals.giftSales??0} discount={report.totals.ordinaryDiscount??report.totals.totalDiscount} reward={report.totals.rewardDiscount??0} giftPaid={report.totals.giftServicePaid??report.totals.totalGiftCard} earnedTip={report.totals.totalTip} giftTipPaid={report.totals.giftTipPaid??0} expected={report.totals.expectedTotal} expectedTip={report.totals.expectedTip??report.totals.totalTip}/>
 
-          <section className="mt-8">
-            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-zinc-200 pb-3">
-              <div>
-                <h2 className="text-lg font-semibold text-zinc-950">
-                  Staff Daily Report
-                </h2>
-                <p className="mt-1 text-sm text-zinc-600">
-                  Finalized POS staff earnings and turn totals for this business
-                  date.
-                </p>
-              </div>
-            </div>
-            <StaffReportTable rows={report.staffRows} />
-          </section>
+            </ReportDetails>
+<ReportDetails title="Staff Daily Report" meta={report.staffRows.length}>
+<StaffReportTable rows={report.staffRows} salonId={salonId} businessDate={report.reportDate} canEdit={canEdit} />
+</ReportDetails>
 
-          <section className="mt-8 rounded-lg border border-zinc-200 bg-white p-5">
-            <h2 className="text-lg font-semibold text-zinc-950">
-              Verification
-            </h2>
-            <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <ReportDetails title="Verification" meta={report.metadata.ticketCount}>
+            <dl className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
-                  Tickets
+                <dt>
+                  <WorkspaceText text="Tickets" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {report.metadata.ticketCount}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
-                  Finalized
+                <dt>
+                  <WorkspaceText text="Finalized" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {report.metadata.finalizedTicketCount}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
-                  Open Excluded
+                <dt>
+                  <WorkspaceText text="Open Excluded" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {report.metadata.excludedOpenTicketCount}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
+                <dt>
                   Void/Cancel Excluded
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {report.metadata.excludedVoidedTicketCount}
                 </dd>
               </div>
-              <div>
-                <dt className="text-xs font-medium uppercase text-zinc-500">
-                  Gift Card Payments
-                </dt>
-                <dd className="mt-1 text-lg font-semibold text-zinc-950">
-                  {formatMoney(report.totals.giftCardPaymentTotal)}
-                </dd>
-              </div>
             </dl>
-          </section>
+          </ReportDetails>
+          </DailyClosingForm>
+
+
         </section>
       </ReportTabs>
     </main>
+    </FinancialHistoryProvider>
   );
 }

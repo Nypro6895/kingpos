@@ -1,4 +1,5 @@
 import "server-only";
+import {publicExploreCardRpc} from "./public-explore-card-rpc";
 import { getSalonIdentityById } from "@/lib/salon-identity-data";
 import { EMPTY_SALON_IDENTITY,type SalonIdentity } from "@/lib/salon-identity";
 import { getLumiTrustEvidenceBySalonId } from "@/lib/lumi-trust-data";
@@ -177,10 +178,14 @@ export async function getExploreDecisionSignalsBySalonId(
     return new Map<string, ExploreDecisionSignals>();
   }
 
-  const [{ data, error }, evidenceBySalon, identityBySalon] = await Promise.all([
+  rpc = await publicExploreCardRpc(rpc,uniqueSalonIds);
+  const [{ data, error }, evidenceBySalon, identityBySalon, reputationResponses] = await Promise.all([
     rpc("get_public_explore_decision_signals", { target_salon_ids: uniqueSalonIds }),
     getLumiTrustEvidenceBySalonId(rpc, uniqueSalonIds),
     getSalonIdentityById(rpc, uniqueSalonIds),
+    Promise.all(Array.from({ length: Math.ceil(uniqueSalonIds.length / 100) }, (_, index) =>
+      rpc("get_public_explore_reputation_summaries", { target_salon_ids: uniqueSalonIds.slice(index * 100, (index + 1) * 100) }),
+    )),
   ]);
 
   if (error) {
@@ -212,18 +217,21 @@ export async function getExploreDecisionSignalsBySalonId(
 
   // Match the canonical evidence used by the salon profile, rather than
   // treating legacy reviews as the salon's entire trust history.
-  await Promise.all(uniqueSalonIds.map(async (salonId) => {
-    const { data: reputationData, error: reputationError } = await rpc(
-      "get_public_salon_profile_reputation_summary",
-      { target_salon_id: salonId },
-    );
-    const reputation = Array.isArray(reputationData)
-      ? reputationData[0] as ExploreDecisionSignalsRow | undefined
-      : undefined;
-    if (reputationError || !reputation) {
+  const reputationBySalon = new Map<string, ExploreDecisionSignalsRow>();
+  for (const response of reputationResponses) {
+    if (response.error || !Array.isArray(response.data)) continue;
+    for (const row of response.data) {
+      if (typeof row.salon_id === "string" && uniqueSalonIds.includes(row.salon_id) && row.reputation && typeof row.reputation === "object") {
+        reputationBySalon.set(row.salon_id, row.reputation as ExploreDecisionSignalsRow);
+      }
+    }
+  }
+  for (const salonId of uniqueSalonIds) {
+    const reputation = reputationBySalon.get(salonId);
+    if (!reputation) {
       const current = signalsBySalon.get(salonId) ?? EMPTY_EXPLORE_DECISION_SIGNALS;
       signalsBySalon.set(salonId, { ...current, ...(identityBySalon.get(salonId) ?? EMPTY_SALON_IDENTITY), trustEvidence: evidenceBySalon.get(salonId) ?? null });
-      return;
+      continue;
     }
 
     const current = signalsBySalon.get(salonId) ?? EMPTY_EXPLORE_DECISION_SIGNALS;
@@ -237,6 +245,6 @@ export async function getExploreDecisionSignalsBySalonId(
       uniqueCustomerCount: readCount(reputation.unique_customer_count),
       verifiedVisitCount: readCount(reputation.verified_visit_count),
     });
-  }));
+  }
   return signalsBySalon;
 }

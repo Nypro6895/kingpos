@@ -1,0 +1,105 @@
+{
+  "kind": "change",
+  "changeId": "tax-activation-fix-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Paused expired Tax connections, scoped post-activation owner setup and professional sign-in link; old payment snapshots/native return preserved; not deployed Original handoff f112c815-5fc7-4908-95eb-7fd0a8637efe. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/tax-company/settings/page.tsx",
+    "app/(legal)/market/payment-return/page.tsx",
+    "app/(tax)/tax/page.tsx",
+    "app/(tax)/tax/qa/page.tsx",
+    "app/market/additional-sample-apps.ts",
+    "app/market/card-checkout-panel.tsx",
+    "app/market/card-payment-actions.ts",
+    "app/market/market-client.tsx",
+    "app/market/tax-company-panel.tsx",
+    "app/market/trial-actions.ts",
+    "app/market/trial-panel.tsx",
+    "app/tax-company/actions.ts",
+    "app/tax/owner-connection-panel.tsx",
+    "app/tax/tax-entry.tsx",
+    "lib/tax-workspace.ts",
+    "tests/market-card-tax-checkout.test.mjs",
+    "tests/tax-personal-workspace.integration.test.mjs",
+    "app/market/tax-payment-return-links.tsx",
+    "app/tax/tax-access-link.tsx",
+    "app/tax/tax-activation-followup.tsx",
+    "lib/tax-activation.ts",
+    "scripts/qa-tax-activation.mjs",
+    "supabase/migrations/20261110234500_tax_activation_handoff.sql",
+    "tests/tax-activation-settings.test.mjs",
+    "tests/tax-activation-ui.test.mjs",
+    "docs/tax-activation-fix-20261110.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "tax-refinement-20261110",
+    "Existing Tax card bridge and trial-aware runtime migrations; no catalog or provider configuration changed"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "1e39702d-0f7c-4d56-baa7-07a41f51129b",
+  "recordedAt": "2026-11-12T02:06:23.611Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/(app)/payroll/tax-company/settings/page.tsx": "d7a1041986290530f8a42a458441919aeaccfcb690f725766e0335483ce1ffe7",
+    "app/(legal)/market/payment-return/page.tsx": "434afc7d9cc4d0c196e116ed7c339e816ba4e948dfa19681a61f2c2eb1478e34",
+    "app/(tax)/tax/page.tsx": "d572763ee0bc71b2d8ec28631711c57b4cc77e304f37b9f10e8c54432a406f3f",
+    "app/(tax)/tax/qa/page.tsx": "f923f9abf13aedab24e8984d68adc049b7e3213037370b1aaeb279dd06f2288a",
+    "app/market/additional-sample-apps.ts": "98bf438488bce4920da2d44b9720b8668edb335064f2268cd667fccf194293a1",
+    "app/market/card-checkout-panel.tsx": "e983d24a904a6c8578bd3a5e145d8ea6f492b16919680c8d8b12a3bbca9f5bfc",
+    "app/market/card-payment-actions.ts": "d8bed7f80e54c5e3d4b8879762367fd690ae2803f68e22cfd081a0aa6027844a",
+    "app/market/market-client.tsx": "c95b7c3f2af99832ec8c13beb0a55d1605360464055df33c790d87f00dd24344",
+    "app/market/tax-company-panel.tsx": "4407cc41f4a5ae41874ee9e53fb352bcb2fa24d20e4de645fe3f20e3d51005aa",
+    "app/market/trial-actions.ts": "07e9458c1b607b1b603c169cdceabaf4414139cb3d33b156296fa6b2a42c7647",
+    "app/market/trial-panel.tsx": "2dc953f74c11dde028221dd79822662a092da87991b632f99e7eded6765ab747",
+    "app/tax-company/actions.ts": "383d2a74b0adc98266ea0fc951cf0f8c485dd61635f2f90e832f8e3e60f04457",
+    "app/tax/owner-connection-panel.tsx": "8bcb5634908d0174f922b32f70f6ce4b924297a60cfd4a5930293454fed4fcaf",
+    "app/tax/tax-entry.tsx": "499fd31253504128f0a8f5ccfef59e41feb13460e68b431e3ea972a8d005a06d",
+    "lib/tax-workspace.ts": "e6a444ed0d387d8bfcc7e172cd2c66c46dc68671bb9600ee94bf0f2b011b1304",
+    "tests/market-card-tax-checkout.test.mjs": "28fdd3d2bede1ee65cc43ae9f9cd56a93e6ce891b89933df6fa9252562d11df3",
+    "tests/tax-personal-workspace.integration.test.mjs": "2b5664de37af312444cf7df9879c6f49deb3a57284bbb2e160f7a4b634ad0dbe",
+    "app/market/tax-payment-return-links.tsx": "d0179b7b5569ac1b52a6add7c696e0f3583855fd47fd3b85efdf79e36d9c102a",
+    "app/tax/tax-access-link.tsx": "0a7bffcca45f20e1a24e10326a50bb7addc7b878871a28d889aa8393cd0a8bde",
+    "app/tax/tax-activation-followup.tsx": "f995687c7f2929a0354c2d042de6961a15a7e93bdef9895a62506880492423ac",
+    "lib/tax-activation.ts": "d90be1625f2f37fb5299b44d34dd8b53673e734cb2a43e22262e952e6da9bb92",
+    "scripts/qa-tax-activation.mjs": "99f63c617fc57c63e968ca7191ceae1c5012c00667e1cfb525b136775e463b88",
+    "supabase/migrations/20261110234500_tax_activation_handoff.sql": "9aeba12185754fb150cdf10d0924efde3e316d2dbada1f5d21521c74b6c547e3",
+    "tests/tax-activation-settings.test.mjs": "d766600e3fd4c7fd6852889c5b5f9e7afe60ad69b2749b7af0645621d0c2d4e6",
+    "tests/tax-activation-ui.test.mjs": "b226e109a1aed47345ad14f9301aeb752bb7b36607b6b830c8fba95c4b48457e",
+    "docs/tax-activation-fix-20261110.md": "4433f6a73b7c5bc2a37d9730ade850ebdba1fdd0a974cb9b21e9ff45ad76db9f"
+  }
+}

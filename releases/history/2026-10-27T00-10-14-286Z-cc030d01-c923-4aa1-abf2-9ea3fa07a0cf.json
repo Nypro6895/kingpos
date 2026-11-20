@@ -1,0 +1,220 @@
+{
+  "kind": "release",
+  "summary": "Publish all completed recent Windows POS, keyboard, service categories, phone/QR check-in, Customer Display and bilingual shared Help changes; distribute Windows 0.7.3 updater and Help menu.",
+  "changes": [
+    "cd977876-0e5b-44a5-aca4-c0b812108245",
+    "b0e0566b-0813-40df-a1d8-84ee0f323044",
+    "20d5d902-6931-4bee-b246-4f7d1d13eace",
+    "7f5a98b0-6e02-4914-a557-32c4a09cc4dc",
+    "e4e16ab7-5b59-4c68-9fe4-7293a6d9e1f8",
+    "070e09bf-5e73-4925-9788-820b4db7cb99",
+    "0421188d-7a92-43a1-b029-8283c11c7a86",
+    "f16755c8-d5d7-40a4-bc78-e9eb80532ae5",
+    "f32a48d0-9e82-47cf-aafa-7770115036a9",
+    "0e7df444-566d-4783-9b15-31a06145955b",
+    "42504616-908b-4fed-a04c-bdc716908561"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_D3BzY6YNfgQQC5MXXr3x5JmHLUSa",
+      "baselineDeploymentId": "dpl_GUQtNqU69KygUkpE8C9W4eVWpAEq",
+      "sourceSha256": "c466564a25a8b504a55e6b02984c356123bc2c63c094396fcc6475b3ba494655",
+      "overlaySha256": "a70813087a10538c45c7fcae74f1df46a53390c1ed0e4a49aca85b452be6dbf3",
+      "commit": "457188e51e0ade0bbe03193876da17fcd0a6992c",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/live-verified.json",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/live-http.json",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/live-download.json",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/database-verified.csv",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/database-release-result.csv",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/build.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/candidate-verified.json",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/db-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/db-crlf-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/owner-tests-r4.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/display-browser.json",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/live-help-vi.png"
+      ]
+    }
+  },
+  "windows": {
+    "version": "0.7.3",
+    "status": "published",
+    "verified": true,
+    "downloadUrl": "https://reylumi.com/download/windows",
+    "bytes": 111708400,
+    "sha256": "eb5de4c5548288d5b0fda5be743f7f3135585c4b2f2d04245753d834b7c0597f",
+    "sha512": "DE23NrQxyictJWTj8kknuQT3GiApNJmqNugGszlkk7sKgeuzttQDH3hGSOLPMtracUwFvWsIaASCChhwcX2h5w==",
+    "releaseId": 424892932,
+    "assetId": 679873709,
+    "tag": "desktop-v0.7.3",
+    "sourceCommit": "4cd06e3f4768cd964ee0df545fca42a286bd63af",
+    "sourcePayloadMatchesWebCommit": "457188e51e0ade0bbe03193876da17fcd0a6992c",
+    "evidence": [
+      "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/native-provenance.json",
+      "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/packaged-runtime.stdout",
+      "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/desktop-tests.log",
+      "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/windows-build-fixed.log",
+      "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/github-published.json",
+      "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/live-download.json"
+    ],
+    "signed": false,
+    "distribution": "Existing unsigned online distribution channel preserved; install 0.7.3 once on existing 0.7.2 devices to receive the new updater bridge and Help menu."
+  },
+  "ios": {
+    "required": false,
+    "reason": "All iOS-visible changes are hosted compatible web pages; no Swift, iOS bundle, native configuration, permissions or bridge changes. No iOS build/upload performed or claimed."
+  },
+  "database": {
+    "status": "applied",
+    "verified": true,
+    "version": "20261026230000",
+    "sourceSha256": "260233a1649daf1fc6f167f223cfb154ff0399461ecfc62d72450297f9c9612c",
+    "ledger": 309,
+    "protectedFinancialFactsPreserved": true,
+    "customersBefore": 21,
+    "customersAfter": 21,
+    "mergedAliases": 0,
+    "mergeEvents": 0,
+    "newBookingAccountLinks": 2,
+    "duplicateGroupsRetained": [
+      {
+        "profiles": 6,
+        "active_accounts": 0,
+        "linked_accounts": 2
+      }
+    ],
+    "notes": "The one duplicate group has six profiles but two already linked personal accounts, so it was not forcibly merged. Booking changes were exclusively owner link/audit metadata. All ticket/item/closing/payment facts and booking service/time/status values were protected inside the transaction. First guard attempts rolled back; no failed attempt committed. Windows editor CRLF transport fixed and re-tested on the complete schema. Owner explicitly confirmed production consolidation in this chat.",
+    "backupHashes": {
+      "database-backup.csv": "d881723cd8ae8f77729806a57b7d6b72f3aa0ba5728f470b38edbc5f59b69b63",
+      "database-relations-backup.csv": "4759cb7c223be85478c9fa3752dbec6aa05c0167a22caf7ebfe6d488c784385e"
+    }
+  },
+  "integration": {
+    "producerEvents": [
+      {
+        "changeId": "portable-device-supplemental-keyboard-20261026",
+        "eventId": "d37544ab-22f5-4754-8c73-9bdcdb36f82f"
+      },
+      {
+        "changeId": "pos-service-categories-20261026",
+        "eventId": "6c23cf42-d48a-4828-bf52-17fae7092fe5"
+      },
+      {
+        "changeId": "portable-turn-permission-20261026",
+        "eventId": "55182bed-1ccc-4957-9bfd-847acc4d3952"
+      },
+      {
+        "changeId": "phone-checkin-auto-merge-20261026",
+        "eventId": "671df549-fbb0-4f30-85b2-5a1633c95356"
+      },
+      {
+        "changeId": "pos-adaptive-categories-20261026",
+        "eventId": "53cba3bc-b68e-40bc-8627-373820e8a392"
+      },
+      {
+        "changeId": "windows-portable-shared-help-20261026",
+        "eventId": "925ac69c-bd05-4712-826e-0d8efacdcba4"
+      },
+      {
+        "changeId": "phone-checkin-scan-continuity-20261026",
+        "eventId": "0f384908-ff4b-433c-a69c-64373bd0f12a"
+      },
+      {
+        "changeId": "staff-scan-owner-message-20261026",
+        "eventId": "b72c905a-f1ff-497d-b9e9-f1e0656fb706"
+      },
+      {
+        "changeId": "customer-display-small-window-20261026",
+        "eventId": "dfb13018-88bf-476a-9089-cae3c334c60a"
+      },
+      {
+        "changeId": "portable-user-controlled-updater-20261026",
+        "eventId": "f1503f88-0507-47cf-87d0-d55db3ee2b85"
+      }
+    ],
+    "baselineSourceSha256": "11655b8e6dc0ceb465bce163518ef1e0593a4c511eda7c96dee989e7452f25d0",
+    "preservedBaselineFiles": 3332,
+    "deployedSourceFiles": 3364,
+    "changedFiles": [
+      "app/(app)/pos/portable/layout.tsx",
+      "app/(app)/pos/portable/page.tsx",
+      "app/(app)/pos/settings/page.tsx",
+      "app/(app)/qr/page.tsx",
+      "app/api/pos/windows-update/latest.yml/route.ts",
+      "app/check-in/[entry]/page.tsx",
+      "app/globals.css",
+      "app/help/windows-portable-copy.json",
+      "app/login/login-form.tsx",
+      "app/pos/adaptive-pos-workspace.css",
+      "app/pos/adaptive-pos-workspace.tsx",
+      "app/pos/custom-service-dialog.tsx",
+      "app/pos/customer-display/check-in-panels.tsx",
+      "app/pos/customer-display/checkin-receipt-panel.tsx",
+      "app/pos/customer-display/customer-display-client.tsx",
+      "app/pos/customer-display/customer-display-responsive.css",
+      "app/pos/owner-pos-client.tsx",
+      "app/pos/portable/actions.ts",
+      "app/pos/portable/desktop-update.tsx",
+      "app/pos/portable/device-input-settings.tsx",
+      "app/pos/portable/portable-draft-controls.tsx",
+      "app/pos/portable/portable-login-form.tsx",
+      "app/pos/portable/portable-workspace-tabs.tsx",
+      "app/pos/portable/touch-keyboard.tsx",
+      "app/pos/pos-desk-client.tsx",
+      "app/pos/service-catalog.tsx",
+      "app/pos/settings/actions.ts",
+      "app/pos/settings/settings-group-form.tsx",
+      "app/qr/personal-qr-client.tsx",
+      "app/service-relay/customer-relay.tsx",
+      "app/settings/pos-settings-panel.tsx",
+      "app/staff/scan/staff-scan-client.tsx",
+      "docs/phone-checkin-auto-merge-deploy-note.txt",
+      "docs/phone-checkin-scan-continuity-deploy-note.txt",
+      "docs/portable-device-keyboard-deploy-note-20261026.txt",
+      "docs/pos-adaptive-categories-20261026-deploy-note.txt",
+      "docs/pos-service-categories-20261026-deploy-note.txt",
+      "docs/windows-portable-help-release-note-20261026.txt",
+      "lib/help-guides.ts",
+      "lib/help-language.ts",
+      "lib/help-search.ts",
+      "lib/portable-device-storage.ts",
+      "lib/portable-keyboard-preference.ts",
+      "lib/pos-adaptive-layout.ts",
+      "lib/pos-portable-capabilities.ts",
+      "lib/pos-service-catalog.ts",
+      "lib/pos-workspace-preferences.ts",
+      "lib/vietnamese-dictionary.ts",
+      "lib/vietnamese-staff-scan.json",
+      "lib/vietnamese-workspace-copy.json",
+      "lib/windows-portable-help.ts",
+      "releases/changes/2026-10-26T23-55-38-198Z-cd977876-0e5b-44a5-aca4-c0b812108245.json",
+      "releases/changes/2026-10-26T23-55-38-335Z-b0e0566b-0813-40df-a1d8-84ee0f323044.json",
+      "releases/changes/2026-10-26T23-55-38-465Z-20d5d902-6931-4bee-b246-4f7d1d13eace.json",
+      "releases/changes/2026-10-26T23-55-38-610Z-b034066d-c3b2-4f77-9bfa-1098c47edc33.json",
+      "releases/changes/2026-10-26T23-55-40-919Z-7f5a98b0-6e02-4914-a557-32c4a09cc4dc.json",
+      "releases/changes/2026-10-26T23-55-41-050Z-e4e16ab7-5b59-4c68-9fe4-7293a6d9e1f8.json",
+      "releases/changes/2026-10-26T23-55-41-185Z-070e09bf-5e73-4925-9788-820b4db7cb99.json",
+      "releases/changes/2026-10-26T23-55-43-462Z-0421188d-7a92-43a1-b029-8283c11c7a86.json",
+      "releases/changes/2026-10-26T23-55-43-584Z-f16755c8-d5d7-40a4-bc78-e9eb80532ae5.json",
+      "releases/changes/2026-10-26T23-55-43-716Z-f32a48d0-9e82-47cf-aafa-7770115036a9.json",
+      "releases/changes/2026-10-26T23-55-45-853Z-9b97e733-cd38-417d-b2a1-5f5d9caafacf.json",
+      "releases/changes/2026-10-27T00-03-01-644Z-0e7df444-566d-4783-9b15-31a06145955b.json",
+      "releases/changes/2026-10-27T00-03-04-493Z-42504616-908b-4fed-a04c-bdc716908561.json",
+      "supabase/migrations/20261026230000_phone_customer_consolidation.sql"
+    ],
+    "removedFiles": [],
+    "notes": "Only scoped approved patches integrated. Preserved live role header, teal Report/today-only behavior, saved-work recovery, action feedback, offline safeguards, flat UI, Explore/location/admin/support modules. Earlier shipped changes were not redeployed from stale snapshots."
+  },
+  "validationLimits": "Signed-in live Help English/Vietnamese navigation retained My account; public pages, session gates, feed metadata, complete public installer bytes and deployment source hashes verified live. POS/Staff/QR/financial mutations tested in isolated real-schema and actual-component browser fixtures, not by creating production transactions. Phone camera was simulated. Physical Windows touch, printer, iPhone/Android camera and OS DPI 125%/150% not exercised.",
+  "rollback": {
+    "webDeploymentId": "dpl_GUQtNqU69KygUkpE8C9W4eVWpAEq",
+    "previousWindowsVersion": "0.7.2",
+    "database": "Compatible forward migration retained. Data/backups and customer audit aliases support reviewed recovery; reverting function definitions alone does not undo consolidation. No production profiles were merged in this run."
+  },
+  "id": "cc030d01-c923-4aa1-abf2-9ea3fa07a0cf",
+  "recordedAt": "2026-10-27T00:10:14.286Z",
+  "worktree": "C:\\Reylumi\\kingpos"
+}

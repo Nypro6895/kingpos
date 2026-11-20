@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-final-r6-integration-20261021",
+  "status": "working",
+  "summary": "Integrate two parent-authorized frozen My Work identity and role DTO cache fixes onto verified R5. Include only exact scoped c701 read scheduling/timing/test prerequisites required by frozen handoffs. Local integration only; native/staging release gates held.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/read-context-scope.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-workdays.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "tests/staff-my-work-verified-read-identity.test.mjs",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/live-workspace-experience.test.mjs",
+    "app/local-app/entry.tsx",
+    "lib/app-local-resource.ts",
+    "lib/app-local-role-read-cache.ts",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs",
+    "lib/read-request-timing.ts",
+    "lib/app-local-role-resources-server.ts"
+  ],
+  "source": {
+    "commit": "cf458316d827a4d765f1f0c27f1c13f101d8ca5c",
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r6"
+  },
+  "dependencies": [
+    "reylumi-final-r5-integration-20261021"
+  ],
+  "validation": [
+    {
+      "name": "combined-auth-revocation-principal-tenant-cache-build",
+      "result": "pending"
+    }
+  ],
+  "id": "00cb663c-fafb-46ce-a19a-96f304da3d19",
+  "recordedAt": "2026-10-21T22:48:46.511Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\final-candidate-r6",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

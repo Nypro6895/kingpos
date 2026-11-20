@@ -1,0 +1,7 @@
+.mark{position:relative;display:inline-block;flex:none;width:112px;height:112px;color:#1d807c;vertical-align:middle}
+.compact{width:48px;height:48px}
+.track{display:block;width:100%;height:100%;overflow:visible}
+.comet{transform-origin:56px 56px;animation:lumi-orbit 1.7s linear infinite}
+.logo{position:absolute;left:50%;top:50%;width:46%;height:46%;border-radius:24%;transform:translate(-50%,-50%);object-fit:contain}
+@keyframes lumi-orbit{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.comet{animation:none}}

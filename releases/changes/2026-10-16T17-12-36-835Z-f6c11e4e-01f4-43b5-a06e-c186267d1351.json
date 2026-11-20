@@ -1,0 +1,41 @@
+{
+  "files": [
+    "app/salon-switcher.tsx",
+    "components/app-local-shell.tsx",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-workspace-navigation.ts",
+    "tests/app-local-shell.test.mjs",
+    "tests/app-local-shell-ui.test.mjs",
+    "components/explore-advertising.tsx",
+    "components/app-local-session-expiry-prompt.tsx",
+    "components/abuse-notice.tsx",
+    "components/abuse-notice-view.tsx"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "status": "working",
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Original shell, safe scoped DTO, named endpoints and retained draft runtime",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "changeId": "app-local-original-shell-20261016",
+  "summary": "Preserve original installed shell and safe abuse warning banner without gating retained draft content",
+  "id": "f6c11e4e-01f4-43b5-a06e-c186267d1351",
+  "recordedAt": "2026-10-16T17:12:36.835Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

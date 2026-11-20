@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "restore-original-reylumi-logo-native-20261016",
+  "summary": "Restore original Reylumi logos on the latest uploaded iPhone source, preserving all other shipped features.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/icon.png",
+    "app/apple-icon.png",
+    "app/favicon.ico",
+    "public/brand/reylumi-favicon.png",
+    "public/brand/reylumi-app-192.png",
+    "public/brand/reylumi-app-512.png",
+    "ios/Reylumi/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+    "ios/Reylumi/Assets.xcassets/LoadingLogo.imageset/LoadingLogo.png",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-favicon.png",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-192.png",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-512.png",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "dependencies": [],
+  "baselineCommit": "e26bf766e3bd072421340adfa022a7652ebb6243",
+  "status": "ready",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\restore-original-logo-20261016\\native-overlay"
+  },
+  "validation": [
+    {
+      "name": "Original asset hashes, complete bundled asset integrity, and exact logo-only diff from uploaded build 24.1",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/restore-original-logo-20261016/native-asset-validation.json"
+    }
+  ],
+  "id": "f21da5fc-166b-4ae8-8e4f-55270501240b",
+  "recordedAt": "2026-10-17T00:04:17.621Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\reylumi-glass-logo\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/icon.png": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+    "app/apple-icon.png": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+    "app/favicon.ico": "c90ca5a9926943717f0f4fd990c2b902769a8aacc51cc8f2d899f9b5dd3d42ee",
+    "public/brand/reylumi-favicon.png": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+    "public/brand/reylumi-app-192.png": "4ba4bed5a2347dca50330686b3d95d24368ca070fa40d91983251a9782a7354f",
+    "public/brand/reylumi-app-512.png": "37a19cf40149b1cf6483018333c63370816783e0d911e9a03608c250df4883d9",
+    "ios/Reylumi/Assets.xcassets/AppIcon.appiconset/AppIcon.png": "9053aa25c99045b16929ad8b49e02e42d8bbc5941ebd0ce9a79a84db79de3db4",
+    "ios/Reylumi/Assets.xcassets/LoadingLogo.imageset/LoadingLogo.png": "eb620355ec767fda97e488ad21c8f052b09a3b83e8874ca3f1eb31e8f9d55781",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-favicon.png": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-192.png": "4ba4bed5a2347dca50330686b3d95d24368ca070fa40d91983251a9782a7354f",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-512.png": "37a19cf40149b1cf6483018333c63370816783e0d911e9a03608c250df4883d9",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "fbbed7e9e0dd6ee12b0163637dd6e5e717a47d9a1f046b5c1072d438b69cef1b"
+  }
+}

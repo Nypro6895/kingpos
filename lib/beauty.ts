@@ -1,4 +1,10 @@
+import { assertAbuseRequest } from "@/lib/abuse-server";
 import "server-only";
+import { preparePublicPostImage, removeOwnStagedPostImage } from "@/lib/public-image-safety";
+import { verifyOpenAIPublicPostImage } from "@/lib/public-image-verifier-openai";
+import { withPublicPhotoProcessingConsent, type PublicPhotoProcessingConsent } from "@/lib/public-photo-processing-consent";
+import { runPublicImageUploadBatch } from "@/lib/public-image-upload-client";
+import { publicImageFinalPath } from "@/lib/public-image-staging";
 
 import {
   ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES,
@@ -19,9 +25,7 @@ import {
   type BeautyPostMediaRole,
 } from "@/lib/beauty-media";
 import {
-  BEAUTY_BOOK_VERIFIED_BOOKING_STATUSES,
   beautyBookingHrefForSalon,
-  isBeautyBookVerifiedBooking,
 } from "@/lib/beauty-booking-verification";
 import {
   createAuthenticatedSupabaseServerClient,
@@ -100,6 +104,7 @@ export type BeautyServiceResult<T> =
       code: BeautyServiceFailureCode;
       message: string;
       ok: false;
+      outcome?: "rejected" | "unknown";
     };
 
 type BeautyProfileRow = {
@@ -118,12 +123,6 @@ type BeautySalonPublicationStatusRow = {
   requested_at: string;
   responded_at: string | null;
   status: string;
-};
-type BeautyBookVerifiedBookingRow = {
-  confirmation_status: string | null;
-  id: string;
-  salon_id: string;
-  status: string | null;
 };
 
 type StorageObjectMetadata = {
@@ -721,14 +720,9 @@ async function loadBeautyBookVerifiedCountsBySalon(input: {
     return counts;
   }
 
-  const { data, error } = await input.supabase
-    .from("bookings")
-    .select("id, salon_id, status, confirmation_status")
-    .eq("customer_user_id", input.userId)
-    .eq("confirmation_status", "confirmed")
-    .in("salon_id", uniqueSalonIds)
-    .in("status", BEAUTY_BOOK_VERIFIED_BOOKING_STATUSES)
-    .returns<BeautyBookVerifiedBookingRow[]>();
+  const { data, error } = await input.supabase.rpc("get_customer_verified_booking_counts", {
+    p_salon_ids: uniqueSalonIds,
+  });
 
   if (error) {
     console.error("Supabase load Beauty verified booking counts failed", {
@@ -741,16 +735,9 @@ async function loadBeautyBookVerifiedCountsBySalon(input: {
     return counts;
   }
 
-  for (const row of data ?? []) {
-    if (
-      cleanUuid(row.salon_id) &&
-      isBeautyBookVerifiedBooking({
-        confirmationStatus: row.confirmation_status,
-        status: row.status,
-      })
-    ) {
-      counts.set(row.salon_id, (counts.get(row.salon_id) ?? 0) + 1);
-    }
+  for (const row of (data ?? []) as Array<{ salon_id: string; booking_count: number }>) {
+    const salonId = cleanUuid(row.salon_id);
+    if (salonId) counts.set(salonId, Number(row.booking_count));
   }
 
   return counts;
@@ -1055,8 +1042,9 @@ async function assertTrustedBeautyMedia(input: {
   media: BeautyPostMediaInput;
   supabase: AuthenticatedSupabaseClient;
   userId: string;
+  photoProcessingConsent?: PublicPhotoProcessingConsent;
 }): Promise<BeautyPostMediaInput> {
-  const normalizedPath = normalizeBeautyMediaPath(input.media.objectPath);
+  const normalizedPath = normalizeBeautyMediaPath(publicImageFinalPath(BEAUTY_MEDIA_BUCKET, input.media.objectPath));
 
   if (
     !normalizedPath ||
@@ -1069,29 +1057,18 @@ async function assertTrustedBeautyMedia(input: {
     throw new Error("Uploaded image does not belong to your Beauty profile.");
   }
 
-  const metadata = await readStorageObjectMetadata({
-    bucket: BEAUTY_MEDIA_BUCKET,
-    path: normalizedPath,
-    supabase: input.supabase,
+  const normalized = await preparePublicPostImage({
+    client: input.supabase, bucket: BEAUTY_MEDIA_BUCKET, path: normalizedPath,
+    purpose: input.media.role, userId: input.userId, salonId: null,
+    verify: withPublicPhotoProcessingConsent(input.photoProcessingConsent, verifyOpenAIPublicPostImage),
   });
-  const mimeType = metadata.mimeType ?? input.media.mimeType ?? null;
-  const bytes = metadata.bytes ?? input.media.bytes ?? null;
-
-  if (mimeType && !acceptedMimeTypes.has(mimeType)) {
-    throw new Error("Uploaded image type is not allowed.");
-  }
-
-  if (typeof bytes === "number" && bytes > BEAUTY_IMAGE_LIMIT) {
-    throw new Error("Uploaded image is too large.");
-  }
-
   return {
-    bytes,
-    height: input.media.height ?? null,
-    mimeType,
-    objectPath: normalizedPath,
+    bytes: normalized.bytes,
+    height: normalized.height,
+    mimeType: normalized.mimeType,
+    objectPath: normalized.path,
     role: input.media.role,
-    width: input.media.width ?? null,
+    width: normalized.width,
   };
 }
 
@@ -1178,7 +1155,7 @@ async function assertTrustedAccountAvatarPath(input: {
 
 export async function deleteCurrentBeautyMedia(path: string) {
   const context = await getAuthenticatedBeautyContext();
-  const normalizedPath = normalizeBeautyMediaPath(path);
+  const normalizedPath = normalizeBeautyMediaPath(publicImageFinalPath(BEAUTY_MEDIA_BUCKET, path));
 
   if (!context || !normalizedPath) {
     return;
@@ -1190,6 +1167,13 @@ export async function deleteCurrentBeautyMedia(path: string) {
       userId: context.user.id,
     })
   ) {
+    return;
+  }
+
+  if (!normalizedPath.includes("/beauty/cover/")) {
+    await removeOwnStagedPostImage(context.supabase, {
+      bucket: BEAUTY_MEDIA_BUCKET, path: normalizedPath, userId: context.user.id,
+    });
     return;
   }
 
@@ -1265,31 +1249,61 @@ export async function createBeautyPost(
   const inputMedia = Array.isArray(input.media) ? input.media : [];
 
   if (caption && caption.length > 2200) {
-    await cleanupBeautyMedia(inputMedia.map((item) => item.objectPath));
     return failure("invalid_input", "Caption is too long.");
+  }
+
+  if (input.requestId !== undefined && !cleanUuid(input.requestId)) {
+    return failure("invalid_input", "This post request is not valid. Please reopen your draft.");
+  }
+  if (inputMedia.length > 4 || inputMedia.some(media => !media || !["image", "before", "after"].includes(media.role))) {
+    return failure("invalid_input", "Choose up to four valid post photos.");
+  }
+  const requestInput = {
+    postType: input.postType, caption,
+    ...(input.photoProcessingConsent !== undefined ? { photoProcessingConsent: input.photoProcessingConsent } : {}),
+    media: inputMedia.map(media => ({
+      objectPath: publicImageFinalPath(BEAUTY_MEDIA_BUCKET, media.objectPath), role: media.role,
+      bytes: media.bytes ?? null, height: media.height ?? null, width: media.width ?? null, mimeType: media.mimeType ?? null,
+    })),
+    salonId: cleanUuid(input.salonId ?? null), staffId: cleanUuid(input.staffId ?? null),
+    attributionSource: input.attributionSource ?? "customer_claimed",
+  };
+  if (input.requestId) {
+    let lookup;
+    try { lookup = await context.supabase.rpc("lookup_beauty_post_submission", { p_request_id: input.requestId, p_input: requestInput }); }
+    catch { return { code: "database_error", message: "We could not confirm your saved post. Retry this same post safely.", ok: false, outcome: "unknown" }; }
+    if (lookup.error) {
+      return { code: "database_error", message: lookup.error.code === "P0001" ? lookup.error.message : "We could not confirm your saved post. Retry this same post safely.", ok: false,
+        outcome: lookup.error.code === "P0001" ? "rejected" : "unknown" };
+    }
+    if (lookup.data) return beautyPostCreationResult(lookup.data);
+  }
+  try { await assertAbuseRequest("post"); } catch (error) {
+    return failure("invalid_input", error instanceof Error ? error.message : "Please try again later.");
   }
 
   let trustedMedia: BeautyPostMediaInput[];
 
   try {
-    trustedMedia = await Promise.all(
-      inputMedia.map((media) =>
-        assertTrustedBeautyMedia({
+    trustedMedia = await runPublicImageUploadBatch({
+      items: inputMedia,
+      upload: media => assertTrustedBeautyMedia({
           media,
           supabase: context.supabase,
           userId: context.user.id,
+          photoProcessingConsent: input.photoProcessingConsent,
         }),
-      ),
-    );
+      // Approved immutable images remain reusable by this exact draft on retry.
+      cleanup: () => {},
+    });
   } catch (error) {
-    await cleanupBeautyMedia(inputMedia.map((item) => item.objectPath));
     return failure(
       "upload_error",
       error instanceof Error ? error.message : "Uploaded images are not valid.",
     );
   }
 
-  const { data, error } = await context.supabase.rpc("create_beauty_post", {
+  const publicationInput = {
     p_attribution_source: input.attributionSource ?? "customer_claimed",
     p_caption: caption,
     p_media: trustedMedia.map((media) => ({
@@ -1304,27 +1318,33 @@ export async function createBeautyPost(
     p_salon_id: cleanUuid(input.salonId ?? null),
     p_staff_id: cleanUuid(input.staffId ?? null),
     p_visibility: "public",
-  });
+  };
+  const { data, error } = input.requestId
+    ? await context.supabase.rpc("create_beauty_post_once", { p_request_id: input.requestId, p_request_input: requestInput, p_input: {
+      postType: publicationInput.p_post_type, caption: publicationInput.p_caption, media: publicationInput.p_media,
+      salonId: publicationInput.p_salon_id, staffId: publicationInput.p_staff_id, attributionSource: publicationInput.p_attribution_source,
+    } })
+    : await context.supabase.rpc("create_beauty_post", publicationInput);
 
   if (error) {
-    await cleanupBeautyMedia(trustedMedia.map((item) => item.objectPath));
     console.error("Supabase create beauty post failed", {
       code: error.code,
-      details: error.details,
-      hint: error.hint,
-      message: error.message,
-      userId: context.user.id,
+      requestId: input.requestId ?? null,
     });
-    return failure("database_error", "Post could not be created.");
+    return { code: "database_error", message: "We could not confirm whether your post was published. Retry this same post to check safely.", ok: false, outcome: "unknown" };
   }
 
+  return beautyPostCreationResult(data);
+}
+
+function beautyPostCreationResult(data: unknown): BeautyServiceResult<{
+  postId: string; profileId: string; rewardIssued: boolean;
+  salonPublicationId: string | null; salonPublicationStatus: BeautySalonPublicationStatus | null;
+  verificationMethod: BeautyVerificationMethod; verificationState: BeautyVerificationState;
+}> {
   const payload = asRecord(data);
 
   if (payload.ok !== true) {
-    if (readString(payload.code) !== "duplicate_media_or_reward") {
-      await cleanupBeautyMedia(trustedMedia.map((item) => item.objectPath));
-    }
-
     return failure(
       "invalid_input",
       readString(payload.message) ?? "Post could not be created.",
@@ -1335,7 +1355,7 @@ export async function createBeautyPost(
   const profileId = cleanUuid(readString(payload.profileId));
 
   if (!postId || !profileId) {
-    return failure("database_error", "Post could not be created.");
+    return { code: "database_error", message: "We could not confirm your post. Retry this same post safely.", ok: false, outcome: "unknown" };
   }
 
   return {
@@ -1563,73 +1583,6 @@ export async function updateBeautyProfile(input: {
   };
 }
 
-export async function updateBeautyPostCaption(input: {
-  caption: string | null;
-  postId: string;
-}): Promise<BeautyServiceResult<true>> {
-  const supabase = await createAuthenticatedSupabaseServerClient();
-  const postId = cleanUuid(input.postId);
-
-  if (!supabase || !postId) {
-    return failure("sign_in_required", "Sign in before editing this post.");
-  }
-
-  const { data, error } = await supabase.rpc("update_beauty_post_caption", {
-    p_caption: input.caption ?? null,
-    p_post_id: postId,
-  });
-
-  if (error) {
-    return failure("database_error", "Post could not be updated.");
-  }
-
-  const payload = asRecord(data);
-
-  if (payload.ok !== true) {
-    return failure(
-      readString(payload.code) === "not_found" ? "not_found" : "invalid_input",
-      "Post could not be updated.",
-    );
-  }
-
-  return { data: true, ok: true };
-}
-
-export async function deleteBeautyPost(
-  postId: string,
-): Promise<BeautyServiceResult<true>> {
-  const supabase = await createAuthenticatedSupabaseServerClient();
-  const cleanPostId = cleanUuid(postId);
-
-  if (!supabase || !cleanPostId) {
-    return failure("sign_in_required", "Sign in before deleting this post.");
-  }
-
-  const { data, error } = await supabase.rpc("delete_beauty_post", {
-    p_post_id: cleanPostId,
-  });
-
-  if (error) {
-    return failure("database_error", "Post could not be deleted.");
-  }
-
-  const payload = asRecord(data);
-
-  if (payload.ok !== true) {
-    return failure(
-      readString(payload.code) === "not_found" ? "not_found" : "invalid_input",
-      "Post could not be deleted.",
-    );
-  }
-
-  await cleanupBeautyMedia(
-    asArray(payload.mediaPaths)
-      .map(readString)
-      .filter((path): path is string => Boolean(path)),
-  );
-
-  return { data: true, ok: true };
-}
 
 export async function getSelfBeautyProfileSettings(): Promise<BeautyProfileSummary> {
   const context = await getAuthenticatedBeautyContext();

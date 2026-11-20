@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "forum-continuous-feed-20261103",
+  "status": "needs-integration",
+  "summary": "Owner explicitly queued for next combined deployment: approved forum layout including restored existing Owner bottom menu, Following, continuous posts, Campaign placement and unified notifications. Do not deploy separately.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/advertising/campaign-form.tsx",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/forum.tsx",
+    "app/navigation-shell.tsx",
+    "app/settings/notification-preferences-panel.tsx",
+    "components/explore-advertising.module.css",
+    "components/explore-advertising.tsx",
+    "lib/explore-advertising-rules.ts",
+    "lib/notification-categories.ts",
+    "lib/notification-feed-items.ts",
+    "lib/vietnamese-dictionary.ts",
+    "types/explore-advertising.ts",
+    "types/forum.ts",
+    "app/(app)/forum/continuation-feed.tsx",
+    "app/(app)/forum/forum-avatar.tsx",
+    "docs/forum/continuous-feed-20261103.md",
+    "lib/forum-presentation.ts",
+    "supabase/migrations/20261104010000_forum_continuous_feed.sql",
+    "tests/fixtures/forum-browser-build.cjs",
+    "tests/fixtures/forum-browser-server.cjs",
+    "tests/forum-campaign.test.mjs",
+    "tests/forum-continuous-feed.test.mjs",
+    "tests/forum-ui.browser.cjs",
+    "tests/helpers/forum-database.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\forum-continuous-feed-20261103\\artifacts\\forum-v2\\frozen-source",
+    "commit": "75b5228682db82d008facf218791b525d3d3d231"
+  },
+  "validation": [
+    {
+      "name": "31 focused database, campaign and notification regression checks",
+      "result": "passed",
+      "evidence": "artifacts/forum-v2/all-focused-tests.txt"
+    },
+    {
+      "name": "Actual Forum component browser fixture: 320/390/428/768, Following, follow state, internal home, back, continuation, no runtime error",
+      "result": "passed",
+      "evidence": "artifacts/forum-v2/browser-check.txt"
+    },
+    {
+      "name": "Final production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/forum-v2/production-build-final.txt"
+    },
+    {
+      "name": "Production SQL, assembled web/native release and authenticated/physical acceptance",
+      "result": "pending",
+      "evidence": "docs/forum/continuous-feed-20261103.md"
+    }
+  ],
+  "releaseIntent": {
+    "mode": "next-combined-release",
+    "separateDeployment": false,
+    "ownerInstruction": "ok vào hàng chờ deploy chung"
+  },
+  "id": "53fafd22-191a-47cd-83de-93f1db8132a8",
+  "recordedAt": "2026-11-04T00:09:09.600Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-continuous-feed-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

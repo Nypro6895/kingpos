@@ -1,5 +1,7 @@
 "use client";
-import { usePortableWorkspaceState } from "./portable-workspace-state";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { useSupplementalKeyboard } from "@/lib/portable-keyboard-preference";
 import { desktopDevice } from "@/lib/portable-device-storage";
 
 import { useEffect, useRef, useState } from "react";
@@ -9,17 +11,24 @@ import styles from "./touch-keyboard.module.css";
 type Editor = HTMLInputElement | HTMLTextAreaElement;
 const supported = new Set(["text", "search", "email", "tel", "password", "url", "number", "date", "time", "datetime-local"]);
 
-export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector = "[data-portable-shell]", desktopOnly = false }: { enabled: boolean; scopeSelector?: string; desktopOnly?: boolean }) {
-  const workspace=usePortableWorkspaceState();
-  const enabled=typeof workspace?.settings?.touch_keyboard_enabled==='boolean'?workspace.settings.touch_keyboard_enabled:initialEnabled;
+export function PortableTouchKeyboard({ enabled: override, scopeSelector = "[data-portable-shell]", desktopOnly = false }: { enabled?: boolean; scopeSelector?: string; desktopOnly?: boolean }) {
+  const deviceEnabled = useSupplementalKeyboard();
+  const enabled = override ?? deviceEnabled;
+  // Unmount on disable so the active editor, layout and native input mode reset.
+  return enabled ? <TouchKeyboard scopeSelector={scopeSelector} desktopOnly={desktopOnly} /> : null;
+}
+
+function TouchKeyboard({ scopeSelector, desktopOnly }: { scopeSelector: string; desktopOnly: boolean }) {
+  const __vt = useWorkspaceTranslation();
   const [editor, setEditor] = useState<Editor | null>(null);
+  useTransientOverlay(() => setEditor(null), Boolean(editor));
   const [shift, setShift] = useState(false);
   const [symbols, setSymbols] = useState(false);
   const [dateValue, setDateValue] = useState("");
   const panel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!enabled || (desktopOnly && !desktopDevice())) return;
+    if (desktopOnly && !desktopDevice()) return;
     function focus(event: FocusEvent) {
       const target = event.target;
       if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
@@ -52,10 +61,10 @@ export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector =
       document.removeEventListener("click", outside);
       document.removeEventListener("kingpos:hide-touch-keyboard", dismiss);
     };
-  }, [enabled, scopeSelector, desktopOnly]);
+  }, [scopeSelector, desktopOnly]);
 
   useEffect(() => {
-    if (!enabled || !editor) return;
+    if (!editor) return;
     const shell = editor.closest<HTMLElement>(scopeSelector);
     const oldPadding = shell?.style.paddingBottom ?? "";
     const oldInputMode = editor.getAttribute("inputmode");
@@ -77,7 +86,7 @@ export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector =
       if (shell) shell.style.paddingBottom = oldPadding;
       document.documentElement.style.removeProperty("--portable-keyboard-height");
     };
-  }, [editor, enabled, scopeSelector]);
+  }, [editor, scopeSelector]);
 
   function insert(text: string, erase = false) {
     if (!editor || !editor.isConnected) return;
@@ -97,7 +106,7 @@ export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector =
     }
   }
 
-  if (!enabled || !editor) return null;
+  if (!editor || (desktopOnly && !desktopDevice())) return null;
   const dateEditor = editor instanceof HTMLInputElement && ["date", "time", "datetime-local"].includes(editor.type);
   function setDate(text: string) {
     if (!editor) return;
@@ -107,18 +116,18 @@ export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector =
     setDateValue(text);
   }
   const rows = symbols ? ["1234567890", "@#$%&*()-+", "_/:;!?.,'", "\"=<>[]{}\\|^~`"] : ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
-  return createPortal(<div ref={panel} className={styles.keyboard} role="group" aria-label="Touch keyboard" onPointerDown={(event) => { if ((event.target as HTMLElement).closest("button")) event.preventDefault(); }}>
-    <div className={styles.top}><span>{editor.getAttribute("aria-label") || editor.placeholder || "Touch keyboard"}</span><button type="button" onClick={() => setEditor(null)}>Hide keyboard</button></div>
+  return createPortal(<div ref={panel} className={styles.keyboard} role="group" aria-label={__vt("Touch keyboard")} onPointerDown={(event) => { if ((event.target as HTMLElement).closest("button")) event.preventDefault(); }}>
+    <div className={styles.top}><span><WorkspaceText text={editor.getAttribute("aria-label") || editor.placeholder || "Touch keyboard"} /></span><button type="button" onClick={() => setEditor(null)}><WorkspaceText text="Hide keyboard" /></button></div>
     {dateEditor ? <div className={styles.row}>
-      {editor.type !== "time" && <label>Date <input aria-label="Touch date" type="date" min={editor.min.slice(0,10)} max={editor.max.slice(0,10)} value={dateValue.slice(0,10)} onChange={event => setDate(editor.type === "date" ? event.target.value : `${event.target.value}T${dateValue.slice(11,16) || "09:00"}`)} /></label>}
-      {editor.type !== "date" && <label>Time <select aria-label="Touch time" value={editor.type === "time" ? dateValue : dateValue.slice(11,16)} onChange={event => setDate(editor.type === "time" ? event.target.value : `${dateValue.slice(0,10)}T${event.target.value}`)}>{Array.from({length:96}, (_,i) => {const time = `${String(Math.floor(i/4)).padStart(2,"0")}:${String(i%4*15).padStart(2,"0")}`; return <option key={time}>{time}</option>;})}</select></label>}
-    </div> : <>{rows.map((row, index) => <div className={styles.row} key={index}>{Array.from(row).map((letter) => <button type="button" key={letter} onClick={() => insert(shift ? letter.toUpperCase() : letter)}>{shift ? letter.toUpperCase() : letter}</button>)}{index === 0 && <button type="button" aria-label="Backspace" onClick={() => insert("", true)}>⌫</button>}</div>)}
+      {editor.type !== "time" && <label><WorkspaceText text="Date" /> <input aria-label={__vt("Touch date")} type="date" min={editor.min.slice(0,10)} max={editor.max.slice(0,10)} value={dateValue.slice(0,10)} onChange={event => setDate(editor.type === "date" ? event.target.value : `${event.target.value}T${dateValue.slice(11,16) || "09:00"}`)} /></label>}
+      {editor.type !== "date" && <label><WorkspaceText text="Time" /> <select aria-label={__vt("Touch time")} value={editor.type === "time" ? dateValue : dateValue.slice(11,16)} onChange={event => setDate(editor.type === "time" ? event.target.value : `${dateValue.slice(0,10)}T${event.target.value}`)}>{Array.from({length:96}, (_,i) => {const time = `${String(Math.floor(i/4)).padStart(2,"0")}:${String(i%4*15).padStart(2,"0")}`; return <option key={time}>{time}</option>;})}</select></label>}
+    </div> : <>{rows.map((row, index) => <div className={styles.row} key={index}>{Array.from(row).map((letter) => <button type="button" key={letter} onClick={() => insert(shift ? letter.toUpperCase() : letter)}>{shift ? letter.toUpperCase() : letter}</button>)}{index === 0 && <button type="button" aria-label={__vt("Backspace")} onClick={() => insert("", true)}>⌫</button>}</div>)}
     <div className={styles.row}>
-      <button type="button" aria-pressed={shift} onClick={() => setShift(!shift)}>Shift</button>
-      <button type="button" onClick={() => setSymbols(!symbols)}>{symbols ? "ABC" : "123 / @"}</button>
-      <button type="button" className={styles.space} onClick={() => insert(" ")}>Space</button>
-      {editor instanceof HTMLTextAreaElement && <button type="button" onClick={() => insert("\n")}>New line</button>}
-      <button type="button" onClick={() => setEditor(null)}>Done</button>
+      <button type="button" aria-pressed={shift} onClick={() => setShift(!shift)}><WorkspaceText text="Shift" /></button>
+      <button type="button" onClick={() => setSymbols(!symbols)}><WorkspaceText text={symbols ? "ABC" : "123 / @"} /></button>
+      <button type="button" className={styles.space} onClick={() => insert(" ")}><WorkspaceText text="Space" /></button>
+      {editor instanceof HTMLTextAreaElement && <button type="button" onClick={() => insert("\n")}><WorkspaceText text="New line" /></button>}
+      <button type="button" onClick={() => setEditor(null)}><WorkspaceText text="Done" /></button>
     </div></>}
-  </div>, document.body);
+  </div>, editor.closest("dialog[open]") ?? document.body);
 }

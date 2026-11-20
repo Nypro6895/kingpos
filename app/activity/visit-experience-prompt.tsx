@@ -1,170 +1,55 @@
 "use client";
-
-import { recordVisitExperienceAction } from "@/app/activity/actions";
-import { useState, useTransition, type FormEvent } from "react";
-
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { recordVisitExperienceAction } from "./actions";
+import { WorkspaceText } from "@/components/workspace-language";
+import { useId, useRef, useState, useTransition, type FormEvent } from "react";
+import styles from "./visit-feedback.module.css";
 type VisitExperiencePromptProps = {
-  actionLabel?: string;
-  compact?: boolean;
-  countsTowardReputation: boolean;
-  initialBody?: string | null;
-  initialState?: "good" | "issue" | null;
-  salonName: string;
-  ticketId: string;
-  windowDays: number;
+  actionLabel?: string; compact?: boolean; countsTowardReputation: boolean;
+  initialBody?: string | null; initialState?: "good" | "issue" | null;
+  experienceId?: string | null; salonName: string; ticketId: string; windowDays: number;
 };
-
-function stateLabel(state: "good" | "issue") {
-  return state === "issue" ? "Issue shared" : "Good shared";
-}
-
-export function VisitExperiencePrompt({
-  actionLabel = "Review visit",
-  compact = false,
-  countsTowardReputation,
-  initialBody = null,
-  initialState = null,
-  salonName,
-  ticketId,
-  windowDays,
-}: VisitExperiencePromptProps) {
-  const [expanded, setExpanded] = useState(!compact);
-  const [body, setBody] = useState(initialBody ?? "");
-  const [draftState, setDraftState] = useState<"issue" | null>(null);
-  const [savedState, setSavedState] = useState<"good" | "issue" | null>(
-    initialState,
-  );
+export function VisitExperiencePrompt({ compact = false, initialState = null,
+  experienceId, ticketId }: VisitExperiencePromptProps) {
+  const router = useRouter();
+  const labelId = useId();
+  const [body, setBody] = useState("");
+  const [draftState, setDraftState] = useState<"good" | "issue" | null>(null);
   const [status, setStatus] = useState("");
+  const [saved, setSaved] = useState(initialState !== null);
+  const [savedId, setSavedId] = useState(experienceId);
   const [isPending, startTransition] = useTransition();
-
-  function save(feedbackState: "good" | "issue", nextBody = body) {
+  const submitting = useRef(false);
+  const viewHref = savedId ? "/more/reviews?experience="+savedId : "/more/reviews";
+  if (compact) return <Link className={styles.link} href={saved ? viewHref : "/activity/receipts/"+ticketId+"/experience"}><WorkspaceText text={saved ? "View experience" : "Share experience"} /></Link>;
+  if (saved) return <div className={styles.list}><p role="status"><WorkspaceText text="Your experience has been shared." /></p><Link className={styles.link} href={viewHref}><WorkspaceText text="View experience" /></Link></div>;
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!draftState || submitting.current) return;
+    submitting.current = true;
     startTransition(async () => {
       setStatus("");
-
-      const result = await recordVisitExperienceAction({
-        body: nextBody,
-        feedbackState,
-        ticketId,
-      });
-
-      if (result.error !== null) {
-        setStatus(result.error);
-        return;
-      }
-
-      setSavedState(feedbackState);
-      setDraftState(null);
-      setStatus(
-        result.countsTowardReputation
-          ? "Thanks. This Verified Visit is counted."
-          : `Thanks. This visit is verified, but the reputation count already has a visit in this ${windowDays}-day window.`,
-      );
+      try {
+        const result = await recordVisitExperienceAction({ body, feedbackState: draftState, ticketId });
+        if (result.error !== null) { setStatus(result.error); return; }
+        setSavedId(result.experienceId); setSaved(true);
+        router.replace(result.experienceId ? "/more/reviews?experience="+result.experienceId : "/more/reviews");
+      } catch { setStatus("Feedback could not be saved. Your draft is still here. Please try again."); }
+      finally { submitting.current = false; }
     });
   }
-
-  function submitIssue(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    save("issue");
-  }
-
-  if (compact && !expanded) return <button type="button" onClick={() => setExpanded(true)} className="min-h-9 px-2 text-xs font-bold text-brand-teal">{savedState ? stateLabel(savedState) : actionLabel}</button>;
-
-  if (compact && savedState) return <span className="text-xs font-bold text-brand-teal">{stateLabel(savedState)}</span>;
-
-  if (savedState) {
-    return (
-      <section
-        className={[
-          "rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900",
-          compact ? "mt-3" : "",
-        ].join(" ")}
-      >
-        <p className="font-extrabold">{stateLabel(savedState)}</p>
-        <p className="mt-1 leading-5">
-          {savedState === "issue"
-            ? "The salon can use your note to understand what happened."
-            : "Your quick feedback helps keep Experiences useful."}
-        </p>
-      </section>
-    );
-  }
-
-  return (
-    <section
-      className={[
-        "max-w-sm rounded-xl border border-border-subtle bg-surface px-3 py-2 text-left shadow-sm",
-        compact ? "mt-3" : "",
-      ].join(" ")}
-    >
-      {compact ? <button type="button" onClick={() => setExpanded(false)} className="float-right min-h-9 px-2 text-xs font-bold">Close</button> : null}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-bold uppercase text-brand-teal">
-            Verified Visit
-          </p>
-          <h3 className="mt-1 text-sm font-extrabold text-text-primary">
-            How was your experience?
-          </h3>
-          <p className="mt-1 text-xs font-semibold leading-5 text-text-secondary">
-            {countsTowardReputation
-              ? `${salonName} can count this visit in reputation.`
-              : `This visit is verified; reputation count allows one visit per ${windowDays} days.`}
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <button
-            className="inline-flex min-h-10 items-center rounded-full bg-brand-teal px-4 text-sm font-extrabold text-white transition hover:bg-brand-teal/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal disabled:opacity-60"
-            disabled={isPending}
-            onClick={() => save("good", "")}
-            type="button"
-          >
-            Good
-          </button>
-          <button
-            className="inline-flex min-h-10 items-center rounded-full bg-surface-muted px-4 text-sm font-extrabold text-text-primary ring-1 ring-border-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:opacity-60"
-            disabled={isPending}
-            onClick={() => setDraftState("issue")}
-            type="button"
-          >
-            Had an issue
-          </button>
-        </div>
-      </div>
-
-      {draftState === "issue" ? (
-        <form className="mt-3 grid gap-2" onSubmit={submitIssue}>
-          <textarea
-            className="min-h-24 resize-none rounded-xl border border-border-subtle bg-white px-3 py-2 text-sm leading-6 text-text-primary outline-none transition focus:border-brand-orange"
-            maxLength={2000}
-            onChange={(event) => setBody(event.currentTarget.value)}
-            placeholder="Optional details"
-            value={body}
-          />
-          <div className="flex items-center justify-between gap-3">
-            <button
-              className="text-sm font-bold text-text-secondary hover:text-text-primary"
-              disabled={isPending}
-              onClick={() => setDraftState(null)}
-              type="button"
-            >
-              Cancel
-            </button>
-            <button
-              className="inline-flex min-h-10 items-center rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:opacity-60"
-              disabled={isPending}
-              type="submit"
-            >
-              {isPending ? "Saving..." : "Share issue"}
-            </button>
-          </div>
-        </form>
-      ) : null}
-
-      {status ? (
-        <p aria-live="polite" className="mt-2 text-xs font-semibold text-text-secondary">
-          {status}
-        </p>
-      ) : null}
-    </section>
-  );
+  return <form onSubmit={submit} className={styles.form}>
+    <h2><WorkspaceText text="How was your visit?" /></h2>
+    <div className={styles.choices}>
+      <button type="button" disabled={isPending} aria-pressed={draftState === "good"} className={styles.choice} onClick={() => setDraftState("good")}><WorkspaceText text="Good" /></button>
+      <button type="button" disabled={isPending} aria-pressed={draftState === "issue"} data-issue className={styles.choice} onClick={() => setDraftState("issue")}><WorkspaceText text="Had an issue" /></button>
+    </div>
+    <label className={styles.details} htmlFor={labelId}><WorkspaceText text="Details (optional)" />
+      <textarea id={labelId} maxLength={1000} disabled={isPending} onChange={event => setBody(event.currentTarget.value)} value={body} />
+    </label>
+    <div className={styles.muted}><p><WorkspaceText text="Shared with the salon and may appear publicly." /></p><p><WorkspaceText text="Once shared, your feedback cannot be edited." /></p></div>
+    <button type="submit" disabled={isPending || !draftState} className={styles.submit}><WorkspaceText text={isPending ? "Sharing…" : "Share experience"} /></button>
+    {status ? <p role="alert" className={styles.error}><WorkspaceText text={status} /></p> : null}
+  </form>;
 }

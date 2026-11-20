@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "pos-status-main-only-20261029",
+  "status": "working",
+  "summary": "Complete latest owner instruction: show POS sync alerts only in primary POS toolbar, keep background sync on other pages; preserve source-bound release of other12 changes",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/portable/portable-sync-indicator.tsx",
+    "app/pos/portable/portable-workspace-tabs.tsx",
+    "app/local-app/entry.tsx"
+  ],
+  "source": {
+    "commit": "de99b2fede4745a784a7a8383c70ab496436ed86"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Integrated route visibility and background sync runtime",
+      "result": "pending"
+    }
+  ],
+  "id": "8383a25b-d194-48a3-8e3e-a12fdc2fc481",
+  "recordedAt": "2026-10-29T20:19:41.663Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

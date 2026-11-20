@@ -1,12 +1,16 @@
 "use client";
+import inlineStyles from "./payroll-object-history.module.css";
+import {financialHistoryForObject} from "@/lib/inline-financial-history";
+import {InlineFinancialHistory} from "./inline-financial-history";
+import type {PayrollLiveChange} from "@/types/payroll-live-history";
+import {DailyReconciliationPreviousChecks,previousDailyChecks,useDailyReconciliationHistory,type DailyReconciliationCase} from "./daily-reconciliation-history";
 
-import { Fragment, useMemo, useState } from "react";
+import { WorkspaceText } from "@/components/workspace-language";
+import { useState } from "react";
 import type {
   PayrollCorrectionListItem,
   PayrollShopDailyRow,
 } from "@/types/payroll";
-
-type DailyStatusKind = "match" | "missing" | "no_activity" | "over" | "short";
 
 type CorrectionEvent = {
   by: string;
@@ -16,11 +20,6 @@ type CorrectionEvent = {
   reason: string | null;
   sortTime: number;
   status: string;
-};
-
-type DailyTableRow = {
-  correctionEvents: CorrectionEvent[];
-  row: PayrollShopDailyRow;
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -104,10 +103,6 @@ function titleCase(value: string) {
 
 function fieldLabel(value: string) {
   return FIELD_LABELS[value] ?? titleCase(value);
-}
-
-function isAuditOnly(correction: PayrollCorrectionListItem) {
-  return correction.delta === null || correction.delta === 0;
 }
 
 function readString(record: Record<string, unknown> | null, key: string) {
@@ -650,46 +645,10 @@ function statusClass(status: string) {
   return "border-emerald-200 bg-emerald-50 text-emerald-700";
 }
 
-function correctionTimeBucket(value: string) {
-  const timestamp = Date.parse(value);
-
-  if (Number.isNaN(timestamp)) {
-    return value;
-  }
-
-  return `${Math.floor(timestamp / (5 * 60 * 1000))}`;
-}
-
 function correctionGroupKey(correction: PayrollCorrectionListItem) {
-  if (correction.correctionRequestId) {
-    return `request:${correction.correctionRequestId}`;
-  }
-
-  const actor = correction.changedById ?? correction.changedByName ?? "unknown";
-  const note = correction.note?.trim().toLowerCase() ?? "";
-  const ticket = correction.ticketId ?? correction.ticketNumber ?? "";
-  const bucket = correctionTimeBucket(correction.correctionDate);
-
-  if (ticket) {
-    return [
-      "ticket",
-      correction.businessDate,
-      ticket,
-      actor,
-      note,
-      bucket,
-    ].join("::");
-  }
-
-  return [
-    isAuditOnly(correction) ? "audit" : "event",
-    correction.businessDate,
-    actor,
-    note,
-    bucket,
-    isAuditOnly(correction) ? correction.type : "",
-    isAuditOnly(correction) ? correction.status : "",
-  ].join("::");
+ if(correction.financialInputEventId)return `event:${correction.financialInputEventId}`;
+ if(correction.correctionRequestId)return `request:${correction.correctionRequestId}`;
+ return `${correction.source}:${correction.id}`;
 }
 
 function eventChange(corrections: PayrollCorrectionListItem[]) {
@@ -770,87 +729,6 @@ function rowDifference(row: PayrollShopDailyRow) {
   return row.difference ?? row.actualIncome - row.posIncome;
 }
 
-function formatDifference(row: PayrollShopDailyRow) {
-  const difference = rowDifference(row);
-  return difference === null ? "\u2014" : formatSignedMoney(difference);
-}
-
-function differenceClass(row: PayrollShopDailyRow) {
-  const difference = rowDifference(row);
-
-  if (difference === null) {
-    return "text-zinc-400";
-  }
-
-  if (difference < 0) {
-    return "font-semibold text-rose-700";
-  }
-
-  if (difference > 0) {
-    return "font-semibold text-amber-700";
-  }
-
-  return "text-zinc-700";
-}
-
-function statusForRow(row: PayrollShopDailyRow): {
-  kind: DailyStatusKind;
-  label: string;
-} {
-  if (row.actualIncome === null) {
-    return row.posIncome > 0
-      ? {
-          kind: "missing",
-          label: "Missing actual input",
-        }
-      : {
-          kind: "no_activity",
-          label: "No activity",
-        };
-  }
-
-  const difference = rowDifference(row) ?? 0;
-
-  if (difference < 0) {
-    return {
-      kind: "short",
-      label: `Short ${formatMoney(Math.abs(difference))}`,
-    };
-  }
-
-  if (difference > 0) {
-    return {
-      kind: "over",
-      label: `Over ${formatMoney(difference)}`,
-    };
-  }
-
-  return {
-    kind: "match",
-    label: "Match",
-  };
-}
-
-function statusBadgeClass(kind: DailyStatusKind) {
-  if (kind === "match") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  if (kind === "over") {
-    return "border-amber-200 bg-amber-50 text-amber-800";
-  }
-
-  if (kind === "short") {
-    return "border-rose-200 bg-rose-50 text-rose-700";
-  }
-
-  if (kind === "missing") {
-    return "border-yellow-200 bg-yellow-50 text-yellow-800";
-  }
-
-  return "border-zinc-200 bg-zinc-50 text-zinc-500";
-}
-
 function DetailMetric({
   className = "",
   label,
@@ -862,49 +740,11 @@ function DetailMetric({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <dt className="text-zinc-500">{label}</dt>
+      <dt className="text-zinc-500"><WorkspaceText text={label} /></dt>
       <dd className={`whitespace-nowrap font-medium text-zinc-800 ${className}`}>
         {value}
       </dd>
     </div>
-  );
-}
-
-function DailyDetailsSubRow({ row }: { row: PayrollShopDailyRow }) {
-  return (
-    <tr>
-      <td className="bg-zinc-50/80 px-4 py-3" colSpan={5}>
-        <div className="grid gap-5 text-xs md:grid-cols-2">
-          <section>
-            <h3 className="mb-2 font-semibold text-zinc-800">Reconciliation</h3>
-            <dl className="grid gap-1.5">
-              <DetailMetric label="Actual" value={formatOptionalMoney(row.actualIncome)} />
-              <DetailMetric label="POS" value={formatMoney(row.posIncome)} />
-              <DetailMetric
-                className={differenceClass(row)}
-                label="Difference"
-                value={formatDifference(row)}
-              />
-            </dl>
-          </section>
-          <section>
-            <h3 className="mb-2 font-semibold text-zinc-800">Payroll impact</h3>
-            <dl className="grid gap-1.5">
-              <DetailMetric
-                label="Staff Production"
-                value={formatMoney(row.staffProduction)}
-              />
-              <DetailMetric
-                label="Staff Commission Pay"
-                value={formatMoney(row.staffCommissionPay)}
-              />
-              <DetailMetric label="Tips" value={formatMoney(row.tips)} />
-              <DetailMetric label="Shop Share" value={formatMoney(row.shopShare)} />
-            </dl>
-          </section>
-        </div>
-      </td>
-    </tr>
   );
 }
 
@@ -917,7 +757,7 @@ function CorrectionEventList({ events }: { events: CorrectionEvent[] }) {
     <ul className="grid gap-2">
       {events.map((event) => (
         <li
-          className="grid gap-2 rounded-md border border-amber-100 bg-white px-3 py-2 text-xs shadow-sm md:grid-cols-[11rem_1fr_auto] md:items-start"
+          className="grid min-w-0 gap-2 border-b border-amber-100 bg-white px-3 py-2 text-xs md:grid-cols-[11rem_1fr_auto] md:items-start"
           key={event.id}
         >
           <div className="whitespace-nowrap text-zinc-600">{event.correctedAt}</div>
@@ -926,17 +766,17 @@ function CorrectionEventList({ events }: { events: CorrectionEvent[] }) {
               {correctionEventDetails(event)}
             </div>
             {event.reason ? (
-              <div className="mt-1 text-zinc-500">Reason: {event.reason}</div>
+              <div className="mt-1 text-zinc-500"><WorkspaceText text="Reason:" /> {event.reason}</div>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2 md:justify-end">
-            <span className="whitespace-nowrap text-zinc-600">by {event.by}</span>
+            <span className="whitespace-nowrap text-zinc-600"><WorkspaceText text="by" /> {event.by}</span>
             <span
               className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${statusClass(
                 event.status,
               )}`}
             >
-              {event.status}
+              <WorkspaceText text={event.status} />
             </span>
           </div>
         </li>
@@ -945,178 +785,38 @@ function CorrectionEventList({ events }: { events: CorrectionEvent[] }) {
   );
 }
 
-function CorrectionSubRow({ events }: { events: CorrectionEvent[] }) {
-  return (
-    <tr>
-      <td className="bg-amber-50/40 px-4 py-4" colSpan={5}>
-        <div className="grid gap-2">
-          <CorrectionEventList events={events} />
-        </div>
-      </td>
-    </tr>
-  );
+function shopStatus(row:PayrollShopDailyRow){
+ const service=rowDifference(row),tip=row.actualTipIncome==null?null:row.tipDifference??row.actualTipIncome-row.tips;
+ if(service===null&&tip===null)return {kind:"missing",label:"Collection not entered"};
+ const labels:string[]=[];
+ if(service===null)labels.push("Service not entered");else if(service!==0)labels.push(`${service<0?"Service short":"Service over"} ${formatMoney(Math.abs(service))}`);
+ if(tip===null)labels.push("Tip not entered");else if(tip!==0)labels.push(`${tip<0?"Tip short":"Tip over"} ${formatMoney(Math.abs(tip))}`);
+ return {kind:service!==null&&service<0||tip!==null&&tip<0?"short":service===null||tip===null?"missing":service!==0||tip!==0?"over":"match",label:labels.join(" · ")||"Balanced"};
 }
-
-export function ShopIncomeDailyTable({ rows }: { rows: PayrollShopDailyRow[] }) {
-  const [openCorrectionDates, setOpenCorrectionDates] = useState<Set<string>>(
-    new Set(),
-  );
-  const [openDetailDates, setOpenDetailDates] = useState<Set<string>>(new Set());
-  const [showInactiveDays, setShowInactiveDays] = useState(false);
-  const dailyRows = useMemo<DailyTableRow[]>(
-    () =>
-      rows.map((row) => ({
-        correctionEvents: buildCorrectionEvents(row.corrections),
-        row,
-      })),
-    [rows],
-  );
-  const visibleRows = showInactiveDays
-    ? dailyRows
-    : dailyRows.filter(
-        ({ correctionEvents, row }) =>
-          !(
-            row.actualIncome === null &&
-            row.posIncome === 0 &&
-            correctionEvents.length === 0
-          ),
-      );
-
-  function toggleCorrectionDate(date: string) {
-    setOpenCorrectionDates((current) => {
-      const next = new Set(current);
-
-      if (next.has(date)) {
-        next.delete(date);
-      } else {
-        next.add(date);
-      }
-
-      return next;
-    });
-  }
-
-  function toggleDetailDate(date: string) {
-    setOpenDetailDates((current) => {
-      const next = new Set(current);
-
-      if (next.has(date)) {
-        next.delete(date);
-      } else {
-        next.add(date);
-      }
-
-      return next;
-    });
-  }
-
-  return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
-        <h2 className="text-sm font-semibold text-zinc-950">Daily Shop Income</h2>
-        <label className="inline-flex items-center gap-2 text-xs font-medium text-zinc-600">
-          <input
-            checked={showInactiveDays}
-            className="h-4 w-4 rounded border-zinc-300 text-zinc-900"
-            onChange={(event) => setShowInactiveDays(event.target.checked)}
-            type="checkbox"
-          />
-          Show inactive days
-        </label>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-zinc-200 text-sm">
-          <thead className="bg-zinc-50 text-left text-xs font-semibold text-zinc-500">
-            <tr>
-              <th className="whitespace-nowrap px-4 py-3">Date</th>
-              <th className="whitespace-nowrap px-4 py-3 text-right">Actual</th>
-              <th className="whitespace-nowrap px-4 py-3 text-right">POS</th>
-              <th className="whitespace-nowrap px-4 py-3">Status</th>
-              <th className="whitespace-nowrap px-4 py-3">Corrections</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100">
-            {visibleRows.map(({ correctionEvents, row }) => {
-              const isCorrectionsOpen = openCorrectionDates.has(row.businessDate);
-              const isDetailsOpen = openDetailDates.has(row.businessDate);
-              const hasCorrections = correctionEvents.length > 0;
-              const status = statusForRow(row);
-
-              return (
-                <Fragment key={row.businessDate}>
-                  <tr
-                    className={`align-middle ${
-                      hasCorrections ? "bg-amber-50/30" : "bg-white"
-                    }`}
-                  >
-                    <td className="whitespace-nowrap px-4 py-3 font-medium text-zinc-950">
-                      <button
-                        aria-expanded={isDetailsOpen}
-                        className="inline-flex items-center gap-2 rounded-md text-left font-medium text-zinc-950 hover:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-                        onClick={() => toggleDetailDate(row.businessDate)}
-                        title="Show daily details"
-                        type="button"
-                      >
-                        <span className="w-3 text-xs text-zinc-500" aria-hidden>
-                          {isDetailsOpen ? "v" : ">"}
-                        </span>
-                        {formatDailyDate(row.businessDate)}
-                      </button>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
-                      {formatOptionalMoney(row.actualIncome)}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
-                      {formatMoney(row.posIncome)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`whitespace-nowrap rounded-full border px-2 py-1 text-xs font-semibold ${statusBadgeClass(
-                          status.kind,
-                        )}`}
-                      >
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {hasCorrections ? (
-                        <button
-                          aria-expanded={isCorrectionsOpen}
-                          className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800"
-                          onClick={() => toggleCorrectionDate(row.businessDate)}
-                          type="button"
-                        >
-                          <span aria-hidden>{isCorrectionsOpen ? "v" : ">"}</span>
-                          {correctionEvents.length}{" "}
-                          {correctionEvents.length === 1
-                            ? "correction"
-                            : "corrections"}
-                        </button>
-                      ) : (
-                        <span className="text-zinc-400">{"\u2014"}</span>
-                      )}
-                    </td>
-                  </tr>
-                  {isDetailsOpen ? <DailyDetailsSubRow row={row} /> : null}
-                  {hasCorrections && isCorrectionsOpen ? (
-                    <CorrectionSubRow events={correctionEvents} />
-                  ) : null}
-                </Fragment>
-              );
-            })}
-            {visibleRows.length === 0 ? (
-              <tr>
-                <td
-                  className="px-4 py-8 text-center text-sm text-zinc-500"
-                  colSpan={5}
-                >
-                  No active shop income days in this period.
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+function ShopDay({row,history,previous,timezone}:{row:PayrollShopDailyRow;history:PayrollLiveChange[];previous?:DailyReconciliationCase;timezone:string}){
+ const changes=financialHistoryForObject(history,{businessDate:row.businessDate,sourceKinds:["ticket","daily_report","pos_daily_closings","pos_ticket_staff_earnings"]});
+ const linked=new Set(changes.map(change=>change.id));
+ const legacy=buildCorrectionEvents(row.corrections.filter(correction=>!correction.financialInputEventId||!linked.has(correction.financialInputEventId)));
+ const status=shopStatus(row),edited=changes.length>0||legacy.length>0;
+ const tone=status.kind==="short"?inlineStyles.short:status.kind==="missing"?inlineStyles.missing:status.kind==="over"?inlineStyles.badge:inlineStyles.balanced;
+ const difference=rowDifference(row),tipDifference=row.actualTipIncome==null?null:row.tipDifference??row.actualTipIncome-row.tips;
+ return <details className={`${inlineStyles.shopDay} ${edited?inlineStyles.edited:""}`} data-shop-business-date={row.businessDate}>
+  <summary><div className={inlineStyles.shopTop}><strong>{formatDailyDate(row.businessDate)}</strong><span className={`${inlineStyles.shopStatus} ${tone}`}><WorkspaceText text={status.label}/></span><span aria-hidden="true">⌄</span></div><div className={inlineStyles.shopAmounts}><span><WorkspaceText text="Service collected"/> <strong>{formatOptionalMoney(row.actualIncome)}</strong></span><span><WorkspaceText text="Expected service"/> {formatMoney(row.posIncome)}</span></div>{edited&&<span className={inlineStyles.badge}><WorkspaceText text="Edited"/>{changes.length>0?` · ${changes.length}`:""}</span>}</summary>
+  <div className={inlineStyles.shopBody}>
+   <table className={inlineStyles.comparison}><caption><WorkspaceText text="Collection check"/></caption><thead><tr><th scope="col"></th><th scope="col"><WorkspaceText text="Expected"/></th><th scope="col"><WorkspaceText text="Entered"/></th><th scope="col"><WorkspaceText text="Difference"/></th></tr></thead><tbody><tr><th scope="row"><WorkspaceText text="Service"/></th><td>{formatMoney(row.posIncome)}</td><td>{formatOptionalMoney(row.actualIncome)}</td><td className={difference!==null&&difference<0?inlineStyles.short:undefined}>{formatOptionalMoney(difference)}</td></tr><tr><th scope="row"><WorkspaceText text="Tip"/></th><td>{formatMoney(row.tips)}</td><td>{formatOptionalMoney(row.actualTipIncome??null)}</td><td className={tipDifference!==null&&tipDifference<0?inlineStyles.short:undefined}>{formatOptionalMoney(tipDifference)}</td></tr></tbody></table>
+   {(row.actualIncome===null||row.actualTipIncome==null)&&<p className={inlineStyles.note}><WorkspaceText text={row.actualIncome===null&&row.actualTipIncome==null?"Service collections and tip have not been entered.":row.actualIncome===null?"Service collections have not been entered.":"Tip has not been entered."}/></p>}
+   <dl className={inlineStyles.metrics}><DetailMetric label="Cash" value={formatOptionalMoney(row.cashAmount)}/><DetailMetric label="Card" value={formatOptionalMoney(row.creditCardAmount)}/><DetailMetric label="Other" value={formatOptionalMoney(row.otherAmount)}/></dl>
+   <InlineFinancialHistory changes={changes}/>
+   {legacy.length>0&&<details className={inlineStyles.subdetail}><summary><WorkspaceText text="Earlier correction records"/></summary><CorrectionEventList events={legacy}/></details>}
+   <details className={inlineStyles.subdetail}><summary><WorkspaceText text="Calculated staff / shop split"/></summary><dl className={inlineStyles.metrics}><DetailMetric label="Staff service production" value={formatMoney(row.staffProduction)}/><DetailMetric label="Staff commission" value={formatMoney(row.staffCommissionPay)}/><DetailMetric label="Staff tips" value={formatMoney(row.tips)}/><DetailMetric label="Shop share" value={formatMoney(row.shopShare)}/></dl><p className={inlineStyles.note}><WorkspaceText text="Calculated amounts · Payments are recorded separately."/></p></details>
+   <DailyReconciliationPreviousChecks value={previous} timezone={timezone}/>
+  </div>
+ </details>;
+}
+export function ShopIncomeDailyTable({rows,history=[],salonId,canReadChecks=false}:{rows:PayrollShopDailyRow[];history?:PayrollLiveChange[];salonId?:string;canReadChecks?:boolean}){
+ const [showInactiveDays,setShowInactiveDays]=useState(false);
+ const ordered=[...rows].sort((a,b)=>a.businessDate.localeCompare(b.businessDate));
+ const checks=useDailyReconciliationHistory({salonId,start:ordered[0]?.businessDate??"",end:ordered[ordered.length-1]?.businessDate??"",enabled:canReadChecks});
+ const visible=showInactiveDays?ordered:ordered.filter(row=>row.actualIncome!==null||row.actualTipIncome!=null||row.posIncome!==0||row.tips!==0||row.corrections.length>0||financialHistoryForObject(history,{businessDate:row.businessDate,sourceKinds:["ticket","daily_report","pos_daily_closings","pos_ticket_staff_earnings"]}).length>0||checks.rows.some(value=>value.business_date===row.businessDate&&previousDailyChecks(value).length>0));
+ return <section className="min-w-0 border-y border-zinc-200" aria-label="Daily collections"><div className="flex flex-wrap items-center justify-between gap-3 py-3"><h2 className="text-sm font-semibold"><WorkspaceText text="Daily collections"/></h2><label className="inline-flex min-h-11 items-center gap-2 text-xs text-zinc-600"><input type="checkbox" checked={showInactiveDays} onChange={event=>setShowInactiveDays(event.target.checked)}/><WorkspaceText text="Show inactive days"/></label></div><div className={inlineStyles.shopDays}>{visible.map(row=><ShopDay key={row.businessDate} row={row} history={history} previous={checks.rows.find(value=>value.business_date===row.businessDate)} timezone={checks.timezone}/>)}{!visible.length&&<p className="py-5 text-sm text-zinc-500"><WorkspaceText text="No active shop income days in this period."/></p>}</div><p className={inlineStyles.note}><WorkspaceText text="Service collections exclude tips. Tips are checked separately."/></p>{checks.error&&<p role="status" className={inlineStyles.note}><WorkspaceText text={checks.error}/> <button type="button" className="min-h-11 underline" onClick={checks.retry}><WorkspaceText text="Retry"/></button></p>}</section>;
 }

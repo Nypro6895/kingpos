@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "changeId": "staff-offline-binding-20261016",
+  "status": "ready",
+  "summary": "Close participant staff-invitation forgery; preserve existing actual onboarding RPCs; require active owner/staff-manager reconfirmation for scoped staff offline read access and revision-guarded revocation.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261016080000_staff_offline_binding_attestation.sql",
+    "lib/staff-offline-binding.ts",
+    "lib/staff-offline-binding-server.ts",
+    "app/staff/offline-binding-actions.ts",
+    "app/staff/staff-offline-binding-control.tsx",
+    "app/(app)/staff/page.tsx",
+    "app/staff/my-work/staff-my-work-client.tsx",
+    "lib/use-staff-read-resource.ts",
+    "app/service-relay/staff-relay.tsx",
+    "app/api/experience/my-work/route.ts",
+    "lib/use-scoped-ui-draft.ts",
+    "lib/use-persistent-read-view.ts",
+    "tests/staff-offline-binding.integration.test.mjs",
+    "tests/staff-offline-binding-contract.test.mjs",
+    "tests/staff-offline-binding-ui.test.mjs",
+    "tests/staff-durable-gate.test.mjs",
+    "tests/scoped-ui-drafts-ui.test.mjs",
+    "tests/helpers/isolated-supabase-fixture.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\staff-offline-binding-frozen-20261016T043001989422Z"
+  },
+  "dependencies": [
+    "local-first-pos-staff-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Full repository schema + real Auth/PostgREST/RLS onboarding and revoked-owner JWT regression: 11/11 tests, 268 migrations",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\staff-offline-binding-20261016\\full-schema-r4"
+    },
+    {
+      "name": "Scoped server/background-read authorization and owner action contracts, 4 tests",
+      "result": "passed",
+      "evidence": "tests/staff-offline-binding-contract.test.mjs; tests/staff-durable-gate.test.mjs"
+    },
+    {
+      "name": "Real browser owner reconfirmation and revision-bound revoke, 1 test",
+      "result": "passed",
+      "evidence": "tests/staff-offline-binding-ui.test.mjs"
+    },
+    {
+      "name": "Real browser draft/account/Activity/offline-submit/no-replay regression, 6 tests",
+      "result": "passed",
+      "evidence": "tests/scoped-ui-drafts-ui.test.mjs"
+    },
+    {
+      "name": "Targeted lint and full TypeScript noEmit",
+      "result": "passed"
+    }
+  ],
+  "id": "1ce5d235-3571-4a00-9322-bf31cf86a070",
+  "recordedAt": "2026-10-16T04:31:53.168Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "supabase/migrations/20261016080000_staff_offline_binding_attestation.sql": "19dc1fd476b3488bb89efabe617a3b75129a1336638f42ef043c1249c1c1efad",
+    "lib/staff-offline-binding.ts": "40391c796a4026e35c560bf91ed03f71418bbbfffb130bfe1b3dfa830046a06f",
+    "lib/staff-offline-binding-server.ts": "af24fd30f0147d9f657f75d20caf2f2d1fdacd98f082ed6376b745ac90d494e6",
+    "app/staff/offline-binding-actions.ts": "9addf2b6b331cc7d13b3d851f215018af32eee2d2d198df8079e3c69cd622012",
+    "app/staff/staff-offline-binding-control.tsx": "c7e7d29c3b1192e20bb8144cb4d751d564d845c5ad0f6ced21b6a41c37e818f0",
+    "app/(app)/staff/page.tsx": "b03749ec120e22c400e24f00b4b9e7bfed30acd0f60ebeab830e22d57e802607",
+    "app/staff/my-work/staff-my-work-client.tsx": "7a77c01c62c01a426b2cb566c22bade85f9781b5d8c3735d137dde9ef4f1445c",
+    "lib/use-staff-read-resource.ts": "e9404e1edee53c2e902dff598e6c1938e2e10d935d770f5bb8b93a3e638514be",
+    "app/service-relay/staff-relay.tsx": "d966acd1242a7b24140c78a98b91290a0401ebf1902f9958d3c65a75c2520161",
+    "app/api/experience/my-work/route.ts": "6dc5dd29d60da66fe4767b27aa4c21181a1ef3c751593bc9e79027ddd2160ae9",
+    "lib/use-scoped-ui-draft.ts": "a8fdd117044aa10ebe05919611d516528d7096bd90a1536e3fca511fc6405297",
+    "lib/use-persistent-read-view.ts": "bf5e06aa76e39ad3c8a162611d189e343d0fe18ab87aca996670510827ae3fc1",
+    "tests/staff-offline-binding.integration.test.mjs": "d1a40b7fa06c0309317a86ea7f3677c4f11031ec00599bbec1d586aed0458171",
+    "tests/staff-offline-binding-contract.test.mjs": "e352945ce8aebb9d28f5ba7feac9f91d306a18b4c885590b62c2190307be4eac",
+    "tests/staff-offline-binding-ui.test.mjs": "9d68ea263e1cfe467ec6114a5895aad81f463bc2b41ff2aef93a21bcc43ac7c2",
+    "tests/staff-durable-gate.test.mjs": "7053568345f645e850bb6aa1d992406fbeec4c298eee669c4b378367371c9f4a",
+    "tests/scoped-ui-drafts-ui.test.mjs": "2b1017d1751a8554b5e3f6a91a14ab80911b7bc1e5d7fec5d2b56ea2a16c9c1a",
+    "tests/helpers/isolated-supabase-fixture.mjs": "315a5541ef11ca71eb6c5bcb779ec52555382d55058d00dec7b22ea9a0e4461f"
+  }
+}

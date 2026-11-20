@@ -1,0 +1,201 @@
+{
+  "kind": "change",
+  "changeId": "campaign-causal-settlement-reporting-20261021",
+  "status": "needs-integration",
+  "summary": "Frozen local Campaign causal fixes: sticky owner Pause and24h/7d app reminders, atomic expiry settlement, fair observable queue, authoritative accounting and consistent owner/admin controls.250 tests/lint/typecheck/build/offline pass. Release held: PostgreSQL race, pending automatic-order policy and unified native/auth/staging gates.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/plugins/campaigns/campaign-list.tsx",
+    "app/api/internal/campaign-credits/route.ts",
+    "app/campaigns/actions.ts",
+    "app/campaigns/campaign-preview.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/preview-actions.ts",
+    "lib/campaign-credit-queue.ts",
+    "lib/campaign-payments.ts",
+    "lib/campaign-status.ts",
+    "releases/changes/2026-10-21T17-09-55-275Z-09282efb-656f-4b83-9340-67c11a10355c.json",
+    "releases/changes/2026-10-21T17-15-34-517Z-f18c8fa3-c47d-4f8e-a6dd-3f02a018d149.json",
+    "releases/changes/2026-10-21T17-29-11-562Z-c5aa9c6e-0ca6-439c-89a7-b59649338cee.json",
+    "supabase/migrations/20261021040000_campaign_expiry_settlement.sql",
+    "supabase/migrations/20261021050000_campaign_accounting_read.sql",
+    "supabase/migrations/20261021060000_campaign_credit_queue_progress.sql",
+    "supabase/migrations/20261021070000_campaign_pause_lifecycle.sql",
+    "supabase/migrations/20261021080000_campaign_admin_pause_status.sql",
+    "tests/campaign-accounting-read.test.mjs",
+    "tests/campaign-admin-pause-status.test.mjs",
+    "tests/campaign-credit-queue.test.mjs",
+    "tests/campaign-expiry-settlement.test.mjs",
+    "tests/campaign-owner-accounting-read.test.mjs",
+    "tests/campaign-owner-preview.test.mjs",
+    "tests/campaign-owner-resume-action.test.mjs",
+    "tests/campaign-owner-status-ui.test.mjs",
+    "tests/campaign-pause-lifecycle.test.mjs",
+    "tests/campaign-pause-notification-destination.test.mjs",
+    "tests/campaign-search-preview-ui.test.mjs",
+    "tests/campaign-status-presentation.test.mjs",
+    "tests/campaign-status-readonly.test.mjs",
+    "tests/fixtures/campaign-cumulative-db.mjs",
+    "tests/fixtures/campaign-owner-status-ui.mjs",
+    "tests/fixtures/campaign-search-preview-ui.mjs",
+    "types/owner-campaign.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-causal-candidate\\source",
+    "commit": "c4e7db5ddbd9767526d62a4e1b6d33397dbca655",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-causal-candidate\\manifest.json",
+    "sha256": "513d3ef8ab9d961894776e8bc8cd77be60c30b0e68730b1cc56fa686b4066886"
+  },
+  "dependencies": [
+    "pc-campaign-common-candidate-20261021"
+  ],
+  "validation": [
+    {
+      "name": "campaign-logic",
+      "result": "passed",
+      "tests": 125,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\campaign-logic.json",
+      "sha256": "cca46787aa5e5d52eaf19b5a26a187ddfd017eded3a936e32481f1b220d5621a"
+    },
+    {
+      "name": "campaign-browser",
+      "result": "passed",
+      "tests": 7,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\campaign-browser.json",
+      "sha256": "110a57385ec1bc929884a7cf4d424abf900c13b7d4e475dc8e057a5e6143dda2"
+    },
+    {
+      "name": "campaign-webkit",
+      "result": "passed",
+      "tests": 3,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\campaign-webkit.json",
+      "sha256": "3be512f822661f1d3db9781e84f0b3f16b67f5e93c85896e19f84d82181a672d"
+    },
+    {
+      "name": "scope-regression",
+      "result": "passed",
+      "tests": 115,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\scope-regression.json",
+      "sha256": "09d771bf9d73c8edc0fa025da19d43ee75364e4b5a1984e4291f5d58b486ef24"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "tests": null,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\lint.json",
+      "sha256": "4a83e453d8937360039eb29080243caca68d39ffdaa4fa3349eeb58fde477c87"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "tests": null,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\typecheck.json",
+      "sha256": "300a8e98ff06daee5dc20b98bb9db9e013d539d981010774ea18137fe4f03072"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "tests": null,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\build.json",
+      "sha256": "ac79c025a1b710534bd163f7bb4beaa1c4dbf8b1941f4c3046e53776b1c91110"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "tests": null,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\offline-assets.json",
+      "sha256": "275bf951db3a2a3851eed6dce0870adce483413892cbe7a43dac50fb64ceaeaa"
+    },
+    {
+      "name": "real-postgresql-race",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\postgres-race\\STATUS-FINAL.json"
+    },
+    {
+      "name": "pre-pause-pending-auto-order",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\review\\credit-reporting-review.json"
+    },
+    {
+      "name": "unified-ios-live-auth",
+      "result": "pending",
+      "evidence": "Read-only coordinator status17:40UTC: login1pass; Staff/Owner Today, restart retention, warm navigation andA→B→A do not have passing receipts. Root/native workers idle, no new permission blocker recorded. This Campaign patch does not overwrite their bundle/transport source."
+    },
+    {
+      "name": "staging-lifecycle-contract",
+      "result": "pending",
+      "evidence": "Local SQL fixtures and browser-stub tests do not prove deployed schema/cache/identity/cron operation; no staging or production mutations performed."
+    },
+    {
+      "name": "single-release-fallback",
+      "result": "pending",
+      "evidence": "This task is implementation-only; no push/deploy/upload/iOS release build. Additive pause/ledger migrations require a pause-aware code fallback and preserved data."
+    }
+  ],
+  "constraints": {
+    "noRelease": true,
+    "noProductionWrites": true,
+    "noNativeSourceEdits": true,
+    "noMacSSH": true
+  },
+  "gates": [
+    {
+      "id": "real-postgresql-race",
+      "status": "NOT_RUN",
+      "action": "Run 15 independent multi-connection cases on a dedicated disposable loopback PostgreSQL cluster",
+      "target": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\postgres-race\\run.mjs",
+      "reason": "No usable local PostgreSQL/psql runtime established. Installed Docker normal startup failed; later read-only engine query timed out. No install/reset/security/network change authorized.",
+      "denied": false,
+      "outcomeUncertain": false,
+      "completed": "17 input hashes, full040–080 fixture, runner syntax and12 offline safety guards passed; PGlite is not a concurrency substitute.",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\postgres-race\\STATUS-FINAL.json"
+    },
+    {
+      "id": "pre-pause-pending-auto-order",
+      "status": "POLICY_DECISION_PENDING",
+      "action": "Decide whether an unclaimed automatic credit order created before Pause must revalidate current demand before provider submission",
+      "target": "campaign_credit_order / campaign_credit_claim existing pending automatic orders",
+      "reason": "Actual SQL reproduction: available500, threshold0, only campaign completed with stickyPause; previously created pending order remains claimable. Changing pending/payment behavior was explicitly held for parent decision; no monetary policy changed silently.",
+      "recommended": "Under existing wallet lock, revalidate present demand only for unclaimed pending automatic orders; retain order/idempotency key; never blindly cancel processing/unknown-outcome or paid settlement. Keep separately consented global low-balance top-up behavior.",
+      "alternative": "Retain preexisting pending-order consent and explicitly describe it as an exception to Campaign Pause. Do not claim Pause blocks all wallet purchases.",
+      "denied": false,
+      "outcomeUncertain": false,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\validation-causal\\review\\credit-reporting-review.json"
+    },
+    {
+      "id": "unified-ios-live-auth",
+      "status": "PENDING_EXISTING_COORDINATOR",
+      "action": "Merge this frozen delta with the final iOS/auth revision and run final common-candidate QA through the existing iOS coordinator",
+      "target": "01a15ce0-fc08-723e-a94a-96c2afa9900b / existing iOS task01a155f0-f24b-75f1-b5ff-32f00b8d1aa0",
+      "reason": "Read-only coordinator status17:40UTC: login1pass; Staff/Owner Today, restart retention, warm navigation andA→B→A do not have passing receipts. Root/native workers idle, no new permission blocker recorded. This Campaign patch does not overwrite their bundle/transport source.",
+      "denied": false,
+      "outcomeUncertain": false
+    },
+    {
+      "id": "staging-lifecycle-contract",
+      "status": "NOT_RUN",
+      "action": "Validate ordered migrations, service-only PostgREST discovery/ACL, real auth/cache role transitions and scheduler failure observability in authorized staging before release",
+      "target": "040–080 migrations and Campaign owner/actions/worker",
+      "reason": "Local SQL fixtures and browser-stub tests do not prove deployed schema/cache/identity/cron operation; no staging or production mutations performed.",
+      "denied": false,
+      "outcomeUncertain": false
+    },
+    {
+      "id": "single-release-fallback",
+      "status": "HELD_BY_USER",
+      "action": "Parent validates final common version, exact current web/native baseline and code/database/iOS fallback before the one authorized release",
+      "target": "Final unified release candidate",
+      "reason": "This task is implementation-only; no push/deploy/upload/iOS release build. Additive pause/ledger migrations require a pause-aware code fallback and preserved data.",
+      "denied": false,
+      "outcomeUncertain": false
+    }
+  ],
+  "id": "6e7a07e4-f5eb-45bc-8a35-4be9ffbaa12e",
+  "recordedAt": "2026-10-21T17:46:40.086Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-causal-candidate",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

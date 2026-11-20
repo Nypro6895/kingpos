@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "public-photo-processing-consent-20261118",
+  "status": "needs-integration",
+  "summary": "Implemented current-provider/current-notice affirmative end-user photo transfer guard and client-safe copy;4 isolated regressions and synthetic Beauty/Salon composer proposal validated. UI approval/wiring remains pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/public-photo-processing-consent.ts",
+    "tests/public-photo-processing-consent.test.mjs",
+    "docs/public-photo-processing-consent-20261118.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\public-photo-processing-consent-20261118\\frozen",
+    "sourceSha256": "355dff1df809dc61354d95c475ddee28eb8736bb9b397dfb7a3f4cf72fdf3087",
+    "manifest": "artifacts/public-photo-processing-consent-20261118/frozen-manifest.json"
+  },
+  "fileHashes": {
+    "lib/public-photo-processing-consent.ts": "f22273e1c660840b0ebef7ef59e5f6583eed1a4aa188a0cf6e6ce0b3106411ea",
+    "tests/public-photo-processing-consent.test.mjs": "1065756621579f44f2d0ec566e97b51a81b1796ffe32ea8402965f18c3038018",
+    "docs/public-photo-processing-consent-20261118.md": "3641a5cbbfa9e6fb31e3230d7703db277bfc774a08649935aefa7238b1e6edf7"
+  },
+  "validation": [
+    {
+      "name": "Synchronous zero-private-prepare/provider-on-invalid-permission regressions and clean browser bundle",
+      "result": "passed",
+      "evidence": "artifacts/public-photo-processing-consent-20261118/validation.json (4/4, zero skips)"
+    },
+    {
+      "name": "Scoped ESLint, strict TypeScript and independent read-only critic",
+      "result": "passed",
+      "evidence": "artifacts/public-photo-processing-consent-20261118/validation.json"
+    },
+    {
+      "name": "Artifact-only desktop/mobile composer proposal",
+      "result": "passed",
+      "evidence": "artifacts/public-photo-processing-consent-20261118/photo-processing-consent-preview-desktop.png; both unchecked; synthetic only"
+    },
+    {
+      "name": "User visual approval, root caller/raw-intent/replay integration and assembled release",
+      "result": "pending",
+      "evidence": "No product UI or root-owned callsites changed by this helper patch."
+    }
+  ],
+  "dependencies": [],
+  "scopeBoundary": "Helper/test/doc plus artifact-only composer preview. Root owns optional input/canonical request/receipt ordering and caller wiring. No product UI, other upload consent, credential/API/provider calls or frozen adapter changes. Admin Remove/Restore preview untouched.",
+  "remaining": "Explicit end-user UI approval and product wiring/request binding, secure dedicated key, real provider/privacy/operations and combined hosted/device/release acceptance. No claim of consent interaction proof, durable ledger or legal/App Review completion.",
+  "nativeAssessment": "Client-safe shared strings/guard plus type-only server seam; no Swift/assets/bridge edit. Coordinator assesses exact combined bundled client candidate.",
+  "id": "1bfa6151-8966-4233-99eb-e89d2290da51",
+  "recordedAt": "2026-11-18T21:29:59.863Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

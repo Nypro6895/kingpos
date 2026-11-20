@@ -1,0 +1,80 @@
+{
+  "kind": "change",
+  "changeId": "owner-pos-local-platform-20261016",
+  "status": "ready",
+  "summary": "Retain actual owner POS family panels and shared lease-scoped readmodels; narrow versioned Check-in reads and preserve checkout input Integrated with the complete validated application source.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/pos/(workspace)/layout.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-local-workspace.tsx",
+    "app/pos/owner-local-panels.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-check-in-actions.ts",
+    "app/pos/portable/check-in/portable-check-in-client.tsx",
+    "app/api/pos/owner/check-in/route.ts",
+    "lib/owner-local-workspace.ts",
+    "lib/owner-pos-read-model.ts",
+    "lib/app-local-owner-resources-server.ts",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/bookings/owner-live-booking-workspace.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "tests/owner-local-workspace-ui.test.mjs",
+    "tests/owner-check-in-readmodel.test.mjs",
+    "tests/owner-pos-instant-tabs-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\integrated-frozen-r3",
+    "commit": "260e26849b807f841046edef634246aeec49ff84"
+  },
+  "validation": [
+    {
+      "name": "173 isolated integration behavior/authority/offline tests, zero failures/skips",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/final-validation.json"
+    },
+    {
+      "name": "Assembled production Next build and 411 offline web assets",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/next-production-final.log"
+    },
+    {
+      "name": "81 actual iOS XCTest cases and unsigned archive at exact source",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/38945864401"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "supersedesEvents": [
+    "1149df5b-3758-4cd7-9cd5-af1eddafbd52"
+  ],
+  "integratedFromEvent": "1149df5b-3758-4cd7-9cd5-af1eddafbd52",
+  "id": "49e2505b-71f1-46c9-8af6-b617d716b3e0",
+  "recordedAt": "2026-10-16T18:22:49.549Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "fileHashes": {
+    "app/(app)/pos/(workspace)/layout.tsx": "c26ed60f6e29bb9d4f39f5a5ecf1acea6b6ff1eed9b8f031a9193e31f97698bc",
+    "app/pos/owner-workspace-frame.tsx": "10ac2b75b3f7e25c305bfcb198ba091d6c2dbee5acc196d81115598dba5e4894",
+    "app/pos/owner-local-workspace.tsx": "c5b34f2721c88f4cc29bc9143b365c2649a40c83712a84be4fdc9e2995a360e9",
+    "app/pos/owner-local-panels.tsx": "c876150740b8058e466eb0d8cd6022aec913e44c5b52d0c9ce142fec71126042",
+    "app/pos/owner-pos-client.tsx": "2d65f9f1140adc67c1a7ccea69e7654cbb696944fd3c5c20b770edd0773e40c5",
+    "app/pos/owner-check-in-actions.ts": "d5e2f7ac4f956c5854ee8d75791f0731e85d878be2a691c7ac9f93d01b53cc40",
+    "app/pos/portable/check-in/portable-check-in-client.tsx": "b9b61739bb658a38391763eca771019c9791adab0411e4775f907b73b47bcb56",
+    "app/api/pos/owner/check-in/route.ts": "0a1a98ac62dd6cb3d303d65073c74437c6f7b611d9ba492718a903dde637b3de",
+    "lib/owner-local-workspace.ts": "6455a7e0934bf78e5b93f578400646986735005f863e4f1f462782d4d8b83599",
+    "lib/owner-pos-read-model.ts": "ab107b38a37ba809a641e2c97504fc32aa54ac06983fcd2247d5e426935db0c1",
+    "lib/app-local-owner-resources-server.ts": "ce1422b0d8373a3c5fbb621bee1998f0697d6fa644a37aec462047757c799bc9",
+    "app/pos-tickets/owner-live-tickets.tsx": "bc399c6b03a74c26d5075a3ae50102d30233e214fe19878c8ee53bdd79e858a4",
+    "app/bookings/owner-live-booking-workspace.tsx": "fdfc22d260b6952509c04922f438b97215098d0a5fe9cc9077a469bb8d1a7518",
+    "app/reports/owner-live-reports.tsx": "aca80e2c17298c22adc07d86e6fa3792416a1aa3f8d76a6acf3a4c9338a76550",
+    "tests/owner-local-workspace-ui.test.mjs": "39185efad5eed9422667c9e615e07aefab598f00b1a5e90f154237f60d83e970",
+    "tests/owner-check-in-readmodel.test.mjs": "3c1c939f9ec6d67cbfedf021f0e9fb65757df621c38430c5adf2876a53bd7789",
+    "tests/owner-pos-instant-tabs-ui.test.mjs": "a38d264c0788022430adf72ff788d4403ccd163530218660521cb4e19edc77c4"
+  }
+}

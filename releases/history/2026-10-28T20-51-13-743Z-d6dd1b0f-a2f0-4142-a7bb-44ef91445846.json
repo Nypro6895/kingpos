@@ -1,0 +1,20 @@
+{
+  "kind": "release",
+  "summary": "Internal TestFlight 1.0.0 (57) VALID and available to both existing groups; exact 2634 runtime source files and archived bundle verified, 222 native tests passed. Adds inactive Settings effects boundary only; cold sub-second/full coverage target unfinished.",
+  "changes": [
+    "dfa7b8db-35bc-4cc1-90e7-483ebf19e476"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "57",
+      "commit": "9396d13a2468fe73f18d034317177ce16b59449d",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/native57-release-receipt.json"
+    }
+  },
+  "id": "d6dd1b0f-a2f0-4142-a7bb-44ef91445846",
+  "recordedAt": "2026-10-28T20:51:13.743Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-focus-release-20261028"
+}

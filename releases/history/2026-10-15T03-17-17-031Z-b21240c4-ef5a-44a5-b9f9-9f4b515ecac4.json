@@ -1,0 +1,26 @@
+{
+  "kind": "release",
+  "summary": "iOS 1.0.1 build 14.1 available through existing TestFlight channel; App Store listing remains unsubmitted.",
+  "changes": [
+    "1d5bd604-f869-49d2-9e08-9c3b41ccca50"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "14.1",
+      "commit": "cc53062ca58795e37ab62269655bea73f4902241",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\native-upload\\reylumi-testflight-14-1",
+      "baselineCommit": "ffbcd24513cd991a8c7a883a53d6ac360f3ff137",
+      "appleBuildId": "d9b87d07-b8aa-4ea8-9716-f24cf756a465"
+    }
+  },
+  "pending": [
+    "Web integration validation continues",
+    "First App Store listing legal/privacy/pricing declarations remain owner decisions"
+  ],
+  "id": "b21240c4-ef5a-44a5-b9f9-9f4b515ecac4",
+  "recordedAt": "2026-10-15T03:17:17.031Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

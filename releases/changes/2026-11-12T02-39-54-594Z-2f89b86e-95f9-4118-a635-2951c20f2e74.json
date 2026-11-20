@@ -1,0 +1,108 @@
+{
+  "kind": "change",
+  "changeId": "app-store-ugc-privacy-completion-20261109",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Completed and locally tested Forum personal blocking, due-account UGC scrubbing and individual comment/review/reply reports; publication held for current-production integration, Xcode/device and legal acceptance Original handoff 1e5e3d4b-8288-4b26-8088-ebe9529c9c80. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied. Final installed-root parity and dedicated paired-ticket admission integrated; snapshot reconciled to final source.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/forum/forum.tsx",
+    "app/activity/my-reviews-list.tsx",
+    "app/post-comments/post-comment-thread.tsx",
+    "app/post-moderation/block-actions.ts",
+    "app/post-moderation/text-report-actions.ts",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/block-user-button.tsx",
+    "components/social-text-report-button.tsx",
+    "docs/app-store-legal-audit-20261109.md",
+    "docs/app-store-ugc-completion-20261109.md",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/social-text-reports.ts",
+    "supabase/migrations/20261109220000_forum_privacy_completion.sql",
+    "supabase/tests/account_deletion_flow.sql",
+    "tests/account-deletion-flow-contract.test.mjs",
+    "tests/account-erasure-worker.test.mjs",
+    "tests/account-erasure.integration.test.mjs",
+    "tests/forum-personal-block-browser.test.mjs",
+    "tests/forum-privacy-completion.test.mjs",
+    "tests/post-comment-confirmed-identity.integration.test.mjs",
+    "tests/post-comments-contract.test.mjs",
+    "tests/post-report-actions-ui.test.mjs",
+    "tests/post-safety.integration.test.mjs",
+    "tests/social-text-report-browser.test.mjs",
+    "tests/social-text-reports.test.mjs",
+    "tests/user-blocking.integration.test.mjs",
+    "tests/visit-feedback-final.browser.test.mjs",
+    "types/social-text-reports.ts"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\complete-snapshot",
+    "commit": "4db7477d5b446bdf3cd113f61335df46a9123fb4"
+  },
+  "dependencies": [
+    "app-store-privacy-preparation-20261109"
+  ],
+  "supersedesEvents": [
+    "d4c7ad25-e856-4e13-a397-62f90201a1c9"
+  ],
+  "validation": [
+    {
+      "name": "Final production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-complete.txt"
+    },
+    {
+      "name": "26 final language, auxiliary, paired device and schema regression tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-regression.txt"
+    },
+    {
+      "name": "Actual generated installed root numeric and Help bundle tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/installed-complete-final.txt"
+    },
+    {
+      "name": "Exact 4257 deployed source files and seven public routes verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-release/live-source-verified.json"
+    }
+  ],
+  "id": "2f89b86e-95f9-4118-a635-2951c20f2e74",
+  "recordedAt": "2026-11-12T02:39:54.594Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/(app)/forum/forum.tsx": "710bc706121e4e401dbb379978623dbbf122e84f670d6f910b70010ae9490048",
+    "app/activity/my-reviews-list.tsx": "8c2b632a7389811d5b07cfe88eea43eea5c58cfc4ac29ec66c160c7ce1c51604",
+    "app/post-comments/post-comment-thread.tsx": "a85d587ab4ac33bcc62a40e4b3f48dce8c7c0b2c60219c2d32774dd61746bf1b",
+    "app/post-moderation/block-actions.ts": "4b09cf78e61e6cc5ef30277d126ec10dd1fb775fad677bfb9aa0d683d9fe812d",
+    "app/post-moderation/text-report-actions.ts": "02eec469717290fc61a0fe864a008e3f8dffe23578bb6d8d2d3f0dfc47dec197",
+    "app/salon-profile/salon-profile-view.tsx": "8854fcd954017d3684b754450a3b3ed74bcac2e202bce9dc3f5a3d646510f336",
+    "components/block-user-button.tsx": "6148744b2f9c153a5490ba9baedeef179f8a1d8ab01233cd20d3b0565fedb759",
+    "components/social-text-report-button.tsx": "542449fc92c12e70af63ab4595b198174aaaa06647b31a52c2bafbe417830e58",
+    "docs/app-store-legal-audit-20261109.md": "1d96bd38c03d0b0451ea2e97dd37ad89b5fee4348a96608a7aadd5c5bc84d820",
+    "docs/app-store-ugc-completion-20261109.md": "8f95e39b11125d1a310ef43a6d853b4158b8573ae623b1e96ac683787ecb35f9",
+    "lib/app-local-command-policy.json": "d233c3ce85413f14d442b9d0a11aea61bc65dfacbd77664abc9ec11c27657fbb",
+    "lib/app-local-commands-server.generated.ts": "b6ab352722960b8bb72972306ac93a347a20e4e3a3576588d9036ac98365b982",
+    "lib/social-text-reports.ts": "b4b1d16c1db9b3290c9911eb4e5c5e1cf494db5d375347c3985e35076aac1e18",
+    "supabase/migrations/20261109220000_forum_privacy_completion.sql": "7dd674e13826079f38bfbfbe2a58b2a3ec7d877b8d152d0027be37e18eb74ca7",
+    "supabase/tests/account_deletion_flow.sql": "c2cc04292db12de6f2ffa5a21d9d85b7f7db50e32f38ee9680b0b61b282bd44f",
+    "tests/account-deletion-flow-contract.test.mjs": "18627303c90d313be6058d023ed2c9af3d93f4fd8e4c060c09c87a5fcb8708e8",
+    "tests/account-erasure-worker.test.mjs": "c93026961dac9f1564aaffc1ad008d6c34a9757e2b461c1d0b824809e1598c8f",
+    "tests/account-erasure.integration.test.mjs": "b1520722f5e60cb2db8d2becbb14c9c4f46d7922417ea8aabdd8512382c03fcf",
+    "tests/forum-personal-block-browser.test.mjs": "5a761de90c5a0014eda577de2908080b29a99420b3e33f0438715379bed67b92",
+    "tests/forum-privacy-completion.test.mjs": "40126c5e32fcdb9b5fc7a6f45f429ba13e4972c4ee5309b92730ba64023b1b4c",
+    "tests/post-comment-confirmed-identity.integration.test.mjs": "da6ef1100f7c6c0a5511a6a643084902466aeda88961842c8b31d52d9817e4c3",
+    "tests/post-comments-contract.test.mjs": "bee315d2c66994b79292cf5876d1f8e4fc71f4e1b15083f9a68474ce1a0c694a",
+    "tests/post-report-actions-ui.test.mjs": "c821b7a12dd6ba9f60eb00892fbfc33894ac1c01ffb2484ec63281a7fe4ece35",
+    "tests/post-safety.integration.test.mjs": "63c9c3cf89e424ce71f28b03ed1fa86ee62e9e5790108c14194f56bcb7f90634",
+    "tests/social-text-report-browser.test.mjs": "1ff7b3f9e0ebd857e77374f3b84c2aac356965a8671cd9a310bff973d4132a51",
+    "tests/social-text-reports.test.mjs": "48383e4f13303544bc52ffd21e2fa3738a0ffd90604dcfdbb4d3f52fe796549b",
+    "tests/user-blocking.integration.test.mjs": "a4d59c5b5ad1219cd6dcb72bef769c8e85a7f90234cfbc87fb55ae06638c474f",
+    "tests/visit-feedback-final.browser.test.mjs": "b9b8aa80c0e3508fced611a3747e85e7a4f40c8ffdbe31ff9ca2920d7026463e",
+    "types/social-text-reports.ts": "e229e21cb3717ecc5d7b0b9c9aeb7dfdd58caa8ce5aea760960874898cbc7087"
+  }
+}

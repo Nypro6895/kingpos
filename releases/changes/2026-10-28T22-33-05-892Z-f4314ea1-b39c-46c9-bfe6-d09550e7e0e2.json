@@ -1,0 +1,47 @@
+{
+  "channels": [
+    "ios"
+  ],
+  "validation": [
+    {
+      "name": "Regression before fix: six native tests fail, web test passes",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\history236-before.log"
+    },
+    {
+      "name": "After fix: all seven regression tests pass",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\history236-after.log"
+    },
+    {
+      "name": "TypeScript noEmit fresh check",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\history236-types.log"
+    }
+  ],
+  "files": [
+    "lib/customer-history-client.ts",
+    "tests/app-local-customer-history.test.mjs"
+  ],
+  "changeId": "iphone-history-details236",
+  "summary": "Native customer Details uses existing fresh customer.history read, rejects stale or changed account scopes, keeps web live-resource behavior",
+  "source": {
+    "commit": "f76767c",
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\history236-selected-frozen"
+  },
+  "kind": "change",
+  "status": "ready",
+  "releasePrerequisites": [
+    "Integrate selected frozen source into next native release",
+    "Build58 remains failed; retest both history and upcoming Details on physical iPhone after upload"
+  ],
+  "id": "f4314ea1-b39c-46c9-bfe6-d09550e7e0e2",
+  "recordedAt": "2026-10-28T22:33:05.892Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/customer-history-client.ts": "8943af83e357119889d87cf762239eff5fc3b2ef384e3942ecdaa72b583c1bb6",
+    "tests/app-local-customer-history.test.mjs": "32b72677ac912c82092b151327f31fa8fc3f8da3dbb4d74b8ef700b9ed0873f4"
+  }
+}

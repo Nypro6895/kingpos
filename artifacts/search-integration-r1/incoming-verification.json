@@ -1,0 +1,1143 @@
+{
+  "createdAt": "2026-11-19T07:28:47.343Z",
+  "candidateBase": "045dfa2278548787c1abb434b0362ef83b90afec",
+  "sourceCommit": "7abbedd8486fac3c13ed2ac280107239611f9056",
+  "sourceEvent": "af864636-570b-47b5-a805-352a6ced7a9b",
+  "baseCommit": "23e66abd5a197d66fd9d2e9fbb358b160af06307",
+  "snapshot": "C:\\Reylumi-worktrees\\local-search-quality-20261118\\artifacts\\local-search-quality-20261118\\frozen-source-a843-20261119072012",
+  "snapshotManifestSha256": "b5132d2f265f1e2be60ec7d21c0df420388281d8f7af84b34ac4fa8595f76669",
+  "sourceIdentity": "a843ed893cca2279f1d292991483456627947c62bff1dfe884cc2eb1cb8991b3",
+  "all113HashesVerified": true,
+  "rows": [
+    {
+      "path": "app/explore/explore-client.tsx",
+      "bytes": 151846,
+      "sha256": "a6e99060d10fc1456c6c15257f3c6fb57e6ca66c57d7122ee7edac8c29f86f22",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "app/explore/explore-salon-card.module.css",
+      "bytes": 2175,
+      "sha256": "cf065def7434279d806ae8185259f393b95baa8ff4f028290f950e82b0d2e47f",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/browser-production-receipt.json",
+      "bytes": 2232,
+      "sha256": "50fd53a3090cbf17479743b363531f602d717fc3c10c8f978d72811e4b50d15b",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/browser-unique-media-production.log",
+      "bytes": 614,
+      "sha256": "22f9631e3dec096332483f71c2f0f43584649fa73734b2baf3748f4b299e6ea5",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/browser-unique-media.json",
+      "bytes": 851,
+      "sha256": "9d9da7ac52f8debff762d0ba2c302bde92132cf306ce60ae775a80b3c29b77e9",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/build-latest.log",
+      "bytes": 14091,
+      "sha256": "ead0fb68f38282005df4641df88e1d923ab75df17029d9d8147cdf23c0943358",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/build-validation-final.json",
+      "bytes": 2383,
+      "sha256": "2a4933949a170d9438384ffe6afb717d9bdeaa6d17aed06df37d23d5617c6959",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/coherent-regressions-final.json",
+      "bytes": 22462,
+      "sha256": "17af6822f326769cfccf32b8582877e98971a92482d9b45a863b60ccc72f40a4",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/coherent-regressions-final.tap",
+      "bytes": 37999,
+      "sha256": "686166bb167fd83553c697ee62955bdc85d4437973998fb89bca5cb629321054",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/eslint-baseline-comparison.json",
+      "bytes": 12296,
+      "sha256": "0e9c43aa6f1372d10c59fdea2bf1b4f0ca692d0d3046425ec1b26ba40a4a21b8",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/eslint-latest.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/baseline-correction-applied.json",
+      "bytes": 1505,
+      "sha256": "afb92d6e2de1f3fffbcaf4daf045b71c8b7ecdfded65d6a3e0d1712f459d1f2e",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/canonical-writer-baseline-control.json",
+      "bytes": 2259,
+      "sha256": "234292628768850e1e9ab1e87bd52749ba01e8665c07d5f6afbc890a3e5bf47f",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/diagnostic-postproof-ce2d2ec4fd02-20261119070136.json",
+      "bytes": 8980,
+      "sha256": "72237ebf9733b0882eb33e55a82e87025012f86a62b80e94ea81c3d45e2009fc",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/diagnostic-postproof-plans.json",
+      "bytes": 1884164,
+      "sha256": "314a52afe0bade3ffc4276e7b36c3885a9223953d47288f7a2a861cf6a4136b9",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/diagnostic-postproof-repro.mjs",
+      "bytes": 7564,
+      "sha256": "d1d474a2d556d0ddb3d7041324431f9f020c2b5d566ae845a393ec944d2182de",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/final-comparison-a843.json",
+      "bytes": 3141691,
+      "sha256": "dcee3ee09bab0b60c2c6415732ac93cbb5490dd22da42863d267f343de6d6fc4",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/final-comparison-a843.md",
+      "bytes": 2301,
+      "sha256": "19e9296fe1f7ec647e66544d973794cfcde1a2ad3993d124bb42d3c5f079544c",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/3513e39e1d87936430130d269eec018be052d95fecbc9d3a7341d15858472faf.sql",
+      "bytes": 56210,
+      "sha256": "3513e39e1d87936430130d269eec018be052d95fecbc9d3a7341d15858472faf",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/5ad8295f813199f9eb22791290d2f94b49a18fe039d0433c92369109e396ef11.sql",
+      "bytes": 56585,
+      "sha256": "5ad8295f813199f9eb22791290d2f94b49a18fe039d0433c92369109e396ef11",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/6bc0e5a16b4b16cdeee807958647752dc9794c3efa41108f66ef0d5f2fb3480b.sql",
+      "bytes": 9055,
+      "sha256": "6bc0e5a16b4b16cdeee807958647752dc9794c3efa41108f66ef0d5f2fb3480b",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/900fda212ed246b481c8f994c43565586d399166b93c1f992c7963461e5b0562.sql",
+      "bytes": 9132,
+      "sha256": "900fda212ed246b481c8f994c43565586d399166b93c1f992c7963461e5b0562",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/c0931a271dfd1584745abf5d3f26cab056c5f36d41387ae516f77cdf2cde2722.sql",
+      "bytes": 53668,
+      "sha256": "c0931a271dfd1584745abf5d3f26cab056c5f36d41387ae516f77cdf2cde2722",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/f4b42503dd50f1e97d11e10dc12f2b435067688c7c6b88ce5e724a08c0f3c385.sql",
+      "bytes": 56166,
+      "sha256": "f4b42503dd50f1e97d11e10dc12f2b435067688c7c6b88ce5e724a08c0f3c385",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/overlay-596634a8e5489488052605ae29b99510998832e4970abbac8e449ae862335188.sql",
+      "bytes": 32055,
+      "sha256": "596634a8e5489488052605ae29b99510998832e4970abbac8e449ae862335188",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/overlay-c1f52e7c3ca83e9784b0824f28551a9334f196506d6193c7d286e5a4bd786126.sql",
+      "bytes": 31754,
+      "sha256": "c1f52e7c3ca83e9784b0824f28551a9334f196506d6193c7d286e5a4bd786126",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/overlay-e0da22fdbbc14ccd5c2be51acf985807249d5f1c2feb341dec74ade82e6ec28c.sql",
+      "bytes": 33052,
+      "sha256": "e0da22fdbbc14ccd5c2be51acf985807249d5f1c2feb341dec74ade82e6ec28c",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/overlay-e77fed808863bf9901db7c6e6ce0ee725aa4ceecdb0544c1f1f457a9289399bf.sql",
+      "bytes": 32011,
+      "sha256": "e77fed808863bf9901db7c6e6ce0ee725aa4ceecdb0544c1f1f457a9289399bf",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/frozen/postproof-prototype-b3a798a1da5907a6f03fcb2f8572916e837e3a15336fddfe91c841ca2262b871.sql",
+      "bytes": 27625,
+      "sha256": "b3a798a1da5907a6f03fcb2f8572916e837e3a15336fddfe91c841ca2262b871",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/measurement-overlaps-final.json",
+      "bytes": 1130,
+      "sha256": "685437904d2720f392fb35b3bb319e5eaa8426ef4dfabf001ac1197e3b1c8980",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-baseline-corrected-final.json",
+      "bytes": 289440,
+      "sha256": "8ca58f0114ca7a8d58704ee53df2f336f5ffbeb405469e351ae85e19bea167e4",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-deep-cursor-effective-a843.json",
+      "bytes": 10230,
+      "sha256": "d1dbd61002ccc8214389aafc78a9d6e62c232b6cf8925a3d62bf169ba38f7e9e",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-generic-typo-stress-effective-a843-1m.json",
+      "bytes": 14028,
+      "sha256": "cdd7c87c0d59bd1bd5c7076cbe5751e741ddfa07454e5fe1b828960c0a7c3394",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-overlay-final-a843-100k.json",
+      "bytes": 457866,
+      "sha256": "7642217cdfc222f23d443c7ca9eb985c204550ed56e1cbbb4ad208605a7533ce",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-overlay-final-a843-1m.json",
+      "bytes": 457930,
+      "sha256": "f7ebb0f6b761f35db760076d66fd6319d2da2fa6d28c448ced6cf2e04e07640e",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-overlay-final-a843-500k.json",
+      "bytes": 457924,
+      "sha256": "221315bedce06bb5e8ab5f687fcb4d845b9fa6dc83ca546706de3af97701b760",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-overlay-final-ce2d-100k.json",
+      "bytes": 453089,
+      "sha256": "3016c4e48d6ec34088d249cc4330bc8a9496de70a71059413576b338388f4a4c",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-overlay-final-ce2d-1m-partial.json",
+      "bytes": 453055,
+      "sha256": "d7901fcac9e498df94e85725e98fd6892ed0577b22b585fab18e2c02a3cc4ec6",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-overlay-final-ce2d-500k.json",
+      "bytes": 456518,
+      "sha256": "a6312543804809c9b63c425299404a8fa55a8dee81ed5fcdb5a0f287c36b592f",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-overlay-prototype-3296-500k.json",
+      "bytes": 450390,
+      "sha256": "1ac2965768675b4e0241b2b94feddb7bae46e9b999a56bfd19b0879e1612eea5",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-prototype-3a67-100k.json",
+      "bytes": 573676,
+      "sha256": "f8419bfeb734081aab106b858c3755bac167d3ba9c006dc3974c7525f85b7870",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-quality-3a67-diagnostic-500k-partial1m.json",
+      "bytes": 3675859,
+      "sha256": "a445e53020b15fd0e08dec5f104ae3ddd2fba1917fbaa3cee43b489ac6406c1a",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-quality-effective-a843-100k.json",
+      "bytes": 114670,
+      "sha256": "197d14f9882cbf4e5ee30a84f09401a2446d915ecb3105165cdc49c1800c2a5e",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-quality-effective-a843-500k-1m.json",
+      "bytes": 228595,
+      "sha256": "7dbce18fcaad7d6c4b1194eab5f5ee60886983e73bc10b3f5d8b594ed95878e2",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-quality-effective-ce2d-1m.json",
+      "bytes": 3711217,
+      "sha256": "d3678c4fe3e1f99ae848064d88d70be8622430536415777e1e9aa951be3a35e6",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-rich-profile-10000-a843ed893cca-20261119071023.json",
+      "bytes": 10918460,
+      "sha256": "bb0ab71019130fb929f3e199319de087d2e0139e3562dad6c743f2875d9b9b5a",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-sort-gate-effective-a843-1m.json",
+      "bytes": 36834,
+      "sha256": "f68aabdc05dec703dbb40996ab40e86867be5de78e1ea51ab5b9090b370f6fc3",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-write-pressure-a843ed893cca-20261119071200.json",
+      "bytes": 10210,
+      "sha256": "f163ee2a13ac2f67457e2e7be89ab4bfacef6dcc15af86bb848e5d5dac367cec",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/native-write-pressure-ce2d2ec4fd02.json",
+      "bytes": 10543,
+      "sha256": "ccc88c68d52d954f839cf193d8c264aaef0fe79e3760bbdf0eece2b09676e0b4",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/original-evidence-index.json",
+      "bytes": 18391,
+      "sha256": "1a258ccd52fd7e7f229f4d825841ae1acdd3b5d1491173983101977c79159ebc",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/owned-pg-stop-final.json",
+      "bytes": 945,
+      "sha256": "adf8f0dd150469bbad7a978c705a4417e42987d57e277a5d74e42bc57a533c14",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/plans-final-effective-a843-1m.json",
+      "bytes": 250500,
+      "sha256": "7fb81ed324952db4713f484aee089c82b9b3b2b368b4878530cbc91e0fe3ffbb",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/plans-final-effective-a843-negative-1m.json",
+      "bytes": 216874,
+      "sha256": "08c966636a1d14e4068cf64ce9a324401c2325f15b6ef90befcd9624a758be8a",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/postproof-final-a843-5120.json",
+      "bytes": 129240,
+      "sha256": "5caf659fca0ec6a4d9017993699386bf5bccc46b3b5812998c93ebfd862bc644",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/postproof-prototype-a843-apply.json",
+      "bytes": 633,
+      "sha256": "955d137ec3971b023daef631e3d59dd28b85da861dab67dc0968da87d8222083",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/postproof-prototype-a843-plans.json",
+      "bytes": 4705991,
+      "sha256": "feefa31a39aab3c8f24c8e2d168803cf38b3a1ff25e9136c61c425611fe3653a",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/postproof-prototype-a843-reads.json",
+      "bytes": 1019,
+      "sha256": "0125cff3a470592c9f4498ee32b765b4e93ce74237e5f49b840ba4d92ac5b181",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/probe5-clone.json",
+      "bytes": 187,
+      "sha256": "3dd45ba625b30894adf474817fdb9224204a910f9bc397660bd939737ac939ce",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/native-a843/selected-evidence-index.json",
+      "bytes": 18700,
+      "sha256": "031daadcf168f37afb2be072f0663384759c9d4a768fa9687d6b3931adb0a220",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "artifacts/local-search-quality-20261118/typescript-latest.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "docs/explore-local-quality-benchmark.md",
+      "bytes": 15834,
+      "sha256": "637223b4d264cf746e5853badd1e490c9c61ccc71e410d1242067a44701e46b5",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "docs/explore-local-search-20261118.txt",
+      "bytes": 7952,
+      "sha256": "b1dd383d9f80bf3c2f77f3b7bfb675c92896c6e6528be793587523545f39230d",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "docs/explore-local-search-results-20261118.md",
+      "bytes": 2996,
+      "sha256": "2f751a8329760cd45e2f75295baea65e708c9c8df1ff7b5c9161de2257da1da2",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "lib/explore-query-intent.ts",
+      "bytes": 18752,
+      "sha256": "c467d6e329c24cdce24cdc18a9844be98fc613f8d45645d1563929f4722383b7",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "lib/explore-query-routing.ts",
+      "bytes": 11998,
+      "sha256": "a879f53d06bc2399038c351f9623823118f56caced0e5ef3b426a2a6488e606c",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "lib/explore-search-metrics.ts",
+      "bytes": 1752,
+      "sha256": "05bf511f7f484a9d2278ce0282a0e157cda366333918430462889231bcd8e301",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "lib/explore-search-refresh.ts",
+      "bytes": 2673,
+      "sha256": "89b78c53598811247dcde8d023440078ad575ae4b9e2486d56061ac7b3ddd44e",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "lib/explore-search-rpc.ts",
+      "bytes": 2243,
+      "sha256": "34552e8d4bf33ade0eba59b7bbeaabd57b8b6fd449c093881ca68bf7c6ec6a89",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "lib/explore-search.ts",
+      "bytes": 23779,
+      "sha256": "f84d397804eead45e8b274a41403148c0465a7dfabdc3a76eaa145222c2b2071",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "lib/use-explore-search-media.ts",
+      "bytes": 6034,
+      "sha256": "6890c2be9877aea37976afbb80061e77a08ae745f9e8eee571ab5ad30e280d61",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/backfill-explore-local-quality.mjs",
+      "bytes": 4768,
+      "sha256": "1f24d1da2281dcb0a2779c246642fecdc6395683a34f07b5b740b1218b0d247e",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/benchmark-explore-local-quality.mjs",
+      "bytes": 22410,
+      "sha256": "7178de04c7f2d447a1f334b735bdea73bfff33642c696462c6d2c64446e9f265",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/profile-explore-local-quality.mjs",
+      "bytes": 8757,
+      "sha256": "65de518cc1469f13c8ece8c2c55f3041bf1b33ce6996b06fbb230abfb66d169f",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/test-explore-local-quality-browser.mjs",
+      "bytes": 8182,
+      "sha256": "8df1490c796ff48659885a5f712e9b7a7f935845329a57a4a053ddfcfcaab101",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/test-explore-local-quality-native-cursors.mjs",
+      "bytes": 4274,
+      "sha256": "9c9d93c0814a89567e0160486730dc73c5439fee7a0f4e8f6cbc058fe62dd00d",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/test-explore-local-quality-native-overlay.mjs",
+      "bytes": 11170,
+      "sha256": "d9be6a53ad707e9fd86db89b20edc4fda2f65d4e49ecc7f858fba22eed18a111",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/test-explore-local-quality-native-sorts.mjs",
+      "bytes": 8605,
+      "sha256": "4378daaf49095d65921f58eae38fe28d4e44275a6708d8a4b4fc1bd1a62dda48",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/test-explore-local-quality-regressions.mjs",
+      "bytes": 3040,
+      "sha256": "0bd60997c3534b1d401366cf1618b5576ece92ef08823243b6ceabf003036e70",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/test-explore-local-quality-rich-profile.mjs",
+      "bytes": 14079,
+      "sha256": "d0c3bc4a063bc41a6f82b23bb68b39470dba2f2013416197a0b82fc3b09411d9",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "scripts/test-explore-local-quality-write-pressure.mjs",
+      "bytes": 7187,
+      "sha256": "5d3f1ead6e9c63cb8031d460c01515f114a0728cc54db682cd47471a2e6868c6",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "supabase/migrations/20261119042923_explore_local_quality_search.sql",
+      "bytes": 56585,
+      "sha256": "5ad8295f813199f9eb22791290d2f94b49a18fe039d0433c92369109e396ef11",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "supabase/migrations/20261119052341_explore_local_quality_preparation.sql",
+      "bytes": 9132,
+      "sha256": "900fda212ed246b481c8f994c43565586d399166b93c1f992c7963461e5b0562",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-anywhere-ui-runtime.test.mjs",
+      "bytes": 14135,
+      "sha256": "e39f34cce2b64f074546d133d827a2c14a66c0d6c166c4a0ec6a00eff432b27d",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-bounded-refresh-runtime.test.mjs",
+      "bytes": 9916,
+      "sha256": "b77aa7b0fa0e5350804137c160ddf4b3c3dd89cadca66349297f20d02f4c7a54",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-coordinate-validity-runtime.test.mjs",
+      "bytes": 7163,
+      "sha256": "d6ffdfca8451c277343666995da7894c11d7563613436275faf9209c24698ca1",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-coordinate-validity-sql.test.mjs",
+      "bytes": 13233,
+      "sha256": "f80f8ea97bfa0b0e48ad68de6d2c7de5d9610a9c9d236e519c73bdc8a3627388",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-local-quality-name-probe.integration.test.mjs",
+      "bytes": 6057,
+      "sha256": "cb709b97a94f328d3f2f20402f2dd234a0f8fa928b442d647d7d29c5ca79583f",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-local-quality-preparation-runtime.test.mjs",
+      "bytes": 4171,
+      "sha256": "0a3e1b7756573cdc8fe11ef1ffea52ebfd1857bbd8312ec84d5078da913b1c22",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-local-quality-preparation.integration.test.mjs",
+      "bytes": 8498,
+      "sha256": "808915a74dd3a08e8603de6322689f43464bb0df198ba2021a1e528d0e11489d",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-local-quality-routing.test.mjs",
+      "bytes": 11955,
+      "sha256": "4b0506b54556c581860cebdaedd84eb6bc18c66a610b4fc7730852deda18fc56",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-local-quality-scope-regressions.integration.test.mjs",
+      "bytes": 6723,
+      "sha256": "782e992bd02a64ea626e374daaa0df1b8ea304ffb7bf0d7891ab8fa1a017f639",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-local-quality.integration.test.mjs",
+      "bytes": 24696,
+      "sha256": "8f357ac6cb7cbed78a50340f92ea4e415eb459faa5db9c3e1045a7b6d2da478a",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-query-intent.test.mjs",
+      "bytes": 10991,
+      "sha256": "ecd1bcd0f2fd592a17496638d6583136d60e8c9cbebdad8782d752ebe622cf12",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-query-routing-runtime.test.mjs",
+      "bytes": 31259,
+      "sha256": "c8ddbe0640a0f588d49ea8789c88e3ef36ffee58e4af1e7622471daa3102e547",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-refresh-runtime.test.mjs",
+      "bytes": 2192,
+      "sha256": "8cc0291528b9500532050356c959c06ae312051a51282278d20cf164af571e6d",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-request-cancellation.test.mjs",
+      "bytes": 7330,
+      "sha256": "80ebf9e9a334cf02758dc9df44f04042bb69d032bed5249fc24f955792b23060",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-search-media-refresh-runtime.test.mjs",
+      "bytes": 6670,
+      "sha256": "f3bd67d452f93447ab272a1d1f2825613a3de5513f2670d001c1a5f8f56a8fbe",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-search-metrics.test.mjs",
+      "bytes": 2372,
+      "sha256": "9ea3827656abe935a23b9424c2b9f71deb488f01364e18762ce60933bedc17de",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-search-refresh-runtime.test.mjs",
+      "bytes": 3943,
+      "sha256": "580e9f220bc6695683b27244f60305587882d35f24e2f57b030462b17407eb51",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-search-rpc.test.mjs",
+      "bytes": 1822,
+      "sha256": "7a1f27e6d9bdd16df6360faea8ba73c1638f89c1a22baabc9e340c78e5ac8f7f",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-search-service-runtime.test.mjs",
+      "bytes": 18432,
+      "sha256": "0d79066f50a8c21ec39dffb66abc42d45af304c225075ae0c5eda1006c6d1955",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/explore-unified-search-api.test.mjs",
+      "bytes": 2945,
+      "sha256": "9601df184ad071ec868f2c5c32fd55e7c13944588dbc121b07aee4b0ad1af683",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-coordinate-validity-bootstrap.sql",
+      "bytes": 3647,
+      "sha256": "c363dbcca88ec3f121445ba5cc069472fb06057e7ffa0e2668d8979e22a56040",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-catalog-fingerprint.mjs",
+      "bytes": 3865,
+      "sha256": "f011105cdf6882ff9c876495d594b1e280ad3d9f91562243b2e76c7533dcb882",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-effective-identity.mjs",
+      "bytes": 2306,
+      "sha256": "febe5ba0441060351edccd0fe99d411a67ed1a6d778f8d5d69c5ab3d375f9d3e",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-migration-manifest.mjs",
+      "bytes": 2403,
+      "sha256": "e3654168108a65a587cf2c4d894ede0c70dde213f45823663d896e5fc32e0629",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-native-bootstrap.mjs",
+      "bytes": 11285,
+      "sha256": "4021bd9bbd5a83119c8982ffd6dc72541c234129a9128b78fe72924d64e183ae",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-native-preparation.mjs",
+      "bytes": 9101,
+      "sha256": "ef7b1041796292a3d5fd7f916a05b8e551dfa34b62eae2e3cf04e53522d41129",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-local-quality-regression-manifest.json",
+      "bytes": 9103,
+      "sha256": "8dee78c0069fc95194916e04792bfe9889aa087ae2883e354d9955eef5463ba0",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-query-production-entities-20261016.json",
+      "bytes": 838,
+      "sha256": "f226ff9ad31a46d77ca323a2ee2ff23952dea78892c99c80561975a126693713",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-social-bootstrap.sql",
+      "bytes": 7647,
+      "sha256": "98ee18973d560fd53b55b00b608c2981dc0ad72a535afe85e90d64db3f133c1e",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "tests/fixtures/explore-unified-search-bootstrap.mjs",
+      "bytes": 11188,
+      "sha256": "99e57dae1e03f431e90b2951b65ea275e59bb366a13e2c3c7ac8f49d77d22cae",
+      "baseExists": false,
+      "currentExists": false,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    },
+    {
+      "path": "types/explore.ts",
+      "bytes": 15306,
+      "sha256": "93604be5eaa28761c86cea99a13a7567b4ad93f88ee0bd3621967a09f9bc4593",
+      "baseExists": true,
+      "currentExists": true,
+      "sourceChangedFromBase": true,
+      "currentChangedFromBase": false,
+      "currentMatchesSource": false
+    }
+  ]
+}

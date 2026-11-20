@@ -7,14 +7,14 @@
   --booking-orange: #f26f3d;
   --booking-orange-hover: #e85f2b;
   --booking-orange-light: #ff9b72;
-  --booking-ink: #211c24;
-  --booking-muted: #786d78;
+  --booking-ink: var(--text-primary);
+  --booking-muted: var(--text-secondary);
   --booking-border: #f0e6df;
   --booking-strong-border: #ffd6c4;
   --booking-green: #2f8a57;
   --booking-shadow: 0 18px 45px rgba(242, 111, 61, 0.09);
   color: var(--booking-ink);
-  font-family: var(--font-booking-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-app-sans);
   letter-spacing: 0;
   min-height: 100vh;
 }

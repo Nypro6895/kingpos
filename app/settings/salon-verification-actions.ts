@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { getCurrentBusinessContext } from '@/lib/current-context';
 import { createAuthenticatedSupabaseServerClient } from '@/lib/supabase/server';
 import { normalizePhoneForIdentity } from '@/lib/phone-normalization';
-import { bookingMessageReadiness,sendBookingMessage } from '@/lib/booking-notifications';
+import {systemSmsReady,sendSystemSms} from '@/lib/system-sms';
 import { requirePlatformAdmin } from '@/lib/platform-admin/auth';
 import { PLATFORM_ADMIN_PERMISSIONS } from '@/lib/platform-admin/permissions';
 import type { SalonVerificationRequest } from '@/lib/salon-identity';
@@ -41,7 +41,7 @@ export async function beginSalonVerificationAction(form:FormData,expectedSalonId
  try {
   const {salonId,userId,requests}=await owner(expectedSalonId);
   service=serviceClient();
-  if (!(await bookingMessageReadiness()).sms) throw new Error('SMS delivery is not configured yet. Please try again later.');
+  if (!(await systemSmsReady('salonVerification'))) throw new Error('SMS delivery is not configured yet. Please try again later.');
   const name=String(form.get('name')??'').trim(),address=String(form.get('address')??'').trim(),phone=normalizePhoneForIdentity(String(form.get('phone')??''));
   if(name.length<2 || name.length>160 || address.length<5 || address.length>500 || !phone) throw new Error('Enter the salon name, full address and a valid phone number.');
   const files=form.getAll('attachments').filter((f):f is File=>typeof f!=='string' && f.size>0);
@@ -63,8 +63,9 @@ export async function beginSalonVerificationAction(form:FormData,expectedSalonId
   const code=String(randomInt(0,1000000)).padStart(6,'0');
   const {data,error}=await service.rpc('begin_salon_verification',{p_salon:salonId,p_user:userId,p_name:name,p_address:address,p_phone:phone,p_hash:createHash('sha256').update(`${phone}:${code}`).digest('hex'),p_attachments:attachments});
   if (error) throw new Error(error.message);
-  const delivery=await sendBookingMessage({id:String(data),channel:'sms',recipient:phone,message:`Your Reylumi salon verification code is ${code}. It expires in 10 minutes. Do not share this code.`});
-  if (delivery.state!=='accepted') {
+  try {
+   await sendSystemSms('salonVerification',phone,`Your Reylumi salon verification code is ${code}. It expires in 10 minutes. Do not share this code.`);
+  } catch {
    await service.from('salon_verification_requests').update({otp_hash:null,otp_expires_at:new Date().toISOString()}).eq('id',data);
    throw new Error('Could not confirm SMS delivery. Wait 60 seconds, then request another code.');
   }

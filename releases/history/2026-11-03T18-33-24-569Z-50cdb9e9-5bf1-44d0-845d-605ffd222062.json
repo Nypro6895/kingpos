@@ -1,0 +1,34 @@
+{
+  "kind": "release",
+  "summary": "Forum backend numeric ordering deployed and exact SQL verified; existing verified Next.js deployment unchanged.",
+  "changes": [
+    "892ab8ff-8358-47e8-9291-9cae8d277790"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_DAGw9ipA5UyFGjKNNMkGxHfpjJuJ",
+      "baselineDeploymentId": "dpl_DAGw9ipA5UyFGjKNNMkGxHfpjJuJ",
+      "sourceSha256": "d103b844761400e4b9635aae9e7e999c5a6ad66c853a269f44d7054dfc31d140",
+      "overlaySha256": "62598db6ddf6cfad252a89bafa9b571be47d378fcb962041828214b758a7ce35",
+      "evidence": {
+        "backend": "artifacts/owner-forum/numeric-order/production-verification.json",
+        "runtime": "artifacts/owner-forum/database-tests-final.txt",
+        "unchangedWebSource": "artifacts/owner-forum/polish/live-source-verified.json"
+      }
+    }
+  },
+  "sourceCommit": "c4828c5f5753eb467d5d34fc99e0a933e9676450",
+  "backendMigrations": [
+    {
+      "file": "supabase/migrations/20261103183500_forum_numeric_order.sql",
+      "sha256": "62598db6ddf6cfad252a89bafa9b571be47d378fcb962041828214b758a7ce35",
+      "storedBodyMd5": "796948868731538cf9e99c33a4699284"
+    }
+  ],
+  "publicationMethod": "Supabase schema migration; web/runtime bundle unchanged",
+  "id": "50cdb9e9-5bf1-44d0-845d-605ffd222062",
+  "recordedAt": "2026-11-03T18:33:24.569Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-forum-20261103"
+}

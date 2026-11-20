@@ -1,3 +1,6 @@
+export const PORTABLE_TURN_ADJUST_DISABLED_MESSAGE =
+  'Turn adjustment is not enabled for this POS device. Ask your admin to enable "Turn adjust" for this POS ID in POS Settings > Portable POS access, then reload POS.';
+
 export const PORTABLE_POS_CAPABILITIES = {
   bookCancel: "portable.book.cancel",
   bookCreate: "portable.book.create",
@@ -37,7 +40,7 @@ export const PORTABLE_POS_CAPABILITY_OPTIONS: {
   {
     defaultEnabled: true,
     description: "View the Portable Ticket list for the current salon day.",
-    label: "Ticket",
+    label: "Tickets",
     value: PORTABLE_POS_CAPABILITIES.todayView,
   },
   {
@@ -54,26 +57,26 @@ export const PORTABLE_POS_CAPABILITY_OPTIONS: {
   },
   {
     defaultEnabled: true,
-    description: "View salon appointments in Portable Book.",
-    label: "Book view",
+    description: "View salon appointments in Portable Bookings.",
+    label: "View bookings",
     value: PORTABLE_POS_CAPABILITIES.bookView,
   },
   {
     defaultEnabled: true,
     description: "Create appointments when Portable booking actions are enabled.",
-    label: "Book create",
+    label: "Create bookings",
     value: PORTABLE_POS_CAPABILITIES.bookCreate,
   },
   {
     defaultEnabled: true,
     description: "Cancel appointments by status transition, not deletion.",
-    label: "Book cancel",
+    label: "Cancel bookings",
     value: PORTABLE_POS_CAPABILITIES.bookCancel,
   },
   {
     defaultEnabled: true,
     description: "View the restricted operational sales report.",
-    label: "Report",
+    label: "Reports",
     value: PORTABLE_POS_CAPABILITIES.reportView,
   },
 ];

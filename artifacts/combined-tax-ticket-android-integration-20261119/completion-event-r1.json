@@ -1,0 +1,11 @@
+{
+  "eventId": "5122d7f5-ef10-4044-83cd-cbc4255d8351",
+  "filePath": "C:\\Reylumi-worktrees\\combined-store-release-20261119\\releases\\changes\\2026-11-19T06-38-58-548Z-5122d7f5-ef10-4044-83cd-cbc4255d8351.json",
+  "status": "needs-integration",
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-store-release-20261119\\artifacts\\combined-tax-ticket-android-integration-20261119\\frozen-source-r1",
+    "baseCommit": "57c18befbc33add98d90cb9dffc1fd431e889c7b",
+    "sourceSha256": "bee1b1d140cf27a580c783937304d2c62b63a872c4cf5959704a0b0c70e62687",
+    "manifest": "artifacts/combined-tax-ticket-android-integration-20261119/frozen-manifest-r1.json"
+  }
+}

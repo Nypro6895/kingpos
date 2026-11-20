@@ -1,0 +1,29 @@
+{
+  "validation": [
+    {
+      "result": "passed",
+      "name": "Released55 Personal trace retained 18 identical hidden-post commandPreflight events"
+    },
+    {
+      "result": "pending",
+      "name": "Multi-subscriber browser regression and released native cold performance"
+    }
+  ],
+  "files": [
+    "components/post-safety.tsx",
+    "tests/hidden-posts-initial.test.mjs"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Deduplicate hidden-post read invalidation across mounted subscribers for one focus/block/storage event, prompted by released55 device trace with 18 same-reader preflights",
+  "changeId": "iphone-hidden-post-focus-fanout-20261028",
+  "kind": "change",
+  "status": "working",
+  "id": "13200e81-8506-45bd-a102-bc0b0bd6e1cb",
+  "recordedAt": "2026-10-28T19:13:11.279Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "booking-deposit-compact-settings",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Compact Booking Settings deposit UI: activation prompt links to Market before installation; installed settings use a switch, amount mode/value and checkout method. Existing payment/authorization logic preserved. Queue for the next combined deployment.",
+  "files": [
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/booking-deposit-settings.tsx",
+    "app/settings/booking-deposit-settings.module.css",
+    "tests/booking-deposit-settings-ui.test.mjs",
+    "docs/booking-deposit-settings-deploy-note.txt"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\booking-deposit-compact-settings-20261016\\source",
+    "commit": "a21a8403372b183f60bb9a970da05f34ffa03432",
+    "patch": "work/booking-deposit-compact-settings-20261016/implementation.patch",
+    "patchSha256": "cdc44ec8222480790465cf48526152f747e6a13bc5cc2d6382e1666db9b24192",
+    "preexistingSnapshotCommit": "25cafa1035c8b7406bd0f83c15dac246311883b4",
+    "note": "Source is an isolated implementation delta, not a production baseline. Preserve other changes in salon-settings-panels.tsx and integrate only the two replacements there."
+  },
+  "validation": [
+    {
+      "name": "16 browser and regression tests, zero failures/skips",
+      "result": "passed",
+      "evidence": "work/booking-deposit-compact-settings-20261016/verification.json"
+    },
+    {
+      "name": "Full workspace TypeScript and targeted ESLint",
+      "result": "passed",
+      "evidence": "work/booking-deposit-compact-settings-20261016/verification.json"
+    },
+    {
+      "name": "Desktop/mobile visual review; exact patch replay; frozen source hashes; untouched existing deposit logic",
+      "result": "passed",
+      "evidence": "work/booking-deposit-compact-settings-20261016/verification.json"
+    }
+  ],
+  "limitations": [
+    "Full production build and authenticated live checks must run on the future assembled release source. This task did not deploy or push."
+  ],
+  "nativeAssessment": "Web UI only; no native source, bundled assets, configuration or bridge changes. No separate iOS build required for this change.",
+  "handoffNote": "docs/booking-deposit-settings-deploy-note.txt",
+  "id": "52c98014-3e93-4da1-9fb2-38018c38aa12",
+  "recordedAt": "2026-10-17T01:38:38.888Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/settings/salon-settings-panels.tsx": "29a35bbcdf0c1a36a5ac0fe055f94bf791b2ba670b8f765a2c9732b40167a089",
+    "app/settings/booking-deposit-settings.tsx": "c264de47cab06d0d309a4d7cab6d0a1a87879c6369a179b238417252b3cb076e",
+    "app/settings/booking-deposit-settings.module.css": "90266f94537f38a8c79cd833c699c91c0e0eb988b6b31fbe813a470d874da03a",
+    "tests/booking-deposit-settings-ui.test.mjs": "ba1c7810591fdab06ce74416ffb63af235aa7087cc91bd92c3a1a841fa9b3dea",
+    "docs/booking-deposit-settings-deploy-note.txt": "e778579f4566367544c22961ce1286a2bbe6e56e9af445eb51bd2270e805cf3a"
+  }
+}

@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { prepareCommentRequest, completeCommentRequest } from "../lib/comment-request.ts";
 import { withRequestTimeout } from "../lib/request-timeout.ts";
 
-function commentHarness(create, load = async () => ({ items: [], totalCount: 0, hasMore: false, nextOffset: null, error: null }), supabase = null) {
+function commentHarness(create, load = async () => ({ items: [], totalCount: 0, hasMore: false, nextOffset: null, error: null }), supabase = null, overrides = {}) {
   const states = [], refs = [], pending = [], effects = [];
   const timers = new Map();
   let si = 0, ri = 0, ei = 0, timerId = 0;
@@ -17,6 +17,7 @@ function commentHarness(create, load = async () => ({ items: [], totalCount: 0, 
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
   }).outputText, {
     exports,
+    Error,
     crypto: { randomUUID },
     URLSearchParams,
     document: { visibilityState: "visible", getElementById: () => null },
@@ -24,6 +25,13 @@ function commentHarness(create, load = async () => ({ items: [], totalCount: 0, 
       setTimeout(callback) { timers.set(++timerId, callback); return timerId; },
       clearTimeout(id) { timers.delete(id); } },
     require(name) {
+      if (name === "@/components/block-user-button") return {};
+      if (name === "@/components/workspace-language") return { WorkspaceText: 'WorkspaceText', useWorkspaceTranslation: () => value => value };
+      if (name === "@/lib/explore-comment-identity") return { commentIdentityKey: () => 'personal' };
+      if (name === "@/lib/comment-identity") return { commentDisplayName: ({ authorName }) => authorName || 'You' };
+      if (name === "./inline-comment-composer") return { InlineCommentComposer: "InlineCommentComposer" };
+      if (name === "./comment-avatar") return { CommentAvatar: "CommentAvatar" };
+      if (name === "next/link") return {};
       if (name === "@/lib/comment-request") return { prepareCommentRequest, completeCommentRequest };
       if (name === "@/lib/request-timeout") return { withRequestTimeout };
       if (name === "@/lib/post-comments-client") return { fetchPostCommentsPage: load };
@@ -48,6 +56,7 @@ function commentHarness(create, load = async () => ({ items: [], totalCount: 0, 
   const props = {
     target: { sourceId: "post", sourceType: "beauty_post" },
     viewer: { isAuthenticated: true, userId: "user", canReplyAsSalon: false, canModerate: false },
+    ...overrides,
   };
   function render() {
     si = ri = ei = 0;
@@ -65,11 +74,13 @@ function commentHarness(create, load = async () => ({ items: [], totalCount: 0, 
     unmount: () => { cleanups.forEach(cleanup => cleanup?.()); },
     flushTimers: () => { const callbacks = [...timers.values()]; timers.clear(); callbacks.forEach(callback => callback()); },
     commentBodies: () => nodes(render()).filter(node => node.props?.comment).map(node => node.props.comment.body),
-    loadMore: () => nodes(render()).find(node => node.type === "button" && node.props.children === "Load more").props.onClick(),
-    write: value => find("textarea").onChange({ currentTarget: { value } }),
+    loadMore: () => nodes(render()).find(node => node.type === "button" && node.props.children?.props?.text === "Load more").props.onClick(),
+    retry: () => nodes(render()).find(node => node.type === "button" && node.props.children?.props?.text === "Retry loading comments").props.onClick(),
+    hasRetry: () => nodes(render()).some(node => node.type === "button" && node.props.children?.props?.text === "Retry loading comments"),
+    write: value => props.inlineComposer ? find("InlineCommentComposer").onChange(value) : find("textarea").onChange({ currentTarget: { value } }),
     submit: () => find("form").onSubmit({ preventDefault() {} }),
-    body: () => find("textarea").value,
-    status: () => nodes(render()).find(node => node.props?.["aria-live"] === "polite").props.children,
+    body: () => find(props.inlineComposer ? "InlineCommentComposer" : "textarea").value,
+    status: () => nodes(render()).find(node => node.props?.["aria-live"] === "polite").props.children.props.text,
     settle: () => Promise.all(pending),
   };
 }
@@ -115,6 +126,36 @@ test("comment effect replay does not reuse a subscribed channel before removal c
   old.payload({ eventType: "INSERT", new: {}, old: {} });
   ui.flushTimers();
   assert.equal(loads, before, "removed channel must not schedule comment refreshes");
+  ui.unmount();
+});
+
+for (const inlineComposer of [true, false]) test(`successful send after failed load remains visible after failed refresh (${inlineComposer ? "Explore inline" : "post detail"})`, async () => {
+  const posted = { id: "saved", body: "Love it", targetId: "post", targetType: "beauty_post", createdAt: "2026-10-28", parentCommentId: null };
+  const ui = commentHarness(async () => ({ error: null, comment: posted, totalCount: 1 }), async () => { throw new Error("Load failed"); }, null, { inlineComposer, expanded: true });
+  ui.mount(); await ui.settle();
+  assert.equal(ui.hasRetry(), true);
+  ui.write("Love it"); ui.submit(); await ui.settle();
+  assert.deepEqual(ui.commentBodies(), ["Love it"]);
+  assert.equal(ui.hasRetry(), false);
+  assert.equal(ui.body(), "");
+  ui.flushTimers(); await ui.settle();
+  assert.deepEqual(ui.commentBodies(), ["Love it"]);
+  assert.equal(ui.hasRetry(), false);
+  assert.equal(ui.status(), "Comment posted.");
+  ui.unmount();
+});
+
+test("a successful manual read retry clears the old load error message", async () => {
+  let calls = 0;
+  const ui = commentHarness(async () => ({}), async () => {
+    if (++calls === 1) throw new Error("Load failed");
+    return { items: [], totalCount: 0, hasMore: false, nextOffset: null, error: null };
+  });
+  ui.mount(); await ui.settle();
+  assert.equal(ui.status(), "Load failed");
+  ui.retry(); await ui.settle();
+  assert.equal(ui.status(), "");
+  assert.equal(ui.hasRetry(), false);
   ui.unmount();
 });
 

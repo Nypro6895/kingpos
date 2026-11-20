@@ -1,0 +1,68 @@
+REYLUMI — KIỂM KÊ SMS / OTP / CUỘC GỌI
+Ngày: 2026-10-09. Phạm vi: mã nguồn workspace hiện tại, không xác nhận cấu hình production hoặc giao tin thực tế.
+
+1. XÁC MINH SỐ ĐIỆN THOẠI CÁ NHÂN
+UI: app/account/account-profile-editor.tsx; trang /account và phần hồ sơ trong Settings.
+Điểm gửi: app/account/actions.ts: sendAccountPhoneVerificationOtpAction.
+Provider: lib/phone-otp.ts: auth.updateUser({phone}), auth.resend(type=phone_change).
+Kiểm tra mã: auth.verifyOtp(type=phone_change); lưu ràng buộc qua lib/customer-phone-verification.ts.
+Cấu hình: Supabase Auth; REYLUMI_PHONE_OTP_PROVIDER. Không đọc getTwilioSettings; không có công tắc admin Twilio.
+getPhoneOtpProviderStatus chỉ xác định provider trong ứng dụng, không kiểm tra khả năng giao SMS thực tế.
+
+2. ĐĂNG KÝ XÁC THỰC HAI BƯỚC QUA SMS
+UI: /settings/login-security; app/settings/login-security/login-security-panel.tsx và quick editor.
+Điểm gửi: app/settings/login-security/actions.ts: beginPhoneMfaEnrollmentAction.
+Provider: Supabase Auth MFA enroll(factorType=phone), challenge(channel=sms).
+Người dùng đăng ký phương thức; chưa có công tắc admin Twilio. Không phải mã TOTP của ứng dụng authenticator.
+
+3. XÁC THỰC HAI BƯỚC QUA SMS KHI ĐĂNG NHẬP
+UI: app/login/login-form.tsx.
+Điểm gửi: app/(app)/api/auth/login/route.ts: challenge cho factor phone với channel=sms.
+Kiểm tra: app/(app)/api/auth/mfa/verify/route.ts.
+Provider/cấu hình: Supabase Auth MFA riêng; chưa nối công tắc Twilio admin.
+
+4. CẢNH BÁO ĐĂNG NHẬP QUA SMS
+Điểm gọi: lib/account-security.ts; bộ gửi: lib/login-sms-alerts.ts.
+Cấu hình: REYLUMI_TWILIO_*, TWILIO_* và một số SUPABASE_AUTH_SMS_TWILIO_* từ môi trường.
+Quyền nhận: tùy chọn sms_login_alerts_enabled trong Login Security và kiểm tra của account-security.
+Không đọc cấu hình Twilio lưu trong admin; không chịu công tắc enabled của admin.
+
+5. CLAIM TIỆM QUA SMS VÀ CUỘC GỌI
+UI: /claim/[salonId]; app/claim/claim-panel.tsx.
+Điểm gửi: app/claim/actions.ts; provider: lib/business-claim-provider.ts.
+Cấu hình: lib/twilio-settings.ts; Twilio Verify Service.
+SMS chịu enabled + claimSms; gọi chịu enabled + claimVoice. Kiểm tra mã đã gửi vẫn được phép khi tắt gửi mới.
+UI hiện nhận messagingReady tổng, chưa nhận từng công tắc để khóa riêng nút SMS/gọi.
+Đây là vị trí cuộc gọi tự động duy nhất tìm thấy trong app/lib.
+
+6. XÁC MINH HỒ SƠ TIỆM
+UI: Settings của tiệm / Verification; app/settings/salon-verification-actions.ts.
+Điểm gửi: beginSalonVerificationAction -> sendBookingMessage(channel=sms).
+OTP do ứng dụng tạo; gửi qua Twilio Messages API, không dùng Twilio Verify.
+Đọc cấu hình admin; chịu enabled; cần Messaging Service SID hoặc sender phone. Chưa có công tắc riêng.
+
+7. BOOKING — CHỈ GHI NHẬN, CHƯA ĐIỀU CHỈNH
+Nguồn phát sinh: trigger và reminder trong supabase/migrations/202609240003_booking_notifications.sql.
+Loại tin: yêu cầu/xác nhận, thay đổi trạng thái/thời gian, hủy và nhắc lịch.
+Điểm gửi: /api/internal/booking-messages -> dispatchBookingMessages -> sendBookingMessage.
+Provider: Twilio Messages API; đọc cấu hình admin. Tùy chọn tại booking_settings: confirmation_sms_enabled, reminder_enabled.
+Phân bổ plugin, đồng ý thanh toán và chính sách sử dụng sẽ bàn riêng.
+
+8. NÚT MỞ ỨNG DỤNG ĐIỆN THOẠI, KHÔNG GỬI QUA TWILIO
+tel: tại Explore, hồ sơ/website tiệm, public booking, guest manage booking, My Bookings,
+Activity history, Staff appointments, booking workspace và thông báo visits.
+sms: chia sẻ bài/hồ sơ tại app/beauty/beauty-profile-client.tsx.
+Các nút này mở dialer/composer trên thiết bị người dùng; không phát sinh cuộc gọi/SMS từ server Reylumi.
+
+9. KHÔI PHỤC TÀI KHOẢN
+Quên mật khẩu: app/(app)/api/auth/forgot-password/route.ts -> resetPasswordForEmail.
+Yêu cầu mất quyền truy cập: createRecoveryRequestAction -> account_recovery_requests, hỗ trợ xử lý.
+Recovery codes: tạo mã dự phòng trong Login Security; không gửi SMS.
+Chưa có luồng đặt lại mật khẩu/khôi phục bằng OTP SMS; chưa có đăng nhập passwordless bằng SMS trong các điểm gọi đã rà soát.
+
+ADMIN SAU ĐIỀU CHỈNH GIAO DIỆN
+/admin/settings/twilio giữ nguyên địa chỉ, đổi tiêu đề thành Messaging & OTP.
+Thẻ trạng thái phân biệt dữ liệu đã lưu với kiểm tra giao tin; bảng chức năng cho biết provider, nơi sử dụng, kết nối admin và công tắc.
+Form nhóm thông tin nhà cung cấp, giải thích phạm vi công tắc và phương thức claim.
+Test Verify connection được ghi rõ chỉ kiểm tra Verify Service, không thử gửi hoặc kiểm tra SMS sender.
+Thay đổi này không bổ sung công tắc giả cho các luồng chưa kết nối và không thay đổi logic gửi SMS/booking.

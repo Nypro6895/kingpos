@@ -2,7 +2,7 @@ import 'server-only';
 import {createClient} from '@supabase/supabase-js';
 import {createCipheriv,createDecipheriv,randomBytes} from 'node:crypto';
 
-export type TwilioSettings = {accountSid:string;authToken:string;verifyServiceSid:string;messagingServiceSid:string;from:string;enabled:boolean;claimSms:boolean;claimVoice:boolean};
+export type TwilioSettings = {accountSid:string;authToken:string;verifyServiceSid:string;messagingServiceSid:string;from:string;enabled:boolean;claimSms:boolean;claimVoice:boolean;authSms?:boolean;loginAlerts?:boolean;salonVerification?:boolean};
 const env=(...names:string[])=>names.map(name=>process.env[name]?.trim()).find(Boolean)??'';
 export function twilioSettingsClient() {
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;

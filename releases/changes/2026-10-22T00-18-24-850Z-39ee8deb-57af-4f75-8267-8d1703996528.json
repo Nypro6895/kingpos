@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "services-cache-invariants-r6",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Audit frozen Services pilot invariants; add focused regressions and fix demonstrated clock/storage/mutation defects only. Separate worktree; default-off; no release.",
+  "files": [
+    "lib/services-catalog-controller.ts",
+    "lib/services-catalog-cache.ts",
+    "tests/services-catalog-controller.test.mjs",
+    "tests/services-catalog-cache.test.mjs"
+  ],
+  "source": {
+    "commit": "89d8e4e998bfaa0fee102f93138c24d1debe0b61"
+  },
+  "dependencies": [
+    "Native Services frozen functional 00f3c909ed13c26bc3ec62d30d0e5fee839192d1",
+    "Assembled authenticated Simulator acceptance remains coordinator owned"
+  ],
+  "validation": [
+    {
+      "name": "Previous frozen native and pilot artifacts SHA256 verification",
+      "result": "passed",
+      "evidence": "ACCEPTANCE-services-native-simulator-20261022-checksums.json"
+    }
+  ],
+  "releaseHeld": true,
+  "id": "39ee8deb-57af-4f75-8267-8d1703996528",
+  "recordedAt": "2026-10-22T00:18:24.850Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\services-invariants-delta",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

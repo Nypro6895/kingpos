@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "app-local-readonly-filter-navigation-20261119",
+  "status": "working",
+  "summary": "Repair only installed payroll-tax period and Portable report date GET filters blocked by bundle CSP, preserving role admission, financial reads and the existing Search lifecycle",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/app-local-payroll-tax.tsx",
+    "components/app-local-portable-report.tsx",
+    "components/navigation-form.tsx",
+    "lib/app-local-link-navigation.ts",
+    "tests/app-local-readonly-filter-navigation.test.mjs",
+    "docs/app-local-readonly-filter-navigation-20261119.md"
+  ],
+  "source": {
+    "commit": "4f4b023e3eb84ddf4785a073e5b20be0262993f1"
+  },
+  "validation": [
+    {
+      "name": "Actual-source strict CSP reproduction: tax month, tax custom and Portable today GET each blocked with no navigation",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/local-filter-csp-audit-r2/result.json"
+    },
+    {
+      "name": "Narrow private-marker implementation, scope cancellation and Search/Help regression",
+      "result": "pending"
+    },
+    {
+      "name": "Final signed local bundle regeneration and physical native acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "installed-global-search-navigation-20261119"
+  ],
+  "supersedesEvents": [],
+  "id": "46c6bf47-8d14-429c-80f2-03ad708c92a8",
+  "recordedAt": "2026-11-19T16:04:07.430Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": []
+}

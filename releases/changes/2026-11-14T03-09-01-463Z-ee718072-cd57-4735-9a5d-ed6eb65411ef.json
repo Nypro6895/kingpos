@@ -1,0 +1,116 @@
+{
+  "kind": "change",
+  "changeId": "gift-ticket-unified-20261113",
+  "status": "needs-integration",
+  "summary": "Shared Gift service/retail Tickets, anonymous Gift-only receipts, Attention, Reports and collection reconciliation with preserved staff inputs and account consent",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/activity/receipts/[ticketId]/page.tsx",
+    "app/(app)/pos-tickets/[ticketId]/page.tsx",
+    "app/activity/history-details-drawer.tsx",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "app/pos/customer-display/customer-checkout.css",
+    "app/pos/customer-display/customer-checkout.tsx",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/portable/actions.ts",
+    "app/pos/portable/report/portable-report-closing-form.tsx",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/staff/today/owner-attention-panel.tsx",
+    "components/app-local-customer-views.tsx",
+    "components/app-local-ticket-detail.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/gift-completion.tsx",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/pos-collection-breakdown.tsx",
+    "components/ticket-payment-summary.tsx",
+    "docs/gift-ticket-unified-20261113.md",
+    "lib/bookings.ts",
+    "lib/customer-activity.ts",
+    "lib/customer-checkout-view.ts",
+    "lib/customers.ts",
+    "lib/daily-input-reconciliation.ts",
+    "lib/daily-pos-report.ts",
+    "lib/daily-report-overview-model.ts",
+    "lib/daily-report-overview.ts",
+    "lib/pos-local-display.ts",
+    "lib/pos-ticket-financial-sources.ts",
+    "lib/pos-ticket-financial-view.ts",
+    "lib/pos-ticket-receipt.ts",
+    "lib/pos-tickets.ts",
+    "lib/today-statistics.ts",
+    "releases/changes/2026-11-14T02-28-18-106Z-8441cb42-3622-47d5-969f-563bfc0d2eed.json",
+    "supabase/migrations/20261113120000_gift_ticket_unified.sql",
+    "tests/gift-counter-sale.integration.test.mjs",
+    "tests/gift-screen-lifecycle-ui.test.mjs",
+    "tests/gift-ticket-financial-view.test.mjs",
+    "tests/gift-ticket-ui.test.mjs",
+    "tests/rewardlumi-full-schema.integration.test.mjs",
+    "types/gift-card.ts",
+    "types/owner-financial-attention.ts",
+    "types/pos-daily-closing.ts",
+    "types/pos-desk.ts",
+    "types/pos-ticket-receipt.ts",
+    "types/pos-ticket.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\gift-ticket-unified-20261113\\artifacts\\gift-ticket-unified\\frozen-source\\dc1d8e9fa051292616671e224e22b0f5701f6ee2",
+    "commit": "dc1d8e9fa051292616671e224e22b0f5701f6ee2"
+  },
+  "dependencies": [
+    "customer-checkout-benefits-20261112",
+    "checkin-windows-gift-lifecycle-20261111"
+  ],
+  "validation": [
+    {
+      "name": "Full-schema isolated Gift/Reward settlement, authority and reversal",
+      "result": "passed",
+      "evidence": "artifacts/gift-ticket-unified/sql-source-final.log: 27/27"
+    },
+    {
+      "name": "Component, calculation and cross-flow regression checks",
+      "result": "passed",
+      "evidence": "artifacts/gift-ticket-unified/tests-accepted.log: 26/26; ui-source-final.log; editor-regression.log"
+    },
+    {
+      "name": "Responsive product components",
+      "result": "passed",
+      "evidence": "artifacts/gift-ticket-unified/browser/results.json: 28 cases at 320/390/768/1440px"
+    },
+    {
+      "name": "Production webpack, TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/gift-ticket-unified/build-source-final.log; offline-source-final.log (572 assets)"
+    },
+    {
+      "name": "Scoped ESLint and Windows whitespace",
+      "result": "passed",
+      "evidence": "artifacts/gift-ticket-unified/lint-accepted.log: zero errors, two existing warnings; git -c core.whitespace=cr-at-eol diff --check"
+    },
+    {
+      "name": "Frozen source hashes and patch against base",
+      "result": "passed",
+      "evidence": "artifacts/gift-ticket-unified/frozen-source.json; isolated Git index apply --check"
+    },
+    {
+      "name": "Existing Portable toolbar width assertion",
+      "result": "failed",
+      "evidence": "Reproduces identically on unchanged parent and new source: portable-baseline.log and regressions.log; no toolbar edit"
+    },
+    {
+      "name": "Integration on exact current live source and installed/native package acceptance",
+      "result": "pending",
+      "evidence": "Implementation only; no hosted migrations, deployment or Windows/iOS installation"
+    }
+  ],
+  "notes": "Owner approved implementation. Gift is a typed retail item on the same Ticket, optional customer, no service commission/turn/discount/Reward/tip base. Added Gift-only Reward enrollment guard. Locks, manual inputs, source identity, consent and replay remain authoritative. Native ABI/host unchanged; Windows offline package and iOS release assessment remain with publication. See docs/gift-ticket-unified-20261113.md.",
+  "id": "ee718072-cd57-4735-9a5d-ed6eb65411ef",
+  "recordedAt": "2026-11-14T03:09:01.463Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-ticket-unified-20261113",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

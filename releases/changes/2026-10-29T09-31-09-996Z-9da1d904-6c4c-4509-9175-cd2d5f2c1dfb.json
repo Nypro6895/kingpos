@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "iphone-ui-followup-20261029",
+  "status": "ready",
+  "summary": "Physical iPhone follow-up: prevent Searching label wrapping in My Place ApplyPanel; flex sizing and nowrap only. Four additional public routes audited; remaining access/data gaps documented.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/my-place/place-panels.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029\\artifacts\\wave66-owner-layout\\frozen-ready",
+    "commit": "a9a7ac1cdcb85aae82bf71f677d05cd0146a9710"
+  },
+  "validation": [
+    {
+      "name": "Frozen exact source and preserved live security/canonical Payroll guards",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/preservation.json"
+    },
+    {
+      "name": "Final production build and scoped Settings/POS/UI/Payroll/comments/disabled Check Writer tests",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/validation-summary.json"
+    },
+    {
+      "name": "Exact-source native simulator/archive/upload and Apple VALID",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/native-verified.json"
+    },
+    {
+      "name": "Production candidate READY and complete uploaded source manifest verified",
+      "result": "passed",
+      "evidence": "artifacts/wave66-owner-layout/web-candidate-source-verified.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "integration": {
+    "originalEvents": [
+      "be11f919-1158-4b6b-b5fe-dec93e1fd394"
+    ],
+    "limitations": "Check Writer DB/provider/keys/sales/physical-print activation deferred; unfinished Payroll history and developer Market excluded; physical app QA remains a separately recorded acceptance layer."
+  },
+  "id": "9da1d904-6c4c-4509-9175-cd2d5f2c1dfb",
+  "recordedAt": "2026-10-29T09:31:09.996Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/my-place/place-panels.tsx": "3f54a08e95acb9448ac04206fb675424b4bcf4ef7a563a92f4229f4316681328"
+  }
+}

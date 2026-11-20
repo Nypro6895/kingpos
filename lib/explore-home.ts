@@ -14,7 +14,7 @@ import {
   operatingStatusFromMap,
 } from "@/lib/salon-operating-status";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   ExploreHomeContent,
   ExploreHomeSalon,
@@ -243,6 +243,8 @@ export async function getExploreNearYouSalons(input: {
   const response = await searchExploreSalons({
     latitude: input.latitude,
     longitude: input.longitude,
+    sort: "closest",
+    scopePolicy: "expandable",
     page: 1,
     pageSize: Math.min(HOME_NEAR_YOU_LIMIT, Math.max(1, input.limit ?? HOME_NEAR_YOU_LIMIT)),
   });
@@ -255,7 +257,7 @@ export async function getExploreNearYouSalons(input: {
   }
 
   const salons = response.results
-    .filter((salon) => salon.distanceMiles !== null)
+    .filter((salon) => salon.distanceMiles !== null && salon.distanceMiles <= 50 && (salon.searchScope === "A" || salon.searchScope === "B"))
     .sort((a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity))
     .slice(0, input.limit ?? HOME_NEAR_YOU_LIMIT)
     .map(mapSearchResultToNearYouSalon);
@@ -266,8 +268,8 @@ export async function getExploreNearYouSalons(input: {
   };
 }
 
-export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
-  const supabase = createSupabaseServerClient();
+export async function getExploreHomeContent({ initial = false }: { initial?: boolean } = {}): Promise<ExploreHomeContent> {
+  const supabase = (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
     return emptyHomeContent("Explore home content is unavailable.");
@@ -277,13 +279,13 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
     const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
     const [salonsResponse, servicesResponse, inspiration] = await Promise.all([
       rpc("get_public_explore_home_salons", {
-        p_new_limit: HOME_NEW_LIMIT,
-        p_recommended_limit: HOME_RECOMMENDED_LIMIT,
+        p_new_limit: initial ? 0 : HOME_NEW_LIMIT,
+        p_recommended_limit: initial ? 3 : HOME_RECOMMENDED_LIMIT,
       }),
-      rpc("get_public_explore_popular_services", {
+      initial ? Promise.resolve({ data: [], error: null }) : rpc("get_public_explore_popular_services", {
         p_limit: HOME_POPULAR_SERVICE_LIMIT,
       }),
-      getExploreInspirationPage({ diversify: false }),
+      initial ? Promise.resolve(emptyHomeContent().inspiration) : getExploreInspirationPage({ diversify: false }),
     ]);
     let error: string | null = null;
 

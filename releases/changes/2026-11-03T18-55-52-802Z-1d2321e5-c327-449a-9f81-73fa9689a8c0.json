@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "forum-starter-content-20261103",
+  "status": "needs-integration",
+  "channels": [
+    "web"
+  ],
+  "summary": "15 bilingual topics, 30 replies, 8 editorial personas without login accounts; tested locally. Apply immutable migration to Supabase and verify production counts; Chrome controller fails even after reconnect.",
+  "files": [
+    "supabase/migrations/20261103190000_forum_starter_discussions.sql",
+    "tests/forum-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\forum-brand-compact-20261103\\artifacts\\forum-brand\\frozen-seed",
+    "commit": "73ba22eec77ebd1f2b63b720274be6e132eea912"
+  },
+  "dependencies": [
+    "forum-brand-compact-seed-20261103"
+  ],
+  "validation": [
+    {
+      "name": "Production build including TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/forum-brand/build.txt"
+    },
+    {
+      "name": "15 database tests and 11 browser interaction checks",
+      "result": "passed",
+      "evidence": "artifacts/forum-brand/browser/result.json"
+    },
+    {
+      "name": "Focused lint",
+      "result": "passed",
+      "evidence": "artifacts/forum-brand/lint.txt"
+    },
+    {
+      "name": "Production SQL apply and verification",
+      "result": "pending"
+    }
+  ],
+  "id": "1d2321e5-c327-449a-9f81-73fa9689a8c0",
+  "recordedAt": "2026-11-03T18:55:52.802Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-brand-compact-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

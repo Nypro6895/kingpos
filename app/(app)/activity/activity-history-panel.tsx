@@ -1,9 +1,14 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
 
 import { HistoryDetailsDrawer } from "@/app/activity/history-details-drawer";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useExperienceScope } from "@/components/experience-scope";
+import { useScopedUiDraft } from "@/lib/use-scoped-ui-draft";
 import type {
   CustomerActivity,
   CustomerActivitySalon,
@@ -142,7 +147,7 @@ function SalonIdentity({ activity }: { activity: CustomerActivity }) {
   return <div className="flex min-w-0 items-center gap-2">
     <SalonLogo salon={activity.salon} />
     <div className="min-w-0">
-      <p className="truncate text-sm">{activity.salon.name}</p>
+      <p className="truncate text-sm"><SalonName name={activity.salon.name} salonId={activity.salon.id}/></p>
       <p className="mt-0.5 text-[11px] text-text-secondary md:mt-1 md:text-xs">{activityTypeLabel(activity)}</p>
     </div>
   </div>;
@@ -272,12 +277,24 @@ function ActivityDesktopRow({ activity, onDetails }: HistoryRowProps) {
 
 export function ActivityHistoryPanel({ activities, initialSelectedBookingId }: ActivityHistoryPanelProps) {
   const [selectedActivity, setSelectedActivity] = useState<CustomerActivity | null>(() => initialSelectedBookingId ? activities.find(activity => activity.type !== "visit" && activity.bookingId === initialSelectedBookingId) ?? null : null);
+  useTransientOverlay(() => setSelectedActivity(null), Boolean(selectedActivity) && !initialSelectedBookingId);
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<ActivityTypeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<ActivityStatusFilter>("all");
   const [monthFilter, setMonthFilter] = useState("all");
   const [page, setPage] = useState(1);
+  const experience = useExperienceScope();
+  const browsing = useScopedUiDraft({
+    scope: experience?.context.authenticated ? experience.context.scope : undefined,
+    domain: "customer-history-view", params: null, value: { query, filtersOpen, typeFilter, statusFilter, monthFilter, page },
+    dirty: Boolean(query || filtersOpen || typeFilter !== "all" || statusFilter !== "all" || monthFilter !== "all" || page > 1),
+    validate: (value: unknown): value is { query: string; filtersOpen: boolean; typeFilter: ActivityTypeFilter; statusFilter: ActivityStatusFilter; monthFilter: string; page: number } => {
+      const item = value as { query?: string; filtersOpen?: boolean; typeFilter?: string; statusFilter?: string; monthFilter?: string; page?: number } | null;
+      return Boolean(item && typeof item.query === "string" && item.query.length <= 200 && typeof item.filtersOpen === "boolean" && ["all", "purchase", "booking", "visit"].includes(item.typeFilter ?? "") && ["all", "cancelled", "completed", "no_show", "upcoming", "past_appointment", "checked_in", "in_service"].includes(item.statusFilter ?? "") && typeof item.monthFilter === "string" && /^(all|\d{4}-\d{2}|unknown)$/.test(item.monthFilter) && Number.isInteger(item.page) && Number(item.page) > 0 && Number(item.page) <= 10000);
+    },
+    onRestore: saved => { setQuery(saved.query); setFiltersOpen(saved.filtersOpen); setTypeFilter(saved.typeFilter); setStatusFilter(saved.statusFilter); setMonthFilter(saved.monthFilter); setPage(saved.page); },
+  });
 
   const monthOptions = useMemo(() => {
     const options = new Map<string, string>();
@@ -336,7 +353,7 @@ export function ActivityHistoryPanel({ activities, initialSelectedBookingId }: A
   }
 
   return (
-    <section className="grid gap-3" aria-label="Recent activity">
+    <section className="grid gap-3" aria-label="Recent activity" onInputCapture={browsing.markEdited} onClickCapture={browsing.markEdited}>
       <div className="flex items-end justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase text-brand-orange">
@@ -360,7 +377,7 @@ export function ActivityHistoryPanel({ activities, initialSelectedBookingId }: A
         </p>
       ) : (
         <div className="content-surface overflow-hidden border-border-subtle bg-surface rounded-none border-y shadow-none">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 border-b border-divider-subtle bg-surface px-4 py-3 sm:grid-cols-1 sm:gap-3 sm:py-4 lg:grid-cols-[minmax(18rem,1fr)_auto] lg:items-end">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 border-b border-divider-subtle bg-surface px-4 py-3 sm:gap-3">
             <label className="grid gap-1.5">
               <span className="text-xs font-bold uppercase text-text-muted">
                 Search history
@@ -376,8 +393,8 @@ export function ActivityHistoryPanel({ activities, initialSelectedBookingId }: A
                 value={query}
               />
             </label>
-            <button type="button" aria-expanded={filtersOpen} onClick={() => setFiltersOpen(!filtersOpen)} className="min-h-11 px-1 text-xs font-bold text-brand-teal sm:hidden">Filters</button>
-            <div className={classNames(filtersOpen ? "grid" : "hidden", "col-span-2 grid-cols-2 gap-2 sm:col-span-1 sm:grid sm:grid-cols-3")}>
+            <button type="button" aria-expanded={filtersOpen} onClick={() => setFiltersOpen(!filtersOpen)} className="min-h-11 px-1 text-xs font-bold text-brand-teal">Filters{hasFilters ? " •" : ""}</button>
+            <div className={classNames(filtersOpen ? "grid" : "hidden", "col-span-2 grid-cols-1 gap-2 sm:grid-cols-3")}>
               <label className="grid gap-1.5">
                 <span className="text-xs font-bold uppercase text-text-muted">
                   Type

@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "navigation-overlays-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Unify shared More and notification body portals with ownership-aware dismissal, retained action state and Activity cleanup Original handoff 37308e0f-a25a-4a7b-a52c-9c1f2b233c5a. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "lib/dismissible-popovers.ts",
+    "components/details-portal.tsx",
+    "tests/navigation-overlay-runtime.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "e14e4a6d-c86d-41d7-9eed-ddc0f6411dae",
+  "recordedAt": "2026-11-12T02:06:24.120Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/navigation-shell.tsx": "8923819f4ed1a2284ada52539d040efd5117db9c33fe84339a82f719a536523f",
+    "lib/dismissible-popovers.ts": "f995831f2e1ce489f178a0b02cc78a32c444942b668ce8e10a51d223669f028f",
+    "components/details-portal.tsx": "e9bc6a7f5e7d1ec9a992b77c713725013bb55a13abb13129ae74b7521e3a0a72",
+    "tests/navigation-overlay-runtime.test.mjs": "2bcb69232515d99a8677844110d716058af997696a870fcd2feafbc51c71f40f"
+  }
+}

@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { SalonManagementPage } from "@/app/salons/salon-management-page";
 
 type SalonsPageProps = {
@@ -7,6 +8,8 @@ type SalonsPageProps = {
   }>;
 };
 
-export default function SalonsPage({ searchParams }: SalonsPageProps) {
+function SalonsPage({ searchParams }: SalonsPageProps) {
   return <SalonManagementPage mode="list" searchParams={searchParams} />;
 }
+
+export default withExperiencePage(SalonsPage);

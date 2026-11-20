@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "combined-phone-invite-integration-20261119",
+  "status": "working",
+  "summary": "Integrate approved Phone dialog, default-off public app invitation and strict native Gift handoff source on committed Store/nativeQA/Android/Tax/Ticket candidate; preserve profile recovery and receipt bridge; no activation or publication",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/account/account-profile-editor.tsx",
+    "tests/ios-personal-settings.test.mjs",
+    "tests/account-verification-dialog-layer.test.mjs",
+    "app/layout.tsx",
+    "app/check-in/[entry]/page.tsx",
+    "components/public-app-invite.tsx",
+    "components/public-app-invite.module.css",
+    "lib/public-app-invite.ts",
+    "lib/public-app-invite-config.ts",
+    "tests/public-app-invite.test.mjs",
+    "tests/personal-camera-landing.test.mjs",
+    "docs/public-app-invite.md",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "tests/combined-phone-invite-overlap.test.mjs",
+    "docs/combined-phone-invite-integration-20261119.md"
+  ],
+  "source": {
+    "commit": "c3fe075ec1275ff9a02c031ea9931f61065e0699"
+  },
+  "dependencies": [
+    "phone-verification-dialog-layer-20261114",
+    "public-app-invite-20261114",
+    "combined-store-candidate-20261119"
+  ],
+  "validation": [
+    {
+      "name": "Pinned source patches checked against static57c18; recheck actualc3fe075 before application",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-coordination-20261119/remaining-scopes-r1/validation.json"
+    },
+    {
+      "name": "Actual3way integration, scoped tests/lint/semantic checks and final combined/native acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "76962147-431c-465d-963d-a511fb557907",
+  "recordedAt": "2026-11-19T06:41:59.719Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

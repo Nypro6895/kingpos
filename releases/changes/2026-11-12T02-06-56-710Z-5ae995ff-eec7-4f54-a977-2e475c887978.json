@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "explore-zip-scope-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Completed regional Explore home suggestions using existing bounded search for web and app-local core/extras; awaiting coordinated release Original handoff 091c245e-0036-4a2a-9c47-52e025c2e138. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/explore/page.tsx",
+    "app/explore/explore-client.tsx",
+    "lib/app-local-explore-server.ts",
+    "lib/explore-home-scope.ts",
+    "tests/explore-home-scope.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "5ae995ff-eec7-4f54-a977-2e475c887978",
+  "recordedAt": "2026-11-12T02:06:56.710Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/(app)/explore/page.tsx": "0bee346b0127834d66c89746334a3eefc8a64f35a664005a07e884273960b8b8",
+    "app/explore/explore-client.tsx": "50d6e0afa32ea05622e7ad88a86ba01ac82c30680d1ecfec6a903e37ed7a4845",
+    "lib/app-local-explore-server.ts": "4fd2842abfacd51120bf6f01f91f3a5a8b954a39771c54f322eb86f8c448959a",
+    "lib/explore-home-scope.ts": "a7698edae5a557d625064a127ca15d984afa6d97e31f6c998cead3c6a63ffbb4",
+    "tests/explore-home-scope.test.mjs": "c7ee7fc95a1671efe6a422e34dbf6f405a67554d140adfb9264b22e7a227b96a"
+  }
+}

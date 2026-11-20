@@ -1,0 +1,141 @@
+CAMPAIGN COMPLETION — 03/11/2026
+Worktree: C:\Reylumi-worktrees\campaign-completion-20261103
+Implementation base: 83e8a7fef116855f4d408485c100416fb42a0b64.
+This is an implementation source baseline, NOT a freshly verified production alias.
+Scope: approved corrective implementation. No deployment, real charge, approval of a
+customer ad, live view admission, production migration, email or SMS was performed.
+
+1. COMPLETED BEHAVIOR
+
+- Automatic purchase consent uses the same displayed-credit -> stored-unit
+  conversion as the submitted limit. 3,600 displayed credits = 3,000 cents = $30.
+  Invalid intermediate input cannot crash the consent form.
+- Credit pack prices are visible before payment. Copy distinguishes returning
+  unused campaign credits to the salon wallet from refunding a bank card.
+- A signed click is accepted independently of a billable view. It never creates
+  a view or changes spend, wallet balances or the credit ledger.
+- Click admission retains service-only RPC access, visitor/account binding,
+  same-origin API protection, approval, time, content, ownership and geographic
+  checks. Existing one-unique-click-per-visitor/campaign semantics are retained.
+  Replay acknowledges the existing click without extending attribution time.
+- The view admission RPC, prices, rounding, caps, pacing and wallet rules remain
+  unchanged. The final budget-exhausting view does not swallow its CTA click.
+- Sponsored cards show verified business name/location when available. Long
+  titles and captions are clamped; full creative remains on the destination.
+  Ratings, discounts, available times and audience forecasts are not invented.
+- The approved custom destination remains readable through the remaining scheduled
+  period after budget completion. Cancelled/hidden/archived/ineligible sources
+  remain unavailable. Its booking CTA uses canonical booking readiness; otherwise
+  the business profile/contact path remains available.
+- Campaigns replaces the misleading Running tab. Zero results are not described
+  as customers noticing the salon. Per-campaign text states whether credits,
+  review, an owner action or settlement is pending.
+- Funding controls say Reserve & submit for unapproved ads and Start approved ad
+  for approved reruns. Automatic-purchase permission remains separate.
+- Creation review shows state/country qualifiers, both credits and USD, and an
+  explicit submission action. Unverified illustrative conversion numbers are
+  removed from the intro. Existing renewal choices and advanced controls remain.
+- Detail reports add daily unique clicks, checked-at/last-view timestamps and
+  current eligibility reasons without mutating accounting on read.
+- Lifetime advertising value used, value per recorded view and value per
+  attributed booked customer are shown. Zero denominators show Not available.
+  Promotional value is explicitly distinguished from paid cash, revenue/profit.
+- Historical attribution is retained while linked booking evidence is categorized
+  by its current completed/cancelled/other/unavailable state.
+- Detail polling reloads the selected campaign even after it leaves the open
+  campaigns list. Stale report responses cannot overwrite a changed selection.
+- 7/30/90-day charts include today and label multi-day bins as date ranges.
+
+2. METRIC CONTRACT AND BOUNDARIES
+
+Views: existing qualifying, admitted exposures; not unique people.
+Unique clicks: at most one per existing visitor identity and campaign. Early
+clicks need not have a billable view, so clicks/views is not sold as CTR.
+Customers who booked: existing deduplicated customer attribution after a
+signed-in click within seven days. It is not the total number of appointments.
+Original attribution remains historical if the booking is cancelled afterward.
+Booking outcomes describe the current state of the linked original evidence;
+unavailable evidence is not treated as zero completed bookings.
+No booking-start metric or guest-to-login identity bridge is fabricated.
+No revenue, collected payment or ROAS is inferred from a booking.
+No new identifiers, sensitive tracking, prices or card-debit permissions are added.
+
+3. LOCAL VERIFICATION
+
+Evidence lives in artifacts/campaign-completion/:
+- regression.log: 100 passing lifecycle/accounting/geo/pause/demand tests.
+- new-tests-final.log: 6 passing SQL/report/denomination tests against disposable
+  PGlite with the cumulative current Campaign migrations plus the new migration.
+- route-tests.log: 1 passing real API module test for origin, tampered ticket,
+  account binding and click-vs-view RPC routing.
+- destination-tests.log: 1 passing server component test for budget completion
+  and available/unavailable booking CTA.
+- browser-final.log: 2 passing browser tests. Real source components run on
+  localhost with isolated server actions/API fixtures. Chrome at 320/390/1280px
+  checks single/carousel long content, early click (1 click/0 views), exact consent
+  display and payload, invalid input, zero-state copy, review and overflow.
+  The second test covers delayed/broken DOM images and fresh view dwell.
+- build-final.log: npm run build (Next production build, TypeScript, static route
+  generation and offline asset manifest). See actual exit result in validation.json.
+- lint.log: ESLint on all changed TypeScript/TSX source files.
+- diff-check.log: Git whitespace verification using cr-at-eol for the existing
+  CRLF source baseline. Line endings are preserved instead of renormalizing
+  unrelated source.
+- browser/: reviewable screenshots and measured card heights.
+
+The shared node_modules lacked pdf-lib/fontkit required by this release baseline.
+A private dependency directory links existing packages and six locally installed
+PDF dependencies. The shared checkout/dependency directory was not modified.
+Disposable PGlite/fixture tests do not prove real PostgreSQL concurrency,
+production configuration, provider acceptance or native device behavior.
+
+4. RELEASE HANDOFF
+
+- Read AGENTS.md/release-policy and capture the exact current live alias/source.
+- Integrate ONLY this task's frozen source/patch against that baseline. Do not copy
+  an old campaign overlay or the dirty canonical checkout wholesale.
+- Apply 20261103010000_campaign_measurement_trust.sql after current Campaign
+  migrations, including geo alias compatibility, paused reserve/demand fixes and
+  run-again. It adds two service-only functions and does not rewrite history,
+  prices, views, balances or permissions for public clients.
+- Apply the migration before publishing code that calls the new RPCs. The legacy
+  daily-results and billable admission signatures remain compatible with old clients.
+- Freshly build/check the assembled release and follow production alias guard.
+- Rollback web code may leave the unused additive RPCs in place. Do not reset
+  accounting or attempt a historical attribution reconstruction.
+- No Swift, native configuration or bridge contract changed. Hosted web behavior
+  is compatible with the existing delivery endpoint; verify the installed iOS
+  route/bundle provenance and real WebKit behavior during release acceptance.
+
+5. OPERATIONAL ACCEPTANCE STILL REQUIRED
+
+These are not claimed as passed by local code checks:
+A. Read-only check of production migration/function readiness, enabled config,
+   the queue cron schedule and recent successful runs. Existing queue design is
+   a database cron; absence from vercel.json alone is not a failure.
+B. Confirm provider webhook configuration and delivery/retry evidence. One real,
+   explicitly authorized credit purchase must reconcile captured amount, order,
+   wallet and ledger exactly once; do not charge merely to complete this document.
+C. An authorized reviewer approves an actual safe ad. An independent customer
+   account in its target area sees it; verify view/click and a genuine booking
+   with ledger reconciliation. Owner accounts are intentionally excluded.
+D. Real iPhone/WebKit acceptance for loading, visibility, interrupted navigation,
+   payment return and current hosted/native bundle behavior.
+E. A paid pilot measures delivery supply, money actually collected, operational
+   review capacity and customer outcomes before any claims of profitability.
+
+REFUND/DISPUTE POLICY:
+Automatic card refunds, chargeback recovery and deduction of already-spent
+credits are NOT implemented or silently introduced by this change. Their
+financial policy needs an explicit owner decision and dedicated provider tests.
+Until then, handle these as a manual reviewed financial operation:
+verify the provider transaction/refund/dispute and corresponding order; inspect
+available/reserved/spent credits and any processing automatic order; preserve
+ledger/history; agree the actual action and customer communication before
+moving money or changing purchased entitlements. Reconciliation of a successful
+payment is not evidence that its later refund/dispute has been resolved.
+The existing payment-block control is available to an authorized operator;
+a processing payment may still finish.
+
+No commercial completeness, delivery guarantee, card-refund automation or
+production acceptance is implied by the local ready event.

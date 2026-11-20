@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "app-local-platform-20261016",
+  "status": "working",
+  "summary": "Implement bundled whole-app UI and public reference content, scoped durable local read models and immediate local navigation with background versioned reconciliation, preserving existing business and authorization rules.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-host.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "app/local-app/index.html",
+    "app/local-app/app.css",
+    "scripts/build-app-local-bundle.mjs",
+    "docs/app-local-platform-20261016.txt"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/.codex/worktrees/app-local-platform/kingpos",
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "validation": [
+    {
+      "name": "Whole route coverage and local ready behavior before network, scoped refresh/commands and native offline binary bundle",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "c3892f07-0eca-416b-a761-1d73d63442a5",
+  "recordedAt": "2026-10-16T15:40:30.148Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

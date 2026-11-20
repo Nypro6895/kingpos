@@ -1,0 +1,63 @@
+{
+  "source": {
+    "snapshot": "artifacts/staff-profile-legal-name-20261029/source"
+  },
+  "dependencies": [],
+  "summary": "Staff First/Last are canonical legal name for Payroll and Tax Company; preserve nickname and recorded statements",
+  "changeId": "staff-profile-legal-name-20261029",
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/staff-legal-name.ts",
+    "lib/payroll.ts",
+    "lib/vietnamese-dictionary.ts",
+    "app/staff/actions.ts",
+    "app/staff/staff-directory-editor.tsx",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/staff/page.tsx",
+    "tests/staff-profile-legal-name.test.mjs",
+    "tests/staff-profile-legal-name-ui.test.mjs"
+  ],
+  "status": "needs-integration",
+  "validation": [
+    {
+      "evidence": "artifacts/staff-profile-legal-name-20261029/runtime-checks.log",
+      "result": "passed",
+      "name": "runtime identity and server saves"
+    },
+    {
+      "evidence": "tests/payroll-live-dashboard.test.mjs: 10 passed",
+      "result": "passed",
+      "name": "payroll financial regressions"
+    },
+    {
+      "evidence": "artifacts/staff-profile-legal-name-20261029/browser-checks.log",
+      "result": "passed",
+      "name": "browser fixture 390px and 768px"
+    },
+    {
+      "evidence": "artifacts/staff-profile-legal-name-20261029/HANDOFF.md",
+      "result": "passed",
+      "name": "source TypeScript"
+    },
+    {
+      "evidence": "artifacts/staff-profile-legal-name-20261029/HANDOFF.md",
+      "result": "passed",
+      "name": "scoped ESLint and diff check"
+    },
+    {
+      "evidence": "Not deployed",
+      "result": "pending",
+      "name": "production baseline build and authenticated/device QA"
+    }
+  ],
+  "id": "61ee93d3-94ba-47e0-98b8-3f70aedd936e",
+  "recordedAt": "2026-10-29T15:04:24.067Z",
+  "worktree": "C:\\Reylumi-worktrees\\staff-profile-legal-name-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

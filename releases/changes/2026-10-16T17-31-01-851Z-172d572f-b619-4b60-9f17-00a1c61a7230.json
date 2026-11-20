@@ -1,0 +1,49 @@
+{
+  "kind": "change",
+  "changeId": "app-local-bounded-file-uploads",
+  "status": "needs-integration",
+  "summary": "Six exact original File actions use private single-use staged upload, including actual Creative sharp5MiB and optional POS three15MiB files; original authority/CAS/results retained, no business-write retry.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-upload-policy.ts",
+    "lib/app-local-upload-client.ts",
+    "lib/app-local-upload-server.ts",
+    "supabase/migrations/20261016170000_app_local_upload_sessions.sql",
+    "tests/app-local-upload-runtime.test.mjs",
+    "tests/app-local-upload-client.test.mjs"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Nineteen isolated client/original-handler/PostgreSQL tests including real Creative and POS originals",
+      "result": "passed",
+      "evidence": "node --test --test-concurrency=1 tests/app-local-upload-runtime.test.mjs tests/app-local-upload-client.test.mjs"
+    },
+    {
+      "name": "Targeted ESLint and no upload TypeScript errors",
+      "result": "passed"
+    },
+    {
+      "name": "Assembled full TypeScript",
+      "result": "pending",
+      "evidence": "Latest run has only unrelated lib/app-local-explore-server.ts:62 sort string union error; parent informed"
+    },
+    {
+      "name": "Parent complete native/manifest/broker integration and migration deployment",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\upload-frozen-r2"
+  },
+  "id": "172d572f-b619-4b60-9f17-00a1c61a7230",
+  "recordedAt": "2026-10-16T17:31:01.851Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

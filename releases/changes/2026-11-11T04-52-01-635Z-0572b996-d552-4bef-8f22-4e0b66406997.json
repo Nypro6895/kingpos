@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "checkin-design-settings-20261110",
+  "status": "needs-integration",
+  "summary": "Correct promotion settings and owner Gift Card design integration; validated locally, not deployed",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/gift-cards/route.ts",
+    "lib/gift-display-appearance.ts",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/customer-idle-screen.tsx",
+    "app/pos/customer-display/customer-idle-screen.css",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/gift-card/gift-card.css",
+    "tests/checkin-design-ui.test.mjs",
+    "tests/customer-idle-settings-ui.test.mjs",
+    "tests/gift-display-appearance.test.mjs"
+  ],
+  "source": {
+    "commit": "e8d5e46437a71e314a43029eda011a34c8d7b5e1",
+    "snapshot": "C:\\Reylumi-worktrees\\checkin-design-20261110\\artifacts\\checkin-design-20261110\\settings-snapshot"
+  },
+  "dependencies": [
+    "checkin-design-20261110"
+  ],
+  "validation": [
+    {
+      "name": "Settings, QR, saved/issued gift artwork browser checks and token-scoped appearance helper",
+      "result": "passed",
+      "evidence": "artifacts/checkin-design-20261110/SETTINGS-RECEIPT.txt"
+    },
+    {
+      "name": "TypeScript and lint",
+      "result": "passed",
+      "evidence": "artifacts/checkin-design-20261110/settings-typecheck.txt"
+    },
+    {
+      "name": "Production build and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/checkin-design-20261110/settings-build.txt"
+    },
+    {
+      "name": "Live owner saved design and physical POS acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "0572b996-d552-4bef-8f22-4e0b66406997",
+  "recordedAt": "2026-11-11T04:52:01.635Z",
+  "worktree": "C:\\Reylumi-worktrees\\checkin-design-20261110",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

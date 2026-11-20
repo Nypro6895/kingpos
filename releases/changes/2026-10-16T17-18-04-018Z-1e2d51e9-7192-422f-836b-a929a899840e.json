@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "app-local-portable-workspaces-20261016",
+  "status": "ready",
+  "summary": "Exact original five Portable POS daily workspaces + Today alias, retained cashier lock and original outbox, fresh independent device capability context, pinned original HTTP adapters. Requires coordinated native/runtime integrations documented in evidence.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-portable-context-server.ts",
+    "lib/app-local-portable-metadata.ts",
+    "lib/app-local-portable-server.ts",
+    "lib/app-local-portable-registry.tsx",
+    "components/app-local-portable-workspace.tsx",
+    "components/app-local-portable-report.tsx",
+    "lib/app-local-portable-http-client.ts",
+    "lib/app-local-portable-http-server.ts",
+    "lib/app-local-portable-http-metadata.ts",
+    "tests/app-local-portable-context.test.mjs",
+    "tests/app-local-portable-server.test.mjs",
+    "tests/app-local-portable-ui.test.mjs",
+    "tests/app-local-portable-http.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\frozen-portable-20261016T1730"
+  },
+  "validation": [
+    {
+      "name": "14 original UI real-WebLock/scope/read/HTTP regressions",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/portable-tests.json"
+    },
+    {
+      "name": "targeted ESLint13files and complete TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/portable-tests.json"
+    }
+  ],
+  "id": "1e2d51e9-7192-422f-836b-a929a899840e",
+  "recordedAt": "2026-10-16T17:18:04.018Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-portable-context-server.ts": "1052949e7a447526b1a4118ac43a8c79f043309e28d0c29fe79507e2bd425227",
+    "lib/app-local-portable-metadata.ts": "38abeee97e3096e0001e153999c51a2662e3796a3b8d84e7517371c196bdd02b",
+    "lib/app-local-portable-server.ts": "fb2913a8c9cebfc501f0abbb6994449fef83d34d8758b2cec970caf87d93a62e",
+    "lib/app-local-portable-registry.tsx": "4cc8c1a690b1a2ed4408ae6d29c71c13c8773ee481179c8692b274b98e892361",
+    "components/app-local-portable-workspace.tsx": "8331596b462d457b0599145ff230655b61ea396d18a1e06b0a1c69a444879f8b",
+    "components/app-local-portable-report.tsx": "342669abd1baa2a01d573a30f69e81ce29f4f889d114052bf671c67a8f8fff54",
+    "lib/app-local-portable-http-client.ts": "0e1f3aafa5097d081984918320b71b81ac80b7cfe177f50deaa39e2aa62e566c",
+    "lib/app-local-portable-http-server.ts": "7206b38ec3b4f360143c7348a8fdf941a4051589f1f5258700c0ebbb7faab3fe",
+    "lib/app-local-portable-http-metadata.ts": "257a178089d39dcd58c6af17c20a8da94ec587de98ab5f8839b5d2f1ac7a89cc",
+    "tests/app-local-portable-context.test.mjs": "22188d3fe2727815e7ab57a26c6afa5b2a0f9677fc31b540f2100dda9a40bdcb",
+    "tests/app-local-portable-server.test.mjs": "6e35574af5a7e2b2d3f6a2f65c91b38216bdf3d8cf2f27f441ec506bd2d9fba2",
+    "tests/app-local-portable-ui.test.mjs": "ccbbb0b0bbb88bb1458842cedb4929a6b3e0d9cfd34a39310985def3cc2ed29a",
+    "tests/app-local-portable-http.test.mjs": "50fb038dc01f4f3c35f721a0cb65a24b34731340b51065bffaf828ad9c403e5e"
+  }
+}

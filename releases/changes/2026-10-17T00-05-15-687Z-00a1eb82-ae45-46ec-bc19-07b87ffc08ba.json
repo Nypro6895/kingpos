@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "restore-original-reylumi-logo-web-20261016",
+  "summary": "Restore exact original Reylumi web and home-screen icons on current production source.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/icon.png",
+    "app/apple-icon.png",
+    "app/favicon.ico",
+    "public/brand/reylumi-favicon.png",
+    "public/brand/reylumi-app-192.png",
+    "public/brand/reylumi-app-512.png"
+  ],
+  "dependencies": [],
+  "baselineDeploymentId": "dpl_GFYtc7Ju9PijSyxe4EyXwwyGSTwF",
+  "baselineCommit": "ac824ab0e7cf9905554143796b4c0f38a63c56d1",
+  "status": "working",
+  "source": {
+    "commit": "ac824ab0e7cf9905554143796b4c0f38a63c56d1"
+  },
+  "validation": [
+    {
+      "name": "Exact original asset hashes and logo-only source diff",
+      "result": "pending"
+    }
+  ],
+  "id": "00a1eb82-ae45-46ec-bc19-07b87ffc08ba",
+  "recordedAt": "2026-10-17T00:05:15.687Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\reylumi-glass-logo\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

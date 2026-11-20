@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "r10-native-bundle-provenance-20261022",
+  "status": "working",
+  "summary": "Isolated R10 packaging guard: regenerate activated production bundle from exact source and fail closed on stale source/bundle before archive and IPA upload. Preserve Services pilot OFF and all auth/readiness logic; no archive/upload/deploy.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "scripts/ios/local-bundle-release.mjs",
+    "scripts/ios/local-bundle-release.test.mjs",
+    "ios/scripts/check-build.sh",
+    "ios/scripts/testflight.sh",
+    ".github/workflows/reylumi-ios-testflight.yml",
+    ".github/workflows/reylumi-ios-check.yml",
+    "ios/TESTFLIGHT-SETUP.md"
+  ],
+  "dependencies": [
+    "reylumi-final-r10-services-invariants-integration-20261022"
+  ],
+  "source": {
+    "commit": "7e284b8749d79a990abedf8dade33c6909949903",
+    "snapshot": "C:\\Users\\giuse\\kingpos-r10-packaging-20261022"
+  },
+  "validation": [
+    {
+      "name": "targeted prepare/verify stale-rejection checks",
+      "result": "pending"
+    }
+  ],
+  "occurredAt": "2026-10-22T04:17:11.376Z",
+  "id": "1f083b60-373f-41b7-8f7a-25a0238effa5",
+  "recordedAt": "2026-10-22T04:17:11.930Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-r10-packaging-20261022",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

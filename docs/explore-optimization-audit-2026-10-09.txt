@@ -1,0 +1,216 @@
+KING REYLUMI — EXPLORE: AUDIT, IMPLEMENTATION AND MEASUREMENTS
+Ngày audit: 09/10/2026. Trạng thái: đã phát hành các tối ưu Explore hiện có.
+Production: reylumi.com — dpl_8wcpsurQr6L5spGnYiyLm9ZLtLQX.
+Build, TypeScript và smoke search/feed trên hosting đạt. GPS chính xác và
+video organic chưa hoàn tất vì thiếu dữ liệu tọa độ và luồng video hiện hữu.
+
+1. NHỮNG NGUYÊN NHÂN ĐÃ XÁC ĐỊNH
+
+- Một số nhánh cũ lọc/xếp hạng toàn bộ danh sách hoặc sắp xếp toàn bộ ảnh
+  trước LIMIT. Dữ liệu tăng khiến các nhánh này chậm dù trang chỉ hiển thị ít tiệm.
+- Điều kiện địa lý và cursor có trường hợp không trở thành giới hạn đọc của
+  index. Đã sửa cả trường hợp dữ liệu địa lý dày, thưa và không có tọa độ.
+- Server Action đọc dữ liệu có thể cập nhật cây giao diện, tạo session tìm kiếm
+  mới trong khi khách vẫn đang cuộn session cũ. Đã giữ session theo bộ lọc.
+- Nhánh Wisconsin tĩnh có thể hiển thị lại thông tin tiệm đã ẩn/xóa trong DB;
+  chuyển sang tham chiếu hồ sơ public hiện tại, không dùng dữ liệu tĩnh để phục hồi.
+- WebKit tái hiện lỗi RSC prefetch ở URL page cũ/Wisconsin: header tải trước
+  Login/logo rồi redirect streaming hủy request. Đây là request cùng origin,
+  không chứng minh lỗi CORS hoặc lỗi Search API. Đã tắt prefetch menu Explore,
+  giữ hành vi mặc định ở trang khác. Test production sau sửa: cả3 URL trong
+  phiên WebKit mới không lỗi JS/request bị hủy; toàn bộ7 case GPS/timeout/
+  dialog/redirect/export trên WebKit cũng đạt, không bỏ qua console errors.
+- API thực tế còn chậm ở phép tính uy tín canonical. Timing đã tách chi phí
+  chọn ứng viên, session, hydrate, trust và operating-status để sửa đúng điểm chậm.
+- Đã xác minh phép nối key='directory:'||salon_id khi hydrate thẻ tiệm làm
+  mất đường seek UUID. EXPLAIN production cho 12 thẻ đọc 55.953 hàng; toàn
+  query mất 4.083,686 ms. Cùng query với seek UUID đọc 12 PK, mất 25,5 ms.
+  Function 980 đã áp dụng; smoke API trả 12 nội dung, phân trang không trùng.
+  Native hydrate toàn function: p95 90,42 xuống 7,13 ms ở 1 triệu bài/100.000 tiệm.
+  Nhánh directory riêng với 1 triệu tiệm: 771,33 xuống 1,09 ms, 12 PK lookup.
+  JIT đã tắt và không có provider ở môi trường kiểm tra, không gán lỗi cho JIT.
+- Sửa timezone không thay cách tính điểm LUMI: native 12 tiệm chưa có POS,
+  20 mẫu, p95 từ 52,27 xuống 7,38 ms. API warm ghi nhận trust khoảng
+  117–394 ms, trước sửa khoảng 928–1.482 ms. Mạng/cloud khác SQL local.
+- Audit dữ liệu thực tế ghi nhận 55.954 tiệm public, không có tọa độ hợp lệ.
+  MAPTILER_API_KEY chưa được cấu hình ở môi trường local và hosting đã kiểm tra.
+  Có địa chỉ dạng chữ không đồng nghĩa có tọa độ để tính khoảng cách.
+
+Thông báo NET::ERR_CERT_AUTHORITY_INVALID trước đây thuộc tầng TLS/chứng chỉ.
+Các sửa truy vấn không chứng minh nguyên nhân hoặc cách khắc phục cảnh báo TLS đó.
+HTTPS trên máy kiểm tra hiện đã trả 200 với kiểm tra chứng chỉ được bật.
+
+2. KIẾN TRÚC VÀ QUY CHUẨN
+
+Trạng thái theo phase:
+- Phase 1: các nhánh chậm đã xác định được sửa và phát hành, gồm đường cũ,
+  hydrate, canonical trust, event và vòng đời khôi phục session hết hạn.
+- Phase 2: A/B/C, exact-name, phạm vi cố định, cursor và chống trùng đã phát
+  hành; khoảng cách GPS chính xác còn phụ thuộc bổ sung tọa độ cho dữ liệu gốc.
+- Phase 3: feed bài ảnh/directory, trending, Latest, đa dạng và cache đã phát
+  hành. Video organic chưa có luồng xử lý; feed dùng session hữu hạn 384 mục.
+- Phase 4: cá nhân hóa bằng tín hiệu rõ ràng đã phát hành; chưa A/B test trọng
+  số hoặc xây mô hình học từ hành vi. Không tuyên bố mô hình học cá nhân tự động.
+- Phase 5: đã kiểm thử SQL mô phỏng 100k/500k/1m, 1/8/16 workers và HTTP
+  production thông thường; chưa kiểm thử toàn bộ HTTP/render/media ở triệu
+  dữ liệu trên hosting hoặc xác nhận số người online đồng thời chịu được.
+
+Một số bộ lọc nhanh trust/operating-status trên desktop vẫn lọc các thẻ đã
+chọn/tải; không được mô tả như bộ lọc đầy đủ trên toàn bộ chỉ mục. Sort search
+trusted/bookable/closest và các bộ lọc vùng/category dùng đường query riêng.
+
+Dữ liệu cửa hàng gốc được giữ nguyên. Bảng Explore là bản đọc phục vụ tìm kiếm,
+được đồng bộ theo thay đổi của cửa hàng/dịch vụ/quyền hiển thị. Không tạo một
+bảng nguồn riêng cho từng tiểu bang. Các bảng social/trending/session bổ sung
+không thay thế hồ sơ và dữ liệu nghiệp vụ hiện có.
+
+Mỗi yêu cầu: xác định khu vực và điều kiện -> chọn tập ứng viên có giới hạn bằng
+index -> xếp hạng trong tập này -> giữ thứ tự phiên -> lấy chi tiết cho trang nhỏ.
+Không COUNT chính xác toàn quốc, không ORDER BY random() trên toàn quốc,
+không lấy trước hàng loạt hồ sơ hoặc ảnh của mọi tiệm.
+
+Vị trí: chọn thủ công > GPS có sự đồng ý > hoạt động đủ tin cậy > đã lưu > mời
+chọn khu vực và khám phá giới hạn. Hoạt động dùng cửa sổ 90 ngày, tối thiểu
+3 ngày khác nhau và tỷ lệ khu vực chiếm ưu thế >=70%; mẫu quá giới hạn thì
+không kết luận. Việc tham gia workspace, follow hoặc một lần làm dịch vụ
+không tự trở thành nơi cư trú. Các ngưỡng là chính sách ban đầu cần theo dõi.
+
+Smart Search:
+- A: khu vực hiện tại; GPS bán kính ban đầu 10 mile.
+- B: lân cận; GPS mở rộng đến 50 mile.
+- C: tiểu bang hoặc nhóm vùng rộng khi cần. Mỗi nhóm vẫn phải khớp từ khóa.
+- Tên tiệm khớp chính xác ngoài vùng được xét sớm nếu người dùng cho mở rộng.
+- Phạm vi cố định không tự mở rộng. Hiển thị nhãn khi kết quả vượt vùng.
+- Pool tìm kiếm 256 ứng viên, UUID/KNN seek, cursor phiên 30 phút gắn viewer,
+  từ khóa, vùng, bộ lọc và thứ tự. Trang thường 12 kết quả, API tối đa 20.
+- Chỉ tải nền một trang tiếp theo; hủy yêu cầu cũ, chống trùng qua các trang.
+- URL page=N cũ chuyển sang phiên tìm kiếm mới trên đường truy vấn tối ưu.
+- Trusted first hiện sắp xếp các kết quả đã được chọn của trang; giao diện
+  nói rõ phạm vi này, không tuyên bố đã tính uy tín/xếp hạng toàn quốc.
+
+Social Discovery:
+- Tỷ lệ mục tiêu có cấu hình: 35% trending, 30% mới, 20% cá nhân, 15% mở rộng.
+  Lane thiếu nội dung sẽ phân bổ lại; tỷ lệ không phải cam kết mỗi trang.
+- Chỉ nội dung public với media hợp lệ. Giới thiệu nhập từ directory không
+  được tính là bài có tương tác cao. Directory có thể bổ sung khám phá.
+- Trending cập nhật định kỳ 10 phút từ tín hiệu thật: view đủ thời gian/diện
+  tích, save, share, profile view, bình luận và booking phù hợp, có độ mới.
+- Cá nhân hóa dùng sở thích, follows, tối đa 50 nội dung public lưu gần nhất,
+  và lịch sử đã xem. Lịch sử tài khoản không áp dụng cho guest.
+- Xếp hạng có đa dạng tiệm, cơ hội cho bài/tiệm mới, giảm lặp vừa xem.
+- Latest giữ thứ tự thời gian trong vùng, có nội dung ngoài vùng được gắn nhãn.
+- Phiên ổn định tối đa 384 nội dung, tương đương tối đa 32 trang 12 nội dung.
+  Đây là batch hữu hạn; hết batch cần refresh, không tuyên bố cuộn vô hạn.
+- Khi có bài mới, thông báo để khách chủ động refresh; không tự nhảy vị trí cuộn.
+- Cache phiên gắn viewer/bộ lọc; trước khôi phục kiểm tra và hydrate payload
+  hiện tại, để nội dung đã ẩn/xóa, giá/caption/media cũ không được phục hồi.
+- Cache phiên hết hạn khác với phiên còn hiệu lực nhưng đã ẩn/xóa toàn bộ
+  thẻ. Guard 1000 báo cursor hết hạn để giữ trang mới, không phục hồi thành rỗng.
+- Event directory 990 dùng UUID index; native full ghi 12 event p95 từ262
+  xuống2,68 ms. Đo nhánh 20 key/1 triệu tiệm: 550,9 xuống0,676 ms.
+  Actor, nội dung từng giao cho viewer, điều kiện view và daily dedup giữ nguyên.
+- Vị trí GPS dùng trong bộ lọc được giữ trong session DB riêng 30 phút để
+  tiếp tục cursor, rồi cleanup theo TTL; không dùng làm kết luận nơi cư trú.
+  Guest sử dụng cookie ngẫu nhiên và khóa HMAC, không suy đoán vùng từ IP.
+- Luồng bài organic hiện chỉ hỗ trợ ảnh JPEG/PNG/WebP. Video chưa có upload,
+  kiểm tra codec/thời lượng, poster/xử lý và player public; không xác nhận hỗ trợ
+  video từ các benchmark ảnh và metadata này. Đây là tính năng còn thiếu.
+
+3. ĐỒNG BỘ, IMPORT VÀ XÓA
+
+- Giữ suppression ledger hiện có. Import lại không được phục hồi tiệm đã
+  có quyết định ẩn/xóa; không ghi đè hồ sơ đã được chủ tiệm claim.
+- Import theo batch giới hạn, ID ổn định và cập nhật idempotent. Chuẩn hóa
+  tiểu bang/city/ZIP, loại trùng và giữ thông tin nguồn ở luồng nhập hiện có.
+- Mọi projection/cache phải kiểm tra quyền hiển thị hiện tại trước khi trả dữ liệu.
+- Nguồn bài đổi public/private, media/safety hoặc tiệm đổi trạng thái sẽ cập
+  nhật projection; cursor còn hiệu lực cũng không được bỏ qua quyền hiện tại.
+- Suppression cho những lần xóa trước khi ledger được triển khai không thể
+  tự tái dựng nếu không còn lịch sử nguồn. Đây là giới hạn lịch sử cần lưu ý.
+- Cần bổ sung geocoding cho tiệm thiếu tọa độ: nguồn hợp lệ, queue có giới hạn,
+  retry/backoff, lưu chất lượng khớp địa chỉ, không dựng tọa độ giả từ tên vùng.
+  Chưa chạy trả phí hoặc geocode hàng loạt khi chưa có nguồn/khóa cấu hình.
+
+4. KẾT QUẢ ĐO THỰC TẾ
+
+Native PostgreSQL 17.11 trên máy local, dữ liệu mô phỏng biệt lập, đồng thời
+1/8/16 SQL workers. Không chạy tải triệu bản ghi lên production.
+
+Search, ở 16 workers; trang đầu p50/p95, tiếp theo p50/p95:
+100.000 tiệm: 77,94 / 184,79 ms; 10,39 / 21,04 ms.
+500.000 tiệm: 145,12 / 583,90 ms; 11,15 / 24,29 ms.
+1.000.000 tiệm: 78,33 / 547,27 ms; 6,14 / 8,68 ms.
+Mỗi quy mô có 18 tình huống, 180 session ở mỗi mức đồng thời, tối đa 3 trang.
+Cả 9 nhóm không có lỗi, timeout 3 giây hoặc ID trùng.
+Tình huống fuzzy + GPS chậm nhất có p95 1.513,72 ms; cần tiếp tục theo dõi.
+Kiểm tra sâu 50 trang/600 kết quả/phiên qua nhiều pool: không trùng/lỗi/timeout.
+Có fixture 5% và 0% tọa độ, không chỉ fixture dày tọa độ khoảng 92,3%.
+
+Feed matrix cuối có cá nhân hóa và trending địa phương thật, ở 16 workers:
+100.000 bài: trang đầu p95 223 ms, tiếp theo 76 ms.
+500.000 bài: trang đầu p95 290 ms, tiếp theo 143 ms.
+1.000.000 bài: trang đầu p95 438 ms, tiếp theo 181 ms.
+Fixture triệu bài có 100.000 bài trending, gồm 50.000 trong vùng Wisconsin.
+Không lỗi, timeout hoặc content trùng. Các lần chạy trước không có trending
+Wisconsin đã được thay bằng matrix này, không dùng để chứng minh lane trống.
+Số này gồm SQL pool/session/page/selected hydration 800/830 và ranker thật, chưa gồm
+canonical trust, operating-status, media, HTTP và render của trình duyệt.
+Sửa UUID hydration 980 được đo riêng; không gán matrix cũ cho function mới.
+Background trend/directory refresh 6,10 giây, không nằm trên yêu cầu người dùng.
+
+Home cũ sau tối ưu: 1 triệu tiệm + 1 triệu dịch vụ, p95 8 / 15 / 13 ms.
+Background phổ biến dịch vụ refresh khoảng 3,79 giây; người dùng đọc cache nhỏ.
+Inspiration cũ: 800.000 media, p95 4,6 / 8,6 / 8,1 ms; cursor seek chọn 25 hàng.
+Backfill projection media một lần khoảng 15,5 giây. Không trùng/lỗi/vượt LIMIT.
+Booking theo bài chọn chính xác 970: 1 triệu bài, p95 12 bài 16,56 ms;
+list đầu tối đa 100 bài 25,07 ms. Bài cũ đã biết ID vẫn tra được qua RPC exact.
+Mỗi bài chỉ lấy cấu hình mới nhất qua index; giới hạn NULL/empty/100 IDs,
+quyền public hiện tại và khả năng booking có kiểm thử riêng. Fixture native
+bài đăng không có lịch sử cấu hình lớn. Kiểm thử riêng bằng bảng tạm 1 triệu
+cấu hình trùng dùng đúng 2 index production: mỗi nhánh look/update LIMIT1
+seek index (0,143/0,090 ms), rồi tối đa 2 ứng viên cho 1 cấu hình mới nhất
+(0,157 ms). Không đại diện trường hợp dữ liệu sai owner.
+
+Các kết quả ở quy mô khác nhau có trạng thái cache/I/O khác nhau, không phải
+đường cong tăng trưởng có kiểm soát. Cache hệ điều hành không bị xóa.
+Index vẫn có thể kiểm tra nhiều entry hơn LIMIT ứng viên; không cam kết chi
+phí luôn đúng 256 thao tác hoặc luôn hằng số trong mọi phân bố dữ liệu.
+
+5. NGHIỆM THU VÀ GIỚI HẠN
+
+Đã kiểm tra SQL thật, quyền viewer, cursor hết hạn, bộ lọc, khớp chính xác,
+phân trang sâu, khoảng cách bằng nhau, vùng cấu trúc và null-coordinate.
+Có kiểm tra dữ liệu ẩn/xóa/private/safety/media edit, CTA booking và auth prefs.
+Deadline/hủy yêu cầu và phân biệt query/timeout/network/cursor có regression.
+
+Các smoke test chạy Chromium và WebKit iPhone emulation. Đây không phải
+kiểm chứng trên một iPhone vật lý. Không lấy kết quả SQL local làm SLA production
+hoặc số người online toàn hệ thống. Cần quan sát timing thực tế sau phát hành.
+Tìm Nail place/King Nails/nail và phân trang: mỗi engine tải 12+12 kết quả,
+không trùng hoặc lỗi JS. For you/Latest: mỗi mode trả 12 nội dung với HTTP200.
+Đã kiểm tra thông báo khi timeout vẫn giữ kết quả đầu, GPS không tọa độ được
+gắn phạm vi rộng, mở/đóng hộp giờ hoạt động, redirect page cũ và Wisconsin,
+export tĩnh trả410. Các bài test viewport chặn event để không tạo engagement giả.
+
+Ngưỡng theo dõi ban đầu, chưa phải SLA: query timeout 3 giây; API client
+deadline 15 giây; theo dõi p95 search trang đầu ~0,7 giây cho workload chuẩn,
+fuzzy/GPS tách riêng ~1,6 giây; feed SQL ~0,5 giây. Đặt lại mục tiêu HTTP
+sau khi thu đủ mẫu production gồm enrichment/network và trạng thái lỗi.
+
+Đo HTTP production bản5Hg trước patch header, từ máy kiểm tra,
+20 mẫu tuần tự mỗi loại (bản8wc giữ nguyên API nhưng thay menu prefetch):
+Search trang đầu p50/p95 757/1.733 ms; trang tiếp theo 596/1.001 ms.
+Feed trang đầu p50/p95 968/1.812 ms; trang tiếp theo 581/666 ms.
+80 yêu cầu trả thành công; kiểm tra không trùng giữa trang đầu và trang tiếp.
+Không phát event engagement; số liệu này không phải kiểm thử tải đồng thời.
+Timing ghi số lần gọi canonical RPC và thời gian từng phần; chưa thống kê
+toàn bộ câu SQL lồng bên trong mọi function thành số database query tổng.
+HTTPS production trả200 với kiểm tra TLS bật; chưa xác minh TLS trên iPhone.
+
+Ưu tiên tiếp theo: nguồn tọa độ/geocoding; đo lịch sử giao dịch lớn theo tiệm;
+quan sát p50/p95 và timeout thật; điều chỉnh trọng số feed theo chất lượng
+nội dung, giữ độ đa dạng và tỷ lệ tiệm mới. Các trọng số chưa được A/B test.
+
+Bằng chứng và hướng dẫn chạy lại: docs/explore-load-testing.md;
+work/explore-load-results/*.json; work/explore-read-model/*browser-results.json;
+các tests/explore-*; migrations Explore ngày 09/10/2026.

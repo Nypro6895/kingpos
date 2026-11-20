@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "iphone-original-getter-transport-read-scope-20261028",
+  "status": "ready",
+  "summary": "Keep original transport/scope/Owner/target guards while sharing verified admission within only three audited pure Booking plugin getter POSTs. Writes and explicit final probes stay fresh. Fourteen authorization/isolation regressions and TypeScript passed; physical improvement unproven until deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/app-local/command/route.ts",
+    "lib/app-local-getter-read-scope.ts",
+    "tests/app-local-getter-read-scope.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\getter153-selected-frozen"
+  },
+  "validation": [
+    {
+      "name": "14 route/read/write/target/revocation/concurrent-request regressions",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit incremental false",
+      "result": "passed"
+    }
+  ],
+  "id": "5c7ebe3a-0144-4a01-8c6a-922fe449202e",
+  "recordedAt": "2026-10-28T20:39:11.792Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/app-local/command/route.ts": "ad55863b34efbb51439a671941c9c9f6a0cd94b9d2541804cddd24e014bc52c8",
+    "lib/app-local-getter-read-scope.ts": "bd89cbb0289446b69bceba19fa3c88c350ce4d08be2f7783190440a8e0430c88",
+    "tests/app-local-getter-read-scope.test.mjs": "5bd2b0acd6fdf21e16cb4c2bf2c24e45daae501b7a233e43ddac158191cb45dc"
+  }
+}

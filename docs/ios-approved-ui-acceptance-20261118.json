@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_IMPLEMENTATION_VALIDATED_NEEDS_FINAL_INTEGRATION",
+  "localDate": "2026-11-18",
+  "timezone": "America/Chicago",
+  "ownerApproved": [
+    "OpenAI per-post consent checkbox",
+    "Admin exact-text r2 Hide/Restore"
+  ],
+  "sourceBase": "40b1b6e",
+  "implementation": {
+    "consentUi": "implemented-frozen",
+    "adminR2Ui": "implemented-frozen-revision3",
+    "backend": "implemented-frozen-full-acceptance-passed"
+  },
+  "validation": {
+    "consentUi": {
+      "passed": 22,
+      "skipped": 0
+    },
+    "adminUi": {
+      "passed": 12,
+      "skipped": 0
+    },
+    "rootRegression": {
+      "checkedAt": "2026-11-19T03:54:36.333Z",
+      "command": "node --test tests/public-image-verifier-openai.test.mjs tests/public-photo-processing-consent.test.mjs tests/public-photo-consented-wiring.test.mjs",
+      "tests": 26,
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "providerRequests": 0,
+      "transport": "mocked only; no environment key reads by fixtures",
+      "exitCode": 0
+    },
+    "build": {
+      "startedAt": "2026-11-19T03:53:22.735Z",
+      "completedAt": "2026-11-19T03:55:09.961Z",
+      "source": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-steps-234-20261118\\validation-source-r4",
+      "command": "npm run build",
+      "exitCode": 0,
+      "passed": true,
+      "productionCredentialsInherited": false,
+      "productionCredentialsCopied": false,
+      "backgroundDispatchDisabled": true,
+      "nativeArchiveOrStoreSubmission": false,
+      "log": "artifacts/ios-steps-234-20261118/combined-build-r4.log"
+    },
+    "sourceParity": {
+      "checkedAt": "2026-11-19T04:13:18.685Z",
+      "sourceInputsChecked": 5484,
+      "runtimeMatches": true,
+      "runtimeDrift": [],
+      "newRuntime": [],
+      "nonRuntimeDrift": [
+        "docs/admin-exact-text-r2-ui-20261118.md",
+        "supabase/migrations/20261118230000_admin_exact_text_moderation.sql",
+        "tests/admin-exact-text-moderation.integration.test.mjs",
+        "tests/social-report-consumer.integration.test.mjs"
+      ],
+      "productionCredentialsCopied": false
+    },
+    "database": {
+      "fullSchemaMigrations": 436,
+      "tests": 7,
+      "passed": 7,
+      "skipped": 0,
+      "finalAcceptancePassed": true,
+      "receipt": "artifacts/admin-exact-text-moderation-20261118/acceptance/admin-exact-text-acceptance.json",
+      "migration": {
+        "file": "20261118230000_admin_exact_text_moderation.sql",
+        "sha256": "ebe4e2970a3e0a1a99ea6eca86b59ab7fe1af516d40eb47ff151a7428b108572",
+        "executedSha256": "ebe4e2970a3e0a1a99ea6eca86b59ab7fe1af516d40eb47ff151a7428b108572",
+        "lineEndingNormalization": "CRLF to LF only",
+        "transactionBoundary": "Explicit final statement delimiter, including EOF-terminated SQL files"
+      },
+      "checks": [
+        "all5 targets current-return state/history",
+        "sameUUID replay before version check",
+        "anonymous public projections/counts and null reply envelope",
+        "direct outsider RLS denial",
+        "private own-history preserved",
+        "canonical business/reputation rows unchanged",
+        "multi-case independent hold release",
+        "forged/private/history contexts denied",
+        "read-only/nonadmin action denied",
+        "parent/privacy and author-edit concurrency returns unconfirmed then revalidates"
+      ]
+    },
+    "frozenScopes": [
+      {
+        "name": "consent",
+        "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\public-photo-processing-consent-ui-20261118\\frozen",
+        "files": 9,
+        "matched": true
+      },
+      {
+        "name": "admin-ui-revision3",
+        "snapshot": "artifacts/admin-exact-text-r2-ui-20261118/revision-3/frozen-source",
+        "files": 7,
+        "matched": true
+      },
+      {
+        "name": "admin-backend",
+        "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\admin-exact-text-moderation-20261118\\frozen",
+        "files": 7,
+        "matched": true
+      }
+    ]
+  },
+  "native": {
+    "newBundleAndBinaryRequired": true,
+    "evidence": [
+      "lib/app-local-personal-registry.tsx imports BeautyProfileClient",
+      "lib/app-local-business-registry.tsx and public-registry import SalonProfileView"
+    ],
+    "newDevicePermissions": false,
+    "archiveOrPhysicalAcceptance": false
+  },
+  "scope": {
+    "privateImageEscrow": false,
+    "adReportControls": false,
+    "actualOpenAIRequestsThisImplementation": 0,
+    "hostedMigration": false,
+    "deploy": false,
+    "push": false,
+    "appleWrites": false,
+    "storeSubmit": false
+  },
+  "release": {
+    "maySubmit": false,
+    "mayPushFinal": false,
+    "combinedPendingReviewRequired": true
+  },
+  "handoffs": {
+    "consent": "6437d96d-042a-4f23-b6bc-ae30805c96ab",
+    "adminUi": "aaa49d9d-48a9-402d-b7bf-ecf446e01544",
+    "supersededAdminUi": [
+      "24a9dc59-a2ce-4c53-9b1a-950c4695c2be",
+      "6aa85e78-5c5c-4563-a730-7063a4de9c8a"
+    ],
+    "backend": "595402d4-a23c-4105-8e2e-3e759020fb2f"
+  },
+  "validatedAt": "2026-11-19T04:13:18.687Z"
+}

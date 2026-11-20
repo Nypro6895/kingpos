@@ -1,0 +1,33 @@
+# Per-post OpenAI photo permission UI — 2026-11-18
+
+Status: local implementation candidate, owner-approved Beauty/Salon checkbox proposal. No publication, provider configuration change, customer-data access or real OpenAI request was performed by this task. Baseline: `40b1b6e7909f6e50e3372dbf873b814ab4eb1f66`.
+
+The owner approved “Triển khai cả hai” for the separate admin Remove/Restore revision and the OpenAI photo checkbox. This patch owns only the photo-permission composers and focused fixtures. The approved mobile proposal is [the existing consent artifact](../artifacts/public-photo-processing-consent-20261118/photo-processing-consent-preview-mobile.png); its historical “proposal/pending” label describes that earlier snapshot.
+
+## Product behavior
+
+- The shared client-only component renders the unchanged recipient, purpose, personal-information warning, checkbox label, decline text and `/privacy` href from `lib/public-photo-processing-consent.ts`. A checkbox starts unchecked. Post is disabled for an editable photo post until accepted; a programmatic submission also checks before dispatch. Keeping it unchecked preserves the draft and does not invoke the create action or AI processing. Beauty's existing private staging may already occur when selecting a photo; this patch does not claim all bytes stay on-device until agreement.
+- Choice is held in component memory for the current author/salon/composer/photo selection. It is never saved as an account preference or inferred from Terms, publication intent, previous posts or draft storage. Changing photos, including a replacement with identical filename/size/mtime, invalidates the choice. New composers and author/salon changes reset it. Caption-only edits retain the choice for the same selected photos. Cancelling a file chooser does not need to discard a still-valid choice.
+- Scope changes use a guarded React state adjustment rather than an effect-delayed reset. The derived accepted value also requires an exact current scope. A controlled, committed A → B → A identity roundtrip before queued effects cannot revive A's old affirmation.
+- Beauty snapshots `{provider:"openai", noticeVersion:"public-photo-openai-20261118-v1", accepted:true}` into a new photo attempt before asynchronous work. Salon snapshots that exact object only for photo posts and binds it in the request signature. Text-only Salon updates omit both the checkbox and permission field. Identity/avatar/cover/logo, review, Support, payroll, Tax and other document upload paths receive no permission UI or grant from this change.
+- Unknown in-flight attempts remain immutable and scoped to their original author/salon. Retry/reload uses the exact saved request ID, media and permission as originally submitted. It never fills in `accepted:true` for a legacy receipt. An unknown Salon attempt shows its existing locked recovery state rather than a new permission choice. Beauty recovers through its existing pending card. Resolving an old request is separate from authorizing a new transfer.
+- Server completed-request lookup remains first in the existing server implementation; these client edits do not move or bypass it. If a legacy missing-permission request is not already complete and is rejected for new processing, the user returns to an editable draft with an unchecked checkbox. Accepting then creates a new request ID and current permission; it does not change the old raw intent under its old ID. A previously consented unknown request keeps its original per-attempt permission on exact replay.
+
+## Focused validation
+
+Five suites run actual permission code and actual Beauty/Salon composer handlers with synthetic media and fully mocked service/upload transports:
+
+```powershell
+$env:CAPTURE_BEAUTY_VISUALS='1'
+node --test tests/public-photo-processing-permission-ui.test.mjs tests/beauty-pending-publication.test.mjs tests/salon-public-image-submission.test.mjs tests/beauty-library-entry.test.mjs tests/beauty-timeline-publish-race.test.mjs
+```
+
+Final result: **22/22 passed, zero skips**. Coverage includes unchecked/uncheck/decline, exact notice and three-field payload, current-scope reset and rapid identity roundtrip, same-metadata photo replacement, caption-only retention, text-only Salon, private upload ordering/late cleanup, preserved rejected drafts, consented and legacy photo receipt reload/retry, failed receipt storage, no optimistic public timeline, and account/salon isolation. Existing library navigation and pagination/publication-race assertions remain exercised. The browser bundle of the shared component contains no server, provider transport, image decoder or key dependency. Scoped ESLint passes.
+
+The Library fixture had a pre-existing static assertion that omitted the route's existing `libraryPage` prop. The unchanged baseline route demonstrates that mismatch in `library-baseline-fixture.json`; its assertion now requires **both** `libraryPage` and `initialSection="library"`. Browser assertions were preserved. Two older fixture import loops now load the real permission hook/notice rather than stubbing a hook to null. Fresh fixture HTML/PNGs are written only into this task's artifact directory, preserving previous evidence.
+
+Initial logs are retained separately: one new fixture used invalid synthetic image bytes, and one reset assertion read before React committed. Both were corrected without weakening product assertions. The final run also enables the existing optional Beauty phone/tablet visual fixture: real composer/notice/styles, synthetic illustration, mocked surrounding modules/transports, 44px recovery controls and no horizontal overflow. This is Chromium evidence, not Safari/native iOS or physical-device acceptance.
+
+Evidence: `artifacts/public-photo-processing-consent-ui-20261118/final-focused-acceptance.log`, `eslint.log`, `library-baseline-fixture.json`, `beauty-visuals/`, and immutable frozen source/manifest. The local Live Preview viewer was not running. Coordinator-owned real Next build/server, combined browser QA, native bundle review/device acceptance and release remain pending; this task did not start a replacement app server or use production as a preview.
+
+The permission constants/helper, server authorization/receipt lookup, upload cleanup, provider adapter, billing and existing completed source freezes are preserved. The new UI is one explicit-transfer prerequisite; it does not assert accuracy of moderation, full CSAM/copyright/PII coverage, actual checkbox interaction attested by a cryptographic ledger, or acceptance by Apple. Provider/legal/privacy/operations evidence belongs to its separate review and the combined release.

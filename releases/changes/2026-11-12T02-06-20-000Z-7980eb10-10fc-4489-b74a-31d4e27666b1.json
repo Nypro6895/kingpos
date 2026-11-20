@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "campaign-unused-credits-20261106",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Return unused campaign credits at every completed period before automatic credit purchases and renewal Original handoff 23467bf6-1029-429c-a8f3-8dcdb4d8b59a. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261106140000_campaign_period_unused_credit_return.sql",
+    "lib/campaign-credit-queue.ts",
+    "tests/campaign-period-unused-credit-return.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "7980eb10-10fc-4489-b74a-31d4e27666b1",
+  "recordedAt": "2026-11-12T02:06:20.000Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "supabase/migrations/20261106140000_campaign_period_unused_credit_return.sql": "5fc9b651717901869f529347ec512d2fed6d36442f2b532fa9b2195b8c2d35f9",
+    "lib/campaign-credit-queue.ts": "3f002c03dfa17a516153e036215b7660fb595d09e868788d3646813f12affd7f",
+    "tests/campaign-period-unused-credit-return.test.mjs": "8ae166dd835df34e2f2d7135fe84ed037f5dce258128e431eb4af2f44355c01f"
+  }
+}

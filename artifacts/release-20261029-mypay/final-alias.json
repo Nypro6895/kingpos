@@ -1,0 +1,21 @@
+{
+  "alias": "reylumi.com",
+  "created": "2026-10-05T19:52:54.626Z",
+  "createdAt": 1791229974626,
+  "creator": {
+    "uid": "Fq8QZZhHyt8iYKo1u9C5HSaS",
+    "email": "giusetruongny@gmail.com",
+    "username": "giusetruongny-5074"
+  },
+  "deletedAt": null,
+  "deployment": {
+    "id": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+    "url": "kingpos-367tw7g9c-kingpos.vercel.app"
+  },
+  "deploymentId": "dpl_EUCzPQGvjHSs1qmRaN2CBcNq35VG",
+  "projectId": "prj_uSpz8UyPabmgQkqDN65EDqnqBKs5",
+  "redirect": null,
+  "redirectStatusCode": null,
+  "uid": "8ee29812564fb19feb7862cff55d00f9ad7b70e5b610464bcf4daa9a288b7d5772360899d1a332ede62d9b42b053ba5810ab96d0e8d875f597f661eeac5ec2f6",
+  "updatedAt": 1793308404984
+}

@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "compact-ticket-layout-20261017",
+  "status": "working",
+  "summary": "Integrate completed compact ticket task-only patch with exact live source and regenerate its installed native UI alongside the role repair",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/pos-tickets/page.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "app/pos-tickets/ticket-filters.tsx"
+  ],
+  "source": {
+    "commit": "1579c10",
+    "originalEvent": "84f1715b-adab-43cd-a0e6-fd8f40c47d0c"
+  },
+  "validation": [
+    {
+      "name": "Three-way merge, original ticket checks and integrated role/native regression",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "2b2d7eb3-f26a-4451-b4dd-241a99d7d42f",
+  "recordedAt": "2026-10-17T17:32:49.025Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

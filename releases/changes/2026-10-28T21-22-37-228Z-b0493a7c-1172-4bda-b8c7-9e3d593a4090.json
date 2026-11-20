@@ -1,0 +1,27 @@
+{
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "status": "needs-integration",
+  "changeId": "owner-ticket-single-row-20261028",
+  "source": {
+    "snapshot": "artifacts/owner-ticket-single-row-20261028/source"
+  },
+  "validation": [
+    {
+      "name": "Chrome isolated toolbar layout at 320,375,390,430,768,1280px",
+      "evidence": "artifacts/owner-ticket-single-row-validation.json; no horizontal overflow, date and search aligned; full authenticated page and iPhone not verified",
+      "result": "passed"
+    }
+  ],
+  "files": [
+    "app/pos-tickets/ticket-filters.module.css"
+  ],
+  "summary": "Owner ticket mobile toolbar keeps date and search on one row; visually hide title below 480px while preserving desktop. Integrate with existing untracked TicketFilters and OwnerLiveTickets implementation; screenshot legacy server filters are already absent in local page.",
+  "id": "b0493a7c-1172-4bda-b8c7-9e3d593a4090",
+  "recordedAt": "2026-10-28T21:22:37.228Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

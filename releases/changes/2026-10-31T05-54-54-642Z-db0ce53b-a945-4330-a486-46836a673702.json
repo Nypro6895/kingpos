@@ -1,0 +1,91 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "changeId": "portable-settings-list-20261030",
+  "channels": [
+    "web"
+  ],
+  "summary": "Integrated frozen Portable settings list, direct device controls, add-ons and outside dismissal, preserving shipped local submission and desktop APIs.",
+  "files": [
+    "app/pos/portable/device-settings-panel.tsx",
+    "app/pos/portable/device-input-settings.css",
+    "app/pos/portable/portable-fullscreen-button.tsx",
+    "app/pos/portable/portable-login-form.tsx",
+    "app/pos/customer-display/customer-idle-screen.tsx",
+    "lib/customer-display-local-images.ts",
+    "tests/portable-presentation-ui.test.mjs",
+    "app/pos/service-catalog.tsx",
+    "app/pos/adaptive-pos-workspace.css",
+    "app/pos/custom-service-dialog.tsx",
+    "app/pos/compact-checkout-adjustments.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/pos/portable/actions.ts",
+    "lib/pos-desk.ts",
+    "lib/pos-service-catalog-server.ts",
+    "types/pos-desk.ts",
+    "tests/pos-service-catalog-ui.test.mjs",
+    "lib/dialog-outside-dismiss.ts",
+    "app/pos/pos-rapid-mobile-bridge.tsx",
+    "tests/pos-compact-checkout-ui.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\history-inline-combined-20261031\\artifacts\\history-inline-release-20261031\\frozen-source",
+    "baselineDeploymentId": "dpl_Dkz9sFDas79W7zYD1H6S6UyLQop6",
+    "baselineCommit": "bde768a12acaaf0ae1c762e8ba743b5c746ffba9"
+  },
+  "validation": [
+    {
+      "name": "Production Next build and offline assets",
+      "result": "passed",
+      "evidence": "C:/Reylumi/work/history-combined-release-20261031/production-build.txt"
+    },
+    {
+      "name": "Scoped TypeScript and ESLint",
+      "result": "passed",
+      "evidence": "C:/Reylumi/work/history-combined-release-20261031/final-typecheck.txt"
+    },
+    {
+      "name": "355 real migrations, 12 full-stack financial and privacy checks; 93 focused checks",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/history-inline-combined-20261031/artifacts/history-inline-combined/full-stack"
+    },
+    {
+      "name": "Actual component browser checks: Payroll25, shared15, ticket21, closing9, Portable9; no overflow and no creation edited",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/history-inline-combined-20261031/artifacts/history-inline-combined-20261031/payroll-browser/results.json"
+    },
+    {
+      "name": "Native Safari16 source bundle 337 pinned commands, zero unsupported",
+      "result": "passed",
+      "evidence": "C:/Reylumi/work/history-combined-release-20261031/app-local-verify.txt"
+    }
+  ],
+  "id": "db0ce53b-a945-4330-a486-46836a673702",
+  "recordedAt": "2026-10-31T05:54:54.642Z",
+  "worktree": "C:\\Reylumi-worktrees\\history-inline-combined-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos/portable/device-settings-panel.tsx": "330ef6c8d1b970dde5e322179fc75f3212552b7acf1ba3a872851747939ca41c",
+    "app/pos/portable/device-input-settings.css": "4a86d73d4e9b639baa907df4bb9e08756e29b129571bddf3074da3d88be62bfa",
+    "app/pos/portable/portable-fullscreen-button.tsx": "f67eabb049ae04c1d6a36b91c198ff1d17427b722351efb691d396260fabeab3",
+    "app/pos/portable/portable-login-form.tsx": "5e28fc1f1bdf94d302972c64015a3322ce2da7de7de7514bdc572041d43fa90b",
+    "app/pos/customer-display/customer-idle-screen.tsx": "59722f4ec3ab53cba5154dfa2d6243b1806d60eb8f888eb5e02e64a593bd4d5c",
+    "lib/customer-display-local-images.ts": "8a4bb7471e746a77e1ca129fbeac56c096863b63bb89a64ce7f8d8171d2a3def",
+    "tests/portable-presentation-ui.test.mjs": "d1dcc3e0921d58831c4ce517d55cde242a7d2137c0e278e354580ce589c66235",
+    "app/pos/service-catalog.tsx": "8da326a4d6746c6cce5839505f665dde0b99679f509dbf904928f542dc15584e",
+    "app/pos/adaptive-pos-workspace.css": "03095147d16e1caecfefab687ee7da8a2f860e2019422edce8a7f9e07fb41008",
+    "app/pos/custom-service-dialog.tsx": "e955b0115a1ae3e5bcd3ecaac72e83f693fc8099f5fba9725ecdfd6002d65656",
+    "app/pos/compact-checkout-adjustments.tsx": "bb2f332596d3b104601b67aeb2ee1d3af80fd2151695c28e6dbbe2ee91bc3d02",
+    "app/pos/pos-desk-client.tsx": "ef2fcd30a68681893a9f32c9a3136f587e699d6e920e2a22bce1c2c25ec52fb4",
+    "app/pos/portable/actions.ts": "beaa96e916cb1af5eb9fc943b56c3cdc4e53639cdd36c35e62b9d43488f08de9",
+    "lib/pos-desk.ts": "61f2c3d85e3d4795194d76d8c0a002b71539189a191d588f6e8876aabd0cd608",
+    "lib/pos-service-catalog-server.ts": "f9f1d161f98fa7ce0d81e1371970478efbaab6631fb779fe301a3041ddb7bbba",
+    "types/pos-desk.ts": "64aceed5e1fee8185b320cb87736ba8e186e648ea6a5b23b0f83685c857ca514",
+    "tests/pos-service-catalog-ui.test.mjs": "a34420d159c8bf50be7d0cb98c3d1dbe2d9ea8abb2892025e6e984b0389e7127",
+    "lib/dialog-outside-dismiss.ts": "8bac2edf085e3237ad9c5c7323699ccd44354cc5b3cfa9f6b497a9461acd3640",
+    "app/pos/pos-rapid-mobile-bridge.tsx": "09ceb98dcb5fe3b1449b7501bd846e2654f686052f586123ace36f99c3ea1af1",
+    "tests/pos-compact-checkout-ui.test.mjs": "6a8d9e20a0ff1fb734b8bcac2aee991a37705ce300c96fb869790a2ec2c912d0"
+  }
+}

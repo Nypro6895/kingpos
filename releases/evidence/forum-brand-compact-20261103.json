@@ -1,0 +1,118 @@
+{
+  "kind": "release",
+  "summary": "Published compact 44px forum header using actual logo teal, logo left and profile right, no workspace switcher. Initial discussions remain separately pending database application.",
+  "changes": [
+    "36ec01cb-f683-460f-93aa-6ba3cdc98733"
+  ],
+  "sourceCommit": "73ba22eec77ebd1f2b63b720274be6e132eea912",
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_HH57U1pRRCGKBEi8eGRdy5JtcEuA",
+      "baselineDeploymentId": "dpl_DAGw9ipA5UyFGjKNNMkGxHfpjJuJ",
+      "sourceSha256": "bbdb6a098af25c542be7efc70c8511419f7fc42f0dcb39fad4ab4189cdddc5e0",
+      "overlaySha256": "937af120025776b34b6ce0842b5e56b254fb517118354f08d5b6b323d2af967b",
+      "evidence": {
+        "source": "artifacts/forum-brand/live-source-verified.json",
+        "http": "artifacts/forum-brand/live-http.json",
+        "browser": "artifacts/forum-brand/browser/result.json"
+      }
+    }
+  },
+  "nativeAssessment": "No new native build: /forum is an existing HTTPS-hosted route in build 89; all new assets and header render from the hosted forum; no Swift, local-route behavior or bridge changes.",
+  "pending": {
+    "event": "1d2321e5-c327-449a-9f81-73fa9689a8c0",
+    "content": "15 topics / 30 replies / 8 editorial personas prepared and tested; not applied to production because Chrome controller remains unavailable after reconnect.",
+    "liveAuthenticatedVisualCheck": "Pending: browser controller error"
+  },
+  "overlay": [
+    {
+      "file": "app/(app)/forum/forum.module.css",
+      "sha1": "8e429d54a3be9c642999f067f08e2b547edcb463",
+      "sha256": "67cd68aa8a03c1723bef9c34d097d4d99d4a301a583ab98bc3bf9fbc344969e1"
+    },
+    {
+      "file": "app/(app)/forum/forum.tsx",
+      "sha1": "77edf599378acccbc5b661b4b021a1f8d59886ca",
+      "sha256": "967d440082d4fc89bbb9bf8935bdf0190a3adf38f4a5afb41542700b4622d3b3"
+    },
+    {
+      "file": "app/(app)/forum/page.tsx",
+      "sha1": "6f9c3a3832d50cd3799e99777ef5a605f948f88e",
+      "sha256": "f0c1e6683392b89de87714f8ce349079a64fca65863c8814e2529e7351751ddb"
+    },
+    {
+      "file": "app/navigation-shell.tsx",
+      "sha1": "e4543d85aa4e54aa4c02372e285224dbe8be14ec",
+      "sha256": "9286b448e30573032bda25c1d26fae791fa00a6bc09152e094bf5f8c34e6cf37"
+    },
+    {
+      "file": "public/brand/forum-logo.webp",
+      "sha1": "b76dcfc67b9f66e0d24f8ee27b1e41ecc483357c",
+      "sha256": "bfd9a6468bb347be7b6c2884aca44b410bcf6c586db028902521cee03d2a16fe"
+    },
+    {
+      "file": "public/brand/forum/anna.svg",
+      "sha1": "91dfa7d9b2741110d16179eb3eafc02dcbb62ce6",
+      "sha256": "5768a7075033892ab8fad244ab92c74a2295eb97fa91825f2fbf7d7abc472b30"
+    },
+    {
+      "file": "public/brand/forum/huy.svg",
+      "sha1": "91dfa7d9b2741110d16179eb3eafc02dcbb62ce6",
+      "sha256": "5768a7075033892ab8fad244ab92c74a2295eb97fa91825f2fbf7d7abc472b30"
+    },
+    {
+      "file": "public/brand/forum/linh.svg",
+      "sha1": "c6f87a3fbe634ee52511eb367e55be9b8a94b92f",
+      "sha256": "e6c700c6cce0cffce6baa70e62573425a1135bf9389c471a0a8ff24b1796c7b3"
+    },
+    {
+      "file": "public/brand/forum/mai.svg",
+      "sha1": "9a9a5b6210f299e53b18568b93b8b7cc2fdf6113",
+      "sha256": "bae88ddb7e6655b1b4983e77679da0f3485213a5d02d23aedb41864113217d48"
+    },
+    {
+      "file": "public/brand/forum/minh.svg",
+      "sha1": "ec2fc7d367fb98cb74480b5b88820d52cb35e824",
+      "sha256": "44e7c2b5b797c98f8ea231364757444ff456424c98e35726af8fec5677a847bd"
+    },
+    {
+      "file": "public/brand/forum/nam.svg",
+      "sha1": "5c5ef730ce5415dabaa882a7e13f265b0d0cc3a3",
+      "sha256": "4367854265e562b704152efd5facb11dfda0544e6232cd883500625ecf552077"
+    },
+    {
+      "file": "public/brand/forum/thao.svg",
+      "sha1": "f5537efedfd288b17e92459434a7caae43548075",
+      "sha256": "a7277d358edfee6b0555e2003f4969e13cdc06398e7978ce1423c67b914fd2d0"
+    },
+    {
+      "file": "public/brand/forum/vy.svg",
+      "sha1": "1420fdb0cd2f4648878e7442b3ab09ce3f79cb5d",
+      "sha256": "a7b474d92251a0b3903425a5af5bd7fed4869d0168de4a0a6fc20468261d12df"
+    },
+    {
+      "file": "supabase/migrations/20261103183500_forum_numeric_order.sql",
+      "sha1": "d6073986b134963ee2a99b38edc8330023ed24d0",
+      "sha256": "c8c38813cdcb27a5409b1ad9e68b34b4055952ed5dc7c16e35a3dce520e04ef3"
+    },
+    {
+      "file": "types/forum.ts",
+      "sha1": "8086b156fb662f048381e4ec48878b793ecc2fae",
+      "sha256": "606a59c6fc3ad6f92d74e977d260c5ac759309f1a638564c85e6602b03de95af"
+    }
+  ],
+  "localChecks": {
+    "database": 15,
+    "browser": 11,
+    "headerHeight": 44,
+    "widths": [
+      320,
+      390,
+      768,
+      1280
+    ]
+  },
+  "at": "2026-11-03T19:00:16.158Z"
+}

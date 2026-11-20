@@ -1,0 +1,1605 @@
+import { SalonName } from "@/components/salon-member-badge";
+import { TodayForumPreview } from "./today-forum-preview";
+import { TodayStatistics } from "./today-statistics";
+import { OwnerAttentionPanel } from "./owner-attention-panel";
+import { QuickExpense } from "@/app/reports/quick-expense";
+import styles from "./today-layout.module.css";
+import {
+  WorkspaceText,
+  WorkspaceElement,
+} from "@/components/workspace-language";
+import { type MetricTone } from "@/lib/today-metric-assessment";
+import { OwnerMarketPromo } from "@/components/owner-market-promo";
+import { RewardOwnerPrompt } from "@/components/rewardlumi/reward-owner-prompt";
+
+import Link from "next/link";
+
+import { QuickAccessPanel } from "@/app/staff/today/quick-access-editor";
+import {
+  type TodayClientPresence,
+  type TodayDashboard,
+  type TodayMetric,
+  type TodayMetricChart,
+  type TodayTeamMember,
+  type TodayUpcomingBooking,
+} from "@/lib/today-dashboard";
+
+import type { StaffWorkdayStatus } from "@/types/staff-workday";
+import type { TodayDashboardSection } from "@/lib/today-dashboard-sections";
+
+function sectionPending(
+  dashboard: TodayDashboard,
+  section: TodayDashboardSection,
+) {
+  return dashboard.pendingSections?.sections?.includes(section) ?? false;
+}
+
+function classNames(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function formatDashboardDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    weekday: "long",
+  }).format(new Date(`${value}T12:00:00.000Z`));
+}
+
+function formatTime(value: string | null | undefined, timeZone: string) {
+  if (!value) {
+    return "Not yet";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone,
+  }).format(new Date(value));
+}
+
+function getGreeting(timeZone: string) {
+  const hourText = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    hourCycle: "h23",
+    timeZone,
+  }).format(new Date());
+  const hour = Number.parseInt(hourText, 10);
+
+  if (!Number.isFinite(hour)) {
+    return "Hello";
+  }
+
+  if (hour < 12) {
+    return "Good morning";
+  }
+
+  if (hour < 17) {
+    return "Good afternoon";
+  }
+
+  return "Good evening";
+}
+
+function formatShortMoney(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    style: "currency",
+  }).format(value);
+}
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return "ST";
+  }
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function hasTeamActivity(member: TodayTeamMember) {
+  return (
+    member.turns.total > 0 ||
+    (member.serviceSales ?? 0) > 0 ||
+    (member.tips ?? 0) > 0 ||
+    (member.earnings ?? 0) > 0
+  );
+}
+
+function formatCheckIn(member: TodayTeamMember, timeZone: string) {
+  if (!member.checkInAt) {
+    return member.status === "not_checked_in" ? "Not yet" : "-";
+  }
+
+  return formatTime(member.checkInAt, timeZone);
+}
+
+function TurnPair({
+  member,
+  pending = false,
+}: {
+  member: TodayTeamMember;
+  pending?: boolean;
+}) {
+  if (pending || member.financialAttribution?.services === "unavailable")
+    return <span aria-label="Turns unavailable">—</span>;
+  if (!hasTeamActivity(member) && member.turns.total === 0) {
+    return (
+      <WorkspaceElement
+        as="span"
+        aria-label="No turn activity yet"
+        className="text-zinc-500"
+        title="No turn activity yet"
+      >
+        -
+      </WorkspaceElement>
+    );
+  }
+
+  return (
+    <WorkspaceElement
+      as="span"
+      aria-label={`${member.turns.large} large turns and ${member.turns.small} small turns`}
+      className="inline-flex items-baseline gap-1.5 font-mono tabular-nums"
+    >
+      <span className="font-semibold text-zinc-950">{member.turns.large}</span>
+      <span aria-hidden="true" className="text-zinc-300">
+        /
+      </span>
+      <span className="text-zinc-500">{member.turns.small}</span>
+    </WorkspaceElement>
+  );
+}
+
+function staffMoneyDisplay(input: {
+  emptyLabel: string;
+  kind: "services" | "tips";
+  member: TodayTeamMember;
+  value: number | undefined;
+}) {
+  if (
+    input.kind === "tips" &&
+    input.member.financialAttribution?.tips === "unallocated"
+  ) {
+    return {
+      label: "-",
+      title: "Tips not attributed to this staff member",
+    };
+  }
+
+  if (typeof input.value !== "number" || input.value <= 0) {
+    return { label: input.emptyLabel, title: null };
+  }
+
+  return { label: formatShortMoney(input.value), title: null };
+}
+
+function StaffAvatar({
+  name,
+  size = "md",
+}: {
+  name: string;
+  size?: "sm" | "md";
+}) {
+  return (
+    <div
+      className={classNames(
+        "flex shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-50 font-semibold text-amber-800",
+        size === "sm" ? "h-9 w-9 text-xs" : "h-10 w-10 text-sm",
+      )}
+    >
+      {getInitials(name)}
+    </div>
+  );
+}
+
+function MetricIcon({ label }: { label: string }) {
+  const path = label.startsWith("Sales")
+    ? "M7 20V4m10 16V4M4 8h16M4 16h16"
+    : label === "Appointments"
+      ? "M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm3 10h.01M12 14h.01M16 14h.01"
+      : label === "Tickets"
+        ? "M6 2h12v20l-3-2-3 2-3-2-3 2V2Zm3 7h6m-6 4h6"
+        : label === "Waiting"
+          ? "M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z"
+          : "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75";
+
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      viewBox="0 0 24 24"
+    >
+      <path d={path} />
+    </svg>
+  );
+}
+
+function MiniMetricChart({ chart }: { chart: TodayMetricChart | null }) {
+  if (!chart || chart.points.length === 0) {
+    return null;
+  }
+
+  const points = chart.points;
+  const max = Math.max(...points.map((point) => Math.max(0, point.value)), 1);
+  const hasSignal = points.some((point) => point.value > 0);
+  const width = chart.kind === "sparkline" ? 132 : 116;
+  const height = chart.kind === "sparkline" ? 34 : 28;
+
+  if (chart.kind === "sparkline") {
+    const top = 4;
+    const bottom = height - 5;
+    const usableHeight = bottom - top;
+    const coordinates =
+      points.length === 1
+        ? [
+            [0, bottom - (Math.max(0, points[0].value) / max) * usableHeight],
+            [
+              width,
+              bottom - (Math.max(0, points[0].value) / max) * usableHeight,
+            ],
+          ]
+        : points.map((point, index) => {
+            const x = (index / (points.length - 1)) * width;
+            const y = bottom - (Math.max(0, point.value) / max) * usableHeight;
+
+            return [x, y];
+          });
+    const path = coordinates
+      .map(
+        ([x, y], index) =>
+          `${index ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`,
+      )
+      .join(" ");
+
+    return (
+      <WorkspaceElement
+        as="svg"
+        aria-label={chart.ariaLabel}
+        className="h-9 w-full"
+        role="img"
+        viewBox={`0 0 ${width} ${height}`}
+      >
+        <desc>
+          {points.map((point) => `${point.label}: ${point.value}`).join(", ")}
+        </desc>
+        {!hasSignal ? (
+          <path
+            className="stroke-zinc-200"
+            d={`M0 ${bottom} L${width} ${bottom}`}
+            fill="none"
+            strokeLinecap="round"
+            strokeWidth="1.4"
+          />
+        ) : null}
+        <path
+          className={hasSignal ? "stroke-current" : "stroke-zinc-200"}
+          d={path}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.9"
+        />
+      </WorkspaceElement>
+    );
+  }
+
+  const gap = 3;
+  const barWidth = Math.max(
+    4,
+    (width - gap * (points.length - 1)) / points.length,
+  );
+
+  return (
+    <WorkspaceElement
+      as="svg"
+      aria-label={chart.ariaLabel}
+      className="mt-3 h-8 w-full"
+      role="img"
+      viewBox={`0 0 ${width} ${height}`}
+    >
+      <desc>
+        {points.map((point) => `${point.label}: ${point.value}`).join(", ")}
+      </desc>
+      {points.map((point, index) => {
+        const barHeight = Math.max(
+          hasSignal ? 2 : 1,
+          (Math.max(0, point.value) / max) * (height - 4),
+        );
+        const x = index * (barWidth + gap);
+        const y = height - barHeight;
+
+        return (
+          <rect
+            className={
+              point.afterHours
+                ? "fill-current opacity-40"
+                : point.highlight
+                  ? "fill-current"
+                  : "fill-zinc-300"
+            }
+            height={barHeight}
+            key={`${point.label}:${index}`}
+            rx="2"
+            width={barWidth}
+            x={x}
+            y={y}
+          />
+        );
+      })}
+    </WorkspaceElement>
+  );
+}
+
+function TrendPill({ trend }: { trend: TodayMetric["trend"] }) {
+  if (!trend) {
+    return null;
+  }
+
+  const path =
+    trend.direction === "up"
+      ? "M7 17 17 7M9 7h8v8"
+      : trend.direction === "down"
+        ? "M7 7 17 17M17 9v8H9"
+        : "M5 12h14";
+
+  return (
+    <p
+      className={classNames(
+        "mt-2 inline-flex max-w-full items-start gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold",
+        trend.direction === "up"
+          ? "bg-teal-50 text-teal-700"
+          : trend.direction === "down"
+            ? "bg-orange-50 text-orange-700"
+            : "bg-zinc-100 text-zinc-600",
+      )}
+    >
+      <span className="min-w-0 break-words leading-5">
+        <WorkspaceText text={trend.label} />
+      </span>
+      <svg
+        aria-hidden="true"
+        className="h-3.5 w-3.5 shrink-0"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+      >
+        <path d={path} />
+      </svg>
+    </p>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M5 12h14M13 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+function SectionIcon({
+  name,
+}: {
+  name: "alert" | "calendar" | "chart" | "clock" | "team";
+}) {
+  const path =
+    name === "team"
+      ? "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+      : name === "chart"
+        ? "M4 19V5m5 14v-8m5 8V7m5 12v-5"
+        : name === "clock"
+          ? "M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z"
+          : name === "calendar"
+            ? "M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
+            : "M12 9v4m0 4h.01M10.3 3.9 1.7-1 1.7 1 8.3 14.4-1.7 3H3.7l-1.7-3 8.3-14.4Z";
+
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      viewBox="0 0 24 24"
+    >
+      <path d={path} />
+    </svg>
+  );
+}
+
+function metricIconTone(tone?: MetricTone) {
+  return tone === "good"
+    ? "bg-emerald-50 text-emerald-700"
+    : tone === "danger"
+      ? "bg-red-50 text-red-700"
+      : tone === "warning"
+        ? "bg-orange-50 text-orange-700"
+        : "bg-zinc-100 text-zinc-500";
+}
+function metricToneClass(metric: TodayMetric) {
+  if (metric.restricted) return "border-zinc-200 bg-zinc-50 text-zinc-500";
+  return metric.tone === "good"
+    ? "border-emerald-200 bg-white text-emerald-600"
+    : metric.tone === "danger"
+      ? "border-red-200 bg-white text-red-600"
+      : metric.tone === "warning"
+        ? "border-orange-200 bg-white text-orange-600"
+        : "border-zinc-200 bg-white text-zinc-500";
+}
+
+function statusToneClass(status: StaffWorkdayStatus | "not_checked_in") {
+  if (status === "checked_in" || status === "working") {
+    return "bg-emerald-50 text-emerald-700";
+  }
+
+  if (status === "break") {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  if (status === "not_checked_in") {
+    return "bg-zinc-50 text-zinc-600";
+  }
+
+  return "bg-zinc-100 text-zinc-600";
+}
+
+function statusDotClass(status: StaffWorkdayStatus | "not_checked_in") {
+  if (status === "checked_in" || status === "working") {
+    return "bg-emerald-500";
+  }
+
+  if (status === "break") {
+    return "bg-amber-500";
+  }
+
+  if (status === "not_checked_in") {
+    return "border border-zinc-400 bg-white";
+  }
+
+  return "bg-zinc-400";
+}
+
+function displayStaffStatus(status: StaffWorkdayStatus | "not_checked_in") {
+  if (status === "checked_in" || status === "working") {
+    return "Active";
+  }
+
+  if (status === "break") {
+    return "Break";
+  }
+
+  if (status === "not_checked_in") {
+    return "Unchecked";
+  }
+
+  return "Inactive";
+}
+
+function getWaitingMinutes(checkedInAt: string, generatedAt: string) {
+  const checkedInTime = new Date(checkedInAt).getTime();
+  const generatedTime = new Date(generatedAt).getTime();
+
+  if (
+    !Number.isFinite(checkedInTime) ||
+    !Number.isFinite(generatedTime) ||
+    generatedTime < checkedInTime
+  ) {
+    return 0;
+  }
+
+  return Math.floor((generatedTime - checkedInTime) / 60000);
+}
+
+function formatWaitingDuration(minutes: number) {
+  const safeMinutes = Math.max(0, Math.floor(minutes));
+
+  if (safeMinutes < 1) {
+    return "<1m";
+  }
+
+  if (safeMinutes < 60) {
+    return `${safeMinutes}m`;
+  }
+
+  const hours = Math.floor(safeMinutes / 60);
+  const remainingMinutes = safeMinutes % 60;
+
+  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+}
+
+function bookingStatusLabel(status: TodayUpcomingBooking["status"]) {
+  return status
+    .split("_")
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function clientPresenceStatusLabel(status: TodayClientPresence["status"]) {
+  if (status === "in_service") {
+    return "In service";
+  }
+
+  return status[0].toUpperCase() + status.slice(1);
+}
+
+function rightNowStatusToneClass(
+  status: TodayClientPresence["status"] | TodayUpcomingBooking["status"],
+) {
+  if (
+    status === "confirmed" ||
+    status === "checked_in" ||
+    status === "in_service" ||
+    status === "completed"
+  ) {
+    return "bg-emerald-50 text-emerald-700";
+  }
+
+  if (status === "pending" || status === "waiting") {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  return "bg-zinc-100 text-zinc-600";
+}
+
+function Card({
+  iconTone,
+  action,
+  children,
+  icon,
+  title,
+}: {
+  iconTone?: MetricTone;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  icon?: "alert" | "calendar" | "chart" | "clock" | "team";
+  title: string;
+}) {
+  return (
+    <section className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
+      <div className="flex items-center justify-between gap-4 border-b border-zinc-100 px-4 py-3.5 sm:px-5">
+        <div className="flex min-w-0 items-center gap-2">
+          {icon ? (
+            <span
+              className={classNames(
+                "grid h-8 w-8 shrink-0 place-items-center rounded-lg",
+                metricIconTone(iconTone),
+              )}
+            >
+              <SectionIcon name={icon} />
+            </span>
+          ) : null}
+          <h2 className="text-base font-semibold text-zinc-950">
+            <WorkspaceText text={title} />
+          </h2>
+        </div>
+        {action}
+      </div>
+      <div className="px-4 py-4 sm:px-5">{children}</div>
+    </section>
+  );
+}
+
+function ActionLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      className="inline-flex shrink-0 items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900 transition hover:border-amber-300 hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+      href={href}
+    >
+      <span>
+        <WorkspaceText text={label} />
+      </span>
+      <ArrowIcon />
+    </Link>
+  );
+}
+
+function MetricCard({
+  metric,
+  pending = false,
+}: {
+  metric: TodayMetric;
+  pending?: boolean;
+}) {
+  const body = (
+    <div
+      className={classNames(
+        styles.metric,
+        "flex h-full min-h-28 min-w-0 flex-col justify-between rounded-xl border p-3 shadow-[0_8px_24px_rgba(24,24,27,0.04)] transition sm:min-h-32 sm:p-4",
+
+        metricToneClass(metric),
+        metric.href ? "hover:bg-zinc-50" : null,
+      )}
+    >
+      <div
+        className={`${styles.metricHeading} flex flex-col items-start gap-2 sm:flex-row sm:items-center`}
+      >
+        <span
+          className={classNames(
+            "grid h-8 w-8 shrink-0 place-items-center rounded-lg",
+            metricIconTone(metric.restricted ? "default" : metric.tone),
+          )}
+        >
+          <MetricIcon label={metric.label} />
+        </span>
+        <p className="min-w-0 text-sm font-semibold leading-5 text-zinc-600">
+          <WorkspaceText text={metric.label} />
+        </p>
+      </div>
+      <div
+        className={`${styles.metricBody} mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_6.5rem] sm:items-end`}
+      >
+        <div className="min-w-0">
+          <p className="text-2xl font-semibold leading-none text-zinc-950 sm:text-3xl">
+            {pending ? (
+              <span
+                aria-label="Loading"
+                className="inline-block h-7 w-20 rounded bg-zinc-100"
+              />
+            ) : (
+              metric.value
+            )}
+          </p>
+          {!pending && metric.detail ? (
+            <p className="mt-2 text-xs leading-5 text-zinc-600 sm:text-sm">
+              <WorkspaceText text={metric.detail} />
+            </p>
+          ) : null}
+        </div>
+        <div className="min-w-0 sm:pb-1">
+          <MiniMetricChart chart={pending ? null : metric.chart} />
+        </div>
+      </div>
+      {!pending ? <TrendPill trend={metric.trend} /> : null}
+      {!pending && metric.assessment ? (
+        <p className="mt-2 text-xs font-medium leading-5">
+          {metric.assessment}
+        </p>
+      ) : null}
+    </div>
+  );
+
+  if (metric.href) {
+    return (
+      <Link
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+        href={metric.href}
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  return body;
+}
+
+function SummaryGrid({ dashboard }: { dashboard: TodayDashboard }) {
+  const metricKeys = ["sales", "customers", "waiting", "staff"] as const;
+
+  return (
+    <WorkspaceElement
+      as="section"
+      aria-label={
+        dashboard.dayView.isCurrentDate
+          ? "Today summary"
+          : "Selected day summary"
+      }
+      className="grid grid-cols-2 gap-3 lg:grid-cols-4"
+    >
+      {metricKeys.map((key) => (
+        <MetricCard
+          key={key}
+          metric={dashboard.summary[key]}
+          pending={dashboard.pendingSections?.metrics.includes(key)}
+        />
+      ))}
+    </WorkspaceElement>
+  );
+}
+
+function CheckinProgress({ dashboard }: { dashboard: TodayDashboard }) {
+  const operations = dashboard.checkinOperations;
+  if (!operations) return null;
+  const rows = [
+    ["In service", operations.counts.inService],
+    ["Ready to pay", operations.counts.readyToPay],
+    ["Submitted", operations.counts.submitted],
+    ...(operations.counts.cancelled > 0
+      ? [["Cancelled", operations.counts.cancelled]]
+      : []),
+  ] as const;
+  return (
+    <section
+      aria-label="Check-in progress"
+      className="rounded-xl border border-zinc-200 bg-white px-4 py-3"
+    >
+      <dl className="flex flex-wrap gap-x-6 gap-y-3 sm:gap-x-10">
+        {rows.map(([label, value]) => (
+          <div className="flex items-baseline gap-2" key={label}>
+            <dt className="text-sm text-zinc-500">
+              <WorkspaceText text={String(label)} />
+            </dt>
+            <dd className="text-xl font-semibold tabular-nums text-zinc-950">
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-2 text-xs text-zinc-500">
+        <WorkspaceText
+          text={
+            dashboard.dayView.isCurrentDate
+              ? "Stand by stays in service. Only cashier Submit completes payment."
+              : "Current state of visits checked in on this date; not a historical live snapshot."
+          }
+        />
+      </p>
+    </section>
+  );
+}
+
+function EmptyLine({ label }: { label: string }) {
+  return (
+    <p className="rounded-lg bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
+      <WorkspaceText text={label} />
+    </p>
+  );
+}
+
+function CompactEmptyState({
+  detail,
+  title,
+}: {
+  detail: string;
+  title: string;
+}) {
+  return (
+    <div className="content-surface border-amber-100 bg-amber-50/60 px-4 py-4 rounded-none border-y shadow-none">
+      <p className="text-sm font-semibold text-zinc-950">
+        <WorkspaceText text={title} />
+      </p>
+      <p className="mt-1 text-sm leading-5 text-zinc-600">{detail}</p>
+    </div>
+  );
+}
+
+function WaitingClientRow({
+  client,
+  generatedAt,
+  timeZone,
+}: {
+  client: TodayClientPresence;
+  generatedAt: string;
+  timeZone: string;
+}) {
+  const waitingDuration = formatWaitingDuration(
+    getWaitingMinutes(client.checkedInAt, generatedAt),
+  );
+  const sourceLabel =
+    client.source === "appointment"
+      ? "appointment"
+      : client.source === "walk_in"
+        ? "walk-in"
+        : "customer screen";
+  const title = [
+    `Checked in from ${sourceLabel}`,
+    client.appointmentAt ? formatTime(client.appointmentAt, timeZone) : null,
+    client.assignedStaff?.name ?? null,
+  ]
+    .filter(Boolean)
+    .join(" / ");
+  const content = (
+    <WorkspaceElement
+      as="div"
+      className="grid min-h-11 grid-cols-[2rem_minmax(0,1fr)_minmax(0,1.1fr)_auto] items-center gap-2 py-2"
+      title={title}
+    >
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800">
+        {getInitials(client.displayName)}
+      </div>
+      <p className="min-w-0 truncate text-sm font-semibold text-zinc-950">
+        {client.displayName}
+      </p>
+      <p className="min-w-0 truncate text-xs font-medium text-zinc-500">
+        <WorkspaceText text={client.serviceLabel ?? "Service not selected"} />
+      </p>
+      <span
+        className={classNames(
+          "justify-self-end rounded-full px-2 py-0.5 text-xs font-semibold",
+          rightNowStatusToneClass(client.status),
+        )}
+      >
+        <WorkspaceText text={clientPresenceStatusLabel(client.status)} />{" "}
+        {waitingDuration}
+      </span>
+    </WorkspaceElement>
+  );
+
+  if (client.href) {
+    return (
+      <Link
+        className="block rounded-lg px-2 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+        href={client.href}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className="px-2">{content}</div>;
+}
+
+function UpcomingBookingRow({
+  booking,
+  timeZone,
+}: {
+  booking: TodayUpcomingBooking;
+  timeZone: string;
+}) {
+  return (
+    <Link
+      className="block rounded-lg px-2 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+      href={booking.href}
+    >
+      <div className="grid min-h-11 grid-cols-[4.5rem_minmax(0,1fr)_minmax(0,1.1fr)_auto] items-center gap-2 py-2">
+        <div className="shrink-0 text-sm font-semibold tabular-nums text-zinc-950">
+          <WorkspaceText text={formatTime(booking.startAt, timeZone)} />
+        </div>
+        <p className="min-w-0 truncate text-sm font-semibold text-zinc-950">
+          {booking.customerName}
+        </p>
+        <WorkspaceElement
+          as="p"
+          className="min-w-0 truncate text-xs font-medium text-zinc-500"
+          title={
+            booking.assignedStaff
+              ? `Assigned staff: ${booking.assignedStaff.name}`
+              : undefined
+          }
+        >
+          <WorkspaceText
+            text={booking.serviceLabel ?? "Service not selected"}
+          />
+        </WorkspaceElement>
+        <span
+          className={classNames(
+            "justify-self-end rounded-full px-2 py-0.5 text-xs font-semibold",
+            rightNowStatusToneClass(booking.status),
+          )}
+        >
+          <WorkspaceText text={bookingStatusLabel(booking.status)} />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function ScheduleTextLink({ href }: { href: string }) {
+  return (
+    <Link
+      className="shrink-0 text-xs font-semibold text-amber-800 underline-offset-4 transition hover:text-amber-950 hover:underline focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-amber-500 sm:text-sm"
+      href={href}
+    >
+      <WorkspaceText text="View schedule" />
+    </Link>
+  );
+}
+
+function RightNowSection({
+  action,
+  children,
+  count,
+  title,
+}: {
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  count: number;
+  title: string;
+}) {
+  return (
+    <div className="content-surface min-w-0 border-zinc-100 bg-zinc-50/35 p-3 sm:p-4 rounded-none border-y shadow-none">
+      <div className="mb-2 flex min-h-9 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-baseline gap-2">
+          <h2 className="text-base font-semibold text-zinc-950">
+            <WorkspaceText text={title} />
+          </h2>
+          <span className="text-xs font-medium text-zinc-500">{count}</span>
+        </div>
+        {action}
+      </div>
+      <div className="divide-y divide-zinc-100">{children}</div>
+    </div>
+  );
+}
+
+function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
+  const hasWaiting = dashboard.rightNow.waitingClients.length > 0;
+  const hasUpcoming = dashboard.rightNow.upcomingBookings.length > 0;
+  const canViewBookings = dashboard.permissions.canViewBookings;
+  const isCurrentDate = dashboard.dayView.isCurrentDate;
+  const scheduleAction = dashboard.rightNow.scheduleHref ? (
+    <ScheduleTextLink href={dashboard.rightNow.scheduleHref} />
+  ) : null;
+
+  if (
+    canViewBookings &&
+    (sectionPending(dashboard, "bookings") ||
+      (isCurrentDate && sectionPending(dashboard, "waiting")))
+  ) {
+    return (
+      <section className="grid gap-4" aria-label="Appointments and waiting">
+        {isCurrentDate &&
+          (sectionPending(dashboard, "waiting") ? (
+            <PendingPanel title="Waiting" />
+          ) : (
+            <RightNowSection
+              title="Waiting"
+              count={dashboard.rightNow.waitingClients.length}
+            >
+              {hasWaiting ? (
+                dashboard.rightNow.waitingClients.map((client) => (
+                  <WaitingClientRow
+                    client={client}
+                    key={client.id}
+                    generatedAt={dashboard.generatedAt}
+                    timeZone={dashboard.timezone}
+                  />
+                ))
+              ) : (
+                <EmptyLine label="No clients waiting right now." />
+              )}
+            </RightNowSection>
+          ))}
+        {sectionPending(dashboard, "bookings") ? (
+          <PendingPanel title="Bookings" />
+        ) : (
+          <RightNowSection
+            title={isCurrentDate ? "Upcoming" : "Bookings"}
+            count={dashboard.rightNow.upcomingBookings.length}
+            action={scheduleAction}
+          >
+            {hasUpcoming ? (
+              dashboard.rightNow.upcomingBookings.map((booking) => (
+                <UpcomingBookingRow
+                  booking={booking}
+                  key={booking.id}
+                  timeZone={dashboard.timezone}
+                />
+              ))
+            ) : (
+              <EmptyLine label="No appointments recorded." />
+            )}
+          </RightNowSection>
+        )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
+      <div className="px-4 py-4 sm:px-5">
+        {!canViewBookings ? (
+          <CompactEmptyState
+            detail="Booking access is required to show waiting clients and upcoming appointments."
+            title="Bookings unavailable"
+          />
+        ) : !isCurrentDate ? (
+          hasUpcoming ? (
+            <RightNowSection
+              action={scheduleAction}
+              count={dashboard.rightNow.upcomingBookings.length}
+              title="Bookings"
+            >
+              {dashboard.rightNow.upcomingBookings.map((booking) => (
+                <UpcomingBookingRow
+                  booking={booking}
+                  key={booking.id}
+                  timeZone={dashboard.timezone}
+                />
+              ))}
+            </RightNowSection>
+          ) : (
+            <CompactEmptyState
+              detail="This date has no scheduled appointments."
+              title="No appointments recorded"
+            />
+          )
+        ) : !hasWaiting && !hasUpcoming ? (
+          <CompactEmptyState
+            detail="No clients waiting or upcoming appointments remaining today."
+            title="Quiet right now"
+          />
+        ) : (
+          <div
+            className={classNames(
+              "grid gap-5",
+              hasWaiting && hasUpcoming ? "xl:grid-cols-2" : null,
+            )}
+          >
+            {hasWaiting ? (
+              <RightNowSection
+                action={!hasUpcoming ? scheduleAction : undefined}
+                count={dashboard.rightNow.waitingClients.length}
+                title="Waiting"
+              >
+                {dashboard.rightNow.waitingClients.map((client) => (
+                  <WaitingClientRow
+                    client={client}
+                    generatedAt={dashboard.generatedAt}
+                    key={client.id}
+                    timeZone={dashboard.timezone}
+                  />
+                ))}
+              </RightNowSection>
+            ) : (
+              <EmptyLine label="No clients waiting right now." />
+            )}
+
+            {hasUpcoming ? (
+              <RightNowSection
+                action={scheduleAction}
+                count={dashboard.rightNow.upcomingBookings.length}
+                title="Upcoming"
+              >
+                {dashboard.rightNow.upcomingBookings.map((booking) => (
+                  <UpcomingBookingRow
+                    booking={booking}
+                    key={booking.id}
+                    timeZone={dashboard.timezone}
+                  />
+                ))}
+              </RightNowSection>
+            ) : (
+              <EmptyLine label="No upcoming appointments remaining today." />
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function StaffStatusBadge({
+  status,
+  operationalState,
+}: {
+  status: StaffWorkdayStatus | "not_checked_in";
+  operationalState?: TodayTeamMember["operationalState"];
+}) {
+  const label =
+    operationalState === "busy"
+      ? "Busy"
+      : operationalState === "available"
+        ? "Available"
+        : operationalState === "offDuty"
+          ? status === "break"
+            ? "Break"
+            : status === "not_checked_in"
+              ? "Not checked in"
+              : status === "unavailable"
+                ? "Unavailable"
+                : "Off duty"
+          : displayStaffStatus(status);
+  const badgeStatus =
+    operationalState === "busy"
+      ? "working"
+      : operationalState === "available"
+        ? "checked_in"
+        : operationalState === "offDuty" &&
+            !["break", "not_checked_in", "unavailable"].includes(status)
+          ? "checked_out"
+          : status;
+  return (
+    <span
+      className={classNames(
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold leading-5",
+        operationalState === "busy"
+          ? "bg-blue-50 text-blue-700"
+          : statusToneClass(badgeStatus),
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className={classNames(
+          "h-1.5 w-1.5 rounded-full",
+          operationalState === "busy"
+            ? "bg-blue-500"
+            : statusDotClass(badgeStatus),
+        )}
+      />
+      <WorkspaceText text={label} />
+    </span>
+  );
+}
+
+function TeamMobileRow({
+  canViewFinancials,
+  ticketsHref,
+  pendingTurns,
+  member,
+  timeZone,
+}: {
+  canViewFinancials: boolean;
+  ticketsHref: string | null;
+  pendingTurns?: boolean;
+  member: TodayTeamMember;
+  timeZone: string;
+}) {
+  const services = canViewFinancials
+    ? staffMoneyDisplay({
+        emptyLabel: "-",
+        kind: "services",
+        member,
+        value: member.serviceSales,
+      })
+    : null;
+  const tips = canViewFinancials
+    ? staffMoneyDisplay({
+        emptyLabel: "-",
+        kind: "tips",
+        member,
+        value: member.tips,
+      })
+    : null;
+
+  return (
+    <li className="py-3">
+      <div className="flex min-w-0 items-center gap-3">
+        <StaffAvatar name={member.displayName} size="sm" />
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-zinc-950">
+                {ticketsHref ? (
+                  <Link
+                    href={ticketsHref}
+                    className="inline-flex min-h-11 items-center underline decoration-zinc-200 underline-offset-4"
+                  >
+                    {member.displayName}
+                  </Link>
+                ) : (
+                  member.displayName
+                )}
+              </p>
+            </div>
+            <StaffStatusBadge
+              status={member.status}
+              operationalState={member.operationalState}
+            />
+            <span className="shrink-0 text-sm text-zinc-800">
+              <TurnPair member={member} pending={pendingTurns} />
+            </span>
+          </div>
+          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+            <span className="whitespace-nowrap">
+              <WorkspaceText text={formatCheckIn(member, timeZone)} />
+            </span>
+            {services ? (
+              <WorkspaceElement
+                as="span"
+                aria-label={services.title ?? undefined}
+                className="whitespace-nowrap font-medium text-zinc-700"
+                title={services.title ?? undefined}
+              >
+                <WorkspaceText text="Services" />{" "}
+                <WorkspaceText text={services.label} />
+              </WorkspaceElement>
+            ) : null}
+            {tips ? (
+              <WorkspaceElement
+                as="span"
+                aria-label={tips.title ?? undefined}
+                className="whitespace-nowrap"
+                title={tips.title ?? undefined}
+              >
+                <WorkspaceText text="Tips" />{" "}
+                <WorkspaceText text={tips.label} />
+              </WorkspaceElement>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+function TeamPanel({ dashboard }: { dashboard: TodayDashboard }) {
+  return (
+    <Card
+      action={
+        dashboard.permissions.canViewTickets ? (
+          <ActionLink
+            href={`/pos-tickets?${new URLSearchParams({ date: dashboard.date })}`}
+            label="Tickets"
+          />
+        ) : null
+      }
+      icon="team"
+      title="Team Today"
+    >
+      {dashboard.team.length > 0 ? (
+        <>
+          <ul className="divide-y divide-zinc-100 md:hidden">
+            {dashboard.team.map((member) => (
+              <TeamMobileRow
+                canViewFinancials={dashboard.permissions.canViewStaffFinancials}
+                ticketsHref={
+                  dashboard.permissions.canViewTickets
+                    ? `/pos-tickets?${new URLSearchParams({ date: dashboard.date, staff: member.id })}`
+                    : null
+                }
+                pendingTurns={sectionPending(dashboard, "financials")}
+                key={member.id}
+                member={member}
+                timeZone={dashboard.timezone}
+              />
+            ))}
+          </ul>
+
+          <div className="hidden md:block">
+            <table className="w-full table-fixed text-left text-sm">
+              <thead>
+                <tr className="border-b border-zinc-100 text-xs font-medium text-zinc-500">
+                  <th className="w-[34%] py-2 pr-3">
+                    <WorkspaceText text="Staff" />
+                  </th>
+                  <th className="w-[12%] py-2 pr-3">
+                    <WorkspaceText text="Status" />
+                  </th>
+                  <th className="w-[13%] py-2 pr-3">
+                    <WorkspaceText text="Check-in" />
+                  </th>
+                  <th className="w-[13%] py-2 pr-3">
+                    <span className="block">
+                      <WorkspaceText text="Turns" />
+                    </span>
+                    <span className="block text-[11px] font-normal text-zinc-400">
+                      L / S
+                    </span>
+                  </th>
+                  {dashboard.permissions.canViewStaffFinancials ? (
+                    <>
+                      <th className="w-[14%] py-2 pr-3">
+                        <WorkspaceText text="Services" />
+                      </th>
+                      <th className="w-[14%] py-2">
+                        <WorkspaceText text="Tips" />
+                      </th>
+                    </>
+                  ) : null}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100">
+                {dashboard.team.map((member) => (
+                  <tr key={member.id}>
+                    <td className="py-3 pr-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <StaffAvatar name={member.displayName} size="sm" />
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-zinc-950">
+                            {dashboard.permissions.canViewTickets ? (
+                              <Link
+                                href={`/pos-tickets?${new URLSearchParams({ date: dashboard.date, staff: member.id })}`}
+                                className="inline-flex min-h-11 items-center underline decoration-zinc-200 underline-offset-4"
+                              >
+                                {member.displayName}
+                              </Link>
+                            ) : (
+                              member.displayName
+                            )}
+                          </p>
+                          <p className="truncate text-xs text-zinc-500">
+                            <WorkspaceText text={member.jobTitle ?? "Staff"} />
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 pr-3">
+                      <StaffStatusBadge
+                        status={member.status}
+                        operationalState={member.operationalState}
+                      />
+                    </td>
+                    <td className="whitespace-nowrap py-3 pr-3 text-zinc-700">
+                      <WorkspaceText
+                        text={formatCheckIn(member, dashboard.timezone)}
+                      />
+                    </td>
+                    <td className="whitespace-nowrap py-3 pr-3 text-zinc-700">
+                      <TurnPair
+                        member={member}
+                        pending={sectionPending(dashboard, "financials")}
+                      />
+                    </td>
+                    {dashboard.permissions.canViewStaffFinancials ? (
+                      <>
+                        <td className="whitespace-nowrap py-3 pr-3 text-zinc-700">
+                          {(() => {
+                            const services = staffMoneyDisplay({
+                              emptyLabel: "-",
+                              kind: "services",
+                              member,
+                              value: member.serviceSales,
+                            });
+
+                            return (
+                              <WorkspaceElement
+                                as="span"
+                                aria-label={services.title ?? undefined}
+                                title={services.title ?? undefined}
+                              >
+                                <WorkspaceText text={services.label} />
+                              </WorkspaceElement>
+                            );
+                          })()}
+                        </td>
+                        <td className="whitespace-nowrap py-3 text-zinc-700">
+                          {(() => {
+                            const tips = staffMoneyDisplay({
+                              emptyLabel: "-",
+                              kind: "tips",
+                              member,
+                              value: member.tips,
+                            });
+
+                            return (
+                              <WorkspaceElement
+                                as="span"
+                                aria-label={tips.title ?? undefined}
+                                title={tips.title ?? undefined}
+                              >
+                                <WorkspaceText text={tips.label} />
+                              </WorkspaceElement>
+                            );
+                          })()}
+                        </td>
+                      </>
+                    ) : null}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : (
+        <EmptyLine
+          label={
+            dashboard.dayView.isCurrentDate
+              ? "No active staff records for today."
+              : "No staff records for this date."
+          }
+        />
+      )}
+    </Card>
+  );
+}
+
+function LoadErrorsBanner({
+  errors,
+}: {
+  errors: TodayDashboard["loadErrors"];
+}) {
+  if (errors.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="content-surface border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 rounded-none border-y shadow-none">
+      <p className="font-semibold">
+        <WorkspaceText text="Some Today sections could not load." />
+      </p>
+      <ul className="mt-2 space-y-1">
+        {errors.map((error) => (
+          <li key={`${error.area}:${error.message}`}>
+            <WorkspaceText text="Some information is temporarily unavailable. Please try again." />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function RestrictedDashboard({ dashboard }: { dashboard: TodayDashboard }) {
+  return (
+    <main className="min-h-screen bg-[#fbfaf8] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <header className="mb-6">
+          <h1 className="text-3xl font-semibold text-zinc-950">
+            <WorkspaceText text={getGreeting(dashboard.timezone)} />,{" "}
+            {dashboard.greetingName}{" "}
+            <span aria-hidden="true">{"\uD83D\uDC4B"}</span>
+          </h1>
+          <p className="mt-2 text-sm font-medium text-zinc-500">
+            <SalonName name={dashboard.salonName} currentSalon />
+            {" \u00B7 "}
+            <WorkspaceText text={formatDashboardDate(dashboard.date)} />
+          </p>
+        </header>
+        <section className="content-surface border-amber-200 bg-amber-50 p-5 rounded-none border-y shadow-none">
+          <h2 className="text-base font-semibold text-amber-950">
+            <WorkspaceText text="Permission required" />
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-amber-900">
+            <WorkspaceText text="Today requires staff view permission for this salon workspace." />
+          </p>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function PendingPanel({ title }: { title: string }) {
+  return (
+    <section aria-busy="true" className={`${styles.group} bg-white p-5`}>
+      <h2 className="text-base font-semibold text-zinc-950">
+        <WorkspaceText text={title} />
+      </h2>
+      <div aria-hidden="true" className="mt-4 h-28 rounded-lg bg-zinc-50" />
+    </section>
+  );
+}
+
+export function TodayDashboardView({
+  dashboard,
+  isOwner,
+  retry,
+  sectionRecovery = false,
+}: {
+  dashboard: TodayDashboard;
+  isOwner: boolean;
+  retry?: () => void;
+  sectionRecovery?: boolean;
+}) {
+  if (dashboard.noAccess) {
+    return <RestrictedDashboard dashboard={dashboard} />;
+  }
+
+  const progressive = Boolean(dashboard.pendingSections?.sections);
+  const financePending = sectionPending(dashboard, "financials");
+  const teamDashboard = financePending
+    ? {
+        ...dashboard,
+        permissions: {
+          ...dashboard.permissions,
+          canViewStaffFinancials: false,
+        },
+      }
+    : dashboard;
+
+  return (
+    <main
+      className={`${styles.page} min-h-screen bg-[#fbfaf8] px-0 py-6 md:px-6 lg:px-8`}
+      data-today-dashboard="owner-manager"
+    >
+      <div className="flex w-full min-w-0 flex-col gap-5">
+        <header className={styles.header}>
+          <div className={styles.greeting}>
+            <div className="min-w-0">
+              <h1 className="break-words text-xl font-semibold tracking-normal text-zinc-950 sm:text-3xl">
+                <WorkspaceText text={getGreeting(dashboard.timezone)} />,{" "}
+                {dashboard.greetingName}{" "}
+                <span aria-hidden="true">{"\uD83D\uDC4B"}</span>
+              </h1>
+            </div>
+            {isOwner && <QuickExpense compact />}
+          </div>
+          <div className={styles.metadata}>
+            <p className="min-w-0 break-words">
+              <WorkspaceText text={formatDashboardDate(dashboard.date)} />
+            </p>
+
+            <p className={styles.updated}>
+              <WorkspaceText text="Updated" />{" "}
+              <WorkspaceText
+                text={formatTime(dashboard.generatedAt, dashboard.timezone)}
+              />
+            </p>
+          </div>
+        </header>
+
+        {!sectionRecovery ? (
+          <LoadErrorsBanner errors={dashboard.loadErrors} />
+        ) : null}
+        <SummaryGrid dashboard={dashboard} />
+        {isOwner ? <RewardOwnerPrompt /> : null}
+        <CheckinProgress dashboard={dashboard} />
+        {retry ? (
+          <div
+            role="status"
+            className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 text-sm"
+          >
+            <WorkspaceText text="We couldn’t finish loading. You can try again." />
+            <button
+              type="button"
+              className="shrink-0 rounded-lg border px-3 py-2"
+              onClick={retry}
+            >
+              <WorkspaceText text="Try again" />
+            </button>
+          </div>
+        ) : null}
+
+        <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+          <RightNowPanel dashboard={dashboard} />
+          {isOwner && dashboard.salonId && (
+            <OwnerAttentionPanel
+              key={dashboard.salonId}
+              salonId={dashboard.salonId}
+            />
+          )}
+        </section>
+
+        <details className="today-extra">
+          <summary>
+            <WorkspaceText text="Team & staff details" />
+          </summary>
+          {(
+            progressive
+              ? sectionPending(dashboard, "staff")
+              : dashboard.pendingSections?.details
+          ) ? (
+            <PendingPanel title="Team" />
+          ) : (
+            <TeamPanel dashboard={teamDashboard} />
+          )}
+        </details>
+        <details className="today-extra">
+          <summary>
+            <WorkspaceText text="Statistics & trends" />
+          </summary>
+          {(
+            progressive ? financePending : dashboard.pendingSections?.details
+          ) ? (
+            <PendingPanel title="Statistics" />
+          ) : (
+            <TodayStatistics dashboard={dashboard} />
+          )}
+        </details>
+
+        {(
+          progressive
+            ? sectionPending(dashboard, "extras")
+            : dashboard.pendingSections?.details
+        ) ? (
+          <PendingPanel title="Quick access" />
+        ) : (
+          <QuickAccessPanel
+            configuration={dashboard.quickAccesses}
+            key={dashboard.quickAccesses.selected
+              .map((shortcut) => shortcut.id)
+              .join(":")}
+          />
+        )}
+        {isOwner ? <TodayForumPreview key={dashboard.salonId} /> : null}
+        {isOwner ? <OwnerMarketPromo /> : null}
+      </div>
+    </main>
+  );
+}

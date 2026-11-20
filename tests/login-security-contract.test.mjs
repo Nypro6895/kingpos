@@ -40,7 +40,7 @@ const supabaseConfig = read("supabase/config.toml");
 test("All Settings loads the security panel while retaining its dedicated route", () => {
   assert.ok(existsSync("app/(app)/settings/login-security/page.tsx"));
   assert.match(settingsPage, /SettingsHubClient/);
-  assert.match(read("app/settings/settings-hub-client.tsx"), /id:"login-security".*DeferredPersonalSection kind="security"/);
+  assert.match(read("app/settings/settings-hub-client.tsx"), /id:\s*"login-security"[\s\S]*?DeferredPersonalSection kind="security"/);
   assert.match(read("app/settings/deferred-personal-section.tsx"), /LoginSecurityPanel/);
   assert.match(loginSecurityPage, /loadLoginSecurityOverview/);
   assert.match(loginSecurityPage, /redirect\("\/login\?next=\/settings\/login-security"\)/);
@@ -55,11 +55,11 @@ test("Login Security UI covers password, sessions, trusted devices, MFA, alerts,
     "Where you're logged in",
     "Log out all devices",
     "Trusted devices",
-    "Remember this device",
+    "Trust this device",
     "Two-factor authentication",
-    "Set up authenticator",
+    "Set up",
     "Phone SMS",
-    "Send SMS code",
+    "Send",
     "SMS code",
     "Verify phone 2FA",
     "SMS alerts",
@@ -136,7 +136,8 @@ test("SMS login alerts default to profile phone and never block login", () => {
   assert.match(accountSecurity, /login_sms_alert_failed/);
   assert.match(accountSecurity, /\.catch\(\(smsError: unknown\) =>/);
   assert.match(loginSecurityActions, /sms_login_alerts_enabled: context\.user\.phone/);
-  assert.match(loginSmsAlerts, /TWILIO_ACCOUNT_SID/);
+  assert.match(loginSmsAlerts, /sendSystemSms\('loginAlerts'/);
+  assert.doesNotMatch(loginSmsAlerts, /process\.env|TWILIO_ACCOUNT_SID/);
   assert.match(loginSmsAlerts, /Text-message login alerts are temporarily unavailable/);
 });
 
@@ -146,7 +147,7 @@ test("Login and logout routes wire app-owned session tracking", () => {
   assert.match(loginRoute, /recordAccountLoginForSession/);
   assert.match(loginRoute, /response\.cookies\.set\(\s*ACCOUNT_LOGIN_SESSION_COOKIE/);
   assert.match(loginRoute, /loginMfaRequiredResponse/);
-  assert.match(loginRoute, /setPendingMfaSessionCookieWriter/);
+  assert.match(loginRoute, /writePendingMfaTransition/);
   assert.match(mfaVerifyRoute, /auth\.mfa\.verify/);
   assert.match(mfaVerifyRoute, /recordAccountLoginForSession/);
   assert.match(mfaVerifyRoute, /ACCOUNT_LOGIN_SESSION_COOKIE/);
@@ -156,7 +157,7 @@ test("Login and logout routes wire app-owned session tracking", () => {
   assert.match(serverAuth, /PENDING_MFA_ACCESS_TOKEN_COOKIE/);
   assert.match(serverAuth, /clearPendingMfaSessionCookieWriter/);
   assert.match(serverAuth, /ACCOUNT_LOGIN_SESSION_COOKIE/);
-  assert.match(serverAuth, /revoked_at/);
+  assert.match(serverAuth, /check_account_login_session/);
   assert.doesNotMatch(serverAuth, /readSessionFromCookieValue/);
 });
 

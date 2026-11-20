@@ -1,5 +1,16 @@
 "use client";
+import { useOverlayPortalHost, useTransientOverlay } from "@/components/overlay-dismissal";
+import { useDialogViewport } from "@/components/use-dialog-viewport";
+import { useSettingsDialogActions } from "@/app/settings/settings-dialog-layer";
 
+import {
+  WorkspaceText,
+  useWorkspaceTranslation,
+} from "@/components/workspace-language";
+import styles from "./account-profile-editor.module.css";
+import { authorizePhoneChangeAction } from "@/app/account/phone-change-actions";
+import { LanguageSetting } from "@/components/salon-language-preferences";
+import { TimeZoneSelect } from "@/components/time-zone-select";
 import {
   getAccountAvatarUploadSessionAction,
   sendAccountPhoneVerificationOtpAction,
@@ -16,22 +27,23 @@ import {
 import type { KingUser } from "@/types/user";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import {
   useEffect,
+  useEffectEvent,
+  useId,
+  useLayoutEffect,
   useRef,
   useState,
   useTransition,
   type ChangeEvent,
   type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+  type RefObject,
 } from "react";
 
 type EditableFieldName =
-  | "display_name"
-  | "first_name"
-  | "last_name"
-  | "language"
-  | "phone"
-  | "timezone";
+  "display_name" | "first_name" | "last_name" | "phone" | "timezone";
 
 type ProfileValues = Record<EditableFieldName, string>;
 type PhoneClaimState = NonNullable<AccountProfileActionResult["phoneClaim"]>;
@@ -40,7 +52,12 @@ type AccountProfileEditorProps = {
   createdAtLabel: string;
   user: KingUser;
   compact?: boolean;
+  embedded?: boolean;
+  sectionId?: string;
   phoneVerified?: boolean;
+  avatarOnly?: boolean;
+  phoneOnly?: boolean;
+  onSaved?: () => void;
 };
 
 type VerificationPhoneClaimState = Extract<
@@ -72,6 +89,7 @@ type PhoneVerificationDialogProps = {
   onCodeChange: (value: string) => void;
   onSend: () => void;
   onVerify: () => void;
+  returnFocusRef: RefObject<HTMLElement | null>;
   resendWaitSeconds: number;
   sending: boolean;
   sent: boolean;
@@ -85,7 +103,6 @@ function valuesFromUser(user: KingUser): ProfileValues {
   return {
     display_name: user.display_name ?? "",
     first_name: user.first_name ?? "",
-    language: user.language ?? "en",
     last_name: user.last_name ?? "",
     phone: user.phone ?? "",
     timezone: user.timezone ?? "America/Chicago",
@@ -111,13 +128,16 @@ function displayName(input: {
   lastName: string;
   name: string;
 }) {
-  const fullName = [input.firstName, input.lastName].filter(Boolean).join(" ").trim();
+  const fullName = [input.firstName, input.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 
   return input.name.trim() || fullName || input.email || "Reylumi account";
 }
 
 function displayValue(value: string | null | undefined) {
-  return value?.trim() || "-";
+  return value?.trim() || "Not provided";
 }
 
 function maskPhoneForOtp(phone: string) {
@@ -234,9 +254,9 @@ function ProfileField({ label, onEdit, value }: ProfileFieldProps) {
   const display = displayValue(value);
 
   return (
-    <div className="grid gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+    <div className="settings-profile-row grid gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <dt className="text-xs font-semibold uppercase text-zinc-500">
-        {label}
+        <WorkspaceText text={label} />
       </dt>
       <dd className="min-w-0">
         {onEdit ? (
@@ -245,11 +265,19 @@ function ProfileField({ label, onEdit, value }: ProfileFieldProps) {
             onClick={onEdit}
             type="button"
           >
-            <span className="break-words">{display}</span>
+            <span
+              className={
+                value?.trim()
+                  ? "break-words"
+                  : "break-words font-normal text-zinc-500"
+              }
+            >
+              {value?.trim() ? display : <WorkspaceText text="Not provided" />}
+            </span>
           </button>
         ) : (
           <span className="flex min-h-6 items-center break-words text-sm font-semibold text-zinc-950">
-            {display}
+            {value?.trim() ? display : <WorkspaceText text="Not provided" />}
           </span>
         )}
       </dd>
@@ -264,39 +292,160 @@ function EditableField({
   onChange,
   value,
 }: EditableFieldProps) {
-  const fieldId = `account-profile-${name}`;
+  const instanceId = useId();
+  const fieldId = `account-profile-${instanceId}-${name}`;
 
   return (
-    <div className="grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+    <div className="settings-profile-row grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <label
         className="text-xs font-semibold uppercase text-zinc-500"
         htmlFor={fieldId}
       >
-        {label}
+        <WorkspaceText text={label} />
       </label>
-      <input
-        autoComplete={autoComplete}
-        className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
-        id={fieldId}
-        name={name}
-        onChange={(event) => onChange(name, event.currentTarget.value)}
-        value={value}
-      />
+      {(name as string) === "language" ? (
+        <select
+          id={fieldId}
+          name={name}
+          value={value}
+          onChange={(event) => onChange(name, event.currentTarget.value)}
+          className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm"
+        >
+          <option value="en">English</option>
+          <option value="vi">Tiếng Việt</option>
+          {!["en", "vi"].includes(value) ? (
+            <option value={value}>{value}</option>
+          ) : null}
+        </select>
+      ) : name === "timezone" ? (
+        <TimeZoneSelect
+          compactLabel
+          id={fieldId}
+          name={name}
+          className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm"
+          value={value}
+          onChange={(event) => onChange(name, event.currentTarget.value)}
+        />
+      ) : (
+        <input
+          autoComplete={autoComplete}
+          type={name === "phone" ? "tel" : "text"}
+          inputMode={name === "phone" ? "tel" : undefined}
+          className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
+          id={fieldId}
+          name={name}
+          onChange={(event) => onChange(name, event.currentTarget.value)}
+          value={value}
+        />
+      )}
     </div>
   );
 }
 
 function ReadonlyField({ label, value }: ProfileFieldProps) {
   return (
-    <div className="grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+    <div className="settings-profile-row grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <span className="text-xs font-semibold uppercase text-zinc-500">
-        {label}
+        <WorkspaceText text={label} />
       </span>
       <span className="flex min-h-11 items-center rounded-md border border-zinc-200 bg-zinc-50 px-3 text-sm font-semibold text-zinc-950">
         {displayValue(value)}
       </span>
     </div>
   );
+}
+
+function VerificationDialogLayer({ children, onClose, returnFocusRef, canDismiss = true }: {
+  children: ReactNode;
+  onClose: () => void;
+  returnFocusRef: RefObject<HTMLElement | null>;
+  canDismiss?: boolean;
+}) {
+  const host = useOverlayPortalHost();
+  const layerRef = useRef<HTMLDivElement>(null);
+  useDialogViewport(layerRef, Boolean(host));
+  const dismiss = useEffectEvent(() => {
+    if (canDismiss) onClose();
+  });
+
+  useLayoutEffect(() => {
+    const layer = layerRef.current;
+    if (!host || !layer) return;
+    const dialog = layer.querySelector<HTMLElement>('[role="dialog"]');
+    const opener = returnFocusRef.current ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    const openedAt = window.location.href;
+    layer.hidden = false;
+    dialog?.focus({ preventScroll: true });
+    const viewport = window.visualViewport;
+    let focusFrame = 0;
+    const revealFocusedField = () => {
+      cancelAnimationFrame(focusFrame);
+      focusFrame = requestAnimationFrame(() => {
+        const field = document.activeElement;
+        if (!(field instanceof HTMLElement) || !layer.contains(field) || !field.matches("input,textarea,select")) return;
+        const visibleTop = viewport?.offsetTop ?? 0;
+        const visibleBottom = visibleTop + (viewport?.height ?? window.innerHeight);
+        // Scroll only the modal's panel, keeping the profile draft's page in place.
+        for (let panel = field.parentElement; panel && panel !== layer; panel = panel.parentElement) {
+          if (!/(auto|scroll)/.test(getComputedStyle(panel).overflowY) || panel.scrollHeight <= panel.clientHeight) continue;
+          const bounds = panel.getBoundingClientRect(), target = field.getBoundingClientRect();
+          const top = Math.max(visibleTop, bounds.top) + 12;
+          const bottom = Math.min(visibleBottom, bounds.bottom) - 12;
+          const delta = target.bottom > bottom ? target.bottom - bottom : target.top < top ? target.top - top : 0;
+          if (delta) panel.scrollTop += delta;
+        }
+      });
+    };
+    layer.addEventListener("focusin", revealFocusedField);
+    viewport?.addEventListener("resize", revealFocusedField);
+    viewport?.addEventListener("scroll", revealFocusedField);
+    window.addEventListener("resize", revealFocusedField);
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        dismiss();
+        return;
+      }
+      if (event.key !== "Tab" || !dialog) return;
+      const targets = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]',
+      )).filter(element => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden");
+      const first = targets[0], last = targets.at(-1);
+      const active = document.activeElement;
+      if (!first || !last) {
+        event.preventDefault();
+        dialog.focus({ preventScroll: true });
+      } else if (event.shiftKey && (active === first || active === dialog || !dialog.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || active === dialog || !dialog.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      // Activity can retain the page's state while disconnecting its effects.
+      // Hide the body portal immediately; route cleanup only closes visibility.
+      const restoreFocus = layer.contains(document.activeElement) || document.activeElement === document.body;
+      layer.hidden = true;
+      cancelAnimationFrame(focusFrame);
+      layer.removeEventListener("focusin", revealFocusedField);
+      viewport?.removeEventListener("resize", revealFocusedField);
+      viewport?.removeEventListener("scroll", revealFocusedField);
+      window.removeEventListener("resize", revealFocusedField);
+      document.removeEventListener("keydown", onKeyDown);
+      if (restoreFocus && window.location.href === openedAt && opener?.isConnected && opener.getClientRects().length) {
+        opener.focus({ preventScroll: true });
+      }
+    };
+  }, [host, returnFocusRef]);
+
+  return host ? createPortal(
+    <div className="fixed inset-0 z-[120]" data-account-verification-layer hidden ref={layerRef}>
+      {children}
+    </div>, host,
+  ) : null;
 }
 
 function PhoneVerificationDialog({
@@ -309,32 +458,20 @@ function PhoneVerificationDialog({
   onCodeChange,
   onSend,
   onVerify,
+  returnFocusRef,
   resendWaitSeconds,
   sending,
   sent,
   successMessage,
   verifying,
 }: PhoneVerificationDialogProps) {
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    dialogRef.current?.focus({ preventScroll: true });
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !successMessage) {
-        event.preventDefault();
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose, successMessage]);
+  const __vt = useWorkspaceTranslation();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-3 py-4 backdrop-blur-sm sm:items-center sm:px-6">
+    <VerificationDialogLayer onClose={onClose} returnFocusRef={returnFocusRef} canDismiss={!successMessage}>
+    <div className="absolute inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-3 py-4 backdrop-blur-sm sm:items-center sm:px-6">
       <button
-        aria-label="Close phone verification"
+        aria-label={__vt("Close phone verification")}
         className="absolute inset-0 cursor-default"
         disabled={Boolean(successMessage)}
         onClick={onClose}
@@ -343,8 +480,7 @@ function PhoneVerificationDialog({
       <div
         aria-labelledby="phone-verification-title"
         aria-modal="true"
-        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-[0_24px_80px_rgba(23,19,22,0.22)] outline-none sm:p-6"
-        ref={dialogRef}
+        className="relative min-h-0 max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-[0_24px_80px_rgba(23,19,22,0.22)] outline-none sm:p-6"
         role="dialog"
         tabIndex={-1}
       >
@@ -354,10 +490,16 @@ function PhoneVerificationDialog({
               className="text-xl font-extrabold text-text-primary"
               id="phone-verification-title"
             >
-              Verify phone number
+              <WorkspaceText text="Verify phone number" />
             </h2>
             <p className="mt-2 text-sm font-medium leading-6 text-text-secondary">
-              Enter the verification code sent to{" "}
+              <WorkspaceText
+                text={
+                  sent
+                    ? "Enter the verification code sent to"
+                    : "Send a verification code to"
+                }
+              />{" "}
               <span className="font-bold text-text-primary">
                 {maskPhoneForOtp(claim.normalizedPhone)}
               </span>
@@ -370,13 +512,13 @@ function PhoneVerificationDialog({
             onClick={onClose}
             type="button"
           >
-            Close
+            <WorkspaceText text="Close" />
           </button>
         </div>
 
         {successMessage ? (
           <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-800">
-            {successMessage}
+            <WorkspaceText text={successMessage} />
           </div>
         ) : (
           <div className="mt-5 grid gap-4">
@@ -387,7 +529,7 @@ function PhoneVerificationDialog({
                 onClick={onSend}
                 type="button"
               >
-                {sending ? "Sending..." : "Send code"}
+                <WorkspaceText text={sending ? "Sending..." : "Send code"} />
               </button>
             ) : (
               <>
@@ -396,16 +538,18 @@ function PhoneVerificationDialog({
                     className="text-xs font-bold uppercase tracking-[0.12em] text-text-secondary"
                     htmlFor="phone-verification-code"
                   >
-                    Verification code
+                    <WorkspaceText text="Verification code" />
                   </label>
                   <input
                     autoComplete="one-time-code"
-                    className="min-h-14 rounded-2xl border border-border-subtle bg-surface-muted px-4 text-center text-2xl font-extrabold tracking-[0.28em] text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+                    className="min-h-14 min-w-0 w-full rounded-2xl border border-border-subtle bg-surface-muted px-4 text-center text-2xl font-extrabold tracking-[0.28em] text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
                     id="phone-verification-code"
                     inputMode="numeric"
                     maxLength={6}
-                    onChange={(event) => onCodeChange(event.currentTarget.value)}
-                    placeholder="000000"
+                    onChange={(event) =>
+                      onCodeChange(event.currentTarget.value)
+                    }
+                    placeholder={__vt("000000")}
                     value={code}
                   />
                 </div>
@@ -416,7 +560,9 @@ function PhoneVerificationDialog({
                     onClick={onVerify}
                     type="button"
                   >
-                    {verifying ? "Verifying..." : "Verify"}
+                    <WorkspaceText
+                      text={verifying ? "Verifying..." : "Verify"}
+                    />
                   </button>
                   <button
                     className="min-h-12 rounded-full border border-border-subtle px-4 text-sm font-bold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60"
@@ -424,9 +570,13 @@ function PhoneVerificationDialog({
                     onClick={onSend}
                     type="button"
                   >
-                    {resendWaitSeconds > 0
-                      ? `Resend in ${resendWaitSeconds}s`
-                      : "Resend code"}
+                    <WorkspaceText
+                      text={
+                        resendWaitSeconds > 0
+                          ? `Resend in ${resendWaitSeconds}s`
+                          : "Resend code"
+                      }
+                    />
                   </button>
                 </div>
               </>
@@ -439,18 +589,19 @@ function PhoneVerificationDialog({
             ) : null}
             {notice ? (
               <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-                {notice}
+                <WorkspaceText text={notice} />
               </p>
             ) : null}
             {error ? (
               <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                {error}
+                <WorkspaceText text={error} />
               </p>
             ) : null}
           </div>
         )}
       </div>
     </div>
+    </VerificationDialogLayer>
   );
 }
 
@@ -458,16 +609,36 @@ export function AccountProfileEditor({
   createdAtLabel,
   user,
   compact = false,
+  embedded = false,
+  sectionId = "profile-contact",
+  avatarOnly = false,
+  phoneOnly = false,
+  onSaved,
+
   phoneVerified = false,
 }: AccountProfileEditorProps) {
+  const __vt = useWorkspaceTranslation();
+  const dialogActions = useSettingsDialogActions();
+
   const router = useRouter();
+  const verificationTriggerRef = useRef<HTMLElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState(user.avatar_url);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(
     safeAccountAvatarUrl(user.avatar_url),
   );
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(avatarOnly || phoneOnly);
+  const [emailVerificationOpen, setEmailVerificationOpen] = useState(false);
+  useTransientOverlay(() => setEmailVerificationOpen(false), emailVerificationOpen, true);
+  const [emailCode, setEmailCode] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailAuthorizedPhone, setEmailAuthorizedPhone] = useState<
+    string | null
+  >(null);
+  const [emailBusy, setEmailBusy] = useState(false);
+  const profileSaveLock = useRef(false);
+
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [phoneClaim, setPhoneClaim] = useState<PhoneClaimState | null>(null);
@@ -477,6 +648,11 @@ export function AccountProfileEditor({
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [phoneOtpSuccessMessage, setPhoneOtpSuccessMessage] = useState("");
   const [phoneVerificationOpen, setPhoneVerificationOpen] = useState(false);
+  useTransientOverlay(
+    () => setPhoneVerificationOpen(false),
+    phoneVerificationOpen,
+    true,
+  );
   const [resendWaitSeconds, setResendWaitSeconds] = useState(0);
   const [progress, setProgress] = useState(0);
   const [savedAvatarUrl, setSavedAvatarUrl] = useState(user.avatar_url);
@@ -553,7 +729,11 @@ export function AccountProfileEditor({
     setAvatarUrl(snapshotAvatarUrl);
     setAvatarPreviewUrl(safeAccountAvatarUrl(snapshotAvatarUrl));
     setValues(snapshotValues);
-    setEditing(false);
+    setEditing(avatarOnly || phoneOnly);
+    setEmailVerificationOpen(false);
+    setEmailSent(false);
+    setEmailCode("");
+    setEmailAuthorizedPhone(null);
   }
 
   function removeAvatar() {
@@ -565,7 +745,6 @@ export function AccountProfileEditor({
     const payload: Record<string, unknown> = {
       display_name: values.display_name,
       first_name: values.first_name,
-      language: values.language,
       last_name: values.last_name,
       phone: phoneOverride ?? values.phone,
       timezone: values.timezone,
@@ -608,6 +787,7 @@ export function AccountProfileEditor({
     linkedCount: number;
     message: string;
     verifiedPhone: string;
+    selectionRequired?: boolean;
   }) {
     const nextValues = {
       ...values,
@@ -634,12 +814,48 @@ export function AccountProfileEditor({
         status: "connected",
       });
       resetPhoneOtpState();
+      if (input.selectionRequired) router.push("/welcome/phone?next=/activity");
       router.refresh();
     }, 900);
   }
 
+  async function authorizeEmail() {
+    setEmailBusy(true);
+    setError("");
+    try {
+      const result = await authorizePhoneChangeAction({
+        phone: values.phone,
+        code: emailSent ? emailCode : undefined,
+      });
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      if (result.verified) {
+        setEmailAuthorizedPhone(values.phone);
+        setEmailVerificationOpen(false);
+        setEmailCode("");
+        setEmailSent(false);
+        setNotice("Email verified. Save to continue verifying your new phone.");
+      } else setEmailSent(true);
+    } catch {
+      setError("Could not verify your email. Try again.");
+    } finally {
+      setEmailBusy(false);
+    }
+  }
   function saveProfile() {
-    if (uploading) {
+    verificationTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (
+      values.phone !== snapshotValues.phone &&
+      snapshotValues.phone &&
+      emailAuthorizedPhone !== values.phone
+    ) {
+      setEmailVerificationOpen(true);
+      setError("");
+      return;
+    }
+    if (uploading || profileSaveLock.current) {
       return;
     }
 
@@ -649,32 +865,49 @@ export function AccountProfileEditor({
     setPhoneVerificationOpen(false);
     resetPhoneOtpState();
 
+    profileSaveLock.current = true;
     startSaving(async () => {
-      const result = await updateAccountProfileAction(profilePayload());
+      try {
+        const result = await updateAccountProfileAction(profilePayload());
 
-      if (result.error) {
-        setError(result.error);
-        return;
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+
+        if (result.phoneClaim?.status === "verification_required") {
+          setPhoneClaim(result.phoneClaim);
+          setPhoneVerificationOpen(true);
+          return;
+        }
+
+        setSavedAvatarUrl(avatarUrl);
+        setSnapshotAvatarUrl(avatarUrl);
+        setSnapshotValues(values);
+        setEditing(false);
+        setPhoneClaim(result.phoneClaim ?? null);
+        setNotice(result.phoneClaim?.message ?? "Profile saved.");
+        onSaved?.();
+        if (
+          result.phoneClaim?.status === "connected" &&
+          result.phoneClaim.selectionRequired
+        ) {
+          router.push("/welcome/phone?next=/activity");
+        }
+        router.refresh();
+      } catch {
+        setError("Could not save. Your changes are still here.");
+      } finally {
+        profileSaveLock.current = false;
       }
-
-      if (result.phoneClaim?.status === "verification_required") {
-        setPhoneClaim(result.phoneClaim);
-        setPhoneVerificationOpen(true);
-        return;
-      }
-
-      setSavedAvatarUrl(avatarUrl);
-      setSnapshotAvatarUrl(avatarUrl);
-      setSnapshotValues(values);
-      setEditing(false);
-      setPhoneClaim(result.phoneClaim ?? null);
-      setNotice(result.phoneClaim?.message ?? "Profile saved.");
-      router.refresh();
     });
   }
 
   function sendPhoneOtp() {
-    if (phoneClaim?.status !== "verification_required" || resendWaitSeconds > 0) {
+    if (
+      phoneClaim?.status !== "verification_required" ||
+      resendWaitSeconds > 0
+    ) {
       return;
     }
 
@@ -692,7 +925,8 @@ export function AccountProfileEditor({
       }
 
       if (result.status === "already_verified") {
-        const verifiedPhone = result.normalizedPhone ?? phoneClaim.normalizedPhone;
+        const verifiedPhone =
+          result.normalizedPhone ?? phoneClaim.normalizedPhone;
         const profileResult = await updateAccountProfileAction(
           profilePayload(verifiedPhone),
         );
@@ -717,6 +951,10 @@ export function AccountProfileEditor({
           linkedCount,
           message,
           verifiedPhone,
+          selectionRequired:
+            result.selectionRequired ||
+            (profileResult.phoneClaim?.status === "connected" &&
+              profileResult.phoneClaim.selectionRequired),
         });
         return;
       }
@@ -730,7 +968,10 @@ export function AccountProfileEditor({
   }
 
   function verifyPhoneOtp() {
-    if (phoneClaim?.status !== "verification_required" || !phoneOtpCode.trim()) {
+    if (
+      phoneClaim?.status !== "verification_required" ||
+      !phoneOtpCode.trim()
+    ) {
       return;
     }
 
@@ -748,7 +989,8 @@ export function AccountProfileEditor({
         return;
       }
 
-      const verifiedPhone = result.normalizedPhone ?? phoneClaim.normalizedPhone;
+      const verifiedPhone =
+        result.normalizedPhone ?? phoneClaim.normalizedPhone;
       const profileResult = await updateAccountProfileAction(
         profilePayload(verifiedPhone),
       );
@@ -773,6 +1015,10 @@ export function AccountProfileEditor({
         linkedCount,
         message,
         verifiedPhone,
+        selectionRequired:
+          result.selectionRequired ||
+          (profileResult.phoneClaim?.status === "connected" &&
+            profileResult.phoneClaim.selectionRequired),
       });
     });
   }
@@ -839,232 +1085,432 @@ export function AccountProfileEditor({
   function onEditorKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
-      saveProfile();
+      if (editing && !busy) saveProfile();
     }
   }
 
   return (
-    <section
-      className="scroll-mt-6"
-      id="profile-contact"
-      onKeyDown={onEditorKeyDown}
+    <div
+      className={
+        compact ? "settings-style bg-white px-4 py-3" : "settings-style"
+      }
     >
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-base font-semibold text-zinc-950">
-            {compact ? "Personal" : "Profile & contact"}
-          </h2>
-        </div>
-        {compact ? <nav aria-label="Personal settings" className="flex gap-4 text-xs font-medium text-zinc-500"><Link className="hover:text-[#d65c2b] hover:underline" href="/account">Account settings</Link><Link className="hover:text-[#d65c2b] hover:underline" href="/settings/login-security">Security</Link></nav> : null}
-      </div>
+      <section
+        className={`scroll-mt-6${embedded ? " settings-content-root" : ""}`}
+        id={embedded ? undefined : sectionId}
+        data-profile-editing={editing}
 
-      <div className="overflow-hidden rounded-lg border border-border-subtle bg-white">
-        <div className="flex flex-col gap-4 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-border-subtle bg-brand-orange-soft text-lg font-extrabold text-brand-orange">
-              {avatarPreviewUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  alt={`${currentName} avatar`}
-                  className="h-full w-full object-cover"
-                  src={avatarPreviewUrl}
+        onKeyDown={onEditorKeyDown}
+      >
+        {!embedded ? (
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-base font-semibold text-zinc-950">
+                <WorkspaceText
+                  text={compact ? "Personal" : "Profile & contact"}
                 />
-              ) : (
-                initialsFor(currentName)
-              )}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xl font-semibold text-zinc-950">
-                {currentName}
-              </p>
-              <p className="mt-1 truncate text-sm font-semibold text-zinc-500">
-                {user.email ?? "Personal account"}
-              </p>
-              {compact && !editing ? <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-                <span>{values.phone || "No phone number"}</span>
-                {values.phone && ((phoneVerified && values.phone === user.phone) || (phoneClaim?.status === "connected" && phoneClaim.normalizedPhone === values.phone)) ? <span className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700">Verified ✓</span>
-                  : <button className="min-h-8 text-xs font-semibold text-[#d65c2b] hover:underline disabled:opacity-50" disabled={busy} type="button" onClick={values.phone ? saveProfile : beginEdit}>{busy ? "Checking…" : values.phone ? "Verify phone" : "Add phone"}</button>}
-              </div> : null}
+              </h2>
             </div>
           </div>
+        ) : null}
 
-          {!editing ? (
-            <button
-              className="min-h-9 shrink-0 rounded-md px-2 text-sm font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-              onClick={beginEdit}
-              type="button"
+        <div
+          className={
+            compact
+              ? "bg-white"
+              : "overflow-clip rounded-lg border border-border-subtle bg-white"
+          }
+        >
+          {!phoneOnly ? (
+            <div
+              className={
+                compact
+                  ? "relative flex min-w-0 items-start justify-between gap-2 py-1"
+                  : "personal-profile-heading flex items-center justify-between gap-3 border-b border-zinc-100 px-4 py-4"
+              }
             >
-              {compact ? "Edit info" : "Edit profile"}
-            </button>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              <input
-                accept={ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES.join(",")}
-                className="sr-only"
-                onChange={onFileChange}
-                ref={fileInputRef}
-                type="file"
-              />
-              <button
-                className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
-                disabled={busy}
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
+              <div
+                className={
+                  compact
+                    ? "flex min-w-0 flex-1 items-start gap-3"
+                    : "flex min-w-0 items-center gap-4"
+                }
               >
-                {uploading && progress > 0
-                  ? `Uploading ${progress}%`
-                  : "Change photo"}
-              </button>
-              {avatarPreviewUrl ? (
+                <span
+                  className={
+                    compact
+                      ? "grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-orange-50 text-sm text-orange-700"
+                      : "grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-border-subtle bg-brand-orange-soft text-lg font-extrabold text-brand-orange"
+                  }
+                >
+                  {avatarPreviewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt={__vt(`${currentName} avatar`)}
+                      className="h-full w-full object-cover"
+                      src={avatarPreviewUrl}
+                    />
+                  ) : (
+                    initialsFor(currentName)
+                  )}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={
+                      compact
+                        ? "truncate text-sm font-medium text-zinc-950"
+                        : "truncate text-xl font-semibold text-zinc-950"
+                    }
+                  >
+                    {currentName}
+                  </p>
+                  {!embedded ? (
+                    <p
+                      className={
+                        compact
+                          ? "mt-1 truncate text-xs text-zinc-500"
+                          : "mt-1 truncate text-sm font-semibold text-zinc-500"
+                      }
+                    >
+                      <WorkspaceText text={user.email ?? "Personal account"} />
+                    </p>
+                  ) : null}
+                  {compact && !editing ? (
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+                      {values.phone ? <span>{values.phone}</span> : null}
+                      {values.phone &&
+                      ((phoneVerified && values.phone === user.phone) ||
+                        (phoneClaim?.status === "connected" &&
+                          phoneClaim.normalizedPhone === values.phone)) ? (
+                        <span className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700">
+                          <WorkspaceText text="Verified ✓" />
+                        </span>
+                      ) : (
+                        <button
+                          className="min-h-8 text-xs font-semibold text-[#d65c2b] hover:underline disabled:opacity-50"
+                          disabled={busy}
+                          type="button"
+                          onClick={values.phone ? saveProfile : beginEdit}
+                        >
+                          <WorkspaceText
+                            text={
+                              busy
+                                ? "Checking…"
+                                : values.phone
+                                  ? "Verify phone"
+                                  : "Add phone"
+                            }
+                          />
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              {!editing ? (
                 <button
-                  className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
-                  disabled={busy}
-                  onClick={removeAvatar}
+                  className="min-h-9 shrink-0 rounded-md px-2 text-sm font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                  aria-label={
+                    compact ? __vt("Edit personal information") : undefined
+                  }
+                  onClick={beginEdit}
                   type="button"
                 >
-                  Remove photo
+                  {compact ? (
+                    <span aria-hidden="true">⋯</span>
+                  ) : (
+                    <WorkspaceText text="Edit" />
+                  )}
                 </button>
-              ) : null}
+              ) : (
+                <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+                  <input
+                    accept={ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES.join(",")}
+                    className="sr-only"
+                    onChange={onFileChange}
+                    ref={fileInputRef}
+                    type="file"
+                  />
+                  <button
+                    className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
+                    disabled={busy}
+                    onClick={() => fileInputRef.current?.click()}
+                    type="button"
+                  >
+                    <WorkspaceText
+                      text={
+                        uploading && progress > 0
+                          ? `Uploading ${progress}%`
+                          : "Change photo"
+                      }
+                    />
+                  </button>
+                  {avatarPreviewUrl ? (
+                    <button
+                      className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
+                      disabled={busy}
+                      onClick={removeAvatar}
+                      type="button"
+                    >
+                      <WorkspaceText text="Remove photo" />
+                    </button>
+                  ) : null}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-
-        {editing ? (
-          <>
-            <div>
-              <EditableField
-                autoComplete="name"
-                label="Display name"
-                name="display_name"
-                onChange={updateValue}
-                value={values.display_name}
+          ) : null}
+          {compact ? (
+            <nav
+              aria-label={__vt("Personal settings")}
+              className="flex flex-wrap items-center gap-x-4 text-xs text-zinc-600"
+            >
+              <Link
+                className="inline-flex min-h-9 items-center hover:text-orange-600"
+                href="/account"
+              >
+                <WorkspaceText text="Account settings" />
+              </Link>
+              <Link
+                className="inline-flex min-h-9 items-center hover:text-orange-600"
+                href="/settings/login-security"
+              >
+                <WorkspaceText text="Security" />
+              </Link>
+            </nav>
+          ) : null}
+          {editing ? (
+            <>
+              {!avatarOnly ? (
+                <div>
+                  {!phoneOnly ? (
+                    <>
+                      <EditableField
+                        autoComplete="nickname"
+                        label={__vt("Display name")}
+                        name="display_name"
+                        onChange={updateValue}
+                        value={values.display_name}
+                      />
+                      <ReadonlyField label={__vt("Email")} value={user.email} />
+                    </>
+                  ) : null}
+                  <EditableField
+                    autoComplete="tel"
+                    label={__vt("Phone")}
+                    name="phone"
+                    onChange={updateValue}
+                    value={values.phone}
+                  />
+                  {!phoneOnly ? (
+                    <>
+                      <div className="grid gap-2 border-b border-zinc-100 px-4 py-3">
+                        <span className="text-sm font-semibold">
+                          <WorkspaceText text="Legal name" />
+                        </span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="grid gap-1 text-xs">
+                            <WorkspaceText text="Legal first name" />
+                            <input
+                              className="min-h-11 min-w-0 rounded-md border px-3"
+                              autoComplete="given-name"
+                              value={values.first_name}
+                              placeholder={__vt("First · middle")}
+                              onChange={(e) =>
+                                updateValue("first_name", e.target.value)
+                              }
+                            />
+                          </label>
+                          <label className="grid gap-1 text-xs">
+                            <WorkspaceText text="Legal last name" />
+                            <input
+                              className="min-h-11 min-w-0 rounded-md border px-3"
+                              autoComplete="family-name"
+                              value={values.last_name}
+                              placeholder={__vt("Last")}
+                              onChange={(e) =>
+                                updateValue("last_name", e.target.value)
+                              }
+                            />
+                          </label>
+                        </div>
+                      </div>
+                      <LanguageSetting />
+                      <EditableField
+                        label={__vt("Timezone")}
+                        name="timezone"
+                        onChange={updateValue}
+                        value={values.timezone}
+                      />
+                      <ReadonlyField
+                        label={__vt("Created")}
+                        value={createdAtLabel}
+                      />
+                    </>
+                  ) : null}
+                </div>
+              ) : null}
+              <div
+                className={`${avatarOnly || dialogActions ? "static" : `${styles.actions} sticky bottom-0 z-20`} border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur`}
+              >
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    className="min-h-10 rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
+                    disabled={busy}
+                    onClick={cancelEdit}
+                    type="button"
+                  >
+                    <WorkspaceText text="Cancel" />
+                  </button>
+                  <button
+                    className="min-h-10 rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
+                    disabled={busy}
+                    onClick={saveProfile}
+                    type="button"
+                  >
+                    <WorkspaceText
+                      text={saving ? "Saving..." : "Save profile"}
+                    />
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : !compact && !phoneOnly ? (
+            <dl>
+              <ProfileField
+                label={__vt("Display name")}
+                onEdit={beginEdit}
+                value={currentName}
               />
-              <ReadonlyField label="Email" value={user.email} />
-              <EditableField
-                autoComplete="given-name"
-                label="First name"
-                name="first_name"
-                onChange={updateValue}
-                value={values.first_name}
-              />
-              <EditableField
-                autoComplete="family-name"
-                label="Last name"
-                name="last_name"
-                onChange={updateValue}
-                value={values.last_name}
-              />
-              <EditableField
-                autoComplete="tel"
-                label="Phone"
-                name="phone"
-                onChange={updateValue}
+              <ProfileField label={__vt("Email")} value={user.email} />
+              <ProfileField
+                label={__vt("Phone")}
+                onEdit={beginEdit}
                 value={values.phone}
               />
-              <ReadonlyField label="Status" value={user.status} />
-              <EditableField
-                label="Language"
-                name="language"
-                onChange={updateValue}
-                value={values.language}
+              <ProfileField
+                label={__vt("Legal name")}
+                onEdit={beginEdit}
+                value={[values.first_name, values.last_name]
+                  .filter(Boolean)
+                  .join(" ")}
               />
-              <EditableField
-                label="Timezone"
-                name="timezone"
-                onChange={updateValue}
+              <div className="col-span-full">
+                <LanguageSetting />
+              </div>
+              <ProfileField
+                label={__vt("Timezone")}
+                onEdit={beginEdit}
                 value={values.timezone}
               />
-              <ReadonlyField label="Created" value={createdAtLabel} />
-            </div>
-            <div className="sticky bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur">
-              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+
+              <ProfileField label={__vt("Created")} value={createdAtLabel} />
+            </dl>
+          ) : null}
+        </div>
+
+        {error ? (
+          <p
+            role="alert"
+            className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"
+          >
+            <WorkspaceText text={error} />
+          </p>
+        ) : null}
+        {notice ? (
+          <p
+            role="status"
+            className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800"
+          >
+            <WorkspaceText text={notice} />
+          </p>
+        ) : null}
+
+        {emailVerificationOpen ? (
+          <VerificationDialogLayer onClose={() => setEmailVerificationOpen(false)} returnFocusRef={verificationTriggerRef} canDismiss={!emailBusy}>
+          <div
+            className="settings-security-dialog"
+            style={{ position: "absolute" }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={__vt("Verify phone change")}
+            tabIndex={-1}
+          >
+            <section className="grid min-h-0 min-w-0 gap-4 overscroll-contain" style={{ maxHeight: "100%" }}>
+              <h3>
+                <WorkspaceText text="Verify phone change" />
+              </h3>
+              <p>
+                <WorkspaceText text="Verify your account email before replacing or removing your phone." />{" "}
+                {user.email}
+              </p>
+              {emailSent ? (
+                <label className="grid gap-2">
+                  <WorkspaceText text="Email code" />
+                  <input
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
+                    className="min-h-11 min-w-0 w-full rounded-md border px-3"
+                    value={emailCode}
+                    onChange={(e) => setEmailCode(e.target.value)}
+                  />
+                </label>
+              ) : null}
+              {error ? <p role="alert">{error}</p> : null}
+              <div className="flex gap-2">
                 <button
-                  className="min-h-10 rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
-                  disabled={busy}
-                  onClick={cancelEdit}
                   type="button"
+                  disabled={emailBusy}
+                  className="min-h-11 rounded-md border px-4"
+                  onClick={() => {
+                    setEmailVerificationOpen(false);
+                    setEmailSent(false);
+                    setEmailCode("");
+                  }}
                 >
-                  Cancel
+                  <WorkspaceText text="Cancel" />
                 </button>
                 <button
-                  className="min-h-10 rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
-                  disabled={busy}
-                  onClick={saveProfile}
                   type="button"
+                  disabled={emailBusy || (emailSent && !emailCode.trim())}
+                  className="min-h-11 rounded-md border px-4"
+                  onClick={() => void authorizeEmail()}
                 >
-                  {saving ? "Saving..." : "Save profile"}
+                  <WorkspaceText
+                    text={
+                      emailBusy
+                        ? "Please wait…"
+                        : emailSent
+                          ? "Verify"
+                          : "Send email code"
+                    }
+                  />
                 </button>
               </div>
-            </div>
-          </>
-        ) : !compact ? (
-          <dl>
-            <ProfileField
-              label="Display name"
-              onEdit={beginEdit}
-              value={currentName}
-            />
-            <ProfileField label="Email" value={user.email} />
-            <ProfileField
-              label="Phone"
-              onEdit={beginEdit}
-              value={values.phone}
-            />
-            <ProfileField
-              label="First name"
-              onEdit={beginEdit}
-              value={values.first_name}
-            />
-            <ProfileField
-              label="Last name"
-              onEdit={beginEdit}
-              value={values.last_name}
-            />
-            <ProfileField
-              label="Language"
-              onEdit={beginEdit}
-              value={values.language}
-            />
-            <ProfileField
-              label="Timezone"
-              onEdit={beginEdit}
-              value={values.timezone}
-            />
-            <ProfileField label="Status" value={user.status} />
-            <ProfileField label="Created" value={createdAtLabel} />
-          </dl>
+            </section>
+          </div>
+          </VerificationDialogLayer>
         ) : null}
-      </div>
-
-      {error ? (
-        <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-          {error}
-        </p>
-      ) : null}
-      {notice ? (
-        <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-          {notice}
-        </p>
-      ) : null}
-
-      {phoneVerificationClaim ? (
-        <PhoneVerificationDialog
-          busy={busy}
-          claim={phoneVerificationClaim}
-          code={phoneOtpCode}
-          error={phoneOtpError}
-          notice={phoneOtpNotice}
-          onClose={closePhoneVerificationDialog}
-          onCodeChange={updatePhoneOtpCode}
-          onSend={sendPhoneOtp}
-          onVerify={verifyPhoneOtp}
-          resendWaitSeconds={resendWaitSeconds}
-          sending={phoneOtpSending}
-          sent={phoneOtpSent}
-          successMessage={phoneOtpSuccessMessage}
-          verifying={phoneOtpVerifying}
-        />
-      ) : null}
-    </section>
+        {phoneVerificationClaim ? (
+          <PhoneVerificationDialog
+            busy={busy}
+            claim={phoneVerificationClaim}
+            code={phoneOtpCode}
+            error={phoneOtpError}
+            notice={phoneOtpNotice}
+            onClose={closePhoneVerificationDialog}
+            onCodeChange={updatePhoneOtpCode}
+            onSend={sendPhoneOtp}
+            onVerify={verifyPhoneOtp}
+            returnFocusRef={verificationTriggerRef}
+            resendWaitSeconds={resendWaitSeconds}
+            sending={phoneOtpSending}
+            sent={phoneOtpSent}
+            successMessage={__vt(phoneOtpSuccessMessage)}
+            verifying={phoneOtpVerifying}
+          />
+        ) : null}
+      </section>
+    </div>
   );
 }

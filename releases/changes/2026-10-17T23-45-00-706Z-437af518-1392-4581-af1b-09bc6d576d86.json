@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "help-report-native-parity-20261017",
+  "status": "working",
+  "summary": "Integrate Help mobile catalog and Report translations into exact web and uploaded native baseline; repair native catalog markup parity",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/help/help-catalog.tsx",
+    "app/help/help.module.css",
+    "components/app-local-help.tsx",
+    "components/app-local-support.tsx",
+    "lib/app-local-reference-content.ts",
+    "lib/vietnamese-dictionary.ts",
+    "app/support/support-ui.tsx",
+    "app/(app)/support/page.tsx",
+    "tests/help-report-release-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/help-report-live-20261017/baseline-dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+    "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6"
+  },
+  "dependencies": [
+    "help-bilingual-mobile-20261017"
+  ],
+  "validation": [
+    {
+      "name": "Web and actual native adapter UI plus production and bundled builds",
+      "result": "pending"
+    }
+  ],
+  "id": "437af518-1392-4581-af1b-09bc6d576d86",
+  "recordedAt": "2026-10-17T23:45:00.706Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

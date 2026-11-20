@@ -1,0 +1,76 @@
+{
+  "kind": "change",
+  "changeId": "forum-tab-performance-20261112",
+  "status": "ready",
+  "summary": "Coordinator integrated forum-tab-performance-20261112 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/forum/forum.tsx",
+    "components/experience-page-boundary.tsx",
+    "lib/experience-route-policies.ts",
+    "lib/forum-read-cache.ts",
+    "tests/forum-read-cache.test.mjs",
+    "tests/forum-route-policy.test.mjs",
+    "tests/forum-tab-navigation-runtime.test.mjs",
+    "docs/forum-tab-performance-20261112.txt",
+    "docs/forum-tab-performance-review-20261112.txt"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "5fa07857-899d-45c5-9dce-bd72953bb123",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\forum-tab-performance-20261112\\artifacts\\forum-review\\frozen",
+      "commit": "5c9af9c38bc9345fab23ec113ee169778b8d27fe"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-13T05:39:55.377Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "5fa07857-899d-45c5-9dce-bd72953bb123"
+  ],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "7edf308a-25b3-43d4-85c6-2c0a81dd7a43",
+  "recordedAt": "2026-11-14T06:49:10.752Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/(app)/forum/forum.tsx": "bc24771cded2f7aa61c08d87b580b29b095119b1cb956593414ef1d89e97b723",
+    "components/experience-page-boundary.tsx": "c875f44baa0d5fdf2d9647e16080959efb2317f99cbf33f7b333160fde029886",
+    "lib/experience-route-policies.ts": "6d0e2c55a276b8a08bf14b462da8fb2fdb317532cc319057615570aa724d3d25",
+    "lib/forum-read-cache.ts": "d8472cf88451aceb78ee0aa2c80116a044d5bddee7138595cb19764a8add242b",
+    "tests/forum-read-cache.test.mjs": "aa3a11bd233c9244b15175936c8fcae7c8c130c2fe6d72853822d736f981c279",
+    "tests/forum-route-policy.test.mjs": "494ac7722986c04cfa2eaa7c44e1c3e9da3d491a4433240018371c6eb3cdbf46",
+    "tests/forum-tab-navigation-runtime.test.mjs": "5a044b5e13f51f4bffa851eeaa89653e1e37eb1f032f0d361f77fec3df9ed06a",
+    "docs/forum-tab-performance-20261112.txt": "59a3676057b81641437acdf4966a0f43f5e667788c9acc77f932169b65e71d48",
+    "docs/forum-tab-performance-review-20261112.txt": "88e9799807d54e9553dedd1f52e0f73243e80c7c2f5cb7cc02097cae74fdbd73"
+  }
+}

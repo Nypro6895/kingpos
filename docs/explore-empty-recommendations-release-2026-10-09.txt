@@ -1,0 +1,21 @@
+Explore: gợi ý khi tìm kiếm không có kết quả — 09/10/2026
+
+Đã bổ sung mục “Recommended for you” riêng dưới kết quả tìm kiếm rỗng, cho cả Salons và Ideas. Khách vẫn thấy thông báo không tìm được nội dung khớp từ khóa, rồi có thể tiếp tục xem tiệm và nội dung làm đẹp được gợi ý.
+
+Gợi ý sử dụng khu vực và danh mục đã xác định của lần tìm kiếm. Phạm vi cố định được giữ nguyên; chỉ sử dụng GPS khi đó là nguồn vị trí đã được xác nhận. Khách chưa có vị trí nhận một trang khám phá giới hạn. Nếu khu vực cố định chưa có gợi ý, khách có thể chọn “Browse Explore”. Gợi ý có phiên và phân trang riêng; đổi từ khóa/khu vực sẽ hủy yêu cầu cũ. Không dùng gợi ý để che lỗi truy vấn, mất kết nối, yêu cầu đang tải hoặc thiếu quyền định vị.
+
+Đã sửa việc khôi phục feed trong React StrictMode có thể bị dừng trước khi hoàn tất. Các yêu cầu tìm kiếm GPS không truyền lựa chọn phạm vi riêng sẽ giữ phạm vi đã chọn, bao gồm tìm từ thanh trên và đổi thứ tự.
+
+Đã tối ưu nhánh không có tên gần đúng: kiểm tra chỉ mục một lần trước khi tìm qua các nhóm vùng. Khi chắc chắn không có ứng viên ở bất kỳ vùng nào, trả về rỗng ngay; trường hợp có ứng viên vẫn giữ thứ tự, điều kiện lọc và cursor hiện tại. Không sửa dữ liệu tiệm gốc. Migration riêng 20261009125031 đã áp dụng và đối chiếu chính xác nội dung, quyền truy cập và cấu hình function.
+
+Kiểm tra: 21 kiểm thử runtime đạt; kiểm tra mã đạt. Giao diện trước bản sửa GPS cuối đạt 16/16 trường hợp trên Chromium và WebKit mô phỏng iPhone, không lỗi JavaScript. Bản cuối đạt thêm 4/4 kiểm tra trực tiếp trên hai trình duyệt: khách chưa có vị trí nhận 12 gợi ý riêng; khách dùng GPS giữ phạm vi cố định khi đổi từ khóa, nhận 12 kết quả Milwaukee và hủy yêu cầu gợi ý cũ. Kiểm tra React StrictMode thực trong trình duyệt đạt 3/3. Kiểm tra API sau tối ưu SQL đạt 8 trường hợp cùng một lượt phân trang; 12+12 kết quả không trùng, tên chính xác và tên gần đúng vẫn có kết quả.
+
+Đo sau SQL: các mẫu tìm kiếm rỗng toàn quốc mất 0,535–1,340 giây; mẫu khu vực Milwaukee mất 0,607 giây. Đây là số đo chẩn đoán nhỏ trên production, không phải kiểm thử tải. Native PostgreSQL với một triệu bản ghi mô phỏng, một yêu cầu đồng thời: nhánh âm giảm từ 53 lần lấy nhóm xuống 0; 20 mẫu sau sửa có p95 10,22 ms. Số này chỉ đo function trong môi trường mô phỏng, không chứng minh thời gian HTTP hay khả năng chịu tải production.
+
+Trong kiểm tra local đã có timeout thật của tìm kiếm và feed; các bằng chứng đó được giữ riêng. Tối ưu nhánh từ khóa âm không chứng minh đã giải quyết mọi biến động độ trễ của feed. Chưa kiểm tra trên iPhone vật lý.
+
+Nguồn phát hành: bảo toàn chính xác source đang chạy, bao gồm các thay đổi Market, booking và Service Relay từ các chat khác. Bản gợi ý đầu: dpl_w1fJTaWTHJCXQFyJruexV8STFv15. Bản sửa phạm vi GPS dựa trên dpl_HfPPPDCBx9y3ag9xD8kkRavrGXvv, chỉ thêm một dòng giữ phạm vi và file migration đã áp dụng.
+
+Trạng thái cuối: đã build và kiểm tra TypeScript thành công; đã promotion và xác nhận reylumi.com chạy dpl_81g5M5mf82m4DN6S4n47ZbqNZnPR (https://kingpos-bpilwvbwu-kingpos.vercel.app). Toàn bộ 1.386 file source được đối chiếu đúng hash với bản lắp ghép đã duyệt. Các runtime kiểm thử riêng đã dừng. Một lần kiểm tra Chrome cần sửa bộ chọn trong harness vì DOM cũ bị ẩn còn tồn tại lúc chuyển trang; kiểm tra lại chỉ trường hợp đó đạt, bằng chứng cũ vẫn được lưu.
+
+Bằng chứng: work/explore-read-model/recommendations-release-receipt.json; recommendations-scope-release-receipt.json; search-recommendations-production-summary.json; after125-search-production-proof.json; after125-live-history-proof.json; negative-fuzzy-guard-native-gate.json.

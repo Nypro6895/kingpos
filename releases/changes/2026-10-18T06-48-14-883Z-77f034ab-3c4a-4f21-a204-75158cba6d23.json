@@ -1,0 +1,92 @@
+{
+  "kind": "change",
+  "changeId": "navigation-cache-reliability-20261018",
+  "status": "needs-integration",
+  "summary": "Completed shared web/iOS web navigation and scoped cache repair; 74 regressions, 4 WebKit checks and isolated production-mode build passed; NOT DEPLOYED. Integrate task-only patch against current production source.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/explore/salons/[salonId]/page.tsx",
+    "app/(app)/salon-profile/page.tsx",
+    "app/api/pos/owner/bookings/route.ts",
+    "app/api/pos/owner/reports/route.ts",
+    "app/api/salon-profile/content/route.ts",
+    "app/bookings/owner-live-booking-workspace.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "components/experience-page-boundary.tsx",
+    "components/experience-scope.tsx",
+    "lib/experience-resource-cache.ts",
+    "lib/experience-route-policies.ts",
+    "lib/fetch-workspace-resource.ts",
+    "lib/pos-workspace-sync.ts",
+    "lib/salon-profile-preview.ts",
+    "lib/salon-profile.ts",
+    "lib/salon-publication-readiness.ts",
+    "lib/use-experience-resource.ts",
+    "lib/use-salon-profile-pages.ts",
+    "lib/workspace-refresh-queue.ts",
+    "lib/workspace-resource-response.ts",
+    "tests/experience-auth-availability.test.mjs",
+    "tests/experience-reload-loop-ui.test.mjs",
+    "tests/navigation-cache-reliability.test.mjs",
+    "tests/page-revisit-reliability-ui.test.mjs",
+    "tests/salon-profile-owner-route.test.mjs",
+    "tests/salon-profile-progressive-ui.test.mjs",
+    "types/salon-profile.ts"
+  ],
+  "source": {
+    "snapshot": "artifacts/navigation-cache-20261018/source",
+    "sha256": "4cbde5cc7141122601c98d442f15a6f8c7076f73e9f344cc90dbae18a2e2e323",
+    "archive": "releases/handoffs/navigation-cache-reliability-20261018.zip",
+    "archiveSha256": "661c62e6e2e6be32ab60c1312fa988d252005ee115d1863b063d7614cae8408e"
+  },
+  "dependencies": [
+    "whole-site-progressive-cache",
+    "experience-reload-loop-fix-20261015"
+  ],
+  "validation": [
+    {
+      "name": "scoped cache/navigation/security/publication regressions (74/74)",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-20261018/tests-final.txt"
+    },
+    {
+      "name": "WebKit mobile viewport regressions (4/4)",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-20261018/webkit-final.txt"
+    },
+    {
+      "name": "isolated production-mode build, localhost backend and no publication",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-20261018/build-completion.txt"
+    },
+    {
+      "name": "targeted ESLint: 0 errors, 2 warnings",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-20261018/lint-final.txt"
+    },
+    {
+      "name": "real Next production-mode navigation (2/2)",
+      "result": "passed",
+      "evidence": "artifacts/navigation-cache-20261018/next-navigation-final.txt"
+    },
+    {
+      "name": "physical iPhone validation",
+      "result": "pending",
+      "evidence": "Not available in this Windows session; no native upload was performed."
+    }
+  ],
+  "nativeAssessment": {
+    "required": false,
+    "reason": "Only shared web code changed; Swift, native assets/configuration and bridge contract unchanged."
+  },
+  "handoffBranch": "codex/navigation-cache-reliability-20261018-handoff",
+  "notes": "The shared checkout contains unrelated work. The archive contains exact before/after sources and task-only.patch; do not deploy this checkout or copy an old snapshot over the current production baseline.",
+  "id": "77f034ab-3c4a-4f21-a204-75158cba6d23",
+  "recordedAt": "2026-10-18T06:48:14.883Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -5,6 +5,7 @@ import type { PosTicketAuditLogWithUser } from "@/types/pos-ticket-audit-log";
 import type { PosTicketItemWithRelations } from "@/types/pos-ticket-item";
 import type { PosTicketStaffEarningWithStaff } from "@/types/pos-ticket-staff-earning";
 import type { KingUser } from "@/types/user";
+import type { TicketAdjustmentEventAction } from "@/lib/pos-ticket-adjustment-history";
 
 export const POS_TICKET_STATUSES = ["open", "closed", "cancelled", "voided"] as const;
 export const POS_TICKET_DISCOUNT_TYPES = ["fixed_amount", "percentage"] as const;
@@ -20,7 +21,7 @@ export type PosTicket = {
   source_booking_id: string | null;
   ticket_number: string;
   ticket_sequence: number;
-  customer_id: string;
+  customer_id: string | null;
   opened_at: string;
   closed_at: string | null;
   status: PosTicketStatus;
@@ -36,8 +37,25 @@ export type PosTicket = {
 };
 
 export type PosTicketWithRelations = PosTicket & {
+  financial_sources?: {
+    giftSales: Array<{
+      id: string;
+      amountCents: number;
+      last4: string;
+      paymentMethod: "cash" | "credit_card" | "debit_card" | "other";
+      status: "completed" | "voided";
+      /** Recording operator audit only; never a Gift seller or performed-service staff. */
+      actorName: string;
+      createdAt: string;
+    }>;
+    giftRedeemedCents: number;
+    rewardDiscount: number;
+    recordedPayments?: Array<{amount:number;paymentMethod:string;createdAt:string}>;
+  };
   adjustments?: Array<{
     action: "item_corrected" | "item_removed" | "item_replaced";
+    event_action?: TicketAdjustmentEventAction;
+    financial_input_event_id?: string | null;
     created_at: string;
     created_by: string | null;
     created_by_user: Pick<KingUser, "id" | "display_name" | "email"> | null;

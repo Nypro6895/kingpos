@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "app-local-authority-navigation-20261016",
+  "status": "ready",
+  "summary": "Gate new app-local route-family reads/commands on an exact admitted context while preserving retained pages and checkout drafts; reject stale provider validation callbacks. Preserve role chrome on More/Help after POS.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "app/local-app/scope.tsx",
+    "tests/app-local-authority-navigation.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\integrated-frozen-r4",
+    "commit": "9d8e8def836cdb56644e8c5c8675061106553984"
+  },
+  "validation": [
+    {
+      "name": "179 original integration/authority/retained UI checks, no failures or skipped cases",
+      "result": "passed",
+      "evidence": "artifacts/pos-more-shell-20261016/integration-tests.log"
+    },
+    {
+      "name": "Production Next build, TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/pos-more-shell-20261016/production-build.log"
+    },
+    {
+      "name": "Real production CSS on iPhone/tablet/desktop, POS More destinations, retained money DOM and passive public Help controls",
+      "result": "passed",
+      "evidence": "artifacts/pos-more-shell-20261016/validation.json"
+    },
+    {
+      "name": "Rebuilt installed resources verified byte hashes; native foundation unchanged from prior81-case archive",
+      "result": "passed",
+      "evidence": "artifacts/pos-more-shell-20261016/validation.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "d677aff1-9209-483e-8135-fa6a14b36b48"
+  ],
+  "id": "5e0bb548-66a0-4a1a-912d-fa1e171d36fa",
+  "recordedAt": "2026-10-16T19:15:50.103Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "fileHashes": {
+    "app/local-app/entry.tsx": "727c6c92bd05e2740d437d82d45af0747c1f86f597d2a2a868db2f7bb29bb975",
+    "app/local-app/scope.tsx": "5d39cf7874a496208272d83b4a264bfb05ea3d71ccb59b13b1f9397b6ec14623",
+    "tests/app-local-authority-navigation.test.mjs": "200b4e862af55d23b9489cd797eab0157d023f6ef5fad001ffd808748efc5836"
+  }
+}

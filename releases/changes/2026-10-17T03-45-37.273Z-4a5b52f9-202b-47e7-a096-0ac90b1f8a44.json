@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "profile-public-notice-cleanup-20261017",
+  "status": "ready",
+  "summary": "Remove redundant public-profile confirmation banners across managed Profile, publication drawer and Settings; retain private/unavailable warnings, public navigation and unclaimed-business behavior. Integrated and validated against the exact live source for 1.1.0.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/salon-publication-status.tsx",
+    "app/(app)/salon-profile/page.tsx"
+  ],
+  "deletedFiles": [],
+  "dependencies": [],
+  "integratesEvent": "3432be07-8d51-46ac-be8d-1a72625094bd",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\full-release-1-1-0-20261016\\frozen-source",
+    "commit": "d302fc8c587e13850306ccb67da351e3109f7036"
+  },
+  "validation": [
+    {
+      "name": "Production build and merged regression validation",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/validation-summary.json"
+    },
+    {
+      "name": "Exact frozen Git source bytes",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/git-source-verification.json"
+    }
+  ],
+  "id": "4a5b52f9-202b-47e7-a096-0ac90b1f8a44",
+  "recordedAt": "2026-10-17T03:45:37.273Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos",
+  "supersedesEvents": [],
+  "fileHashes": {
+    "components/salon-publication-status.tsx": "122616c703c1b16d5c3bf4c2b0fd663302f8430776c44c8cd71c768462d22e3b",
+    "app/(app)/salon-profile/page.tsx": "76d03c316b16d5538867df5d69a2fb95d56f6b455ab2007a78b4c2621ab3878e"
+  }
+}

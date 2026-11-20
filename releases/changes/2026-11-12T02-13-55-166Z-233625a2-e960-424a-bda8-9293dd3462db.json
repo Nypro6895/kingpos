@@ -1,0 +1,18 @@
+{
+  "kind": "change",
+  "changeId": "after97-native-staff-scan-admission-20261111",
+  "status": "working",
+  "summary": "Admit only the new owner-checked Staff Scan connect command to fresh online Staff transport; retain legacy command compatibility and verify the actual installed manifest against current active commands, including a registered forbidden owner mutation.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/StaffOnlineAccessTransportTests.swift"
+  ],
+  "id": "233625a2-e960-424a-bda8-9293dd3462db",
+  "recordedAt": "2026-11-12T02:13:55.166Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

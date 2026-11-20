@@ -52,7 +52,7 @@ export function bookingFailure(
   field?: string,
 ): BookingDomainResult<never> {
   return {
-    error: { code, field, message },
+    error: { code, ...(field ? { field } : {}), message },
     ok: false,
   };
 }
@@ -60,6 +60,23 @@ export function bookingFailure(
 export function bookingFailureFromUnknown(error: unknown): BookingDomainResult<never> {
   if (error instanceof BookingDomainError) {
     return bookingFailure(error.code, error.message, error.field);
+  }
+
+  // PostgREST errors are plain objects, not Error instances. For these raw
+  // objects, expose only known business validations rather than SQL details.
+  const db = error && typeof error === "object"
+    ? error as { code?: string; message?: string } : null;
+  if (db?.message === "Professional is unavailable: check service eligibility, working hours, breaks, time off, and overlapping appointments.") {
+    return bookingFailure("availability_conflict", db.message, "staffId");
+  }
+  if (db?.code === "23P01" || db?.message === "This professional was just booked at that time. Choose another available time.") {
+    return bookingFailure("availability_conflict", "This time was just booked. Choose another time or professional.", "startLocal");
+  }
+  if (db?.code === "42501") {
+    return bookingFailure("forbidden", "You do not have permission to change this booking.");
+  }
+  if (db?.message === "The appointment must include this professional's service duration and the salon cleanup buffer.") {
+    return bookingFailure("invalid_input", db.message, "startLocal");
   }
 
   if (error instanceof Error) {

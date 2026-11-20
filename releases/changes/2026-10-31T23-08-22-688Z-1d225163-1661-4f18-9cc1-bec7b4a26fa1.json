@@ -1,0 +1,95 @@
+{
+  "kind": "change",
+  "changeId": "payroll-history-context-20261031",
+  "status": "ready",
+  "summary": "Retire aggregate Payroll History from Overview/Tools and preserve exact old notices as authorized object context. Confirmed edits remain inline; unknown legacy facts never imply zero-to-money edits; check metadata is separate from bonus/income and payment facts. Same source in web and bundled Owner Payroll.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/payroll/inline-financial-history.module.css",
+    "app/payroll/inline-financial-history.tsx",
+    "app/payroll/payroll-change-history.tsx",
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-record-context.tsx",
+    "app/payroll/payroll-tabs.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/financial-change-presentation.ts",
+    "lib/inline-financial-history.ts",
+    "lib/payroll-history-navigation.ts",
+    "tests/financial-change-clarity.test.mjs",
+    "tests/financial-history-record-semantics-browser.mjs",
+    "tests/financial-history-record-semantics.test.mjs",
+    "tests/payroll-history-context-browser.mjs",
+    "tests/payroll-history-context-fixture.mjs",
+    "tests/payroll-history-navigation.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\payroll-history-context-20261031\\artifacts\\payroll-history-context-20261031\\frozen-source",
+    "baselineDeploymentId": "dpl_9jHcgTRjA17bKmdhAzRLVruKS1zi",
+    "baselineCommit": "aba717a6d3072887fc18d263e50bb3749cf858ec"
+  },
+  "validation": [
+    {
+      "name": "Production Next build, TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/payroll-history-context-20261031/production-build-result.json"
+    },
+    {
+      "name": "32 semantics regressions plus33 new browser cases and24 earlier browser cases",
+      "result": "passed",
+      "evidence": "artifacts/payroll-history-context/record-semantics/verification.json"
+    },
+    {
+      "name": "Actual full web/native Payroll composition across320/390/768/1280, exact check focus and immutable payment comparison",
+      "result": "passed",
+      "evidence": "artifacts/payroll-history-context-20261031/navigation-browser/results.json"
+    },
+    {
+      "name": "Existing25 Payroll Owner/Staff/Shop browser checks",
+      "result": "passed",
+      "evidence": "artifacts/history-inline-combined-20261031/payroll-browser/results.json"
+    },
+    {
+      "name": "Scoped lint zero errors, source-only TypeScript and independent source review",
+      "result": "passed",
+      "evidence": "artifacts/payroll-history-context-20261031/release-discovery/code-review.json"
+    }
+  ],
+  "dependencies": [
+    "history-inline-clarity-20261031"
+  ],
+  "scope": {
+    "schemaChanges": false,
+    "financialWrites": false,
+    "formulaChanges": false,
+    "permissionChanges": false,
+    "physicalDeviceAcceptance": false
+  },
+  "id": "1d225163-1661-4f18-9cc1-bec7b4a26fa1",
+  "recordedAt": "2026-10-31T23:08:22.688Z",
+  "worktree": "C:\\Reylumi-worktrees\\payroll-history-context-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "289c49a52365217cac203337e7bf206533188a1b5761ec91bb34050b03d7f00d",
+    "app/payroll/inline-financial-history.module.css": "de3c0b112f00a10572e35d6035c8b7e9a2bd2d16148a9c95b6b0e7415786c3c8",
+    "app/payroll/inline-financial-history.tsx": "afdffd28f582453726b1fa32d4b919b6cc7ca21c3880055fadd1198341abc788",
+    "app/payroll/payroll-change-history.tsx": "4be67ea66b19e9782d98a547452b034550d6683717916176e53743680ec34c42",
+    "app/payroll/payroll-dashboard.tsx": "0ada70093bfb47a938bb4878221c9989f9001ff9547d2505b25dc3c66f69a65a",
+    "app/payroll/payroll-record-context.tsx": "c438e47d7930a9725767cb212cf752bb51fcec370f0737ab18ce2cc9cab4af4b",
+    "app/payroll/payroll-tabs.tsx": "5aa790d7ddf73cb2e6f3f692a588879971ec81393ce0174b179771c169c3a829",
+    "lib/app-local-owner-payroll-view.tsx": "38a477f8681747e38096f0194dd80845644fb4b4287ef5e29925182676c3810a",
+    "lib/financial-change-presentation.ts": "8f3cc6c5371de0fb7e28785a992300f1d108b48548dd72190f0c537acbf88cbe",
+    "lib/inline-financial-history.ts": "c0cce19c844d9ee8ad64105d1a3d3ad5dc4778fe4a6ff4c960bba18fe7423e90",
+    "lib/payroll-history-navigation.ts": "ab3499a406d46ed2cd006c85dd9fa5076bbb9ef82ff8b8ec3f86d3593d44dfdc",
+    "tests/financial-change-clarity.test.mjs": "027ecaa40c5002a5bc5f390071451f8242b12c8487cf5dfce4f6ddaa388e065d",
+    "tests/financial-history-record-semantics-browser.mjs": "7e1210e00f27d62d28b0087a28dc0cfaf589228a885f1329374fa76002466261",
+    "tests/financial-history-record-semantics.test.mjs": "628208c42524f49b469994d055bc0d685305b8277b58ab0c0072d33789bec5ea",
+    "tests/payroll-history-context-browser.mjs": "4e3d628bef71e6282a831ce61feecda23b27eee2b2c0557ee8c030522ae6ebfa",
+    "tests/payroll-history-context-fixture.mjs": "9f650096ecb25cdcf54af8c2e9ce11c275e5ad094e8e9737c11383ee72701b3f",
+    "tests/payroll-history-navigation.test.mjs": "d7a00f01cda5c212c47cd946c8150dd9ae97c0498149174cf0ea67978c2f84bc"
+  }
+}

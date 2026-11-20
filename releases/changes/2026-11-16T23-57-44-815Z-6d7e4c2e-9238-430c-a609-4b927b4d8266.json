@@ -1,0 +1,92 @@
+{
+  "kind": "change",
+  "changeId": "public-image-safety-20261116",
+  "status": "blocked",
+  "summary": "Prepared immediate author previews, private staging and idempotent publication; BLOCKED from release until a real image verifier/provider is selected, connected and validated",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116",
+    "retained-storage-ownership-20261116"
+  ],
+  "validation": [
+    {
+      "name": "Focused component/receipt/concurrency/safety/expiry/export and ownership tests (66/66, no skips)",
+      "result": "passed",
+      "evidence": "artifacts/public-image-safety-20261116/tests-final.log"
+    },
+    {
+      "name": "Production build, TypeScript and offline assets; exact runtime source verification",
+      "result": "passed",
+      "evidence": "artifacts/public-image-safety-20261116/build-source-verification.json"
+    },
+    {
+      "name": "Scoped ESLint and staged CRLF-aware whitespace",
+      "result": "passed",
+      "evidence": "artifacts/public-image-safety-20261116/lint-final.log"
+    },
+    {
+      "name": "Actual isolated Supabase433 migrations: private boundaries, signed-token bypass, Beauty/Salon atomic replay, hold/rollback, seven-day expiry and erasure race",
+      "result": "passed",
+      "evidence": "artifacts/public-image-safety-20261116/full-schema/public-image-safety-acceptance.json"
+    },
+    {
+      "name": "Actual component Chromium phone/tablet visual checks (fixture transport; not native/device)",
+      "result": "passed",
+      "evidence": "artifacts/public-image-safety-20261116/beauty-visual-evidence.json"
+    },
+    {
+      "name": "Required owner decision: moderation provider and secure credential setup; no verifier is connected and publication deliberately fails closed",
+      "result": "pending"
+    },
+    {
+      "name": "Actual classifier accuracy/latency, processor Privacy disclosure and iPhone/iPad native rebuild/device QA",
+      "result": "pending"
+    },
+    {
+      "name": "Hosted integration and App Store submission",
+      "result": "pending"
+    }
+  ],
+  "files": [
+    "app/api/account/erase-due/route.ts",
+    "app/beauty/actions.ts",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/salon-profile/actions.ts",
+    "app/salon-profile/salon-profile-view.tsx",
+    "docs/ios-store-moderation-proposal-20261116.md",
+    "docs/public-image-safety-20261116.md",
+    "lib/beauty.ts",
+    "lib/public-image-safety.ts",
+    "lib/public-image-staging-expiry.ts",
+    "lib/public-image-staging.ts",
+    "lib/public-image-upload-client.ts",
+    "lib/public-post-receipt.ts",
+    "lib/public-post-submission.ts",
+    "lib/salon-profile.ts",
+    "releases/changes/2026-11-16T23-17-01-903Z-1272ee4d-c1a9-4084-9973-38c30ccb2b66.json",
+    "supabase/migrations/20261116220000_public_image_safety.sql",
+    "supabase/migrations/20261116221000_salon_post_submission.sql",
+    "tests/beauty-pending-publication.test.mjs",
+    "tests/public-image-safety.full-schema.test.mjs",
+    "tests/public-image-safety.integration.test.mjs",
+    "tests/public-image-safety.test.mjs",
+    "tests/public-image-staging-expiry.test.mjs",
+    "tests/public-image-upload-client.test.mjs",
+    "tests/public-post-receipt.test.mjs",
+    "tests/salon-public-image-submission.test.mjs",
+    "types/beauty.ts"
+  ],
+  "source": {
+    "snapshot": "artifacts/public-image-safety-20261116/frozen-r2/photo",
+    "commit": "16ff6cb50419324da98279cd898ca96b910b3fcf"
+  },
+  "snapshotSha256": "a3d6df4984a8cc52503c93ba7132bd0e4525b7b478b7c4f1e1889987ff5acd41",
+  "id": "6d7e4c2e-9238-430c-a609-4b927b4d8266",
+  "recordedAt": "2026-11-16T23:57:44.815Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

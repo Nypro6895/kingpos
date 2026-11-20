@@ -1,0 +1,91 @@
+{
+  "kind": "change",
+  "changeId": "campaign-followup-20261017",
+  "status": "ready",
+  "summary": "Center Campaign dialogs; prepare images while entering audience; repair salon post picker; show result status; align admin credit units and surface the existing review queue; document credit and support gaps",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/campaigns/actions.ts",
+    "app/campaigns/create-campaign.tsx",
+    "app/campaigns/campaign-modal.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/campaign-ui.module.css",
+    "components/owner-campaign-dialog.tsx",
+    "components/owner-campaign.module.css",
+    "app/(app)/admin/advertising/page.tsx",
+    "app/(app)/admin/advertising/owner-campaign-settings.tsx",
+    "app/(app)/admin/page.tsx",
+    "app/(app)/admin/market/system-workspace.tsx",
+    "lib/vietnamese-campaign-copy.json",
+    "tests/campaign-post-picker.test.mjs",
+    "tests/campaign-workspace-runtime.test.mjs",
+    "docs/campaign-followup-20261017.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\campaign-followup-20261017\\final-source",
+    "overlaySha256": "8e33f75aee9cae6caffe427b21043ff74db8c8fbe31ea64d28a4cb1e437a342c"
+  },
+  "dependencies": [
+    "owner-campaign-workspace-20261017"
+  ],
+  "validation": [
+    {
+      "name": "Post schema, credit denomination, wallet/funding/delivery/refund integration",
+      "result": "passed",
+      "evidence": "artifacts/campaign-followup-20261017/rules-test.log: 4 tests"
+    },
+    {
+      "name": "Browser delayed upload, retry, centering under shared reset, existing dialog and workspace flows",
+      "result": "passed",
+      "evidence": "artifacts/campaign-followup-20261017/ui-test.log; artifacts/campaign-followup-20261017/dialog-test.log: 2 tests"
+    },
+    {
+      "name": "Scoped ESLint and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/campaign-followup-20261017/lint.log; market-lint.log; typecheck.log"
+    },
+    {
+      "name": "Frozen product source production build",
+      "result": "passed",
+      "evidence": "artifacts/owner-campaign-workspace-20261017/followup-final-build.log"
+    }
+  ],
+  "publication": {
+    "status": "not-published",
+    "migrationAppliedToProduction": false
+  },
+  "nativeAssessment": {
+    "required": false,
+    "reason": "Web UI, existing server actions and admin pages only; no bundled native or bridge changes"
+  },
+  "limitations": [
+    "Configuration calculations use repository defaults; no authenticated production post/payment verification.",
+    "Support review remains guarded by the existing advertising management permission; no new support permission or notification inbox event.",
+    "Admin Market credit purchase operations and revised pricing minimums are documented proposals, not implemented changes."
+  ],
+  "notes": "No pricing data, live payments, account permissions or deployments changed. Implementation depends on the earlier Campaign workspace overlay and migration. Build harness inherits the prior scoped Tailwind source and outputFileTracingRoot adjustments only.",
+  "id": "cf072a17-8ef4-4f2c-a5d7-bec96a45ac57",
+  "recordedAt": "2026-10-17T23:45:48.663Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/campaigns/actions.ts": "d696d87650d92758ce3d708dc4e393398d0d753338ed3d694a993783150308eb",
+    "app/campaigns/create-campaign.tsx": "0a127ca43321db99cddd0e7c8b6722339ac77ccc110263cfd32bb3e40391f7d3",
+    "app/campaigns/campaign-modal.tsx": "e0e8dbd5d724e0bc0428c99a2f294858b0623ad4ceede1e99a07a24d9dea787b",
+    "app/campaigns/campaign-workspace.tsx": "664be8e99d641ebd8b0a90bb6717498759d0d32a240241dcd6efa9b31637fb89",
+    "app/campaigns/campaign-ui.module.css": "0356928fea256e7db06c79422127910df67150f1e297343ef2eb2c419edf9445",
+    "components/owner-campaign-dialog.tsx": "9f93003bafff4ee62c3b0ed1855adb914c3725471bb9c2a00692ebef37fd8bee",
+    "components/owner-campaign.module.css": "c11e7b22b92f4cf0f075faff59b11be5d15b18eb8e91a6e0098b1c8a5c960c00",
+    "app/(app)/admin/advertising/page.tsx": "9db8502921f8c3704259dba0504c8f68405565c10953637811af352bead66553",
+    "app/(app)/admin/advertising/owner-campaign-settings.tsx": "82774a33a4bbdb96004205066c6bafb9779b9d0f287247a8b2334c96574e5d5a",
+    "app/(app)/admin/page.tsx": "39c33e5f591a06e677cb4df76da4d6deeaf96e752d8591951584b807fa411a07",
+    "app/(app)/admin/market/system-workspace.tsx": "a59dbb4f5793c6d79289c774dc643fb7bebc2dff315f73dffc5a47a7e0c34ac1",
+    "lib/vietnamese-campaign-copy.json": "a5e5a74e628eed375a90a173c51a40338af0baf1ef46c87e52dbef582d81fd47",
+    "tests/campaign-post-picker.test.mjs": "106969b7c4a2cf259877c0acf31319b5dbc6bf04790c9d24ec328a5e6229af7a",
+    "tests/campaign-workspace-runtime.test.mjs": "27fdd0d6a4e04d28aded422548f8eb9f92c6c6d332c54580caff1f63bba4bd66",
+    "docs/campaign-followup-20261017.md": "4f94e174dfdfad4d39fafc8e8ade4c56d81f8984f5892707dcdbb0e7e97a0bcc"
+  }
+}

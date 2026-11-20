@@ -1,0 +1,12 @@
+.progress { flex-shrink:0; padding:12px 20px; border-bottom:1px solid #e4e4e7; }
+.steps { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:4px; }
+.step { position:relative; display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0; min-height:44px; padding:4px 0; color:#71717a; background:transparent; border:0; cursor:pointer; }
+.step:not(:last-child)::after { content:""; position:absolute; top:19px; left:calc(50% + 17px); width:calc(100% - 30px); height:1px; background:#e4e4e7; }
+.number { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:#f4f4f5; color:#52525b; font-size:13px; font-weight:600; }
+.active .number { background:#f26f3d; color:#fff; }
+.active { color:#c84e20; }
+.label { font-size:11px; line-height:16px; white-space:nowrap; }
+.current { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:8px 0 0; color:#3f3f46; font-size:14px; font-weight:600; }
+.current > span:last-child { color:#71717a; font-size:12px; font-weight:400; }
+.step:focus-visible { outline:2px solid #f26f3d; outline-offset:2px; border-radius:6px; }
+@media (max-width:639px) { .progress { padding-inline:16px; } .label { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); } }

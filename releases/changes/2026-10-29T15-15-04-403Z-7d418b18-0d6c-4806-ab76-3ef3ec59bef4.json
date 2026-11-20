@@ -1,0 +1,38 @@
+{
+  "validation": [
+    {
+      "result": "passed",
+      "name": "Grouped Settings navigation and editor browser tests: 4 passed"
+    },
+    {
+      "result": "passed",
+      "name": "Layout fixture at 320, 390, 768, 1280: aligned rows, no overflow"
+    },
+    {
+      "result": "pending",
+      "name": "Production integration and physical iPhone QA"
+    }
+  ],
+  "files": [
+    "app/settings/settings-hub.css",
+    "app/settings/settings-controls.css"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/settings-inline-rows-20261029/artifacts/settings-inline-rows-20261029/source"
+  },
+  "changeId": "settings-inline-rows-20261029",
+  "summary": "Settings full-bleed phone background and horizontal subject/value rows",
+  "dependencies": [
+    "settings-grouped-style-20261028"
+  ],
+  "kind": "change",
+  "channels": [
+    "web"
+  ],
+  "status": "needs-integration",
+  "id": "7d418b18-0d6c-4806-ab76-3ef3ec59bef4",
+  "recordedAt": "2026-10-29T15:15:04.403Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

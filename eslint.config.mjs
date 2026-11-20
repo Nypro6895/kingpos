@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     "desktop/dist*/**",
     "desktop/node_modules/**",
     "desktop/build/**",
+    // Generated from reviewed source by build-app-local-bundle; validate via
+    // bundle provenance/native checks rather than linting minified output.
+    "ios/Reylumi/LocalAppBundle/**",
     "work/**",
     "artifacts/**",
     "out/**",

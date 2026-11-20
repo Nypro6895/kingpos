@@ -1,0 +1,75 @@
+REYLUMI MARKET — RÀ SOÁT TRẢI NGHIỆM MUA PLUGIN BẰNG THẺ
+Ngày: 10/10/2026
+Trạng thái: phân tích thiết kế và khoảng trống hiện tại; chưa phải bản triển khai thanh toán thẻ mới.
+
+1. MỤC TIÊU ĐÃ XÁC NHẬN
+
+Khách bấm Add to your Reylumi, xem giá và tổng tiền, chọn thẻ đã lưu hoặc nhập thẻ mới, xác nhận thanh toán, rồi nhận kết quả và hướng dẫn thiết lập plugin. Khách không phải tự lập chứng từ, cung cấp ảnh chuyển khoản hoặc chờ admin duyệt tiền.
+
+Chủ hệ thống đã xác nhận có tài khoản Stripe. Hướng phù hợp là Stripe xử lý thẻ, Reylumi tự xác nhận giao dịch và cấp quyền, còn Chase là ngân hàng nhận tiền từ Stripe. Chỉ nhập Chase account/routing number vào form Receiving bank accounts hiện tại chỉ cấu hình chuyển khoản thủ công; thông tin ngân hàng nhận tiền từ Stripe được khai báo trong Stripe Payout settings.
+
+2. KẾT QUẢ RÀ SOÁT
+
+- Luồng Market hiện tại lấy sự tồn tại của cấu hình bank billing làm điều kiện hiển thị chuyển khoản và chặn mua mới qua Stripe.
+- Luồng Stripe cũ có checkout thuê bao và quản lý thuê bao. Giá cũ được ghi cố định theo từng plugin, chưa phù hợp với giá, thuế và phí admin có thể điều chỉnh.
+- Campaigns có lưu phương thức thanh toán cho credit/top-up trong phạm vi ví salon; chưa có cơ chế thẻ đã lưu chung trong tài khoản cá nhân để mua các plugin.
+- Account chưa có mục Payment methods. Admin Market chưa có form kết nối cổng thanh toán thẻ.
+- Kiểm tra cấu hình production theo tên biến môi trường cho thấy chưa cấu hình khóa Stripe Market hoặc chữ ký webhook; khóa mã hóa cấu hình máy chủ đã có.
+- Tệp kiểm thử market-card-system.integration.test.mjs tham chiếu migration chưa tồn tại. Đây là mô tả ý định phát triển, chưa chứng minh tính năng thẻ hoạt động.
+- Các thay đổi BookSMS, Tax Company và Phone Checkin trong workspace cần được giữ và đối chiếu với nguồn production hiện hành khi triển khai.
+
+3. LUỒNG KHÁCH HÀNG CẦN HOÀN THIỆN
+
+A. Add to your Reylumi
+Hiển thị đúng plugin, doanh nghiệp được cấp quyền, giá, thuế, phí nếu có, tổng thu hôm nay và điều kiện gia hạn. Miễn phí thì thêm ngay. Dùng thử có nút và điều kiện riêng. Plugin chưa tích hợp chỉ hiển thị preview.
+
+B. Thanh toán
+Ô nhập thẻ do Stripe cung cấp được nhúng trong Reylumi. Khách có thẻ đã lưu được chọn theo tên loại thẻ và bốn số cuối, hoặc Add new credit card. Có lựa chọn đồng ý lưu thẻ để dùng cho các lần mua sau.
+
+C. Xác nhận
+Reylumi kiểm tra kết quả thực từ Stripe và ghi nhận giao dịch một lần trước khi cấp quyền. Nếu ngân hàng yêu cầu xác thực, khách hoàn thành trong luồng thanh toán. Nếu kết quả đang được xác nhận, hiển thị tiến trình; nếu thẻ bị từ chối, khách có thể đổi thẻ và thử lại.
+
+D. Thành công và thiết lập
+Hiển thị Payment successful, biên nhận tự tạo và trạng thái plugin. Plugin có thiết lập thì nút Set up plugin; plugin dùng ngay thì Open plugin. Theo dõi trạng thái đã mua, đang thiết lập và sẵn sàng sử dụng riêng để khách hiểu việc còn cần làm.
+
+E. Tài khoản
+Thêm Payment methods và Billing history. Quản lý thẻ mặc định, thêm/đổi/gỡ thẻ, giao dịch, thuê bao và hủy gia hạn. Thẻ gắn với tài khoản người trả tiền; quyền dùng plugin gắn với doanh nghiệp đã mua. Lưu mã phương thức do cổng thanh toán cấp và thông tin hiển thị, không lưu số thẻ đầy đủ hoặc CVV.
+
+Việc cho phép lưu thẻ để mua lần sau và đồng ý gia hạn thuê bao phải được trình bày rõ. Giá thay đổi trong admin áp dụng theo phiên bản và điều kiện đã công bố; không tự thay số tiền của phiên thanh toán đã chốt.
+
+4. HƯỚNG DẪN SAU KHI MUA THEO PLUGIN
+
+- Booking Rules: dùng mẫu, sửa nội dung, xem trước và bật xuất bản trên trang đặt lịch.
+- Booking Deposit: thêm plugin, kết nối tài khoản nhận tiền của salon, chọn đặt cọc cố định/phần trăm/toàn bộ, bật thu tiền khi đặt lịch và thử luồng đặt lịch. Tiền khách đặt lịch trả salon là luồng riêng với tiền salon mua plugin của Reylumi.
+- Vietnamese: giữ quyền dùng thử đã có; chọn áp dụng cho chủ tiệm, nhân viên và Portable, rồi mở giao diện phù hợp. Không cho dùng thử lại khi gỡ và thêm.
+- Check-in Receipt: hướng dẫn chọn máy in, kết nối customer display, thử in và quét QR trong POS. Hướng dẫn thiết bị hiện nằm trong mô tả, chưa có bước thiết lập thống nhất sau mua.
+- BookSMS: xác nhận gói và hạn mức SMS, kết nối sender Twilio, chọn xác nhận/nhắc lịch, thử gửi. Hướng dẫn phải nêu phí provider và yêu cầu cấu hình trước khi gửi.
+- Tax Company: quyền trả phí của salon, cấu hình chia sẻ payroll và kết nối đơn vị thuế, hướng dẫn ứng dụng Tax Company cho tài khoản người làm thuế.
+- Payroll Data Download: thêm miễn phí, mở Payroll -> Download, chọn thời gian và loại dữ liệu.
+- Campaigns: thêm miễn phí, dùng credit chào mừng; mua thêm credit qua cơ chế thanh toán riêng và chỉ bật top-up khi khách đồng ý.
+- Phone Checkin: xác minh lại mô hình giá và quyền dùng trước khi mở thu tiền; workspace đang có giá $9.99/tháng trong listing nhưng thao tác cài trực tiếp chưa kiểm tra quyền trả phí tương ứng.
+- Plugin bên ngoài: chỉ mở mua khi có cơ chế cấp quyền, thu hồi/hết hạn, thiết lập và hỗ trợ thực tế. Chuẩn bị hồ sơ nhà phát hành, commission, doanh thu phải trả và chính sách hoàn tiền trước khi mở bán.
+
+Các lỗi giao diện được phát hiện trong workspace: nút hero Payroll mở theo vị trí mảng nên có thể mở nhầm BookSMS; BookSMS chưa đồng bộ đầy đủ khi quyền trả phí được refresh; Tax Company còn một số giá cố định. Cần sửa cùng đợt hoàn thiện luồng thẻ.
+
+5. ADMIN CẦN CÓ
+
+- Payment gateway: Stripe, trạng thái kết nối, Test/Live, khóa công khai, khóa bí mật lưu mã hóa, thông tin xác thực thông báo giao dịch, kiểm tra kết nối và kiểm tra endpoint.
+- Plugin catalog: giá, kỳ tính phí, quyền dùng thử, xuất bản, trạng thái sẵn sàng cấp quyền, hạn mức sử dụng và hướng dẫn thiết lập.
+- Tax/fees: bảng tính thử tổng tiền; phân biệt phí thu khách với phí thực tế Stripe trừ của Reylumi.
+- Transactions: người mua, doanh nghiệp, plugin, mã giao dịch, giá/thuế/phí, trạng thái thu tiền, trạng thái cấp quyền, refund và dispute.
+- Income/expenses: doanh thu, thuế, phí xử lý thực tế, hoàn tiền, tiền còn ở Stripe, tiền chuyển về ngân hàng và khoản phải trả nhà phát hành. Thanh toán thành công và tiền về Chase là hai thời điểm riêng.
+- Refunds: gọi cổng để hoàn tiền, theo dõi kết quả thực tế, cập nhật sổ và quyền plugin theo kỳ bị hoàn; không yêu cầu admin tự chuyển tiền rồi đánh dấu đã hoàn cho giao dịch thẻ.
+- Audit/CSV: lịch sử thay đổi cấu hình, giao dịch không trùng, đối chiếu và xuất báo cáo đầy đủ.
+
+6. THÔNG TIN CẦN CẤU HÌNH
+
+Tài khoản Stripe của Reylumi đã được xác nhận. Để vận hành cần cấu hình khóa API Test/Live, khóa ký webhook của endpoint Reylumi và ngân hàng Chase nhận payout trong Stripe. Các khóa bí mật được nhập qua phần cấu hình bảo mật, không gửi trong hội thoại.
+
+Trước khi bật thu thật cần kiểm tra thẻ mới/thẻ đã lưu, xác thực bổ sung, thẻ bị từ chối, thử lại không thu trùng, gia hạn/hủy, refund và cấp quyền đúng plugin. Thanh toán chỉ được báo thành công khi cổng đã xác nhận; khách không phải chờ tiền được payout về Chase để sử dụng plugin.
+
+Nguồn chính thức:
+https://docs.stripe.com/payments/payment-element
+https://docs.stripe.com/payments/checkout/save-during-payment?payment-ui=embedded-page
+https://docs.stripe.com/payouts
+https://docs.stripe.com/webhooks

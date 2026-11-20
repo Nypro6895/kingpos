@@ -1,0 +1,888 @@
+{
+  "schemaVersion": 1,
+  "kind": "scoped-frozen-source",
+  "baselineCommit": "57c18befbc33add98d90cb9dffc1fd431e889c7b",
+  "snapshot": "C:\\Reylumi-worktrees\\combined-store-release-20261119\\artifacts\\combined-tax-ticket-android-integration-20261119\\frozen-source-r2",
+  "sourceSha256": "94225acb5d03096f21c3aae4d2b7c32c04dfca1264821acb238921a1fdac238f",
+  "fileCount": 174,
+  "files": [
+    {
+      "file": "android/README.md",
+      "sha256": "19e15477ff7389059e19e152b081e49a3f800ae2388a8990799d28e38ec08bde",
+      "bytes": 6932
+    },
+    {
+      "file": "android/app/build.gradle",
+      "sha256": "d415a5436ecaf2001d239b6a820b116605501e59a1e53a659fc5562d16146776",
+      "bytes": 4749
+    },
+    {
+      "file": "android/app/src/androidTest/java/com/reylumi/android/PortableColdStartTest.java",
+      "sha256": "af281f2b84c848ee8fe48c755e5c1c55b1c3f89b5f7ebdfe82cffcf104dae88b",
+      "bytes": 1875
+    },
+    {
+      "file": "android/app/src/androidTest/java/com/reylumi/android/PortableStoreInstrumentationTest.java",
+      "sha256": "5ccf57ff797139519716b2b145c6d073e8984e1557cefcaf37b05313750f1234",
+      "bytes": 37802
+    },
+    {
+      "file": "android/app/src/main/assets/NativeBridge.js",
+      "sha256": "b978e2966c6f710cb44450fb8557a44c505a712ccb4881bc4493311f3e9be3c8",
+      "bytes": 5929
+    },
+    {
+      "file": "android/app/src/main/assets/PortableDeviceBridge.js",
+      "sha256": "f6e4e04c4be8659f319f6c573ec3d2570bbebba5d57306accb332efa05895ee0",
+      "bytes": 5172
+    },
+    {
+      "file": "android/app/src/main/java/com/reylumi/android/MainActivity.java",
+      "sha256": "6ddfa1ef3b08770fd934d26b0c8d3bad0d83b78f8cfa2438b3c6f0d57bb8355a",
+      "bytes": 35974
+    },
+    {
+      "file": "android/app/src/main/java/com/reylumi/android/NavigationPolicy.java",
+      "sha256": "69d55ec72958e84a9fc4ab2aa190beff5e439c4476b36bbac713d91ff859ceaf",
+      "bytes": 6625
+    },
+    {
+      "file": "android/app/src/main/java/com/reylumi/android/PortableDeviceBridge.java",
+      "sha256": "56221701d446f18fba5afce9cff8e8b7ddcb56cf4d4357e58cd8afe5328cfa4d",
+      "bytes": 16976
+    },
+    {
+      "file": "android/app/src/main/java/com/reylumi/android/PortableHttpReadProjection.java",
+      "sha256": "210a4828c261660ebd01ba4ec2185fe54e1c73a6e7dddfdfadac17c822a2c799",
+      "bytes": 8178
+    },
+    {
+      "file": "android/app/src/main/java/com/reylumi/android/PortableOfflineShell.java",
+      "sha256": "f20968459bc90c5f92bfbbbd60eb887bbbc8789963c40e63c4e589a7a2fe3ea9",
+      "bytes": 15774
+    },
+    {
+      "file": "android/app/src/main/java/com/reylumi/android/PortableStore.java",
+      "sha256": "efcbe5c3d9c9bf214baab691c411a6af1c14045ac33579c0ea8c98f053c92599",
+      "bytes": 24053
+    },
+    {
+      "file": "android/app/src/main/java/com/reylumi/android/PortableTransport.java",
+      "sha256": "c0953d326d21b927cb5ad3cc9748aa8ee42e54532e78ff937dff601c7448f8c5",
+      "bytes": 28246
+    },
+    {
+      "file": "android/app/src/main/java/com/reylumi/android/PortableWriterRegistry.java",
+      "sha256": "af8e58af25c9c4ca145d326c9731deb6c1f60ab3b9d02980fd9ea8ee198e4d3d",
+      "bytes": 2116
+    },
+    {
+      "file": "android/app/src/main/java/com/reylumi/android/ReceiptPrintController.java",
+      "sha256": "891fe4d71092f823b615ea9cbb4419d30164bc970723092a72f679290c2a15e2",
+      "bytes": 6724
+    },
+    {
+      "file": "android/app/src/pos/res/values/strings.xml",
+      "sha256": "83201870c587fcf62a5756fc547d163b78f0708778dd35043c846b21fbcd47ae",
+      "bytes": 113
+    },
+    {
+      "file": "android/app/src/posQa/AndroidManifest.xml",
+      "sha256": "34dfed0a57322f4c07b93ff0c30f9d6f2005e1fa5c7a8eadbbd7c5a4c210ded3",
+      "bytes": 397
+    },
+    {
+      "file": "android/app/src/qa/assets/QaNetworkGuard.js",
+      "sha256": "243d3e7035823722112dd4c8227be7d8abafcc74916fe1490b40a31aca0eca5b",
+      "bytes": 1039
+    },
+    {
+      "file": "android/app/src/test/java/com/reylumi/android/NavigationPolicyTest.java",
+      "sha256": "ff77ba8c309f4fd924cd53b53298766886d59c1d1cee778d17a2fca2dc0b989a",
+      "bytes": 2814
+    },
+    {
+      "file": "android/app/src/test/java/com/reylumi/android/PortableHttpReadProjectionTest.java",
+      "sha256": "5046202828e118556ad1bbb8b607c5553cf9e982fbcf3933480c3857bc959180",
+      "bytes": 9538
+    },
+    {
+      "file": "android/app/src/test/java/com/reylumi/android/PortableOfflineShellTest.java",
+      "sha256": "7f9612a9059365275d840102094168659a20d2771f7c4cd9740b2e5c51723b1a",
+      "bytes": 2525
+    },
+    {
+      "file": "android/app/src/test/java/com/reylumi/android/PortableWriterRegistryTest.java",
+      "sha256": "b4ce720e06b1f893fcd46be2a8fa9dfb7da34d8abed9fd12367bcee768b0f347",
+      "bytes": 2401
+    },
+    {
+      "file": "android/app/src/test/java/com/reylumi/android/QaNavigationPolicyTest.java",
+      "sha256": "b073be819f3c9e7021665f1de9757ab3ed11a043549bc35c092e8676687e99c1",
+      "bytes": 4599
+    },
+    {
+      "file": "android/app/src/test/java/com/reylumi/android/ReceiptPrintControllerTest.java",
+      "sha256": "422de8d8a6bce0fff10309adb0ef43d63b422eac176117f055907a2d3ed87fb4",
+      "bytes": 1611
+    },
+    {
+      "file": "android/tests/portable-device-bridge.test.mjs",
+      "sha256": "c36efc36e01528330822af135cda2441b82e0034863d7ef189a10ebb17625bd9",
+      "bytes": 4877
+    },
+    {
+      "file": "android/tests/qa-bridge.test.mjs",
+      "sha256": "224b8c876b31e8a199e702207b06d22ae94edd1ee90ae69bb6cdba5fd3e068c0",
+      "bytes": 8711
+    },
+    {
+      "file": "app/(app)/customers/[customerId]/page.tsx",
+      "sha256": "d3ab66ab4f92f3311dc392677b57eff7c0e0288a6855c477783dffe87926aaa6",
+      "bytes": 23431
+    },
+    {
+      "file": "app/(app)/payroll/page.tsx",
+      "sha256": "ac8c5810ac5277837d3b520fff3df5ef1f35c7ee0554d78c5f3395cc9ee8884a",
+      "bytes": 43537
+    },
+    {
+      "file": "app/(app)/payroll/tax-company/loading.tsx",
+      "sha256": "b303a8f8f017d18d6d0606dde34a5b6674aaedb473961c4f141ffb1a46592e85",
+      "bytes": 99
+    },
+    {
+      "file": "app/(app)/payroll/tax-company/page.tsx",
+      "sha256": "6304d68a6d4d9b1bb132ab7743c9d90dd1e471066dcd62bedfea0daed1b4ccdf",
+      "bytes": 2055
+    },
+    {
+      "file": "app/(app)/pos-tickets/[ticketId]/page.tsx",
+      "sha256": "3901c5bd6778caa35cb337f42ab6c96297dd4de218ca22e4457925bd47b6c0fd",
+      "bytes": 27778
+    },
+    {
+      "file": "app/(app)/pos-tickets/page.tsx",
+      "sha256": "576db717f04dad609ecc2896cf679d97e97e009d06b0b6003d610fe5c66ab197",
+      "bytes": 7586
+    },
+    {
+      "file": "app/(app)/pos/portable/layout.tsx",
+      "sha256": "26ab7354c75b180f3a2b97739a1c989c097c11a1ad462364878a80b28914ab7f",
+      "bytes": 7878
+    },
+    {
+      "file": "app/(tax)/tax/[salonId]/loading.tsx",
+      "sha256": "b303a8f8f017d18d6d0606dde34a5b6674aaedb473961c4f141ffb1a46592e85",
+      "bytes": 99
+    },
+    {
+      "file": "app/(tax)/tax/qa/owner-report/route.ts",
+      "sha256": "0b52e53791a8cfa35328aa6586a37634cf78dc7125c578a3923da58a5576010f",
+      "bytes": 822
+    },
+    {
+      "file": "app/account/account-profile-editor.tsx",
+      "sha256": "1b7812e4ca0509ca5cc48565c8943255bf2d67a835664734562ad7c58848bf17",
+      "bytes": 47622
+    },
+    {
+      "file": "app/bookings/booking-workspace-client.tsx",
+      "sha256": "74ba10a5a6efab0045d53bd35ab2292d8074d8680feb8737ced61da61d4b1c55",
+      "bytes": 274065
+    },
+    {
+      "file": "app/payroll/actions.ts",
+      "sha256": "d94c5066bbf8bcc582dd644bddad0d0a12fb1a659608fe25646ef2584fdb1589",
+      "bytes": 9943
+    },
+    {
+      "file": "app/payroll/payroll-tax-item-fields.tsx",
+      "sha256": "85cf964ee8a489473b313d7ab1f8e38ab66c80483a5ffac333bed9bd8ac88a54",
+      "bytes": 5035
+    },
+    {
+      "file": "app/payroll/staff-payroll-setting-inline-edit.tsx",
+      "sha256": "d3e9c84014d43c522cd66dd8d659ea8cf64d2e910c95404f2e03340afdf3761c",
+      "bytes": 20013
+    },
+    {
+      "file": "app/payroll/tax-company-live-report.tsx",
+      "sha256": "f87aa98c1471fe809f8d14a97bc55e5e7f3d6db0b77c499df6e189eb514adffe",
+      "bytes": 12389
+    },
+    {
+      "file": "app/pos-tickets/closed-ticket-correction-form.tsx",
+      "sha256": "5f00d629f55d1532e341e77cbb3e3fe2ec573473cde56034ec1f75b175a69640",
+      "bytes": 70703
+    },
+    {
+      "file": "app/pos-tickets/owner-live-tickets.tsx",
+      "sha256": "4952b4f8427ba6f2996cfbef639f27b9acc0aef5295637fc88c2d4e072b18f95",
+      "bytes": 9422
+    },
+    {
+      "file": "app/pos-tickets/ticket-detail-view.module.css",
+      "sha256": "f1987b105d352b8dcb0fb296654e6f48b266e878e6b527f06bddf768076d9887",
+      "bytes": 7621
+    },
+    {
+      "file": "app/pos-tickets/ticket-detail-view.tsx",
+      "sha256": "d2e5dd68aeff6d6063d5b30b72bb7d21341e0b7a9a57605350be2d8bacc0b52b",
+      "bytes": 15521
+    },
+    {
+      "file": "app/pos-tickets/ticket-filters.tsx",
+      "sha256": "3c8330088ad32a95ea35df10a5723b33ec5114904c09dca46a80b7c6eb84ba60",
+      "bytes": 5260
+    },
+    {
+      "file": "app/pos/portable/device-settings-panel.tsx",
+      "sha256": "635f6ab17916175b7d949595b3fe92116c5a549231ebb8869b184b278693a801",
+      "bytes": 10917
+    },
+    {
+      "file": "app/pos/portable/portable-local-tickets.tsx",
+      "sha256": "41aa1cb03de054d6d6ea65e220e5eff476cffbbf58ebf6d1e6d12e7b9ab34d8e",
+      "bytes": 3944
+    },
+    {
+      "file": "app/pos/portable/portable-native-mode-settings.tsx",
+      "sha256": "2e807f16f2ce80563b870fa042702e57fe30942bd635d49294522c10af3c14ad",
+      "bytes": 4963
+    },
+    {
+      "file": "app/pos/portable/portable-native-preparation.tsx",
+      "sha256": "899bfa7d94917701fe03b3f6bef4f9c4c5fd3050c46d354a956992375116a047",
+      "bytes": 1384
+    },
+    {
+      "file": "app/pos/portable/portable-native-storage-boundary.tsx",
+      "sha256": "5f786fe5b0647700a2d3d28a9658b463c67386c8630da52720659313b8072dd6",
+      "bytes": 5463
+    },
+    {
+      "file": "app/pos/portable/portable-workspace-tabs.css",
+      "sha256": "a376e1bbd99ee6e117c7e144a8d40f24546cc153416de5ff9a6b70e6d3538fff",
+      "bytes": 505
+    },
+    {
+      "file": "app/pos/portable/portable-workspace-tabs.tsx",
+      "sha256": "5b7d2232e1f5330596135dc087f8581e6fd6154d6afa8621e53282bf6038a80e",
+      "bytes": 9702
+    },
+    {
+      "file": "app/pos/portable/ticket/portable-ticket-client.tsx",
+      "sha256": "c8a03e2e8a2aecd53de102e7b5902ca406a38007d1434e8a79c3d2e8ca413e02",
+      "bytes": 15991
+    },
+    {
+      "file": "app/pos/portable/use-portable-draft.ts",
+      "sha256": "3969176d9bf725be8423eada8b41a3a7ae8f870fa72a7a7baefe309e58c3add7",
+      "bytes": 18421
+    },
+    {
+      "file": "app/pos/pos-desk-client.tsx",
+      "sha256": "dfa7d89ddc9646b076cef589a39afb8203f5cc5ee66fdfb2b61ea85606458b54",
+      "bytes": 214586
+    },
+    {
+      "file": "app/settings/team-payroll-panels.tsx",
+      "sha256": "6079f032ea9d20b5cca0ca53d220e3c544b35dde80b8b66e46eec24bef2c76cc",
+      "bytes": 22610
+    },
+    {
+      "file": "app/staff/appointments/staff-booking-settings-client.tsx",
+      "sha256": "7d267c481bac9a2e3f1f3840dd7c2fe81b5b4c67e24c06dca9e88fbefde7411d",
+      "bytes": 28565
+    },
+    {
+      "file": "app/tax/owner-tax-report.module.css",
+      "sha256": "8f932d6de8774082a92bf317725862270582ef9a4cfb5ac9c1aac1f31cfe5b5b",
+      "bytes": 3036
+    },
+    {
+      "file": "app/tax/owner-tax-report.tsx",
+      "sha256": "df1c0fa4a4cf82a3ccb989afcd3cf0d6c0a4fac2e9929d509d224039168178d4",
+      "bytes": 6066
+    },
+    {
+      "file": "app/tax/tax-figures-sheet.module.css",
+      "sha256": "07e76ae2d9b06de0a55990d998026525ab9dfdd6155ae1a5fb4b1878612cf4da",
+      "bytes": 7669
+    },
+    {
+      "file": "app/tax/tax-figures-sheet.tsx",
+      "sha256": "bd6d6cf732163dc2fe5805472d25b120a6c9f23087a0f1c9797b5064c8433351",
+      "bytes": 15661
+    },
+    {
+      "file": "app/tax/tax-report-loading.module.css",
+      "sha256": "fe4cb61fc18830e1b1c813ff94ae8ee0761541f7fc732a8c64f02492551ff341",
+      "bytes": 1086
+    },
+    {
+      "file": "app/tax/tax-report-loading.tsx",
+      "sha256": "f8a5c5b93a0a20fcb3e1daab4c4ac27337ebd580852123d36909e7f2bbf25513",
+      "bytes": 688
+    },
+    {
+      "file": "app/tax/tax-workspace.tsx",
+      "sha256": "6cce50443824ba9302dc5c2cb10b03b5d123230fe790cff475345de9bd7a756a",
+      "bytes": 66947
+    },
+    {
+      "file": "components/app-local-portable-workspace.tsx",
+      "sha256": "da42e09379d54e6ddcdc4b9f3f00527ceb1a225bcf545feb737383601b371aa1",
+      "bytes": 10604
+    },
+    {
+      "file": "components/app-local-ticket-detail.tsx",
+      "sha256": "c52e383239013c1fd0a7eefbf570d1e0e3962cde5f27ff931018bfa86882f0e6",
+      "bytes": 49016
+    },
+    {
+      "file": "components/gift-card/customer-gift-cards.tsx",
+      "sha256": "f2e38c8039015a6e6b1657dc663ea3186cc19d267e2ddc880930b056c7c4f043",
+      "bytes": 23561
+    },
+    {
+      "file": "components/overlay-dismissal.tsx",
+      "sha256": "3a20ec2922e70b0141a7a80aae64c18a391f70dec8aef02deb89b6f60945a52d",
+      "bytes": 5808
+    },
+    {
+      "file": "components/portable-receipt-print-actions.tsx",
+      "sha256": "846a8a8a04098f437521f41748ad313ae8b4d2f9b06713b03a563b0a1130ac4f",
+      "bytes": 2678
+    },
+    {
+      "file": "components/provisional-receipt-print-actions.tsx",
+      "sha256": "d27ef5f8bcdb45a7cfc8e4f2e283da3daa12f0aca6668bf646ac769eeb88b25e",
+      "bytes": 3143
+    },
+    {
+      "file": "components/receipt-print-actions.tsx",
+      "sha256": "03193524139cb0548e149621d827342a5be0311c3b3ba2274e03eb92ae2efe4c",
+      "bytes": 4858
+    },
+    {
+      "file": "components/receipt-print-context.tsx",
+      "sha256": "46ca49e1186ace9310d771bd0eb39b5124bd299fe6d92041d8193bd407e5af05",
+      "bytes": 655
+    },
+    {
+      "file": "components/receipt-print.css",
+      "sha256": "c133d1aa6162f4b5ce87ed15db31f1af9370eeb65f8c04590b72ce06d824e876",
+      "bytes": 2493
+    },
+    {
+      "file": "components/receipt-setup.tsx",
+      "sha256": "60c234547b6c74591eb57f634aa35e8678731da6c8e2afec07310b11030be42f",
+      "bytes": 7090
+    },
+    {
+      "file": "desktop/build.cjs",
+      "sha256": "7c8faae9ef1debdb4b62174153dddc1a30ba40813d731937df841a98aa3f2377",
+      "bytes": 3470
+    },
+    {
+      "file": "desktop/main.cjs",
+      "sha256": "b8d8cfd0b2c9d23adaf6342f639b87007679faa9465d615309f66d542341df07",
+      "bytes": 28487
+    },
+    {
+      "file": "desktop/offline-shell.cjs",
+      "sha256": "882f14645755f36908864fc1312435e7490ca4fd1e37c62a31f59837f2308efb",
+      "bytes": 6997
+    },
+    {
+      "file": "desktop/preload.cjs",
+      "sha256": "6c6fe0e0fe9c2a53e623e53a9e73ffee95c208d6149a460041bc27cb3fd1e242",
+      "bytes": 2461
+    },
+    {
+      "file": "desktop/receipt-print.cjs",
+      "sha256": "7b84128eed3224e9836c0d391770414615126f7dd7d8499394602cc6bfc215fb",
+      "bytes": 4470
+    },
+    {
+      "file": "desktop/tests/receipt-pdf.electron.cjs",
+      "sha256": "cdbf3a79d21b1d911a374561b55ba0c8bc93c6401ddef47cbc33c230effa5415",
+      "bytes": 2157
+    },
+    {
+      "file": "desktop/tests/receipt-print.test.cjs",
+      "sha256": "8d5665c63c181dcaf59b04d1322951a256e684921600d733e2bb8b93cdc2bee8",
+      "bytes": 5317
+    },
+    {
+      "file": "docs/android-portable-pos-native.md",
+      "sha256": "c290f4c828705ea005772a4fba850b6b23711ded9cc480a195b0900eb4cde437",
+      "bytes": 12709
+    },
+    {
+      "file": "docs/combined-tax-ticket-android-integration-20261119.md",
+      "sha256": "3c9a617ed74fe99654aeedf771f54e9fd24a2548ed4951e83655f5b4f38f5c32",
+      "bytes": 9147
+    },
+    {
+      "file": "docs/owner-tax-readonly-20261114.md",
+      "sha256": "b2d77fc1a495b3f71db2c7026a71c45ac33b6971d122ff08feb004ee5498fd4b",
+      "bytes": 2887
+    },
+    {
+      "file": "docs/tax-shared-figures-20261117.md",
+      "sha256": "76214f028ecd6b38728c63bc94ddf19df82a7bd39f710fffb1b2d89150a1d76f",
+      "bytes": 4952
+    },
+    {
+      "file": "ios/Reylumi/PortableDeviceBridge.js",
+      "sha256": "1a89e0c4b28320f9fb3926c157612ef0d2016c5b3ea7f62e5f2ecc16402d102b",
+      "bytes": 4190
+    },
+    {
+      "file": "ios/Reylumi/ReceiptPrintBridge.js",
+      "sha256": "1e8fbe233adc42b229e736b5a7604418c37f69c5bce835e30f46d92d1c62ea9d",
+      "bytes": 1829
+    },
+    {
+      "file": "ios/Reylumi/ReylumiLocalAppViewController.swift",
+      "sha256": "bc2f04300eba81fd6e81ca5891d9101621ac639448f239a33b21cd4493b7238c",
+      "bytes": 46561
+    },
+    {
+      "file": "ios/Reylumi/ReylumiPortableBridge.swift",
+      "sha256": "6280f566e01b4749370ebfddbd800d2da6c3a8022d3b2be2d6d534f74531b05f",
+      "bytes": 22343
+    },
+    {
+      "file": "ios/Reylumi/ReylumiReceiptPrinter.swift",
+      "sha256": "497ff47eff460559fedf7ce04ccc4c5f14c4d84c0abe7a7b80954023c32ca183",
+      "bytes": 7324
+    },
+    {
+      "file": "ios/Reylumi/ReylumiViewController.swift",
+      "sha256": "bb1e25ae9537b13b513fdea630fe7cfe6dbb553d411d4153a29db253f1795d20",
+      "bytes": 37622
+    },
+    {
+      "file": "ios/ReylumiTests/ReylumiReceiptPrinterTests.swift",
+      "sha256": "aa4432cde68ec1d40b26bff85ef2bf70706781af3928858e55ef32d0ca8167b4",
+      "bytes": 1916
+    },
+    {
+      "file": "lib/app-local-owner-payroll-view.tsx",
+      "sha256": "d07d658f55769673dbe920280c942999aef8f9e6f3873d6db3b42256b204e97c",
+      "bytes": 41145
+    },
+    {
+      "file": "lib/app-local-payroll-tax-metadata.ts",
+      "sha256": "31debf31e934f54ef42a505b650e83349b7e58c7b64ebbd356246d807b892215",
+      "bytes": 1408
+    },
+    {
+      "file": "lib/app-local-payroll-tax-registry.tsx",
+      "sha256": "32e6557762c14d3828cf9c5dd43a4bdb8ad673e2e5cb6819f9f0204c3d85351d",
+      "bytes": 3728
+    },
+    {
+      "file": "lib/app-local-payroll-tax-server.ts",
+      "sha256": "71a61ded2f63bfa53fa2500a30518d50c22cf9ab05731901bdef42cbb099ce82",
+      "bytes": 4600
+    },
+    {
+      "file": "lib/app-local-portable-context-server.ts",
+      "sha256": "0e3e00e1ece1849dc53975dd43caac26125b01cedb660311f81d7c9edddfe91c",
+      "bytes": 4435
+    },
+    {
+      "file": "lib/app-local-portable-metadata.ts",
+      "sha256": "17609482eca74070e23333362c26119266d52c207abb59383ac99d336219a330",
+      "bytes": 2120
+    },
+    {
+      "file": "lib/customers.ts",
+      "sha256": "1579ccfd7826eab25d460689070777d19b5347047dda7a474651966faa695c23",
+      "bytes": 23581
+    },
+    {
+      "file": "lib/experience-offline-client.ts",
+      "sha256": "272052cb14ffe29a7e3c5cf545e00a81f80ebfa314c3260304bfa5b7cf21280b",
+      "bytes": 16764
+    },
+    {
+      "file": "lib/financial-change-presentation.ts",
+      "sha256": "e0c78886da2fe362da52da202e38d9af38ff87cff23d5741e3809bd1cc40d0bf",
+      "bytes": 23210
+    },
+    {
+      "file": "lib/lifecycle-export.ts",
+      "sha256": "cb8c8901a56a64f5a86ce584fe3b2ac4adbfdcec3c3c3a7f54ab20bb6bba5c4a",
+      "bytes": 29556
+    },
+    {
+      "file": "lib/owner-attention-presentation.ts",
+      "sha256": "bc90c8e0104ce5b418158c9968834e92e67309d05e253b49c93966f074b0bbb5",
+      "bytes": 6115
+    },
+    {
+      "file": "lib/owner-tax-report-model.ts",
+      "sha256": "8aa6718d6fa3777f90b075ac3f3a5b82220a7683310b2ceed7b974851449624e",
+      "bytes": 2109
+    },
+    {
+      "file": "lib/owner-tax-report.ts",
+      "sha256": "1e04500dd7049a0dff006e3e7e1c9d23649214d0805147c02d13cb1ab16cf3c9",
+      "bytes": 1381
+    },
+    {
+      "file": "lib/payroll-live-projection.ts",
+      "sha256": "a615063bab2382471bda3cf7af9835a72bfd08d4973446e87acf0c5835bae4a2",
+      "bytes": 1667
+    },
+    {
+      "file": "lib/payroll-tax-company.ts",
+      "sha256": "fdf944da06d3f2e980b7aad6418ccd3bc201f03e6041cab62c4fee49b02f9d38",
+      "bytes": 3225
+    },
+    {
+      "file": "lib/payroll-tax-settings.ts",
+      "sha256": "1eb833dd7eed98a9b66d70b83deb23933d31d23c25d8f865104eca7db472216a",
+      "bytes": 7625
+    },
+    {
+      "file": "lib/payroll.ts",
+      "sha256": "32daf0a90797bbffb9be84f85ba5e3e474a4d565c84dc533a682851eba001388",
+      "bytes": 161692
+    },
+    {
+      "file": "lib/portable-device-storage.ts",
+      "sha256": "e989665187d9b3a94f1fcaab6733fc9c507b6650b7cef99996a3f750e1409dbd",
+      "bytes": 6992
+    },
+    {
+      "file": "lib/portable-native-client.ts",
+      "sha256": "5f32e1ac366dafccbfdbb68ec2ff275961bfa91ab142dcb7319bd73bdd6d908e",
+      "bytes": 1749
+    },
+    {
+      "file": "lib/portable-native-platform.ts",
+      "sha256": "a25e0cac41405fe105dccb431d9da679ba09cff3a0258f4d2acaef7dc2f83380",
+      "bytes": 553
+    },
+    {
+      "file": "lib/portable-native-preparation.ts",
+      "sha256": "834e12b59cc4ecf52005d07e334a0dbc7827fd347b732cb4181b75d43a530adf",
+      "bytes": 1407
+    },
+    {
+      "file": "lib/portable-operations.ts",
+      "sha256": "124dfbd1e8c97c9f6ef9e10945a32d9de0cfc8fa6e2aac4409245c3dd7752d4e",
+      "bytes": 11032
+    },
+    {
+      "file": "lib/portable-receipt-print.ts",
+      "sha256": "69e2dfb3694a34af801453e7e5d68fb86e1b581c3566c84477acfb0f7534a077",
+      "bytes": 2964
+    },
+    {
+      "file": "lib/portable-recovery-key.ts",
+      "sha256": "9d678b9ad902b1b70a7aef14aebc8e2f3089447b1d0a2f71fadfa0ff589d448b",
+      "bytes": 2819
+    },
+    {
+      "file": "lib/pos-ticket-navigation.ts",
+      "sha256": "37ca78a61fe198a7861088d000aa4d748919ad05c4376eb57e36f59d48ea8278",
+      "bytes": 3495
+    },
+    {
+      "file": "lib/provisional-receipt-print.ts",
+      "sha256": "36330c225ee58e43e1f81a89d4e3e87a1ba788bcfbb2b150ce39da35b2741e42",
+      "bytes": 4804
+    },
+    {
+      "file": "lib/receipt-brand-server.ts",
+      "sha256": "9f09e7950aa799533613a08060af56ff40ca9e4a9d0d961904eb7dad668f281d",
+      "bytes": 1034
+    },
+    {
+      "file": "lib/receipt-device-preferences.ts",
+      "sha256": "1f1a1040f2af28d189115d38c7d33121e96e08167397bdb5fb7e0f87de553db4",
+      "bytes": 1763
+    },
+    {
+      "file": "lib/receipt-print-client.ts",
+      "sha256": "3441dff902dc7009012de8223650a41d33d70c80372fc86274210abe0b75a6b4",
+      "bytes": 3440
+    },
+    {
+      "file": "lib/receipt-print-document.ts",
+      "sha256": "76abd77499f9f9e1d4419f28da355787e5b92b3de56e71a2383d09aa7df442e8",
+      "bytes": 8265
+    },
+    {
+      "file": "lib/staff-pay-changes.ts",
+      "sha256": "b276425c8fac9496ad09f04e83d1e66d3a8115bc2f1ea938a52a4c2360dfe4d0",
+      "bytes": 3076
+    },
+    {
+      "file": "lib/staff-payroll-display.ts",
+      "sha256": "83b9564aad85410618a36d998ee48ef831a261fa5037d5c717a297ca0e084874",
+      "bytes": 11017
+    },
+    {
+      "file": "lib/tax-workspace-model.ts",
+      "sha256": "ce65caca3e9f12a6b120f7a768e4f0b57618c3047d5c01a7e26dd8de7fbd8d37",
+      "bytes": 7534
+    },
+    {
+      "file": "lib/tax-workspace-qa.ts",
+      "sha256": "e530c3d776748d98f95ef984cea9cf536157eb07f2e26b21a08b2288b0057ba2",
+      "bytes": 11351
+    },
+    {
+      "file": "lib/tax-workspace.ts",
+      "sha256": "b147929570a5c1082a83c3c57aff49af7f8d9bb4a8eb5d0b47d15cc7bdf561dc",
+      "bytes": 3021
+    },
+    {
+      "file": "lib/use-receipt-presentation-guard.ts",
+      "sha256": "6a8c9259b15b8b20b48e28b6f170d6ded67275b5f790cf83acb1f79723732b1d",
+      "bytes": 2065
+    },
+    {
+      "file": "lib/vietnamese-context-copy.json",
+      "sha256": "460b9fa18972c9a773e03d11cd9db0ebcc2e650f83932164ec1875d5adcfbb40",
+      "bytes": 73162
+    },
+    {
+      "file": "lib/vietnamese-dictionary.ts",
+      "sha256": "5c67f61e1de72078e08601c9d00f4669ef2d32ec61581da188d0ffd9245a4899",
+      "bytes": 28728
+    },
+    {
+      "file": "lib/vietnamese-ticket-detail.json",
+      "sha256": "7dcf93a93bbd6f0abb4e70745c8a3939889483cd62c390dbde1ee0b62e7cb70c",
+      "bytes": 581
+    },
+    {
+      "file": "releases/changes/2026-11-18T20-37-46-687Z-c560eaa1-52a6-44fd-a6b0-a561c88dc8b5.json",
+      "sha256": "a13a5e86e245ba82d02edcd071c6c04b7942f86c438c51ebb0156f7c6700e498",
+      "bytes": 1836
+    },
+    {
+      "file": "scripts/ticket-detail-preview-check.mjs",
+      "sha256": "f3dc48dd955433e0557d082d2a6303416b508132a7eb8ed7bfec8df249f8e266",
+      "bytes": 2133
+    },
+    {
+      "file": "scripts/ticket-detail-preview.mjs",
+      "sha256": "3ec3db7f7874936e21c911be988a881e29375d8c66edcbbef352c9abbb2e025d",
+      "bytes": 828
+    },
+    {
+      "file": "supabase/migrations/202611170001_staff_selected_customer_identity.sql",
+      "sha256": "a405a715b6dc9378d408400974f732d2a27c547c85190d0084a9373eadcbfc33",
+      "bytes": 4852
+    },
+    {
+      "file": "supabase/migrations/202611170002_owner_attention_display_contract.sql",
+      "sha256": "41621ac821d3df3aa27facaa7de2c6acb7e9070602b5222eea78fbce617830dd",
+      "bytes": 3119
+    },
+    {
+      "file": "supabase/migrations/20261117140000_tax_item_settings.sql",
+      "sha256": "60a14414834e9265ba2f9af31e4dd20551a2fd0fb9b428e8051781a8defd8497",
+      "bytes": 10221
+    },
+    {
+      "file": "supabase/migrations/20261117150000_tax_shared_report_projection.sql",
+      "sha256": "92520440b0f3531b319267c31de17062ca6c637f7ec7203209748ab44fee5199",
+      "bytes": 11616
+    },
+    {
+      "file": "tests/android-overlay-avatar-runtime.test.mjs",
+      "sha256": "f5adf0f6a52bfb50d7cd8d098fc346b87b0d9f3888ceb9446f24069814074317",
+      "bytes": 12135
+    },
+    {
+      "file": "tests/app-local-owner-tax-report.test.mjs",
+      "sha256": "3614ecf04253132c61c942e525338d024e8f460acd6c34c5447fd08fd1afc3f6",
+      "bytes": 10344
+    },
+    {
+      "file": "tests/combined-ticket-authority.test.mjs",
+      "sha256": "61cd72efbb98d2a882c2cec144ae971b0d86c6525869b00c8f3dabfda79f75fa",
+      "bytes": 9866
+    },
+    {
+      "file": "tests/combined-ticket-browser.mjs",
+      "sha256": "51f47e648d8f9fbd54840bd2cac01c3d1ac56ff211c59ae7d70115a621d96ecb",
+      "bytes": 6281
+    },
+    {
+      "file": "tests/financial-change-clarity.test.mjs",
+      "sha256": "d5957c43013e3135ac006f702ff0b957338a336d0cfc3746767f8f6dc1ed76ee",
+      "bytes": 13049
+    },
+    {
+      "file": "tests/fixtures/ticket-detail-professional-data.mjs",
+      "sha256": "0d37c2350075d2ca4fe553e8a194eee71aeb6e6fc4849c0eca185fd0a6a349db",
+      "bytes": 5618
+    },
+    {
+      "file": "tests/fixtures/ticket-detail-professional-preview.mjs",
+      "sha256": "f072b929cacaa538b0867313d5f32edf2b1eb1b8d5ca05cbffed1770bdab22bd",
+      "bytes": 14869
+    },
+    {
+      "file": "tests/gift-paid-return-wallet.test.mjs",
+      "sha256": "06314b1b4543d4d488331e79f002bdd5b607d99af86939cd1d569009e907ede8",
+      "bytes": 5328
+    },
+    {
+      "file": "tests/owner-attention-display-contract.test.mjs",
+      "sha256": "fa1c2837a3e72546da1cd5bfacf045eed06edd02275915bf9b068f02023409c1",
+      "bytes": 24656
+    },
+    {
+      "file": "tests/owner-tax-report-browser.mjs",
+      "sha256": "c4b918baefd8d84f5e3f2ee01ad7356625a2d106f1d065342bf119d240dc1928",
+      "bytes": 11500
+    },
+    {
+      "file": "tests/owner-tax-report-model.test.mjs",
+      "sha256": "9941d19f58f7d8ae0e8e84077b0de0c526757e9daad9f7fa7650cd77a43d21e1",
+      "bytes": 2411
+    },
+    {
+      "file": "tests/owner-tax-report-page.test.mjs",
+      "sha256": "456693fb4478f20a262aaa2dc7f4144110b58db7847d19b31af015988531f06f",
+      "bytes": 3216
+    },
+    {
+      "file": "tests/owner-tax-report-source.test.mjs",
+      "sha256": "2c44312d09f76583f2c3b79ded137b218a74bda5f738e3d50c4199f05e7c7485",
+      "bytes": 7074
+    },
+    {
+      "file": "tests/payroll-input-formula-regression.test.mjs",
+      "sha256": "12308b5986c19848506a97dd30fec3f97b148b7f3bacae9f4883297417aeeefd",
+      "bytes": 8316
+    },
+    {
+      "file": "tests/payroll-tax-item-settings.integration.test.mjs",
+      "sha256": "1a67e1f5373140d5f8c887d0b9b287dc39db110280357d466606ca55ccb8ac33",
+      "bytes": 11241
+    },
+    {
+      "file": "tests/payroll-tax-item-settings.test.mjs",
+      "sha256": "e8d75dd399c53e8912f2c8233f1319632337232f4b7d367c555e7e2a01951307",
+      "bytes": 7333
+    },
+    {
+      "file": "tests/payroll-tax-item-ui.test.mjs",
+      "sha256": "5b786797746ee0da4928d24d034b4349905f71b97e3a69ae22a7ec231114cb63",
+      "bytes": 10748
+    },
+    {
+      "file": "tests/portable-android-storage.test.mjs",
+      "sha256": "31894e3e2fa0475d99ed8f9d021cb243adb9166f4e2469bdfcc82dca7ec92efa",
+      "bytes": 19459
+    },
+    {
+      "file": "tests/portable-android-worker.test.mjs",
+      "sha256": "54f3020973c3703faaa422fc31031fe0de0fa797cfecbea03a636bc05eb72a77",
+      "bytes": 3614
+    },
+    {
+      "file": "tests/portable-checkpoint-zero.test.mjs",
+      "sha256": "2886d42c966998f20ec41514eed641a9cf946e2bb673f8ffd31750cea9c91515",
+      "bytes": 5479
+    },
+    {
+      "file": "tests/portable-ios-storage.test.mjs",
+      "sha256": "f1993b3d2f6c881de3866232253b5a0e6b90abc5eea03f14f36cc9af80a2b87f",
+      "bytes": 22132
+    },
+    {
+      "file": "tests/pos-ticket-navigation.test.mjs",
+      "sha256": "8d29c9ca076f5b4eca21df0ccee8a98706f6b17d4de635ece258879b8050f5ae",
+      "bytes": 4149
+    },
+    {
+      "file": "tests/shared-receipt-browser.mjs",
+      "sha256": "0b89725895d52adc08db5f743d8a94c7130d234054b9d17daeed4269762c4ec2",
+      "bytes": 16107
+    },
+    {
+      "file": "tests/shared-receipt-print.test.mjs",
+      "sha256": "6d7f33754df88422c16db7ba32231dc6ee6ed2b53ca3be94074cc6ceedc82389",
+      "bytes": 11980
+    },
+    {
+      "file": "tests/staff-selected-customer-identity.integration.test.mjs",
+      "sha256": "6b0f03d72deaf26b93f0ab7ffe019ec216d9761e067a4ce035ec15927859b20e",
+      "bytes": 16902
+    },
+    {
+      "file": "tests/tax-personal-workspace.integration.test.mjs",
+      "sha256": "170b049827fe5c8265460bd58a638029c86c5308214dfb4e69a5125253d09059",
+      "bytes": 32962
+    },
+    {
+      "file": "tests/tax-report-loader.test.mjs",
+      "sha256": "4125e9d327c41c1bd16241158fb9beaa78c6690c9c8686b675bf5924b8a02870",
+      "bytes": 2002
+    },
+    {
+      "file": "tests/tax-shared-report-model.test.mjs",
+      "sha256": "97ed1c042f5953911f8fa3559572a3f5cc7de10b107943b0bba2d70d1d6ed6fb",
+      "bytes": 3743
+    },
+    {
+      "file": "tests/tax-shared-report-projection.integration.test.mjs",
+      "sha256": "a2caad0382911e3a8197678c90d678b739af66ba59e80d932f51baef72696ce7",
+      "bytes": 15004
+    },
+    {
+      "file": "tests/tax-shared-ui-copy.test.mjs",
+      "sha256": "19f8244a80cc92817808d2034a6a338bf8bede76148861919e55e6eda57045c0",
+      "bytes": 545
+    },
+    {
+      "file": "tests/tax-workspace-model.test.mjs",
+      "sha256": "6f3813d4422edc7a063d6b56bec080e3b266852bdf07b0254a41a1606af0028b",
+      "bytes": 6525
+    },
+    {
+      "file": "tests/ticket-detail-professional-browser.mjs",
+      "sha256": "0135cc4599102b57f050432ba82cea100bf4c0bb464a8308bb54ef319b2f55df",
+      "bytes": 16692
+    },
+    {
+      "file": "types/payroll.ts",
+      "sha256": "d92a381de094e6bf3b2d343248aadddf9f08ff7f0cfe3154b644a4cc38970118",
+      "bytes": 13022
+    },
+    {
+      "file": "types/receipt-print.ts",
+      "sha256": "011b5d311479fdec20b3c0a32858c196b0792263ecfeef745df4e4b9c6439f96",
+      "bytes": 1336
+    },
+    {
+      "file": "types/tax-workspace.ts",
+      "sha256": "5d3c89a75fb29ea4a0f9950b47919b99e232006bcfa4b1fef5a1f5739f8c177e",
+      "bytes": 3545
+    }
+  ],
+  "revision": 2,
+  "changesFromR1": {
+    "onlyExtraEofBlankLines": [
+      "app/payroll/tax-company-live-report.tsx",
+      "tests/android-overlay-avatar-runtime.test.mjs"
+    ],
+    "allOtherFilesByteIdentical": true
+  }
+}

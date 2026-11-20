@@ -1,7 +1,6 @@
-import sourceData from "@/data/wisconsin-business-sources.json";
-import directoryData from "@/data/wisconsin-directory-sources.json";
+import sourceData from "@/data/wisconsin-profile-sources.json";
 
-export type DirectoryCategory = "Nails" | "Hair" | "Massage";
+export type DirectoryCategory = "Nails" | "Hair" | "Massage" | "Tattoo" | "Lashes";
 export type DirectoryBusiness = {
   id: string;
   name: string;
@@ -29,14 +28,15 @@ type SourceBusiness = {
   id: string; name: string; categories: string[]; address: string; city: string;
   postalCode: string; phone: string; email: string; sourceUrl: string;
   notes?: string; sourceType?: string; websiteUrl?: string;
+  collectedOn: string;
 };
-const sources: SourceBusiness[] = [...sourceData.businesses, ...directoryData.businesses];
+const sources: SourceBusiness[] = sourceData.businesses;
 export const wisconsinBusinesses: DirectoryBusiness[] = sources.map((business) => ({
   ...business,
   categories: business.categories as DirectoryCategory[],
   state: "WI",
   country: "US",
-  collectedOn: sourceData.collectedOn,
+  collectedOn: business.collectedOn,
   verificationStatus: "unclaimed",
   linkedSalonId: null,
   notes: business.notes ?? "",

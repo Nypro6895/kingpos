@@ -1,0 +1,68 @@
+{
+  "kind": "change",
+  "changeId": "app-local-owner-page-adapters",
+  "status": "ready",
+  "summary": "Package the exact existing staff management, customer CRM/create/edit/detail and payroll views behind named read adapters and original authorized commands. Integrated with the complete validated application source.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-owner-page-registry.tsx",
+    "lib/app-local-owner-page-registry-server.ts",
+    "lib/app-local-owner-page-registry.json",
+    "lib/app-local-owner-page-types.ts",
+    "lib/app-local-owner-staff-view.tsx",
+    "lib/app-local-owner-customers-view.tsx",
+    "lib/app-local-owner-customer-detail-view.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "tests/app-local-owner-pages.test.mjs",
+    "tests/app-local-owner-pages-ui.test.mjs",
+    "tests/app-local-staff-binding-command.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\integrated-frozen-r3",
+    "commit": "260e26849b807f841046edef634246aeec49ff84"
+  },
+  "validation": [
+    {
+      "name": "173 isolated integration behavior/authority/offline tests, zero failures/skips",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/final-validation.json"
+    },
+    {
+      "name": "Assembled production Next build and 411 offline web assets",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/next-production-final.log"
+    },
+    {
+      "name": "81 actual iOS XCTest cases and unsigned archive at exact source",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/38945864401"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "supersedesEvents": [
+    "3e95c71b-9138-4d51-a2a9-3527ce95b6b0"
+  ],
+  "metadataCorrection": "Normalize integration dependency identifiers; product source and verification are unchanged.",
+  "id": "bbdfc0a1-19e9-408e-bba5-87f0ab3864d5",
+  "recordedAt": "2026-10-16T18:24:31.361Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "fileHashes": {
+    "lib/app-local-owner-page-registry.tsx": "6a2ccfe1c83e7062119424bfd44d201c91aefd263d2c2357dd2875dd819c45fd",
+    "lib/app-local-owner-page-registry-server.ts": "721b707cd433876e4ee530570f09824eeba608fd62db6b5361ff0287480d5d3f",
+    "lib/app-local-owner-page-registry.json": "0a11c0a64271786fc18ece8e4f30dcd74625ffa695edd3d7b7d1502c1f8636e2",
+    "lib/app-local-owner-page-types.ts": "111f5d744f361b26552ceaf9c45184ccf419e6f1a512f4c5bf0dda1c79617982",
+    "lib/app-local-owner-staff-view.tsx": "000e8965e373b8c00cef5ad92376d1446e3619dad48d5fa38c8f8d566a446e3c",
+    "lib/app-local-owner-customers-view.tsx": "06eb4672ab6741037efd4422c5cf8cc788cac04d5aff16720ac404be07902995",
+    "lib/app-local-owner-customer-detail-view.tsx": "921b5530190a09f0c1a47829f36cdd6945c0bd3f013d9d1d43c4e2c172e91130",
+    "lib/app-local-owner-payroll-view.tsx": "7626b94b018e704d89eec3b649e21583fbb62867305ce30ad9fee0fc6f777cea",
+    "tests/app-local-owner-pages.test.mjs": "9ecdea7d640c98c43cac5bf3d561da0a377067af359ed4a7442b6732ee80526d",
+    "tests/app-local-owner-pages-ui.test.mjs": "94a117e85ce0699e452a63f88165a67de9d16cd9b6fe92218ddc2dffd0770cbd",
+    "tests/app-local-staff-binding-command.test.mjs": "826315dd6b1e2925ea91ecbacb131b29d38a95e2674e252edaf490a606afdce0"
+  }
+}

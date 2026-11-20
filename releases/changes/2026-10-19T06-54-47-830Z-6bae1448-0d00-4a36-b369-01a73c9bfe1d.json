@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "admin-default-active-20261018",
+  "status": "working",
+  "summary": "Integrate completed authorized change into fresh production baseline dpl_GP34JoCP6AJNQJUT3e9CffKhqmgy; preserve Campaign and shipped loading feedback; regenerate native bundle before release.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/admin/users/page.tsx",
+    "app/(app)/admin/users/users-workspace.tsx",
+    "app/(app)/admin/locations/page.tsx",
+    "app/(app)/admin/locations/businesses-workspace.tsx"
+  ],
+  "source": {
+    "inputEvent": "8f8a3094-96b5-4271-80a4-e3458bf956a8",
+    "baselineCommit": "effe174969ca2523e24845156c9d70dce34bc1c4",
+    "baselineDeploymentId": "dpl_GP34JoCP6AJNQJUT3e9CffKhqmgy"
+  },
+  "validation": [
+    {
+      "name": "Combined source integration and release checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "6bae1448-0d00-4a36-b369-01a73c9bfe1d",
+  "recordedAt": "2026-10-19T06:54:47.830Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\video2-fix-release-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

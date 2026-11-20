@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "ios-auth-observability-qa-20261021",
+  "status": "working",
+  "summary": "Separate follow-up to frozen8776: scoped role-vault invalidation and direct real-vault coverage; reuse existing timing/correlation instrumentation with narrow scope amendment to follow; safe acceptance reporter separates physical/Simulator and unmeasured correctness/freshness. Preserve server authority and fresh destination admission. No pilot persistence files or native storage bridge. Release held.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-role-read-cache.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs",
+    "tests/app-local-scoped-invalidation-ui.test.mjs",
+    "scripts/ios/acceptance-report.mjs",
+    "tests/ios-acceptance-report.test.mjs",
+    "docs/ios-acceptance-measurement.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos-auth-observability-20261021",
+    "commit": "f1c03026009b158e7ce58f283aa3bdcff73d21f7"
+  },
+  "dependencies": [
+    "r6-confirmed-auth-rejection-20261021"
+  ],
+  "validation": [
+    {
+      "name": "Exact3249 raw source baseline preserved; original8776/f1 snapshot unchanged",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\baseline-proof.json"
+    },
+    {
+      "name": "Scoped invalidation controls and acceptance reporter",
+      "result": "pending"
+    }
+  ],
+  "releaseHold": true,
+  "ownershipExcludes": [
+    "services-catalog*",
+    "lib/reset-experience-cache.ts",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-resources-server.ts",
+    "scripts/build-app-local-bundle.mjs"
+  ],
+  "id": "67da2c98-c118-4271-a79d-d1d837f90f69",
+  "recordedAt": "2026-10-21T23:47:32.216Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

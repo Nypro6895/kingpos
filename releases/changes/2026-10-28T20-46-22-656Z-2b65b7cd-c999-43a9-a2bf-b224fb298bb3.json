@@ -1,0 +1,34 @@
+{
+  "validation": [
+    {
+      "name": "Both TSX files transform successfully; no diagnostic controls remain; support and English default preserved",
+      "result": "passed"
+    },
+    {
+      "name": "Native bundle rebuild and iPhone verification",
+      "result": "pending"
+    }
+  ],
+  "status": "needs-integration",
+  "files": [
+    "components/app-local-help.tsx",
+    "app/local-app/entry.tsx"
+  ],
+  "summary": "Remove technical diagnostic export controls from user Help and error recovery; retain internal diagnostic bridge and English Help default",
+  "channels": [
+    "ios"
+  ],
+  "dependencies": [
+    "help-english-default-20261028"
+  ],
+  "source": {
+    "snapshot": "artifacts/remove-diagnostics-frozen"
+  },
+  "changeId": "remove-user-diagnostic-export-20261028",
+  "kind": "change",
+  "id": "2b65b7cd-c999-43a9-a2bf-b224fb298bb3",
+  "recordedAt": "2026-10-28T20:46:22.656Z",
+  "worktree": "C:\\Reylumi-worktrees\\help-english-default-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

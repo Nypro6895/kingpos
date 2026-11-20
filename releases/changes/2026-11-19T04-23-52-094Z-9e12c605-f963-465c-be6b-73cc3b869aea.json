@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "rights-image-evidence-backend-20261118",
+  "status": "working",
+  "summary": "Default-off case-scoped private evidence and conservative pinned public-origin removal; no live activation or retention choice",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119010000_rights_image_evidence.sql",
+    "types/rights-evidence.ts",
+    "tests/rights-image-evidence.integration.test.mjs",
+    "docs/rights-image-evidence-backend-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "public-post-media-deletion-20261118",
+    "admin-exact-text-moderation-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Policy/operator/retention activation",
+      "result": "pending",
+      "evidence": "Explicit owner decision required; initial configuration empty/disabled"
+    }
+  ],
+  "id": "9e12c605-f963-465c-be6b-73cc3b869aea",
+  "recordedAt": "2026-11-19T04:23:52.094Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

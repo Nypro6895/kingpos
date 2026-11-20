@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "owner-pos-menu-startup-recovery-20261016",
+  "status": "working",
+  "summary": "Add bounded, sanitized cart-startup stage/code diagnostics while preserving original causes only internally; no technical error copy or saved data emitted.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "app/pos/owner-local-panels.tsx",
+    "app/pos/portable/check-in/portable-check-in-client.tsx",
+    "lib/owner-cart-startup.ts",
+    "tests/owner-pos-recovery-ui.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "Focused diagnostic privacy and recovery browser assertions",
+      "result": "pending"
+    }
+  ],
+  "id": "40b00935-70ae-4468-b7b1-52e17271dc7c",
+  "recordedAt": "2026-10-16T20:51:24.356Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

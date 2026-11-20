@@ -1,0 +1,78 @@
+{
+  "kind": "change",
+  "changeId": "daily-closing-saving-20261015",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Minimal Daily Closing recovery using unchanged existing write/RPC paths: money editing, bounded unknown state, no automatic resend, draft preservation, current-value readback, optional context guards. Payroll/report/export regression verified. Review before deployment.",
+  "files": [
+    "app/(app)/reports/page.tsx",
+    "app/api/pos/owner/reports/route.ts",
+    "app/pos/portable/actions.ts",
+    "app/pos/portable/report/portable-report-closing-form.tsx",
+    "app/reports/closing-save-notice.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "lib/daily-closing-input.ts",
+    "lib/daily-closing-save.ts",
+    "lib/daily-pos-report.ts",
+    "tests/daily-closing-input.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-20261016\\frozen"
+  },
+  "validation": [
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-20261016\\evidence\\build-r5-result.json"
+    },
+    {
+      "name": "Scoped lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-20261016\\evidence\\lint-r4.log"
+    },
+    {
+      "name": "Money parsing",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-20261016\\evidence\\test-r2.log"
+    },
+    {
+      "name": "Actual Owner and Portable components: 19 browser checks",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-20261016\\evidence\\browser-r4\\result.json"
+    },
+    {
+      "name": "Existing backend and payroll/report/statement/CSV dependencies",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-20261016\\evidence\\dependencies-r4\\results.json"
+    },
+    {
+      "name": "Unrelated baseline, SQL and payroll source preservation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-20261016\\preservation.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "fadc6c73-fc86-4f54-9f17-4c894a72aaff"
+  ],
+  "id": "841e77c3-683c-4f0f-a2f9-baf6e27c44d4",
+  "recordedAt": "2026-10-16T00:57:37.886Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/reports/page.tsx": "1e7443d7197819885b94feb0bfbb4ad7c945bfdaa913e6ae77ce2b1ea6383607",
+    "app/api/pos/owner/reports/route.ts": "29a69e17cbd5be1f0c120f2ea0bb9a31acc28446eb13926a806433a57df0d066",
+    "app/pos/portable/actions.ts": "315e89959ef2b00f9de04a89342a8bcc3d0c312e1a1262519dd8e4b712172fce",
+    "app/pos/portable/report/portable-report-closing-form.tsx": "6452ea3c91d7468600dea8601353e8740d4290d327db0cfda718cae7c9ac2c1b",
+    "app/reports/closing-save-notice.tsx": "761db51eb515e01a651e294b7b4dfe7892cdc5bfbe406c43ae56bb8fe0640549",
+    "app/reports/daily-closing-form.tsx": "e1055603961389a764f3856e073f02f6e518b41f8a8753209c941d6a24acc75d",
+    "app/reports/owner-live-reports.tsx": "faa26f79b617b630d1c2a624a6dabc9f8e9a04d8fd273c25182ccf165aea4f5c",
+    "lib/daily-closing-input.ts": "4e093b4118a6a8dcb667e3f6176696d5492b699cd15bea551f947a7abd326aef",
+    "lib/daily-closing-save.ts": "349ccbafe37057441a54b5f7e427869bcb2122431bc202c252ee921f403268cc",
+    "lib/daily-pos-report.ts": "00610ee47a91ac8abe5d9ab101f1503e654e4df1efae6aff73485a298b65ae38",
+    "tests/daily-closing-input.test.mjs": "e2ae9570e443ec3bb15b2b47e6b07196569e0d3bca72e8f738f5c1ec2fbc452c"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "kind": "change",
+  "changeId": "owner-financial-attention-20261101",
+  "status": "ready",
+  "summary": "Owner money attention with exact financial-event details, persistent Ignore, prior-day review/check-in reconciliation, Today-only header and compact + Expense; web/native source locally verified, not deployed",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/staff/today/attention/page.tsx",
+    "app/api/owner-attention/route.ts",
+    "app/reports/quick-expense.tsx",
+    "app/staff/today/attention-detail.tsx",
+    "app/staff/today/owner-attention-panel.tsx",
+    "app/staff/today/owner-attention.module.css",
+    "app/staff/today/today-dashboard-view.tsx",
+    "app/staff/today/today-layout.module.css",
+    "docs/owner-financial-attention-20261101.md",
+    "lib/app-local-page-paths.json",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-resources-server.ts",
+    "lib/app-local-platform-types.ts",
+    "lib/app-local-role-http-server.ts",
+    "lib/app-local-route-inventory.generated.json",
+    "lib/owner-attention-presentation.ts",
+    "lib/owner-financial-attention.ts",
+    "lib/today-dashboard.ts",
+    "supabase/migrations/20261101070000_owner_financial_attention.sql",
+    "tests/fixtures/owner-attention-schema.sql",
+    "tests/owner-attention-api.test.mjs",
+    "tests/owner-attention-browser.mjs",
+    "tests/owner-attention-native.test.mjs",
+    "tests/owner-attention-presentation.test.mjs",
+    "tests/owner-attention-today.test.mjs",
+    "tests/owner-financial-attention.integration.sql",
+    "types/owner-financial-attention.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\owner-financial-attention-20261101\\artifacts\\owner-financial-attention\\frozen",
+    "commit": "4ce54b0f720321ccada07215227e815f9ce66446"
+  },
+  "dependencies": [
+    "shop-money-expenses-20261031"
+  ],
+  "validation": [
+    {
+      "name": "SQL migration and business/security assertions in dedicated local PostgreSQL fixture database",
+      "result": "passed",
+      "evidence": "artifacts/owner-financial-attention/sql-tests.txt"
+    },
+    {
+      "name": "24 presentation/API/native/Today and financial regressions",
+      "result": "passed",
+      "evidence": "artifacts/owner-financial-attention/regression.txt"
+    },
+    {
+      "name": "Real components in simulated shell/API at five browser widths",
+      "result": "passed",
+      "evidence": "artifacts/owner-financial-attention/browser/results.json"
+    },
+    {
+      "name": "Source TypeScript with existing dependency path mappings",
+      "result": "passed",
+      "evidence": "artifacts/owner-financial-attention/typecheck.txt"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/owner-financial-attention/lint.txt"
+    },
+    {
+      "name": "iOS client source Safari16 bundle compile; zero unsupported actions; no assets written",
+      "result": "passed",
+      "evidence": "artifacts/owner-financial-attention/native-bundle-check.txt"
+    }
+  ],
+  "id": "861da700-d17d-48e8-ad05-d25de2dd59cc",
+  "recordedAt": "2026-11-01T06:38:58.018Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-financial-attention-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/staff/today/attention/page.tsx": "a174e4837bcbe9ffa31ccce307c3e8a6bb94c664bbe9b1b2441cbef40f203fd5",
+    "app/api/owner-attention/route.ts": "57b573e3bc28f1858421ffc9f309b7aceabc1a275c05aed522505e54a9daea0e",
+    "app/reports/quick-expense.tsx": "9c035fec2ba45f5c6b3dfa45de1ca34f93eeaa8568bb924322ecfa7bc86def4a",
+    "app/staff/today/attention-detail.tsx": "3cde7260872afd8cf81de8687ce6b0f89b87d8c87c936cf61d104b2975e001be",
+    "app/staff/today/owner-attention-panel.tsx": "4fa43a18623ba53292977ec88e98833b4e55c657aad5da0df1decfcc210e387f",
+    "app/staff/today/owner-attention.module.css": "3d12aa1886f2931a4241b0a3b98bbb8ddb5e9630280a006528b8c94752f118e1",
+    "app/staff/today/today-dashboard-view.tsx": "bbec1f3e1e1166a4c9f5c59b91635417db3d383dd4973c28009b6a4eeaedb8fe",
+    "app/staff/today/today-layout.module.css": "9984b471cbf779a9383b8814987454f1fd98812cd1f088e062ac8cb425fca82c",
+    "docs/owner-financial-attention-20261101.md": "286e47fc31d0195014da9ae063e1fec0a165c3e4698b82b57779c697af44ecd5",
+    "lib/app-local-page-paths.json": "27bea59a9bc740387017d28b69c1b8d7ab4a614f76a41e2bcfe99b61bd35e1c7",
+    "lib/app-local-page-registry.tsx": "42cd1570f385ace77260ebba7711ea7db09502a66ea23d1fd287bd1c514e2515",
+    "lib/app-local-platform-resources-server.ts": "c023227878819647751f1b06651eeaba8bb9ac8e1817c7270a804c6268f77856",
+    "lib/app-local-platform-types.ts": "7d05bc8585b962ad168bff1eb1c5e17fec94ee1be435f214f3e01c85aa32717d",
+    "lib/app-local-role-http-server.ts": "0b74a61fbd605f41aab39ee3901808b10be60f9f516d359433ad861901d6e14d",
+    "lib/app-local-route-inventory.generated.json": "db4ce8f35b18f105546d0cd45aa60720b94128a6cb15c28a9d8b5fa4adb181b9",
+    "lib/owner-attention-presentation.ts": "bb9bc9ea8b0ffec201c3d1dd4349467c1c1440b3c6fdd2711b86a677d017a7a3",
+    "lib/owner-financial-attention.ts": "efd5b70940ea60eed3870176b252146acf5c3b136663d6a9851456fb3ed53f01",
+    "lib/today-dashboard.ts": "3230e48b96e33cbad3cd1708eef7673f72e9379765ba63b420712e45268efa17",
+    "supabase/migrations/20261101070000_owner_financial_attention.sql": "d24766e4ea3a15aab2762aa0808d335070f90d946749e69761ec7d304c254bc2",
+    "tests/fixtures/owner-attention-schema.sql": "f7fbc14ea7004bf8524a191b8e8e4ef94783a19af4164bd1bb34e9fabac545fd",
+    "tests/owner-attention-api.test.mjs": "b43511ccb3615f7f7a524753348f24e0387356c64163a3f63f70ca38425b6b12",
+    "tests/owner-attention-browser.mjs": "976973aa8341b5b0ba13f4864b6ca4eda0704b3e44aa95e0cd0101f30c12b609",
+    "tests/owner-attention-native.test.mjs": "e85f036aa37273deef0f77af4029e61966afbed3dd57710e6abb40ded7300e17",
+    "tests/owner-attention-presentation.test.mjs": "7a75da52786ab91244eac60f48b4947c8303055ee25b1dd7f5e35c6954394433",
+    "tests/owner-attention-today.test.mjs": "4cf3567ccb2ecf200277feb2bfadd12067aa46b7e0a381e67d8bcb65f11a547e",
+    "tests/owner-financial-attention.integration.sql": "d86effb74296f0898cfa84f8dbe3e1ec89a0e8f79a4aead8761625a1be5317fb",
+    "types/owner-financial-attention.ts": "a89624ee4940196541f4f02da3dcf9d29fe22ce6d88b838352f30f8d17a8de54"
+  }
+}

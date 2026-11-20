@@ -1,0 +1,80 @@
+{
+  "status": "passed",
+  "scope": "Isolated real Next.js production build, current AdminShell/auth/session and Server Actions; loopback auth/PostgREST fixture with actual platform permission SQL. Not hosted acceptance.",
+  "checks": [
+    "anonymous redirect",
+    "signed admin session",
+    "actual Server Action publication",
+    "salon allocation",
+    "credit adjustment",
+    "queued renewal without duplicate salon row",
+    "authorized Settings links",
+    "settings redirect",
+    "read-only role",
+    "actual Server Action replay denial",
+    "revoked role hides retained page on Back after existing 5-second refresh window",
+    "expired admin-session denial",
+    "permission denial without mutation",
+    "missing admin-session denial",
+    "canonical source preserved"
+  ],
+  "sharedFiles": [
+    {
+      "file": "app/(app)/admin/_components/admin-ui.tsx",
+      "sha256": "2584309edb56a5e7b983e31a83e1b602bacd89a1edd877b61e4b6b400f218098"
+    },
+    {
+      "file": "types/platform-admin.ts",
+      "sha256": "d31af8f25ecb1bd13aabf0a6bf32eecaccdfe88ea78f5ba34efbb23238698de6"
+    },
+    {
+      "file": "app/(app)/admin/settings/page.tsx",
+      "sha256": "9d1abc457f45e10d63e7d261e3fae66964b414485f605fc1fcef3d933ba1bf68"
+    }
+  ],
+  "requests": [
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "reylumi_membership_command",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "reylumi_membership_salons",
+    "get_current_platform_admin_context",
+    "reylumi_membership_command",
+    "get_current_platform_admin_context",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "reylumi_membership_command",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "reylumi_membership_command",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "get_current_platform_admin_context",
+    "reylumi_membership_workspace",
+    "get_current_platform_admin_context",
+    "get_current_platform_admin_context"
+  ],
+  "verifiedAt": "2026-11-03T16:25:55.0908029Z",
+  "typeCheckBoundary": "Generated Next fixture skips full-project TypeScript validation; scoped membership source TypeScript and ESLint passed separately."
+}

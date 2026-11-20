@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "tax-recipient-storage-custody-20261119",
+  "status": "working",
+  "summary": "Restore the previously frozen Tax recipient document download after staff termination without broadening financial roles; actual447 fixture exposed the restrictive Storage conflict.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119060000_tax_recipient_storage_custody.sql",
+    "tests/tax-recipient-storage.integration.test.mjs",
+    "tests/helpers/isolated-tax-storage-bytes.mjs",
+    "docs/tax-recipient-storage-custody-20261119.md"
+  ],
+  "source": {
+    "commit": "18a981fb14edd7cb99350f002f405dff8d7a0203"
+  },
+  "validation": [
+    {
+      "name": "Actual447 diagnostic confirms recipient-only custody conflict",
+      "result": "failed",
+      "evidence": "C:/Reylumi/qa-evidence/combined-store-final-18a981-20261119-r1/crosspack-actual-r3-diagnostic/crosspack-acceptance.json"
+    },
+    {
+      "name": "Forward migration and full-schema regression",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "539d0a78-55ad-4480-ac25-0513de2d29a2",
+  "recordedAt": "2026-11-19T07:56:57.820Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

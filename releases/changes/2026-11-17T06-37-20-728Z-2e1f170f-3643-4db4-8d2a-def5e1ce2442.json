@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "combined-final-push-preflight-20261117",
+  "status": "needs-integration",
+  "summary": "Frozen read-only final-push reconciliation tooling and iOS readiness handoff. All pending revisions/worktrees inventoried; final combined candidate and store gates remain unresolved. No push/deploy/upload/store writes.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "scripts/verify-final-release-plan.mjs",
+    "scripts/final-release-evidence.mjs",
+    "tests/final-release-plan.test.mjs",
+    "tests/final-release-evidence.test.mjs",
+    "tests/final-release-source.test.mjs",
+    "docs/ios-final-next-steps-20261117.md",
+    "docs/ios-final-release-inventory-20261117.md",
+    "docs/ios-final-baseline-20261117.md",
+    "docs/ios-provider-preflight-20261117.md",
+    "releases/changes/2026-11-17T06-20-47-531Z-1d72d4f6-9e9f-4e05-af28-f41ad2785d5f.json"
+  ],
+  "fileHashes": {
+    "scripts/verify-final-release-plan.mjs": "1db7cda602edcc5cf90187bd2044a8a468943f3a6b023b9d8498ff50ce967954",
+    "scripts/final-release-evidence.mjs": "71956f67fd2355dcd2e6e6e02e5d803ee05f5d5b5075e565c74b2e2f4a82dc8e",
+    "tests/final-release-plan.test.mjs": "c055816675977a48856806d365c02dee5bd9e663ed405f0298f859d4f55171a4",
+    "tests/final-release-evidence.test.mjs": "f0754eae34e6678e58a85eb49b1410d2810ac55013fac902daef7ba5696dd8d1",
+    "tests/final-release-source.test.mjs": "13c23b45dabebbe9333b162d76ee116b7a325231d7f504516acecdec12351562",
+    "docs/ios-final-next-steps-20261117.md": "8edaf106bd12b09ffd0870b08f7e888a946dfd2ad23cf30e17da6f929b1dd535",
+    "docs/ios-final-release-inventory-20261117.md": "aacc98ac77bcbe6601d69635dc8cba866184dc7bbf229eee11f0150be4b3017d",
+    "docs/ios-final-baseline-20261117.md": "61e9ab9d05cce17c5819daa71493d25fbd98f11d1467840ab82204e30bd1b02a",
+    "docs/ios-provider-preflight-20261117.md": "32f056b2b564d5663da8e0d1456e3c755beef161a66db7c5960e158332522503",
+    "releases/changes/2026-11-17T06-20-47-531Z-1d72d4f6-9e9f-4e05-af28-f41ad2785d5f.json": "6f17f6866b443e9ff36a7d304e68828b46d86771c621b250b6c030b13c8a9392"
+  },
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "artifacts/ios-next-steps-20261117/frozen-r2",
+    "commit": "b0ee4793c905f79e82221281110c5ca6244ee7e3",
+    "sha256": "e62267bc88395df2cea05254212395cc19f637463874663e9e1b87e414364d99"
+  },
+  "validation": [
+    {
+      "name": "Final-release reconciliation, typed evidence and filesystem tests",
+      "result": "passed",
+      "evidence": "artifacts/ios-next-steps-20261117/tooling-validation.json"
+    },
+    {
+      "name": "28 tests, zero skipped and scoped ESLint clean",
+      "result": "passed"
+    },
+    {
+      "name": "Provider mock preflight tests5/5 and actual dry run0requests",
+      "result": "passed",
+      "evidence": "artifacts/ios-next-steps-20261117/provider-preflight-dry-run.json"
+    },
+    {
+      "name": "Actual full-scope check rejects incomplete plan, stale journal/status and unverified source",
+      "result": "passed",
+      "evidence": "artifacts/ios-next-steps-20261117/final-release-plan-check-r2.json"
+    },
+    {
+      "name": "All event/channel dispositions, exact live source/applied env and assembled candidate acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Moderation provider setup, live/physical iOS and App Store declarations/submission",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "id": "2e1f170f-3643-4db4-8d2a-def5e1ce2442",
+  "recordedAt": "2026-11-17T06:37:20.728Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116"
+}

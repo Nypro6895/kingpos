@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "compact-filters-ios16-compatibility-20261119",
+  "status": "working",
+  "summary": "Confirmed current CompactFilters fails when Popover API is absent; scoped in-place dialog compatibility plan prepared, implementation pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/compact-filters.tsx",
+    "components/workspace-toolbar.module.css"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "fcc50a5734f7a7546de42f14d3bd3824191190f3",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\compact-filters-ios16-audit-r2\\frozen-inputs"
+  },
+  "validation": [
+    {
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\compact-filters-ios16-audit-r2\\result.json",
+      "result": "failed",
+      "name": "Actual component missing Popover method behavior"
+    },
+    {
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\compact-filters-ios16-audit-r2\\result.json",
+      "result": "passed",
+      "name": "Native supported retained input/form and clipping control"
+    },
+    {
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\compact-filters-ios16-audit-r2\\result.json",
+      "result": "failed",
+      "name": "Native outer form submit closes panel"
+    },
+    {
+      "name": "Compatibility implementation and full native acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "5c409785-482f-4936-b00b-2a639e813504",
+  "recordedAt": "2026-11-19T16:23:50.108Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "supersedesEvents": []
+}

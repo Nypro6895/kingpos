@@ -1,0 +1,59 @@
+Phone verification SMS target correction - combined deploy queue
+Owner instruction: fix the audited error and enter the combined deployment queue.
+No deployment, native upload, SMS, email, or production data mutation is part of this handoff.
+
+Baseline
+- Web alias read on 2026-11-14 UTC: dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU.
+- Published source commit: 274a3ab4300956a458c564ad6beab44ff85e7264.
+- Production trace at 2026-11-14T02:39:59Z: /api/auth/sms-hook returned 400;
+  Supabase Auth PUT /user returned 500 with Invalid payload sent to hook.
+- Hosted GoTrue version v2.197.0 sends the actual destination in sms.phone.
+  Official contract: https://github.com/supabase/auth/blob/v2.197.0/internal/api/phone.go
+
+Changes
+- Use the signed sms.phone destination for first phone verification, phone
+  changes, resends and MFA. A legacy payload may use user.phone only when
+  sms.phone is absent. Explicit malformed targets cannot fall back to an old
+  number. Reject malformed targets and non-string/invalid OTPs before storage
+  reservation or provider delivery.
+- Keep signature verification, accepted/uncertain replay handling, server
+  identity, email authorization for replacement, and phone verification gates.
+- The account dialog asks to send a code before delivery succeeds. Only the
+  successful send state says the code was sent. Vietnamese copy is included.
+- No schema migration, provider configuration, pricing or dependency change.
+
+Validation completed locally on the scoped source
+- node --test tests/auth-sms-hook-runtime.test.mjs tests/system-messaging-booksms.test.mjs tests/account-phone-change.test.mjs
+  16/16 passed. Real HMAC verifier, synthetic secrets and mocked storage/provider;
+  no external delivery. Covers initial/change/resend, legacy payloads, malformed
+  input, unsigned/tampered/stale requests, replay protection, and delivery/storage
+  failures. Existing account-email authorization contracts pass.
+- node --test tests/ios-personal-settings.test.mjs
+  1/1 passed, exercising 320/390/768-pixel Chromium viewports. Initial send,
+  provider failure and successful retry have the correct copy and code-field
+  visibility. Fixture screenshots prove state/copy only, not physical iOS QA.
+- ESLint passed for both changed product files and both changed test files.
+- Production build passed, including TypeScript, all 305 generated pages and
+  offline asset manifest (571 assets). Background dispatch was disabled and
+  no production environment credentials were supplied to the build/server.
+- Git whitespace check passed with cr-at-eol for the repository's existing
+  CRLF source. Generated next-env.d.ts/tsconfig.json changes were discarded.
+- Actual source dev server: /account HTTP 200; unsigned SMS hook HTTP 401.
+  The running owner-controlled Live Preview was registered to this worktree.
+- Independent read-only review found no material issue in the scoped change.
+
+Release handling
+- Queue both web and iOS. The backend fix is server-only; AccountProfileEditor
+  and its translation are bundled clients, so the iPhone copy correction needs
+  a rebuilt native bundle through the normal combined release process.
+- Before publication, the coordinator must reconcile this frozen patch with
+  the then-current web and latest uploaded native baselines, rerun assembled
+  checks, and follow the existing release policy. Do not publish this fix alone.
+- Hosted SMS delivery and physical iPhone acceptance remain to be verified
+  after the authorized combined publication. No live delivery was attempted.
+
+Evidence local to this worktree
+- artifacts/phone-otp-sms-target/build.log
+- artifacts/ios-personal-settings-20261029/screenshots/phone-send-*.png
+- Frozen source, SHA256 manifest, binary patch and completion journal event:
+  artifacts/phone-otp-sms-target/

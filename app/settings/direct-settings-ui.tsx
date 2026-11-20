@@ -1,14 +1,18 @@
 "use client";
-import { useRef, useState, type ReactNode } from "react";
+import { WorkspaceText } from "@/components/workspace-language";
+import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import "./settings-controls.css";
+import {SettingsChildPage,useSettingsChildNavigation} from "./settings-child-pages";
+
 import type { loadDirectSettings } from "./direct-settings-actions";
 export type DirectData = Awaited<ReturnType<typeof loadDirectSettings>>;
 export type ActionResult =
   | { ok: true; message?: string; inviteUrl?: string | null }
   | { ok: false; error?: string };
 export const inputClass =
-  "min-h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm";
+  "settings-input w-full";
 export const buttonClass =
-  "inline-flex min-h-10 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:opacity-50";
+  "settings-button disabled:opacity-50";
 export function Field({
   name,
   label,
@@ -29,8 +33,8 @@ export function Field({
   step?: string;
 }) {
   return (
-    <label className="grid gap-1 text-sm">
-      {label}
+    <label className="settings-field">
+      <span><WorkspaceText text={label} /></span>
       <input
         name={name}
         className={inputClass}
@@ -56,7 +60,8 @@ export function Check({
   required?: boolean;
 }) {
   return (
-    <label className="flex min-h-10 items-start gap-2 py-2 text-sm">
+    <label className={required?"settings-check":"settings-check settings-toggle-field"}>
+
       <input
         className="mt-1 size-4 shrink-0"
         name={name}
@@ -64,7 +69,8 @@ export function Check({
         defaultChecked={checked}
         required={required}
       />
-      <span>{label}</span>
+      <span className="settings-toggle-label"><WorkspaceText text={label} /></span>
+      {!required?<span className="settings-toggle-track" aria-hidden="true"><span/></span>:null}
     </label>
   );
 }
@@ -80,12 +86,12 @@ export function Select({
   options: readonly (readonly [string, string])[];
 }) {
   return (
-    <label className="grid gap-1 text-sm">
-      {label}
-      <select className={inputClass} name={name} defaultValue={value}>
+    <label className="settings-field">
+      <span><WorkspaceText text={label} /></span>
+      <select aria-label={label} className={inputClass} name={name} defaultValue={value}>
         {options.map(([id, text]) => (
           <option key={id} value={id}>
-            {text}
+            <WorkspaceText text={text} />
           </option>
         ))}
       </select>
@@ -100,6 +106,9 @@ export function InlineForm({
   label = "Save changes",
   danger = false,
   disabled = false,
+  changed = false,
+  className = "",
+  actionOnly = false,
 }: {
   children: ReactNode;
   save: (form: FormData) => Promise<ActionResult>;
@@ -108,17 +117,29 @@ export function InlineForm({
   label?: string;
   danger?: boolean;
   disabled?: boolean;
+  changed?: boolean;
+  className?: string;
+  actionOnly?: boolean;
 }) {
+  const finishEditing=useContext(SettingsEditingContext);
+  const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
+    [refreshFailed, setRefreshFailed] = useState(false),
     [inviteUrl, setInviteUrl] = useState("");
   const lock = useRef(false),
     formRef = useRef<HTMLFormElement>(null);
+  const [detectedActionOnly,setDetectedActionOnly]=useState(false);
+  useEffect(()=>{setDetectedActionOnly(!formRef.current?.querySelector('input:not([type="hidden"]):not([readonly]),select,textarea'));},[children]);
   return (
     <form
       ref={formRef}
-      className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4"
+      aria-busy={busy}
+      data-settings-dirty={dirty || changed}
+      className={`settings-inline-form grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 ${actionOnly?"settings-action-form":""} ${className}`}
+      onChange={() => { setDirty(true); setMessage(""); setError(""); }}
+      onInvalidCapture={event=>{let parent=(event.target as HTMLElement).parentElement;while(parent&&parent!==formRef.current){if(parent instanceof HTMLDetailsElement)parent.open=true;parent=parent.parentElement;}}}
       onSubmit={async (event) => {
         event.preventDefault();
         if (lock.current || disabled) return;
@@ -127,6 +148,7 @@ export function InlineForm({
         setError("");
         setMessage("");
         setInviteUrl("");
+        setRefreshFailed(false);
         const form = new FormData(event.currentTarget);
         try {
           const result = await save(form);
@@ -137,6 +159,7 @@ export function InlineForm({
             return;
           }
           setMessage(result.message ?? "Saved.");
+          setDirty(false);
           setInviteUrl(
             result.inviteUrl
               ? new URL(result.inviteUrl, window.location.origin).toString()
@@ -144,14 +167,15 @@ export function InlineForm({
           );
           try {
             await onSaved();
+            if(!result.inviteUrl)finishEditing?.(true);
           } catch {
-            setError(
-              "Saved, but this panel could not refresh. Reload it to see the latest values.",
-            );
+            setRefreshFailed(true);
           }
         } catch (e) {
           setError(
-            e instanceof Error
+            e instanceof TypeError
+              ? "Could not connect. Your changes are still here. Try saving again."
+              : e instanceof Error
               ? e.message
               : "Could not save. Your changes are still here.",
           );
@@ -166,17 +190,28 @@ export function InlineForm({
       </fieldset>
       {error && (
         <p role="alert" className="text-sm text-red-700">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       )}
-      {message && (
+      {message && !dirty && !changed && (
         <p role="status" className="text-sm text-emerald-700">
-          {message}
+          <WorkspaceText text={message} />
         </p>
       )}
+      {refreshFailed && <div role="status" className="grid gap-2 text-sm text-amber-800">
+        <p><WorkspaceText text="Saved, but the latest values could not be loaded. Retry loading without saving again." /></p>
+        {dirty || changed ? <p><WorkspaceText text="You have new edits. Save or cancel them before reloading saved values." /></p> : null}
+        <button type="button" className={`${buttonClass} w-fit`} disabled={busy || dirty || changed} onClick={async () => {
+          if (lock.current) return;
+          lock.current = true;
+          setBusy(true);
+          try { await onSaved(); setRefreshFailed(false); } catch { /* Keep the retry and all drafts. */ }
+          finally { lock.current = false; setBusy(false); }
+        }}><WorkspaceText text="Reload saved values" /></button>
+      </div>}
       {inviteUrl && (
-        <label className="grid gap-1 text-sm">
-          Invitation link
+        <label className="settings-field-row grid gap-1 text-sm">
+          <WorkspaceText text="Invitation link" />
           <input
             className={inputClass}
             readOnly
@@ -185,27 +220,31 @@ export function InlineForm({
           />
         </label>
       )}
-      <div className="flex gap-2">
+      <div className="settings-form-actions flex gap-2" hidden={!dirty && !changed && !busy && !actionOnly && !detectedActionOnly}>
+        {!actionOnly&&(dirty||changed)?<p role="status"><WorkspaceText text="Unsaved changes" /></p>:null}
         <button
           disabled={busy || disabled}
-          className={`${buttonClass} ${danger ? "!border-red-700 !bg-red-700" : "!border-zinc-950 !bg-zinc-950"} !text-white`}
+          className={`${buttonClass} ${danger ? "settings-danger-button" : "settings-primary-button"}`}
         >
-          {busy ? "Processing…" : label}
+          <WorkspaceText text={busy ? "Processing…" : label} />
         </button>
-        <button
+        {!actionOnly?<button
           type="button"
-          className={buttonClass}
+          className={buttonClass+" settings-cancel-button"}
           disabled={busy || disabled}
           onClick={() => {
             formRef.current?.reset();
+            setDirty(false);
             onCancel?.();
+            finishEditing?.();
             setInviteUrl("");
             setError("");
             setMessage("");
+            setRefreshFailed(false);
           }}
         >
-          Cancel
-        </button>
+          <WorkspaceText text="Cancel" />
+        </button>:null}
       </div>
     </form>
   );
@@ -214,3 +253,31 @@ export const text = (form: FormData, key: string) =>
   String(form.get(key) ?? "").trim();
 export const number = (form: FormData, key: string) => Number(text(form, key));
 export const checked = (form: FormData, key: string) => form.get(key) === "on";
+
+export function SettingsFieldGroup({title,description,children}:{title:string;description?:string;children:ReactNode}) {
+  return <fieldset className="settings-field-group"><legend><WorkspaceText text={title}/></legend><div className="settings-field-group-content">{description?<p className="settings-field-group-description"><WorkspaceText text={description}/></p>:null}{children}</div></fieldset>;
+}
+
+export function SettingsSwitch({label,description,checked,disabled,onChange}:{label:string;description?:string;checked:boolean;disabled?:boolean;onChange:()=>void}) {
+  return <button type="button" role="switch" aria-label={label} aria-checked={checked} disabled={disabled} onClick={onChange} className="settings-switch"><span className="settings-switch-copy"><span className="settings-switch-title"><WorkspaceText text={label}/></span>{description?<span className="settings-switch-description"><WorkspaceText text={description}/></span>:null}</span><span aria-hidden="true" className="settings-switch-track"><span className="settings-switch-thumb"/></span></button>;
+}
+
+const SettingsEditingContext=createContext<((saved?:boolean)=>void)|null>(null);
+export function SettingsEditSection({title,summary,preview,children,action="Edit",danger=false,heading,closeOnSave=true,id:providedId}:{id?:string;closeOnSave?:boolean;heading?:ReactNode;title:string;summary?:string;preview?:ReactNode;children:ReactNode;action?:string;danger?:boolean}){
+ const [open,setOpen]=useState(false),[mounted,setMounted]=useState(false),[saved,setSaved]=useState(false);const generatedId=useId();const id=providedId||generatedId;
+ const pages=useSettingsChildNavigation(),[resetKey,setResetKey]=useState(0);
+ const finish=(success=false)=>{setSaved(success);setOpen(false);setMounted(false);};
+ if(pages)return <SettingsChildPage id={id} title={<WorkspaceText text={title}/>} heading={heading} description={summary} danger={danger} defer resetKey={resetKey}>
+  <SettingsEditingContext.Provider value={closeOnSave?(success=false)=>{setSaved(success);pages.close(id);setResetKey(value=>value+1);}:null}>{children}</SettingsEditingContext.Provider>
+ </SettingsChildPage>;
+ return <section className={"settings-edit-section"+(danger?" settings-edit-danger":"")} aria-label={title}>
+  <header className="settings-section-heading"><div>{heading||<h3><WorkspaceText text={title}/></h3>}{summary?<p><WorkspaceText text={summary}/></p>:null}</div><button type="button" className="settings-button" aria-expanded={open} aria-controls={id} onClick={()=>{setSaved(false);setMounted(true);setOpen(v=>!v);}}><WorkspaceText text={open?"Close":action}/></button></header>
+  {!open&&preview?<div className="settings-section-preview">{preview}</div>:null}
+  {saved?<p className="settings-section-saved" role="status"><WorkspaceText text="Saved."/></p>:null}
+  <div id={id} hidden={!open}>{mounted?<SettingsEditingContext.Provider value={closeOnSave?finish:null}>{children}</SettingsEditingContext.Provider>:null}</div>
+ </section>;
+}
+export function SettingsReadRow({label,value}:{label:string;value:ReactNode}){return <div className="settings-read-row"><span><WorkspaceText text={label}/></span><div>{value===null||value===undefined||value===""?"—":value}</div></div>;}
+export function SettingsIdentity({name,subtitle,imageUrl}:{name:string;subtitle?:string;imageUrl?:string|null}){return <div className="settings-identity"><span className="settings-identity-avatar">{imageUrl?
+ // eslint-disable-next-line @next/next/no-img-element
+ <img src={imageUrl} alt=""/>:name.split(/\s+/).slice(0,2).map(n=>n[0]).join("")}</span><div><strong>{name}</strong>{subtitle?<small>{subtitle}</small>:null}</div></div>;}

@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "startup-read-observation-20261029",
+  "status": "working",
+  "summary": "Temporary server-only allowlisted read/context Server-Timing observation for exact67 startup performance. Existing CDN lacks resource names/backend durations/bytes; do not weaken auth, alter DTOs, clear leases or expose diagnostics UI. Automatic expiry, no payloads/IDs/args/cookies/headers logged.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-read-observation.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/app-local/context/route.ts",
+    "tests/app-local-read-observation.test.mjs"
+  ],
+  "source": {
+    "commit": "b9682b06bd19954777671779acc4fa3d0347374f"
+  },
+  "validation": [
+    {
+      "name": "235 native/source/Apple existing67 retained; cold UI still loads2.1s before data upper2.6s",
+      "result": "passed",
+      "evidence": "artifacts/wave67-header-ticket/physical67-benchmark-request-windows.json"
+    },
+    {
+      "name": "Logger privacy/identity/no-behavior-change, native graph and controlled live measurement",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "f848554b-9adc-4972-a2f0-2adf4bdb8064",
+  "recordedAt": "2026-10-29T10:35:41.981Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

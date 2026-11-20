@@ -20,6 +20,16 @@ export type SalonOnlineBookingStatus = {
   state: SalonOnlineBookingState;
 };
 
+/** One customer-facing switch; unrelated saves preserve existing access choices. */
+export function onlineBookingAccessForSave(settings: SalonOnlineBookingSettings, enabled: boolean) {
+  if (enabled === getSalonOnlineBookingStatus(settings).onlineBookingOpen) {
+    return {bookingEnabled: settings.booking_enabled, onlineBookingVisible: settings.online_booking_visible, guestBookingEnabled: settings.guest_booking_enabled};
+  }
+  return enabled
+    ? {bookingEnabled: true, onlineBookingVisible: true, guestBookingEnabled: true}
+    : {bookingEnabled: settings.booking_enabled, onlineBookingVisible: false, guestBookingEnabled: settings.guest_booking_enabled};
+}
+
 export function getSalonOnlineBookingStatus(
   settings: Partial<SalonOnlineBookingSettings> | null | undefined,
 ): SalonOnlineBookingStatus {

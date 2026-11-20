@@ -1,0 +1,92 @@
+{
+  "kind": "change",
+  "changeId": "phone-checkin-auto-merge-20261026",
+  "status": "ready",
+  "summary": "Phone check-in consolidation; compare the permission guard after CRLF normalization so Windows SQL editor transport preserves the strict guard",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261026230000_phone_customer_consolidation.sql",
+    "app/pos/customer-display/check-in-panels.tsx",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/checkin-receipt-panel.tsx",
+    "app/service-relay/customer-relay.tsx",
+    "app/check-in/[entry]/page.tsx",
+    "app/(app)/qr/page.tsx",
+    "app/qr/personal-qr-client.tsx",
+    "tests/phone-checkin-auth-return.test.mjs",
+    "tests/phone-checkin-consolidation.integration.test.mjs",
+    "tests/phone-checkin-ui.test.mjs",
+    "tests/personal-qr-ui.test.mjs",
+    "docs/phone-checkin-auto-merge-deploy-note.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos\\artifacts\\all-recent-chats-20261026\\frozen-r2"
+  },
+  "validation": [
+    {
+      "name": "Clean production build and full TypeScript",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/build.log"
+    },
+    {
+      "name": "Integrated browser/unit suites and 26 complete-schema database tests",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r2.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/web-tests-r3.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/pos-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/db-tests.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/display-browser.json"
+      ]
+    },
+    {
+      "name": "Windows installer build, packaged updater SHA512/cache/corrupt-rejection and Help menu",
+      "result": "passed",
+      "evidence": [
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/windows-build-fixed.log",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/packaged-runtime.stdout",
+        "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/desktop-tests.log"
+      ]
+    },
+    {
+      "name": "Real schema migration transported as Windows CRLF, 10 tests",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/db-crlf-tests.log"
+    },
+    {
+      "name": "Owner actual component, saved work, navigation and full compiled styles, 3 tests",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos/artifacts/all-recent-chats-20261026/owner-tests-r4.log"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "b034066d-c3b2-4f77-9bfa-1098c47edc33"
+  ],
+  "integration": {
+    "producerEventId": "b034066d-c3b2-4f77-9bfa-1098c47edc33",
+    "onlyCodeDelta": "old_guard:=replace(old_guard,chr(13),'');",
+    "failedProductionAttempt": "Guard failed before commit; rollback verified ledger 308 and customers 21 unchanged."
+  },
+  "id": "0e7df444-566d-4783-9b15-31a06145955b",
+  "recordedAt": "2026-10-27T00:03:01.644Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "supabase/migrations/20261026230000_phone_customer_consolidation.sql": "260233a1649daf1fc6f167f223cfb154ff0399461ecfc62d72450297f9c9612c",
+    "app/pos/customer-display/check-in-panels.tsx": "0c103b29410143452bde1366f4c1c9524d9b810e1aa4bf99f8a7936d9969e7d5",
+    "app/pos/customer-display/customer-display-client.tsx": "ad1ad213672d66bd2837b8894a306794a04c40469eb1ae78e9a4c38279147901",
+    "app/pos/customer-display/checkin-receipt-panel.tsx": "66565af0fa061a104d7adbdc3ba14c40ea150fd05b18afbe4d60b9af7dbbacbf",
+    "app/service-relay/customer-relay.tsx": "dbfaccab1886acd5b67d2941883e4da18bcfb91eb1dbd9dbe4e550b3034251bc",
+    "app/check-in/[entry]/page.tsx": "6da14b6a6163a1117176d9b96e364af914c66411379543b7adb809843fb72db2",
+    "app/(app)/qr/page.tsx": "5c2c5263d1f4d4a958ab64a17e47d8bac16887fedb99bbcbb572b47f769f90ec",
+    "app/qr/personal-qr-client.tsx": "33f196ca3fdd66c2595f2753b43598c515e6bd6ebf134eb3f1d9131a2a3473e2",
+    "tests/phone-checkin-auth-return.test.mjs": "d44d418ec4090eaeef9ffa622c859a3b3078728873decf9b2f856a741898403c",
+    "tests/phone-checkin-consolidation.integration.test.mjs": "bf8e4e9c49ee174c8e75c31f9099d46f47a746012207462125a4d5c4a7e808d3",
+    "tests/phone-checkin-ui.test.mjs": "b02be719a411d6d99ff532e3d10d88c110b0a00c9d605cf96eb9e72c00a0a927",
+    "tests/personal-qr-ui.test.mjs": "7fe7e13a61995a902dff4a2ad4b4c28e0bddff18280664cbfbbed34f26ad03d6",
+    "docs/phone-checkin-auto-merge-deploy-note.txt": "27fdc24134c9e738c4eeef492558b1d2e329bea107015eab20301e853ef88de7"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-29T21:14:21.688Z",
+  "url": "https://reylumi.com/staff/my-work?tab=payroll",
+  "result": "access-context-blocked",
+  "visible": "Your access has changed. Reload to continue.",
+  "oneReadOnlyReloadSameResult": true,
+  "authenticatedStaffVisualAcceptance": false,
+  "noRoleSwitch": true,
+  "noProductionWrites": true,
+  "local15ChecksPassed": true
+}

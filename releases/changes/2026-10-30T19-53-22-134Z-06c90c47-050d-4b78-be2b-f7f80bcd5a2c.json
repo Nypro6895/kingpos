@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "gift-native-pos-fixture-20261030",
+  "status": "ready",
+  "summary": "Exact synthetic scoped Reward quote fixture preserves installed-POS money/outbox assertions; actual238 XCTest cases and14 hosts passed.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/LocalAppWebViewTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030\\artifacts\\gift-sale-integration-20261030\\native-v3\\fixture-source"
+  },
+  "validation": [
+    {
+      "name": "Actual238 runtime tests, zero failure/skip,14 hosts, signed source-bound archive",
+      "result": "passed",
+      "evidence": "artifacts/gift-sale-integration-20261030/native-v3/native-verified.json"
+    }
+  ],
+  "id": "06c90c47-050d-4b78-be2b-f7f80bcd5a2c",
+  "recordedAt": "2026-10-30T19:53:22.134Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "b5a494fc3d4bb7695c059e1b3163bcbb168c014d4dde5e54a296e608167a8414"
+  }
+}

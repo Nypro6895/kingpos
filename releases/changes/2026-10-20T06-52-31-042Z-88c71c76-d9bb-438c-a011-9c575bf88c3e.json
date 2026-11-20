@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "campaign-native-delivery-bridge-20261020",
+  "status": "working",
+  "summary": "Connect native Campaign ad selection and view/click requests to the original scoped handlers; preserve read-only selection and ticket admission",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts"
+  ],
+  "dependencies": [
+    "campaign-top-local-20261019"
+  ],
+  "validation": [
+    {
+      "name": "Scoped native delivery bridge contract and browser tests",
+      "result": "pending"
+    }
+  ],
+  "id": "88c71c76-d9bb-438c-a011-9c575bf88c3e",
+  "recordedAt": "2026-10-20T06:52:31.042Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "ads-reporting-transparency-20261118",
+  "status": "needs-integration",
+  "summary": "Artifact-only actual-card Why-this-ad/Report-ad proposal and backend contract prepared; product UI approval and backend ownership remain pending",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ads-reporting-transparency-plan-20261118.md",
+    "artifacts/ads-reporting-transparency-20261118/generate-preview.mjs",
+    "artifacts/ads-reporting-transparency-20261118/source-aligned-preview.html",
+    "artifacts/ads-reporting-transparency-20261118/desktop.png",
+    "artifacts/ads-reporting-transparency-20261118/mobile.png",
+    "artifacts/ads-reporting-transparency-20261118/why-this-ad-desktop.png",
+    "artifacts/ads-reporting-transparency-20261118/report-retry-mobile.png",
+    "artifacts/ads-reporting-transparency-20261118/report-received-mobile.png",
+    "artifacts/ads-reporting-transparency-20261118/validation.json"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ads-reporting-transparency-20261118\\frozen-preview",
+    "sourceSha256": "1b0c7e72636a7dabf439f4dc9aa068048769ee8c300bda6756d0ba10f72fe158",
+    "fileSha256": {
+      "artifacts/ads-reporting-transparency-20261118/desktop.png": "230ae5a18ebc224e8307b4551191e5ec86ef896a62ad31032aa5f3ab4d57ddc6",
+      "artifacts/ads-reporting-transparency-20261118/generate-preview.mjs": "a6b20449ceb14b7fd7f7d5dd174ae31eea4289b5854a27b9589f50d891231d56",
+      "artifacts/ads-reporting-transparency-20261118/mobile.png": "6b45f5645e75061e9f35223dd075c04712f8b3cac7719c2f622306b635b2e353",
+      "artifacts/ads-reporting-transparency-20261118/report-received-mobile.png": "6d979dccfca8c56e0e2108593c20788a64c2b3e178f642e0f3d6e850964cb14c",
+      "artifacts/ads-reporting-transparency-20261118/report-retry-mobile.png": "74df82622eb9f374f59c26e406ad46071ef25ad800c9c5cd699de3fb86023109",
+      "artifacts/ads-reporting-transparency-20261118/source-aligned-preview.html": "f91c1d7799004ebae7d32fea21eede919d0037a5b2502bc0805ede5024178bd2",
+      "artifacts/ads-reporting-transparency-20261118/validation.json": "324eca1342f9f829a95766d9225ce11e892bd249688e6091a43629f38dbcfd33",
+      "artifacts/ads-reporting-transparency-20261118/why-this-ad-desktop.png": "ca161b5c8ccd6143393fcb44735d01eda3931a72ceefa070971f7451dd6342fa",
+      "docs/ads-reporting-transparency-plan-20261118.md": "731ba4659de5d1b8708351062d259017839199875cc89498d1c4a82eba193762"
+    }
+  },
+  "validation": [
+    {
+      "name": "Actual SponsoredCard/ImageAd static markup/styles, synthetic selection details, guest/report/retry mock flow and44px controls",
+      "result": "passed",
+      "evidence": "artifacts/ads-reporting-transparency-20261118/validation.json"
+    },
+    {
+      "name": "Desktop/mobile visual inspection and actual Manrope/Arial fallback",
+      "result": "passed",
+      "evidence": "artifacts/ads-reporting-transparency-20261118/desktop.png"
+    },
+    {
+      "name": "Owner visual approval and coordinator backend/migration scope before product mutation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "ba3411a9-6223-4eed-835e-beed69f81ef1",
+  "recordedAt": "2026-11-19T04:24:32.496Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

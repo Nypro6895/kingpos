@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "reylumi-core-r11-integration-20261022",
+  "status": "working",
+  "summary": "Integrate frozen auth deadline and native reset-pending fixes with R10 packaging; Market excluded.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "app/login/login-form.tsx",
+    "tests/app-local-entry-recovery-ui.test.mjs",
+    "tests/auth-request-deadline.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\release-candidate-r11-core",
+    "baselineCommit": "7ae745be2366d15add1b42b9b5ac1a4b81915706"
+  },
+  "dependencies": [
+    "r10-login-request-deadline",
+    "r10-native-reset-pending"
+  ],
+  "validation": [
+    {
+      "name": "Combined web/native release validation",
+      "result": "pending"
+    }
+  ],
+  "id": "2f9df169-e3e2-4e6c-9999-4f6bde5c9983",
+  "recordedAt": "2026-10-22T18:05:07.674Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-6\\release-candidate-r11-core",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

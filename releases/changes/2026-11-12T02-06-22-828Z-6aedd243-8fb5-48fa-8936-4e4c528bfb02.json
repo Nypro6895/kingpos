@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "app-store-contact-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Unpublished drafts designate support@reylumi.com; mailbox creation/delivery/replies/monitoring and postal address remain explicit gates Original handoff 9268a6b7-5d85-43df-b35e-339db73152e7. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/app-store-privacy-terms-draft-20261109.md",
+    "docs/app-store-app-privacy-worksheet-20261109.md",
+    "docs/app-store-us-legal-readiness-20261110.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "app-store-us-legal-20261110"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "6aedd243-8fb5-48fa-8936-4e4c528bfb02",
+  "recordedAt": "2026-11-12T02:06:22.828Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "docs/app-store-privacy-terms-draft-20261109.md": "fbb5fba9bbc839737274b6b428ae0ea149bbe2aa898d7b9210c14e57bb2f0a5b",
+    "docs/app-store-app-privacy-worksheet-20261109.md": "ee7252fae2773b0f9f693550a1a1e3fa66c6b941e9ec051008386e11cfe3baf0",
+    "docs/app-store-us-legal-readiness-20261110.md": "dddecdb31938e8f1f975b738756134ce586ffd2a895013acd5f8ddbea211da42"
+  }
+}

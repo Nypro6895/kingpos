@@ -1,5 +1,12 @@
-/* eslint-disable @next/next/no-img-element -- Campaign thumbnail preserves GIF animations. */
 "use client";
+import { AdvertisingInsights } from "./advertising-insights";
+import { CampaignPreview } from "./campaign-preview";
+import {
+  DEFAULT_ADVERTISING_LIMITS,
+  type AdvertisingLimits,
+  type AdvertisingReportRow,
+} from "@/types/advertising-report";
+/* eslint-disable @next/next/no-img-element -- Campaign thumbnail preserves GIF animations. */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Campaign } from "@/types/explore-advertising";
@@ -12,6 +19,7 @@ const tabs = [
   ["draft", "Saved"],
   ["stopped", "Stopped"],
   ["new", "Create new"],
+  ["insights", "Reports & limits"],
 ] as const;
 const formats = {
   popup: "Popup",
@@ -21,17 +29,22 @@ const formats = {
 export function CampaignManager({
   initialCampaigns,
   error,
+  report = [],
+  limits = DEFAULT_ADVERTISING_LIMITS,
 }: {
   initialCampaigns: Campaign[];
   error: string;
+  report?: AdvertisingReportRow[];
+  limits?: AdvertisingLimits;
 }) {
   const router = useRouter();
   const [campaigns, setCampaigns] = useState(initialCampaigns);
   const [tab, setTab] = useState<string>("running");
   const [editing, setEditing] = useState<Campaign | null>(null);
+  const [previewCampaign, setPreviewCampaign] = useState<Campaign | null>(null);
   const [version, setVersion] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
-  const [notice, setNotice] = useState(error);
+  const [notice, setNotice] = useState("");
   const merge = (campaign: Campaign) => {
     setCampaigns((current) => [
       campaign,
@@ -52,7 +65,7 @@ export function CampaignManager({
     const form = new FormData();
     for (const [key, value] of Object.entries(campaign))
       if (value !== null && value !== undefined && typeof value !== "boolean")
-        form.set(key, String(value));
+        form.set(key, Array.isArray(value) ? value.join(",") : String(value));
     form.set("status", status);
     if (campaign.closeButton) form.set("closeButton", "on");
     try {
@@ -107,6 +120,7 @@ export function CampaignManager({
           className={styles.primary}
           onClick={() => {
             setEditing(null);
+            setPreviewCampaign(null);
             setVersion((v) => v + 1);
             setTab("new");
             setNotice("");
@@ -122,13 +136,14 @@ export function CampaignManager({
             aria-current={tab === key ? "page" : undefined}
             onClick={() => {
               setEditing(null);
+              setPreviewCampaign(null);
               setTab(key);
               if (key === "new") setVersion((v) => v + 1);
               setNotice("");
             }}
           >
             {label}
-            {key !== "new" ? (
+            {key !== "new" && key !== "insights" ? (
               <span>
                 {campaigns.filter((c) => campaignStatus(c) === key).length}
               </span>
@@ -136,12 +151,28 @@ export function CampaignManager({
           </button>
         ))}
       </nav>
+      {error ? (
+        <p role="alert" className={styles.error}>
+          {error}
+        </p>
+      ) : null}
       {notice ? (
         <p role="status" className={styles.notice}>
           {notice}
         </p>
       ) : null}
-      {tab === "new" || editing ? (
+      {previewCampaign ? (
+        <CampaignPreview
+          campaign={previewCampaign}
+          onClose={() => setPreviewCampaign(null)}
+        />
+      ) : tab === "insights" ? (
+        <AdvertisingInsights
+          campaigns={campaigns}
+          rows={report}
+          limits={limits}
+        />
+      ) : tab === "new" || editing ? (
         <CampaignForm
           key={editing?.id ?? `new-${version}`}
           campaign={editing ?? undefined}
@@ -187,6 +218,9 @@ export function CampaignManager({
                     </small>
                   </div>
                   <div className={styles.actions}>
+                    <button onClick={() => setPreviewCampaign(campaign)}>
+                      Preview
+                    </button>
                     <button
                       disabled={busy === campaign.id}
                       onClick={() => {

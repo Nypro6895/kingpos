@@ -1,8 +1,11 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { readAuthResponse } from "@/lib/auth-response";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
+import { DUPLICATE_SIGNUP_PHONE_MESSAGE, SIGNUP_PHONE_SUPPORT_PATH } from "@/lib/signup-phone-policy";
 
 const inputClassName =
   "mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-950 outline-none focus:border-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950";
@@ -53,18 +56,24 @@ export function StaffInviteSignupForm({
 
       {error ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {error}
+          <WorkspaceText text={error} />
+          {error === DUPLICATE_SIGNUP_PHONE_MESSAGE ? <Link href={SIGNUP_PHONE_SUPPORT_PATH} className="mt-3 flex min-h-11 w-fit items-center rounded-full border border-red-300 px-4 font-bold underline"><WorkspaceText text="Contact support" /></Link> : null}
         </p>
       ) : null}
 
       <div className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3">
-        <p className="text-sm font-medium text-zinc-950">Invited email</p>
+        <p className="text-sm font-medium text-zinc-950"><WorkspaceText text="Invited email" /></p>
         <p className="mt-1 text-sm text-zinc-600">{maskedEmail}</p>
       </div>
 
       <label className="block">
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Phone number" /></span>
+        <input autoComplete="tel" className={inputClassName} name="phone" required type="tel" />
+      </label>
+
+      <label className="block">
         <span className="text-sm font-medium text-zinc-700">
-          Re-enter invited email
+          <WorkspaceText text="Re-enter invited email" />
         </span>
         <input
           autoComplete="email"
@@ -77,7 +86,7 @@ export function StaffInviteSignupForm({
 
       <label className="block">
         <span className="text-sm font-medium text-zinc-700">
-          Create password
+          <WorkspaceText text="Create password" />
         </span>
         <input
           autoComplete="new-password"
@@ -94,7 +103,7 @@ export function StaffInviteSignupForm({
         disabled={isSubmitting}
         type="submit"
       >
-        {isSubmitting ? "Creating account..." : "Create account and connect"}
+        <WorkspaceText text={isSubmitting ? "Creating account..." : "Create account and connect"} />
       </button>
     </form>
   );

@@ -1,0 +1,63 @@
+{
+  "at": "2026-11-02T16:11:30.147Z",
+  "deploymentId": "dpl_ANW87cmn5LVuD2qTGLRxtYoy8e9y",
+  "role": "Owner",
+  "browser": "Chrome user session",
+  "widths": [
+    1920,
+    375
+  ],
+  "overflow": false,
+  "visibleEditors": 1,
+  "visibleAlerts": [],
+  "summaryLabels": [
+    "Phone",
+    "Email",
+    "Website",
+    "Address",
+    "Time zone"
+  ],
+  "descriptionPreservedInEditor": true,
+  "saveCancelObserved": true,
+  "productionDataWrites": false,
+  "priorChecks": [
+    {
+      "route": "/settings",
+      "result": "passed",
+      "detail": "Compact shell present; personal groups and Profile & contact load; one visible editor; no visible alerts"
+    },
+    {
+      "route": "/settings salon information",
+      "result": "passed",
+      "detail": "Actual data loaded; editing shows Save/Cancel only after change; Cancel restored original without submitting"
+    },
+    {
+      "route": "/settings booking",
+      "result": "passed",
+      "detail": "Actual Booking rules and compact Staff availability loaded without visible alerts"
+    },
+    {
+      "route": "/salon-settings",
+      "result": "passed",
+      "detail": "Grouped seven-page menu loads in signed-in Owner context"
+    },
+    {
+      "route": "/salon-settings#business-information",
+      "result": "passed",
+      "width": 375,
+      "overflow": false,
+      "visiblePanes": 1
+    },
+    {
+      "route": "/salon-settings#operating-hours",
+      "result": "passed",
+      "width": 375,
+      "overflow": false,
+      "visiblePanes": 1
+    }
+  ],
+  "priorChecksDeploymentId": "dpl_FiioYgasbrUphi7ZV7Ji5ErkJfF3",
+  "refinement": "Final one-file refinement removes only the long description from read preview",
+  "physicalIPhoneVerified": false,
+  "viewportRestored": true
+}

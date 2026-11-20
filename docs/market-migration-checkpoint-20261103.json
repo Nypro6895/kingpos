@@ -1,0 +1,45 @@
+{
+  "purpose": "Frozen local-only first integration checkpoint; earlier drafts only applied to disposable fixtures. Verify before any shared apply; use additive migrations for later changes.",
+  "files": [
+    {
+      "name": "20261103010000_market_publication_drafts_evidence.sql",
+      "sha256LF": "8e8e2567501e8013cf2d4fd5afcf1b6afc305ecb8b87d9928bb39aae1c335743"
+    },
+    {
+      "name": "20261103020000_market_synthetic_connections.sql",
+      "sha256LF": "3440bc977ab0c8465fe44f294f46fa17b1513fcdfb7542161976e558025ad6d0"
+    },
+    {
+      "name": "20261103030000_market_publisher_continuity_limits.sql",
+      "sha256LF": "457d11f8b9851bb5730ce6027b7e50982764db99317ae170a61c0bf7de2b1db0"
+    },
+    {
+      "name": "20261103040000_market_exact_publisher_review.sql",
+      "sha256LF": "1f1ea6028b6e6665f3b3ea41021ea8b9d2d58b7ea44c5506991bb567dfe41a3c"
+    },
+    {
+      "name": "20261103050000_market_refresh_retry_receipts.sql",
+      "sha256LF": "4afd28a353a279a9e521c999e45397ad4d16518a0126765af886c51f202ea7de"
+    },
+    {
+      "name": "20261103060000_market_runtime_budgets.sql",
+      "sha256LF": "4002d4a3b5d4572934d930bbddba0503ef677929c0316d754db5ba956c0a2bf5"
+    },
+    {
+      "name": "20261103070000_market_suspension_revocation.sql",
+      "sha256LF": "88a6fd19b7f52cf9592affde384e8ad76ef7da8d4093b3c4db8aa20b7ee4d754"
+    },
+    {
+      "name": "20261103080000_market_consent_suspension_fence.sql",
+      "sha256LF": "e0cc0e7f716526f1980d95654a64b1c6e3ac6b26d70277c47867fb1036dc94ce"
+    },
+    {
+      "name": "20261103090000_market_receipt_lifecycle_cleanup.sql",
+      "sha256LF": "a97ff9df7546aac2f55af284c658ce2aa7bba43d1fd6e850d7bd3b7583aa5446"
+    },
+    {
+      "name": "20261103100000_market_receipt_reset_cleanup.sql",
+      "sha256LF": "711c02e90d06762b9a2be65b8103e82cff4c60384af5af30c1d026c989508712"
+    }
+  ]
+}

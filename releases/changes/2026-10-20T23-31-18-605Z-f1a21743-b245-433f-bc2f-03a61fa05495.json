@@ -1,0 +1,54 @@
+{
+  "kind": "change",
+  "changeId": "ios-workspace-cookie-deletion-20261020",
+  "status": "needs-integration",
+  "summary": "Native canonical cookie replacement passed174 tests and Release Simulator build; authenticated Staff and repaired-app role integration remain pending.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\cookie-fix-frozen\\cee9482db037f573696edca17ab91dbfb3d67860",
+    "commit": "cee9482db037f573696edca17ab91dbfb3d67860",
+    "baselineCommit": "02c2d6b8037ffed730d722ae32d9017ade6f9e89",
+    "overlaySha256": "a040ab2b0843f854721484bd0f82b37477b9c9ff41963facadc4c610ec60e6f3",
+    "testSourceManifest": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\cookie-candidate-r2-passed\\source-inputs.json"
+  },
+  "validation": [
+    {
+      "name": "Real-WK regression and original native suite:174 passed,0 failed,0 skipped",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\cookie-candidate-r2-passed\\xcresult-summary.json"
+    },
+    {
+      "name": "Release Simulator build and unchanged frozen source",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\cookie-candidate-r2-passed\\result.json"
+    },
+    {
+      "name": "Original45 failure and cookie reconciliation boundary reproduced",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\auth-report.html"
+    },
+    {
+      "name": "Separate authenticated Staff account and repaired-app Owner/Personal/Staff UI",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\mac-mini-ios-audit-20261020\\report.html"
+    }
+  ],
+  "dependencies": [],
+  "releaseAssessment": {
+    "nativeBuildRequired": true,
+    "webChangeRequired": false,
+    "publicationStatus": "not-published",
+    "reason": "Swift cookie-writer fix; web permissions and business logic unchanged."
+  },
+  "id": "f1a21743-b245-433f-bc2f-03a61fa05495",
+  "recordedAt": "2026-10-20T23:31:18.605Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-cookie-fix-20261020",
+  "supersedesEvents": []
+}

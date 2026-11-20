@@ -1,11 +1,13 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { BeautyProfileClient } from "@/app/beauty/beauty-profile-client";
 import { getSelfBeautyProfilePage } from "@/lib/beauty";
 import { getPostCommentViewer } from "@/lib/post-comments";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { BeautyAppointment } from "@/app/beauty/beauty-appointment";
+import { BeautyHomeFavorites } from "@/app/beauty/beauty-home-favorites";
 
-export default async function BeautyPage() {
+async function BeautyPage() {
   const [result, commentViewer] = await Promise.all([
     getSelfBeautyProfilePage(),
     getPostCommentViewer(),
@@ -18,7 +20,7 @@ export default async function BeautyPage() {
 
     return (
       <main className="min-h-screen bg-surface-muted px-4 py-6 sm:px-6 lg:px-8">
-        <section className="mx-auto grid max-w-xl gap-3 rounded-2xl border border-border-subtle bg-surface p-5 text-center shadow-sm">
+        <section className="mx-auto grid max-w-xl gap-3 border-border-subtle bg-surface p-5 text-center rounded-none border-0 shadow-none">
           <p className="text-xs font-extrabold uppercase tracking-wide text-brand-orange">
             Beauty
           </p>
@@ -35,7 +37,9 @@ export default async function BeautyPage() {
 
   return (
     <BeautyProfileClient
-      appointment={<Suspense fallback={<div className="h-32 animate-pulse rounded-2xl bg-surface" aria-label="Loading appointment" />}><BeautyAppointment /></Suspense>}
+      home
+      appointment={<Suspense fallback={<div className="h-28 animate-pulse rounded-2xl bg-surface" aria-label="Loading appointment" />}><BeautyAppointment compact /></Suspense>}
+      favorites={<Suspense fallback={<div className="h-32 animate-pulse rounded-2xl bg-surface" aria-label="Loading favorites" />}><BeautyHomeFavorites /></Suspense>}
       commentViewer={commentViewer}
       initialTimeline={result.data.timeline}
       profile={result.data.profile}
@@ -43,3 +47,5 @@ export default async function BeautyPage() {
     />
   );
 }
+
+export default withExperiencePage(BeautyPage);

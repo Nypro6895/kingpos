@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "rights-evidence-operator-ui-20261118",
+  "status": "working",
+  "summary": "Implement owner-approved revision2 collapsed rights evidence operator flow with case-derived photo enumeration, independent capture/origin-removal decisions and exact unknown retry.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/admin/post-safety/rights-evidence-panel.tsx",
+    "app/(app)/admin/post-safety/rights-evidence-panel.module.css",
+    "app/(app)/admin/post-safety/rights-evidence-actions.ts",
+    "lib/platform-admin/rights-evidence.ts",
+    "app/(app)/admin/post-safety/case-card.tsx",
+    "tests/rights-evidence-operator-actions.test.mjs",
+    "tests/rights-evidence-operator-ui.browser.test.mjs",
+    "docs/rights-evidence-operator-ui-20261118.md"
+  ],
+  "source": {
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "rights-evidence-runtime-20261118",
+    "rights-image-evidence-backend-20261118",
+    "rights-case-evidence-query-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Focused actualcomponent/actions/permission/version/retry browser+unit tests, scopedlint/types andcoordinatorcombinedbuild",
+      "result": "pending"
+    }
+  ],
+  "scopeBoundary": "ApprovedoperatorUI only; no holdediting/configactivation/rolegrants/cron/provider/secret/realdata/commit/push/deploy. Preserveoldpostdecisions/drafts/perms; backendRPCsderivedcanonicalcase. Prior12fileruntimepack remainsimmutable.",
+  "id": "a16eb903-b590-46b2-95d5-40bc861402b8",
+  "recordedAt": "2026-11-19T04:53:18.014Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

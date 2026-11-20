@@ -1,0 +1,23 @@
+.actions { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); align-items:center; gap:4px; min-width:0; width:100%; }
+.actions > * { min-width:0; }
+.actions > span, .actions > span > span:first-child { display:flex; min-width:0; }
+.actions > span > span:first-child { width:100%; }
+.actions > :is(button,a), .actions > span > span:first-child > button {
+ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; width:100%; min-height:52px;
+ margin:0; padding:5px 2px; border:0; border-radius:6px; background:transparent; box-shadow:none;
+ color:var(--text-secondary,#52525b); font-size:12px; font-weight:400; line-height:16px; white-space:nowrap;
+}
+.actions > button[aria-pressed="true"] { color:var(--brand-orange,#f26f3d); }
+.actions svg { flex-shrink:0; width:21px; height:21px; }
+.actions > span > span:first-child > button { position:relative; }
+.actions > span > span:first-child > button > span + span { position:absolute; top:5px; left:calc(50% + 15px); font-size:10px; line-height:16px; }
+.actions > :is(button,a):hover, .actions > span button:hover { background:#fafafa; }
+.actions > button[aria-label="Comment"] { position:relative; }
+.count { position:absolute; left:calc(50% + 15px); top:5px; font-size:10px; color:#71717a; }
+.follow { flex-shrink:0; min-height:44px; color:var(--brand-orange,#f26f3d); font-size:12px; font-weight:600; padding-inline:3px; white-space:nowrap; }
+.follow[aria-pressed="true"] { color:#71717a; }
+.notice { position:fixed; z-index:110; bottom:100px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:12px; width:max-content; max-width:calc(100vw - 32px); padding:12px 16px; background:#27272a; color:white; border-radius:12px; font-size:13px; box-shadow:0 8px 25px #0002; }
+.notice button { flex-shrink:0; min-height:32px; text-decoration:underline; }
+.menuMessage { position:absolute; z-index:105; right:12px; max-width:260px; padding:12px; background:#27272a; color:white; border-radius:8px; font-size:12px; }
+.feedback { font-size:12px; color:#71717a; }
+@media(max-width:359px) { .actions > :is(button,a), .actions > span > span:first-child > button { font-size:11px; } }

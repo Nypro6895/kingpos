@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-version-alignment-20261119",
+  "status": "needs-integration",
+  "summary": "iOSsource marketingversion1.0.1 now matches existing Apple draft; bundle/team/signing unchanged; final eligiblebuild/archive and legal-entity acceptance still separate",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/project.yml"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-store-release-20261119\\artifacts\\ios-store-version-alignment-20261119\\frozen-source",
+    "commit": "8f8877605534087b2425a62e3b10044376953667"
+  },
+  "validation": [
+    {
+      "name": "Only marketingversion changed; source matches existing1.0.1draft; Info macros and signing/bundle/team unchanged",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-version-alignment-20261119/source-acceptance.json"
+    },
+    {
+      "name": "Fresh Apple build eligibility, final archive actualInfo.plist, company identity/distribution and native device acceptance",
+      "result": "pending",
+      "evidence": "docs/combined-release-coordination-20261119.md"
+    }
+  ],
+  "id": "a89747a0-02e3-4e5e-b0ab-edf54f614438",
+  "recordedAt": "2026-11-19T07:24:51.353Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "app-local-native-foundation",
+  "status": "working",
+  "summary": "Split the exact route-ready URL comparison into typed String steps to resolve actual Xcode type-check timeout; no behavior or test change.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/.gitattributes",
+    "ios/Reylumi/NativeBridge.js",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/Reylumi/ReylumiAppDelegate.swift"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Actual r9 CI compile diagnosis",
+      "result": "failed",
+      "evidence": "artifacts/app-local-platform-20261016/native-check-r5-failed.log"
+    },
+    {
+      "name": "Type-inference-only fix and bridge regressions",
+      "result": "pending"
+    },
+    {
+      "name": "Actual macOS XCTest and archive r10",
+      "result": "pending"
+    }
+  ],
+  "id": "1f666a28-4e9f-4a3e-ae55-502264e51c2b",
+  "recordedAt": "2026-10-16T18:00:28.605Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

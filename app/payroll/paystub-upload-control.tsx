@@ -1,19 +1,34 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { uploadPayrollPaystubAction } from "@/app/payroll/actions";
+import { uploadTaxPaystub } from "@/app/tax-company/actions";
 import { useRef } from "react";
+import { useFormStatus } from "react-dom";
+
+function UploadButton({ hasPaystub, payrollRunId, onClick }: { hasPaystub: boolean; payrollRunId: string | null; onClick: () => void }) {
+  const { pending } = useFormStatus();
+  return <button type="button" onClick={onClick} disabled={pending || !payrollRunId} aria-busy={pending}
+    className={`min-h-11 rounded border px-3 py-2 text-sm font-medium disabled:opacity-50 ${hasPaystub ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}>
+    <WorkspaceText text={pending ? "Uploading…" : hasPaystub ? "✓ Uploaded" : "Need upload"} />
+  </button>;
+}
 
 export function PaystubUploadControl({
   hasPaystub,
   payrollRunId,
   returnPath,
   staffId,
+  taxSalonId,
 }: {
   hasPaystub: boolean;
   payrollRunId: string | null;
   returnPath: string;
   staffId: string;
+  taxSalonId?: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -25,7 +40,7 @@ export function PaystubUploadControl({
     if (
       hasPaystub &&
       !window.confirm(
-        "This staff already has a paystub. Do you want to replace it?",
+        __vt("This staff already has a paystub. Do you want to replace it?"),
       )
     ) {
       return;
@@ -35,7 +50,8 @@ export function PaystubUploadControl({
   }
 
   return (
-    <form action={uploadPayrollPaystubAction} ref={formRef}>
+    <form action={taxSalonId ? uploadTaxPaystub : uploadPayrollPaystubAction} ref={formRef}>
+      {taxSalonId && <input name="tax_salon_id" type="hidden" value={taxSalonId} />}
       <input name="return_to" type="hidden" value={returnPath} />
       <input name="payroll_run_id" type="hidden" value={payrollRunId ?? ""} />
       <input name="staff_id" type="hidden" value={staffId} />
@@ -51,18 +67,7 @@ export function PaystubUploadControl({
         ref={fileInputRef}
         type="file"
       />
-      <button
-        className={`rounded border px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-400 ${
-          hasPaystub
-            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-            : "border-amber-200 bg-amber-50 text-amber-700"
-        }`}
-        disabled={!payrollRunId}
-        onClick={openFilePicker}
-        type="button"
-      >
-        {hasPaystub ? "✓ Uploaded" : "Need upload"}
-      </button>
+      <UploadButton hasPaystub={hasPaystub} payrollRunId={payrollRunId} onClick={openFilePicker} />
     </form>
   );
 }

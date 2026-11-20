@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "app-local-authority-navigation-20261016",
+  "status": "ready",
+  "summary": "Gate new app-local route-family reads/commands on an exact admitted context while preserving retained pages and checkout drafts; reject stale provider validation callbacks.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "app/local-app/scope.tsx",
+    "tests/app-local-authority-navigation.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "three controlled actual-entry/original-POS/Check-in/Scope browser regressions",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/authority-navigation-tests.json"
+    },
+    {
+      "name": "entry/scope ESLint",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/authority-navigation-tests.json"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\frozen-authority-navigation-2026-10-16T17-49-12-482Z"
+  },
+  "id": "d677aff1-9209-483e-8135-fa6a14b36b48",
+  "recordedAt": "2026-10-16T17:49:12.792Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "7c749908e2b1809070639e59952e465a9783b390b440a0078cc22f02b3c9ddf8",
+    "app/local-app/scope.tsx": "5d39cf7874a496208272d83b4a264bfb05ea3d71ccb59b13b1f9397b6ec14623",
+    "tests/app-local-authority-navigation.test.mjs": "e4e15ed86c75f08657defba16ef010b1c6f325316c547cff9e1f7cb27c1ad7ef"
+  }
+}

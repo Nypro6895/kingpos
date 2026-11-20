@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "booking-bootstrap-optional-helper-20261015",
+  "status": "working",
+  "summary": "Fix eager regprocedure resolution of an optional future receipt helper in migration 202609230009. Verify fresh-schema replay, upgrade idempotence, existing function bodies/permissions and fail-closed behavior. Browser/Next.js E2E requested but supported local executor fails to initialize.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/202609230009_portable_custom_service_snapshot.sql",
+    "tests/portable-custom-service-migration.integration.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-bootstrap-before",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+  },
+  "validation": [
+    {
+      "name": "Fresh/upgrade migration verification",
+      "result": "pending"
+    },
+    {
+      "name": "Browser/Next.js E2E",
+      "result": "pending",
+      "evidence": "CUA executor failed twice, including one session reset: MXC launcher cannot locate required Windows platform directory, HRESULT 0x80070003."
+    }
+  ],
+  "id": "f0c843b6-1f87-4e52-94ad-43d0d04de4fd",
+  "recordedAt": "2026-10-15T02:32:19.376Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

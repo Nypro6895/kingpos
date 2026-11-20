@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import {ticketDetailPreview} from '../tests/fixtures/ticket-detail-professional-preview.mjs';
+const fixture=await ticketDetailPreview({watch:true});
+await new Promise(resolve=>fixture.server.listen(0,'127.0.0.1',resolve));
+const url=`http://127.0.0.1:${fixture.server.address().port}/pos-tickets/22222222-2222-4222-8222-222222222222?scenario=closed`;
+const receipt={kind:'synthetic-production-component-preview',url,pid:process.pid,...fixture.getSource()};
+fs.mkdirSync('artifacts/ticket-detail-professional',{recursive:true});
+fs.writeFileSync('artifacts/ticket-detail-professional/preview-server.json',JSON.stringify(receipt,null,2));
+console.log(JSON.stringify(receipt,null,2));
+const close=async()=>{await fixture.dispose();process.exit(0)};
+process.on('SIGINT',close);process.on('SIGTERM',close);

@@ -1,0 +1,49 @@
+{
+  "kind": "change",
+  "changeId": "store-operator-contact-20261120",
+  "status": "needs-integration",
+  "summary": "Confirmed Reylumi LLC and existing support email now appear on initial public Support/Contact views. Existing form, routing, authentication and send handlers retained. Store/provider/commerce fact drafts are separate artifacts, not declarations or billing changes.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/public-support-landing.tsx",
+    "app/(legal)/contact-support/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261120-followup-r1/store-readiness-r1/frozen-source",
+    "baseCommit": "51fcd99b22206c7128c67507e5599ad98d431afa"
+  },
+  "validation": [
+    {
+      "name": "Actual project scoped ESLint on both TSX files",
+      "result": "passed",
+      "evidence": "Two exact product files, no errors or warnings; matching existing frozen dependency lock/cache; no install."
+    },
+    {
+      "name": "Actual anonymous Next initial render /support and /contact-support",
+      "result": "passed",
+      "evidence": "INITIAL-RENDER-RECEIPT.json: both HTTP200, correct route h1/operator/email anchor; original contact form retained. No cookies/browser/submission, both dispatch flags off, loopback-only Node HTTP guard; owned listener stopped. Server-render only, not hydrated/device acceptance."
+    },
+    {
+      "name": "Whitespace and frozen source hashes",
+      "result": "passed",
+      "evidence": "git diff --check; readonly two-file snapshot. Original contact-form source hash unchanged."
+    },
+    {
+      "name": "Integrated release/native and healthy-context device validation",
+      "result": "pending",
+      "evidence": "Separate patch from51fcd99; public Support component is bundled, so next source-bound native package must include this commit. No provider, Store or production writes."
+    }
+  ],
+  "dependencies": [
+    "legal-entry-scroll-target-20261120"
+  ],
+  "notes": "The initially planned documentation path was retained as OPERATOR-CONTACT-IMPLEMENTATION.md in the owned evidence packet instead of entering the product commit. No undeclared product/document file is included.",
+  "id": "25291fe9-1de1-4461-9751-d802baad7e53",
+  "recordedAt": "2026-11-20T06:06:26.456Z",
+  "worktree": "C:\\Reylumi-worktrees\\store-operator-contact-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

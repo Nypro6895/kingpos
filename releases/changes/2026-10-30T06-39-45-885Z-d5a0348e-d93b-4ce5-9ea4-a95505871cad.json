@@ -1,0 +1,94 @@
+{
+  "kind": "change",
+  "changeId": "beauty-shortcut-home-20261029",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Validated release integration: Implemented Personal Beauty shortcut home, quick QR and existing Beauty Library; web checks passed, production integration and physical iPhone validation pending",
+  "files": [
+    "app/(app)/beauty/library/page.tsx",
+    "app/(app)/beauty/page.tsx",
+    "app/(app)/more/page.tsx",
+    "app/account/actions.ts",
+    "app/activity/customer-merge-actions.ts",
+    "app/api/images/normalize/route.ts",
+    "app/beauty/actions.ts",
+    "app/beauty/beauty-appointment.tsx",
+    "app/beauty/beauty-home-favorites.tsx",
+    "app/beauty/beauty-home-icon.tsx",
+    "app/beauty/beauty-home.css",
+    "app/beauty/beauty-home.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/beauty/beauty-quick-qr.tsx",
+    "app/customers/actions.ts",
+    "app/navigation-shell.tsx",
+    "app/post-comments/actions.ts",
+    "app/post-moderation/actions.ts",
+    "app/role-navigation.ts",
+    "docs/beauty-shortcut-home-20261029.txt",
+    "tests/beauty-home-ui.test.mjs",
+    "components/app-local-more.tsx",
+    "lib/app-local-personal-registry.tsx",
+    "lib/app-local-personal-metadata.ts",
+    "lib/app-local-personal-resources-server.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\frozen-source"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/build-final.log"
+    },
+    {
+      "name": "6 profile/layout,22 regression and isolated QR/Auth/PostgREST integration",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/profile-tests-final-4.log; artifacts/release-20261030/regression.log; artifacts/release-20261030/qr-db.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/lint.log"
+    }
+  ],
+  "integratesEvent": "5b134d18-f5b9-4706-a116-9b17d696c270",
+  "releaseLimits": [
+    "Physical device acceptance separate"
+  ],
+  "id": "d5a0348e-d93b-4ce5-9ea4-a95505871cad",
+  "recordedAt": "2026-10-30T06:39:45.885Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/beauty/library/page.tsx": "79ae5e9132c2d6db5b47735c9df868f70b6e405f86170d16cff211e34abb27dd",
+    "app/(app)/beauty/page.tsx": "69f0d0aa3dbc20bcbc2077f5375cd7c0359b3e6725b0db9cb3c73f56d9152f80",
+    "app/(app)/more/page.tsx": "1ec2b4117f357437e243109352e07a75e0b9e54a27e8480e12e28da9d3d2ecc6",
+    "app/account/actions.ts": "961f7a249725702cf8668b6105c532181d672a2430225e9bf0282e639a1952b9",
+    "app/activity/customer-merge-actions.ts": "233c800bf90e50320a994744c8cb9f3c8da4d1f42d5c8b14837cde763e406a28",
+    "app/api/images/normalize/route.ts": "216561f248d8682adfbe4a61f97ec7b0e4084258c2378d3183c7b18bc9a22d8d",
+    "app/beauty/actions.ts": "dea8854c8fd9cbc32902bad57d5041f25609c9d3c1aebc3fefb3e8563839a2f4",
+    "app/beauty/beauty-appointment.tsx": "759e16d3e74e1337929d5163b86838f37e1c45b6aaf89c76c152cda32933debe",
+    "app/beauty/beauty-home-favorites.tsx": "996e9bd7c55cc6ad7ba456a6a564d881affbf32988d3a66573b225ee9f430e05",
+    "app/beauty/beauty-home-icon.tsx": "5b36f953c83dd83cd896110eaa4fbb5da3ce38dc688d394a8b73cd4b7db406e5",
+    "app/beauty/beauty-home.css": "d7612fde97270f3e0ce6b4be578e0bf0f4b71beabd21350644e95699175a4758",
+    "app/beauty/beauty-home.tsx": "559881d8ef647957f2cd25eff03d4546bd84aa8fa311988cd248b30ff0ea9e38",
+    "app/beauty/beauty-profile-client.tsx": "4a3d3b3d0d43d5e651c29a40d12bbe9bb41b69a3a8cd171578e652247ddb4365",
+    "app/beauty/beauty-quick-qr.tsx": "b87d72f23e1d65303f0f6d9e17cc02bf132e60158839d0499f95d7a004529819",
+    "app/customers/actions.ts": "d99e88ffc6f3270f7fc0adf08e45fc60a26dc234041c7f8a25cf1aeaf257d003",
+    "app/navigation-shell.tsx": "6c2c79755c4368835c075e1b728b3c8255cadbe498931b4755ba9153b20bf0f6",
+    "app/post-comments/actions.ts": "65deca0440e6c4d8e498a7fd777208c857f9e6c8e7c09b4b9b3292bd8830beb6",
+    "app/post-moderation/actions.ts": "030625699d846f617eebe74ba3a2d075527f8fd1964d96aba9666a0cb20ad5f6",
+    "app/role-navigation.ts": "06b35901c12209caa81c19350937ca067260b4a5715ee7d7ac79ce3e280423f7",
+    "docs/beauty-shortcut-home-20261029.txt": "3e8a45431ca3a372ddc8f73ae51ed5220b211c1f2dd5d1624566d584da35face",
+    "tests/beauty-home-ui.test.mjs": "67edaf4ce898b04e8b9f1fa00292c807172ecbce32c5a92aefa94910dfbe06f8",
+    "components/app-local-more.tsx": "ec88c3e6b459a615a2898e316b60e30cdd89bfc71f5e1d505f107b30639b7bec",
+    "lib/app-local-personal-registry.tsx": "a89f99ea4662c24534f35b2d5a6766798fb2b6b5924007331a887e787d3c7c39",
+    "lib/app-local-personal-metadata.ts": "c420d766b52d5670c43936f7ab5ae7198d8365f455784ce2340922490d157cd1",
+    "lib/app-local-personal-resources-server.ts": "05142361dc57b995e0b8ead1572d9023bad4d2a22c029771e45e8ad9d087d050"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "session-denial-account-erasure-20261119",
+  "status": "working",
+  "summary": "Integrate private session-denial tombstones with actual Auth account hard deletion using a validated cascading foreign key",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119203000_session_denial_account_erasure.sql",
+    "tests/session-denial-account-erasure.full-schema.test.mjs",
+    "docs/session-denial-account-erasure-20261119.md"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/session-denial-erasure-20261119-r1",
+    "baseCommit": "dfb18cb05ecfbfa2b8f825c88f600658c1806d9e"
+  },
+  "dependencies": [
+    "security-hardening-20261119"
+  ],
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Owned real-Auth/PostgREST/Storage upgrade and hard-delete regression"
+    }
+  ],
+  "notes": [
+    "No production/provider/customer action; source-only local implementation.",
+    "Keep inherited452 migrations byte unchanged; actual Auth deletion owns tombstone cleanup, not earlier personal-content erasure."
+  ],
+  "id": "ea60f7c6-dc90-4112-a8c6-e797e57d9c4b",
+  "recordedAt": "2026-11-19T20:10:47.887Z",
+  "worktree": "C:\\Reylumi-worktrees\\session-denial-erasure-20261119-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

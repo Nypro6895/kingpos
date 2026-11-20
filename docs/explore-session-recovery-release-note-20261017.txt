@@ -1,0 +1,45 @@
+GHI CHÚ CHO ĐỢT PHÁT HÀNH CHUNG — 2026-10-17
+
+Thay đổi: explore-session-recovery-20261017
+Nhánh: codex/explore-session-recovery-20261017
+Yêu cầu của chủ dự án: sửa lỗi đứng Explore và phục hồi phiên; giữ nguyên
+tính năng/giao diện hiện có; lưu lại để phát hành cùng các thay đổi khác.
+Không phát hành riêng, không tự upload TestFlight trong công việc này.
+
+Vấn đề đã tái hiện trên nguồn TestFlight 1.1.0 (31.1):
+- Xác nhận phiên ban đầu thất bại khiến Explore đứng mãi ở khung chờ.
+- Explore không hiện lỗi/thử lại và chọn lại cùng trang không kiểm tra lại phiên.
+- Chuyển quyền bằng phiên iOS lưu sẵn có thể tự hủy yêu cầu ngữ cảnh đang trả về.
+
+Phạm vi sửa:
+- Dùng trạng thái lỗi và nút Try again sẵn có cho cả trang Explore/Market
+  khi thiếu phiên đã xác nhận; giữ nguyên giao diện thông thường.
+- Chọn lại trang bị lỗi sẽ xác nhận lại phiên; không phát lại thao tác nghiệp vụ.
+- Kết quả phiên không hợp lệ/hết hạn có đường thử lại rõ ràng.
+- Giới hạn chờ callback bridge cho context/read/cache. Giữ nguyên vòng đời
+  command, mở trang online, các kiểm tra quyền, nonce, epoch và generation.
+- Phân biệt chuyển ngữ cảnh lưu sẵn với thu hồi phiên thật trên iOS.
+- Giữ nguyên nội dung Explore, tìm kiếm/vị trí, thông báo, luồng đổi vai trò,
+  cache còn hợp lệ và dữ liệu đang nhập trong trường hợp lỗi kết nối tạm thời.
+
+Kiểm tra và nguồn bàn giao:
+- Nhật ký bất biến: releases/changes/; tìm changeId ở trên bằng lệnh pending.
+- Mỗi ready event giữ source commit, snapshot/hash và kết quả kiểm tra cụ thể.
+- Bằng chứng chi tiết: artifacts/explore-session-recovery-20261017/.
+- Kiểm tra thực tế gồm gói JavaScript đóng sẵn và WKWebView iOS với lần xác
+  nhận phiên bị timeout/503, thử lại, chọn lại trang, reset, foreground,
+  phiên hết hạn và không phát lại command; kèm kiểm tra hồi quy và build.
+
+Khi ghép vào đợt phát hành được yêu cầu sau này:
+- Đối chiếu đúng baseline web hiện tại và binary native đã upload thực tế;
+  chỉ ghép các file/ý định của ready event, giữ các thay đổi đã phát hành khác.
+- Ghép cùng các thay đổi đã hoàn tất tương thích, xử lý xung đột theo chức năng.
+- Tạo lại gói native từ toàn bộ nguồn đã ghép và public config đã được duyệt;
+  không dùng app.js của task này để đè bundle chứa thay đổi mới từ task khác.
+- Chạy lại kiểm tra cần thiết trên nguồn ghép, build web và test/archive iOS.
+- Có thay đổi Swift và JS đóng sẵn: cần bản TestFlight mới khi phát hành;
+  chỉ cập nhật web không đưa bản sửa này vào ứng dụng 31.1 đang cài.
+- Áp dụng đầy đủ docs/release-policy.txt; không coi ghi chú này là lệnh deploy.
+
+Giới hạn chẩn đoán: đã xác nhận và sửa đường kẹt sau khi xác nhận phiên lỗi.
+Chưa có log thiết bị chứng minh tác nhân khiến iPhone ban đầu tự reload.

@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "owner-attention-payroll-polish-20261101",
+  "status": "working",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Revise financial groups to full-width flat elevation; list notifications; investigate native read cancellation misreported as uncertain save",
+  "files": [
+    "app/payroll/shop-money-workspace.tsx",
+    "app/payroll/shop-money.module.css"
+  ],
+  "source": {
+    "commit": "2ab2ca6"
+  },
+  "validation": [
+    {
+      "name": "Implementation",
+      "result": "pending"
+    }
+  ],
+  "id": "b3bd3dd3-8742-4017-81a7-ac062fe56350",
+  "recordedAt": "2026-11-01T07:05:52.957Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-attention-payroll-polish-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

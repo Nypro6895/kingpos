@@ -1,5 +1,8 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { redirect } from "next/navigation";
 
-export default function PortableTodayRedirectPage() {
+function PortableTodayRedirectPage() {
   redirect("/pos/portable/ticket");
 }
+
+export default withExperiencePage(PortableTodayRedirectPage);

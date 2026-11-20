@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "app-local-readonly-filter-navigation-20261119",
+  "status": "needs-integration",
+  "summary": "Installed payroll-tax month/custom and Portable report date GET filters navigate under retained strict CSP through three private markers, preserving native role admission, published-tax and financial read authority",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/app-local-payroll-tax.tsx",
+    "components/app-local-portable-report.tsx",
+    "components/navigation-form.tsx",
+    "lib/app-local-link-navigation.ts",
+    "tests/app-local-readonly-filter-navigation.test.mjs",
+    "docs/app-local-readonly-filter-navigation-20261119.md"
+  ],
+  "source": {
+    "commit": "4f4b023e3eb84ddf4785a073e5b20be0262993f1",
+    "snapshot": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/read-filter-frozen-r1/source"
+  },
+  "validation": [
+    {
+      "name": "Before-fix actual source strict CSP reproductions for tax month/custom and Portable today",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/local-filter-csp-audit-r2/result.json"
+    },
+    {
+      "name": "32 actual-component browser groups: 10 filter, 15 Search and 7 Help; source unchanged; no external egress",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/read-filter-checks-r2/result.json"
+    },
+    {
+      "name": "ESLint, 826-source scoped TypeScript dependency graph with zero diagnostics, tracked and new-file whitespace",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/android-windows-portable-r1/read-filter-static-r2/result.json"
+    },
+    {
+      "name": "Final combined native bundle regeneration and physical iOS acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "installed-global-search-navigation-20261119"
+  ],
+  "supersedesEvents": [],
+  "id": "40afd4d5-a907-4568-9702-2d6b277c89a0",
+  "recordedAt": "2026-11-19T16:13:35.511Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": []
+}

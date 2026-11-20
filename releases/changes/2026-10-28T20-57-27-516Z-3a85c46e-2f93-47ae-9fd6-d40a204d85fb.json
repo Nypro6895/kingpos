@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "iphone-single-post-audited-getter-admission-20261028",
+  "status": "ready",
+  "summary": "Negotiate a single freshly authorized POST for three audited Booking getters; bind displayed viewer/scope/epoch locally. Old server, missing admission and all writes keep native preflight. Server retains original session/scope/Owner/target gates. Eight new native and thirteen workspace regression tests passed on Mac simulator; full release CI and real iPhone performance acceptance remain required.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/context/route.ts",
+    "lib/app-local-host.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/SinglePostGetterTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\getter165-selected-frozen"
+  },
+  "dependencies": [
+    "iphone-original-getter-transport-read-scope-20261028"
+  ],
+  "validation": [
+    {
+      "name": "21 native simulator tests including 8 getter negotiation/denial/reset/timeout/old-server/write tests and 13 original workspace tests",
+      "result": "passed",
+      "evidence": "C:/Reylumi/kingpos-iphone-performance-20261027/artifacts/iphone-cold-release-20261028/getter165-native-tests.log"
+    },
+    {
+      "name": "TypeScript noEmit incremental false",
+      "result": "passed"
+    },
+    {
+      "name": "14 original server route/getter read/write/target/revocation isolation tests",
+      "result": "passed"
+    }
+  ],
+  "id": "3a85c46e-2f93-47ae-9fd6-d40a204d85fb",
+  "recordedAt": "2026-10-28T20:57:27.516Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/app-local/context/route.ts": "67d3306f6533da072292ba629d9a211d8ee11f29f758b80b0e554426f55f9bd0",
+    "lib/app-local-host.ts": "c06799d7d9ac5f5604f2ee7a2020612d21b4775661db618de2fcb5fecd1f0a16",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "48b47619a583e5dba283ac35ea81da0edd010f55912345fda3c9ecce38d85f86",
+    "ios/ReylumiTests/SinglePostGetterTests.swift": "61a1fb0406c1f8d3e138d2907087d560baf34635441a8886b1f090baa4843d6b"
+  }
+}

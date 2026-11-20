@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "staff-pay-compact-period-20261028",
+  "status": "needs-integration",
+  "summary": "Approved My Pay/Analysis cleanup with single swipe/tap date filter, no downloads; tested and grouped with staff avatar for combined release",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "app/staff/my-work/staff-pay-period-picker.tsx",
+    "app/staff/my-work/staff-pay-analysis.module.css",
+    "lib/vietnamese-dictionary.ts",
+    "tests/staff-pay-analysis.test.mjs",
+    "tests/staff-pay-period-ui.test.mjs",
+    "artifacts/staff-role-avatar-20261028/DEPLOY-NOTE.txt"
+  ],
+  "source": {
+    "snapshot": "artifacts/staff-pay-cleanup-20261028/source",
+    "patch": "artifacts/staff-pay-cleanup-20261028/task-only.patch",
+    "hashManifest": "artifacts/staff-pay-cleanup-20261028/source-hashes.json",
+    "note": "artifacts/staff-role-avatar-20261028/DEPLOY-NOTE.txt"
+  },
+  "validation": [
+    {
+      "name": "14 payroll, analysis, schedule access and paystub history tests",
+      "result": "passed"
+    },
+    {
+      "name": "Browser interaction at 390px/1280px including touch, mouse, keyboard, chooser, exact range/tab preservation, boundaries and overflow",
+      "result": "passed",
+      "evidence": "artifacts/staff-pay-cleanup-20261028/browser/results.json"
+    },
+    {
+      "name": "ESLint changed code and tests",
+      "result": "passed"
+    },
+    {
+      "name": "Source-only TypeScript check excluding stale generated .next cache directories",
+      "result": "passed",
+      "evidence": "artifacts/staff-pay-cleanup-20261028/tsconfig.source.json"
+    },
+    {
+      "name": "Scoped patch reverse-apply check",
+      "result": "passed"
+    },
+    {
+      "name": "Assembled production-baseline build and authenticated physical phone acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "relatedChanges": [
+    "staff-role-profile-avatar-20261028"
+  ],
+  "id": "a1cb4661-8d3d-42ba-8c57-86d38274196a",
+  "recordedAt": "2026-10-28T20:27:24.872Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

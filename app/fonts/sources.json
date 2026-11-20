@@ -1,0 +1,56 @@
+{
+  "description": "Unsubsetted variable fonts converted losslessly from official Google Fonts TTF sources to WOFF2 with fonttools 4.66.1. See adjacent SIL Open Font License files.",
+  "fonts": [
+    {
+      "family": "Geist",
+      "source": "https://github.com/google/fonts/blob/66928797f271fed5ee428544e7229685e2d90127/ofl/geist/Geist[wght].ttf",
+      "sourceCommit": "66928797f271fed5ee428544e7229685e2d90127",
+      "sourceSha256": "73894e0448cae90a92b6c2f8732b7bb9acb7b94c418bff559dad4a18e1de9659",
+      "file": "Geist.woff2",
+      "sha256": "6b388cdd1db5932173b27d8ba1ec9f0da092028e09a17e3268dbf6338d0a6f50",
+      "license": "Geist-OFL.txt",
+      "axes": [
+        [
+          "wght",
+          100.0,
+          400.0,
+          900.0
+        ]
+      ]
+    },
+    {
+      "family": "GeistMono",
+      "source": "https://github.com/google/fonts/blob/66928797f271fed5ee428544e7229685e2d90127/ofl/geistmono/GeistMono[wght].ttf",
+      "sourceCommit": "66928797f271fed5ee428544e7229685e2d90127",
+      "sourceSha256": "d00e590b8eb3a59acc329b2d044fd143ae935090b7da33199ebee27cc7de8196",
+      "file": "GeistMono.woff2",
+      "sha256": "29f7fb4a9a0acbb46d347546fcbf55060edb6317df10c7b6e4cd948d368b1ae2",
+      "license": "GeistMono-OFL.txt",
+      "axes": [
+        [
+          "wght",
+          100.0,
+          400.0,
+          900.0
+        ]
+      ]
+    },
+    {
+      "family": "Manrope",
+      "source": "https://github.com/google/fonts/blob/66928797f271fed5ee428544e7229685e2d90127/ofl/manrope/Manrope[wght].ttf",
+      "sourceCommit": "66928797f271fed5ee428544e7229685e2d90127",
+      "sourceSha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+      "file": "Manrope.woff2",
+      "sha256": "34e8102f3718ec7db4e8c5b1b993f7eb9a314e4e5febcb261e98e8d5cbaa383e",
+      "license": "Manrope-OFL.txt",
+      "axes": [
+        [
+          "wght",
+          200.0,
+          200.0,
+          800.0
+        ]
+      ]
+    }
+  ]
+}

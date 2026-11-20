@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "release-journal-diagnostic-path-20261017",
+  "status": "working",
+  "summary": "Ignore record command output-only filePath when deduplicating immutable journal transport copies; preserve real conflict detection",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "scripts/release-journal.mjs",
+    "tests/release-journal-line-endings.test.mjs"
+  ],
+  "source": {
+    "commit": "1579c10"
+  },
+  "validation": [
+    {
+      "name": "Duplicate transport field and true conflict regressions",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "4a577c30-c99b-4da0-a4f9-f02942bb6e1e",
+  "recordedAt": "2026-10-17T17:31:01.374Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

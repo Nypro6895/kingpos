@@ -1,0 +1,73 @@
+{
+  "kind": "change",
+  "changeId": "local-first-native-runtime-20261016",
+  "status": "ready",
+  "summary": "Prepared role startup, persistent App-Bound WebKit storage, nonce-scoped route leases and encrypted bounded read-only iOS background refresh. Existing Lumi, Safari payments and viewport/security flows preserved.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/README.md",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/NativeBridge.js",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/project.yml",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/Reylumi/ReylumiAppDelegate.swift",
+    "ios/Reylumi/ReylumiBackgroundSync.swift",
+    "ios/Reylumi/ReylumiOfflineRoute.swift",
+    "ios/ReylumiTests/BackgroundSyncTests.swift",
+    "ios/ReylumiTests/OfflineRouteTests.swift",
+    "ios/ReylumiTests/OfflineWebViewTests.swift",
+    "ios/scripts/native-offline-bridge.test.mjs",
+    "ios/scripts/check-build.sh",
+    "ios/ReylumiTests/Simulator.entitlements"
+  ],
+  "source": {
+    "commit": "5365cdd300e4851a9f89ce0e2371287a0931b6fd",
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\native-frozen"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "41 actual iPhone Simulator XCTest including real Keychain and cold offline WebView; unsigned Release archive",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\native-ci\\reylumi-ios-check-25\\build-receipt.json"
+    },
+    {
+      "name": "33 exact native source hashes match pinned CI and frozen source",
+      "result": "passed"
+    },
+    {
+      "name": "8 bridge/browser checks",
+      "result": "passed",
+      "evidence": "artifacts/local-first-pos-staff-20261016/native"
+    }
+  ],
+  "id": "b403d870-b7cb-4e1d-b49c-5845e352393f",
+  "recordedAt": "2026-10-16T04:26:20.771Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/README.md": "99087b0e55d02ba8c12ae762f69bd1c6325c518e045be19a7306d6633d000f8d",
+    "ios/Reylumi/Info.plist": "092b13484caf9ebfbcc7716ac0fd0fb03b379bfdcdbf8aad72dea029752ffc2d",
+    "ios/Reylumi/NativeBridge.js": "9bbd673f72d8e5b5116384a1ad68014d73f604941f98860388b44b71803d55df",
+    "ios/Reylumi/NavigationPolicy.swift": "3a85dbad5f109a9c5cd3a4636ba421371b80a0eafc2697c18af753f5145973e5",
+    "ios/Reylumi/ReylumiApp.swift": "1b233be9f3cdb47c7045fe5ea05ce18e0b314ad49d46a5c97b37a5051eb66daa",
+    "ios/Reylumi/ReylumiViewController.swift": "d95f1c0be6b88c5978f4613fe08a75c8b3f0aab5e0df042c0c0b87b32f2827da",
+    "ios/project.yml": "c5771f158b268ae6ab72b9abfd8dc9221e56814f616b9d539f3c9eb92e02fd65",
+    "ios/Reylumi/Info-Debug.plist": "8eb13577624737a649a04225efa36c1012c6347df7f9159cd397a6743751159f",
+    "ios/Reylumi/ReylumiAppDelegate.swift": "7ffbb013b031b1677d6bb5071bdc310c4b5318f65cfc955f1c9efb97df549ea7",
+    "ios/Reylumi/ReylumiBackgroundSync.swift": "37f87d0f8fa66a57364c12e9578282dfa167d48589817dbe611cd6a7d4841f34",
+    "ios/Reylumi/ReylumiOfflineRoute.swift": "2c74632644ece465256f5acdcc6b839c0968c68225e0c623f635bc0847677f3f",
+    "ios/ReylumiTests/BackgroundSyncTests.swift": "e7f93e872fd6d10f912bbe0ae5ac9abc0ada7c5bd5652bf15d456a71c293e2a1",
+    "ios/ReylumiTests/OfflineRouteTests.swift": "6c48ae61b4c26c3f30c30210c86989cbd52ea072886d9301753fb0ab86cc80dd",
+    "ios/ReylumiTests/OfflineWebViewTests.swift": "6dadf2950515477951eabe6daa62402d2eaa550801ef4976b5bcea11684d7ed1",
+    "ios/scripts/native-offline-bridge.test.mjs": "cef76e0e22b40de9f9f8254c0f888f8c7d0f8551be0cf1ec14ab592171ef174e",
+    "ios/scripts/check-build.sh": "d08114eb0e1dd32db3eba01e3ccc0d4c3eb45c74938f6a00af83d2eb8707bb22",
+    "ios/ReylumiTests/Simulator.entitlements": "46bafc66fea39914572be8a9029554eba486fa21c9173666cca812bb91494b4c"
+  }
+}

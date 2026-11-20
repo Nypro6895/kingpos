@@ -1,0 +1,43 @@
+/* Shared by Personal, managed salons and staff workspaces. The main mobile
+   menu is 58px tall plus its top padding and the device's bottom safe area. */
+@media (max-width: 1023px) {
+  .settings-hub.settings-hub {
+    --settings-menu-clearance: calc(88px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--settings-menu-clearance) + 24px);
+  }
+
+  .settings-hub .settings-inline-form .settings-form-actions.settings-form-actions {
+    position: sticky;
+    bottom: var(--settings-menu-clearance);
+    z-index: 15;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-block: 12px;
+    background: var(--surface, #fff);
+    box-shadow: 0 -6px 8px var(--surface, #fff);
+    scroll-margin-bottom: calc(var(--settings-menu-clearance) + 16px);
+  }
+
+  .settings-hub .settings-inline-form .settings-form-actions.settings-form-actions p {
+    flex: 1 0 100%;
+    width: auto;
+    max-width: none;
+    overflow-wrap: anywhere;
+  }
+
+  .settings-hub .settings-inline-form .settings-form-actions.settings-form-actions button {
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Profile/contact has its own save footer rather than InlineForm. */
+  .settings-hub #profile-contact .sticky.bottom-0 {
+    bottom: var(--settings-menu-clearance);
+    scroll-margin-bottom: calc(var(--settings-menu-clearance) + 16px);
+  }
+}
+
+

@@ -1,5 +1,10 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
 
+import {SettingsChildPage,SettingsDetails} from "@/app/settings/settings-child-pages";
+
+
+import { WorkspaceText } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import {
   loadSettingsConnections,
@@ -17,7 +22,7 @@ const button =
   "inline-flex min-h-10 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-wait disabled:opacity-50";
 const field =
   "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm";
-const card = "rounded-lg border border-zinc-200 bg-white p-4";
+const card = "settings-compact-connection";
 function address(
   salon: PublicStaffApplicationSalon | StaffConnectionDashboardRequest,
 ) {
@@ -37,7 +42,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
-  const [adding, setAdding] = useState(false);
+
   const [results, setResults] = useState<PublicStaffApplicationSalon[]>([]);
   const [searched, setSearched] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
@@ -110,23 +115,23 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
       <article className={card} key={request.id}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h4 className="font-semibold">{request.salon_name}</h4>
+            <h4 className="font-semibold"><SalonName name={request.salon_name} salonId={request.salon_id}/></h4>
             <p className="mt-1 text-sm text-zinc-500">{address(request)}</p>
           </div>
           <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs capitalize">
-            {expired && request.status === "pending"
+            <WorkspaceText text={expired && request.status === "pending"
               ? "Expired"
-              : request.status}
+              : request.status} />
           </span>
         </div>
         <p className="mt-2 text-sm text-zinc-600">
-          {request.direction === "salon_invite"
+          <WorkspaceText text={request.direction === "salon_invite"
             ? `Invited as ${request.staff_job_title ?? "Staff"} · Expires ${date(request.expires_at)}`
-            : `${request.requested_job_title ?? "Staff"} · Submitted ${date(request.created_at)}`}
+            : `${request.requested_job_title ?? "Staff"} · Submitted ${date(request.created_at)}`} />
         </p>
         {request.message && (
           <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-600">
-            {request.message}
+            <WorkspaceText text={request.message} />
           </p>
         )}
         {pending && (
@@ -140,7 +145,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                     void run({ action: "accept", requestId: request.id })
                   }
                 >
-                  Accept
+                  <WorkspaceText text="Accept" />
                 </button>
                 <button
                   className={button}
@@ -149,7 +154,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                     void run({ action: "decline", requestId: request.id })
                   }
                 >
-                  Decline
+                  <WorkspaceText text="Decline" />
                 </button>
               </>
             ) : (
@@ -160,7 +165,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                   void run({ action: "cancel", requestId: request.id })
                 }
               >
-                Cancel application
+                <WorkspaceText text="Cancel application" />
               </button>
             )}
           </div>
@@ -185,13 +190,13 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
   );
   const history = data?.requests.filter((r) => !pending.includes(r)) ?? [];
   return (
-    <div className="grid gap-5" aria-busy={busy}>
+    <div className="settings-style"><div className="grid gap-5" aria-busy={busy}>
       {error && (
         <p
           className="rounded-md bg-red-50 p-3 text-sm text-red-800"
           role="alert"
         >
-          {error}
+          <WorkspaceText text={error} />
         </p>
       )}
       {notice && (
@@ -199,7 +204,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
           className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-800"
           role="status"
         >
-          {notice}
+          <WorkspaceText text={notice} />
         </p>
       )}
       {!data ? (
@@ -213,25 +218,25 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                 .catch(() => setError("Could not load connections."));
             }}
           >
-            Retry
+            <WorkspaceText text="Retry" />
           </button>
         ) : (
           <p role="status" className="text-sm text-zinc-500">
-            Loading connections…
+            <WorkspaceText text="Loading connections…" />
           </p>
         )
       ) : (
         <>
-          {data.ownersError?<p role="alert" className="text-sm text-red-700">{data.ownersError}</p>:null}
-          {data.ownerInvites.map(invite=><article className={card} key={invite.id}><p className="font-semibold">{invite.salonName} · {invite.mode==="add_co_owner"?"Co-owner invitation":"Ownership transfer"}</p>{invite.message?<p className="mt-2 text-sm">{invite.message}</p>:null}<p className="mt-1 text-xs text-zinc-500">Expires {date(invite.expiresAt)}</p><div className="mt-3 flex gap-2"><button className={button} disabled={busy} onClick={()=>void run({action:"owner-accept",requestId:invite.id})}>Accept ownership</button><button className={button} disabled={busy} onClick={()=>void run({action:"owner-ignore",requestId:invite.id})}>Decline</button></div></article>)}
+          {data.ownersError?<p role="alert" className="text-sm text-red-700"><WorkspaceText text={data.ownersError} /></p>:null}
+          {data.ownerInvites.map(invite=><article className={card} key={invite.id}><p className="font-semibold"><SalonName name={invite.salonName} reference={{kind:"invitation",value:invite.id}}/> · <WorkspaceText text={invite.mode==="add_co_owner"?"Co-owner invitation":"Ownership transfer"} /></p>{invite.message?<p className="mt-2 text-sm"><WorkspaceText text={invite.message} /></p>:null}<p className="mt-1 text-xs text-zinc-500"><WorkspaceText text="Expires" /> <WorkspaceText text={date(invite.expiresAt)} /></p><div className="mt-3 flex gap-2"><button className={button} disabled={busy} onClick={()=>void run({action:"owner-accept",requestId:invite.id})}><WorkspaceText text="Accept ownership" /></button><button className={button} disabled={busy} onClick={()=>void run({action:"owner-ignore",requestId:invite.id})}><WorkspaceText text="Decline" /></button></div></article>)}
           {data.requestsError && (
             <div
               role="alert"
               className="rounded-md bg-amber-50 p-3 text-sm text-amber-900"
             >
               <p>
-                Could not load invitations and applications:{" "}
-                {data.requestsError}
+                <WorkspaceText text="Could not load invitations and applications:" />{" "}
+                <WorkspaceText text={data.requestsError} />
               </p>
               <button
                 className={`${button} mt-2`}
@@ -242,65 +247,59 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                     .catch(() => setError("Could not reload connections."));
                 }}
               >
-                Retry
+                <WorkspaceText text="Retry" />
               </button>
             </div>
           )}
           {invitations.length > 0 && (
             <section className="grid gap-3">
-              <h3 className="font-semibold">Pending invitations</h3>
+              <h3 className="font-semibold"><WorkspaceText text="Pending invitations" /></h3>
               {invitations.map(requestCard)}
             </section>
           )}
           <section className="grid gap-3">
             <div className="flex items-center justify-between gap-3">
-              <h3 className="font-semibold">Connected salons</h3>
-              <button
-                className={button}
-                disabled={busy}
-                aria-expanded={adding}
-                onClick={() => setAdding(!adding)}
-              >
-                {adding ? "Close search" : "+ Add connection"}
-              </button>
+              <h3 className="font-semibold"><WorkspaceText text="Connected salons" /></h3>
+
             </div>
             {data.salons.length ? (
               data.salons.map((salon) => (
-                <details className={card} key={salon.id}>
+                <SettingsDetails className={card} key={salon.id}>
                   <summary className="cursor-pointer font-semibold">
-                    {salon.name}
+                    <SalonName name={salon.name} salonId={salon.salonId}/>
                     <span className="ml-2 text-xs font-normal text-zinc-500">
                       {salon.role}
                     </span>
                   </summary>
+                  <a href={`/explore/salons/${salon.id}`} className="mt-3 inline-flex text-sm font-semibold text-teal-700 hover:underline"><WorkspaceText text="View salon" /></a>
                   <dl className="mt-3 grid gap-2 text-sm text-zinc-600">
                     <div>
-                      <dt className="inline font-medium">Role: </dt>
+                      <dt className="inline font-medium"><WorkspaceText text="Role:" /> </dt>
                       <dd className="inline">{salon.role}</dd>
                     </div>
                     <div>
-                      <dt className="inline font-medium">Status: </dt>
-                      <dd className="inline">Connected</dd>
+                      <dt className="inline font-medium"><WorkspaceText text="Status:" /> </dt>
+                      <dd className="inline"><WorkspaceText text="Connected" /></dd>
                     </div>
                     {salon.description && (
                       <div>
-                        <dt className="sr-only">Details</dt>
+                        <dt className="sr-only"><WorkspaceText text="Details" /></dt>
                         <dd>{salon.description}</dd>
                       </div>
                     )}
                   </dl>
-                  {onManageSalon?<button className={`${button} mt-3`} onClick={()=>onManageSalon(salon.salonId,salon.mode??"staff")}>Edit {salon.mode==="manage"?"salon settings":"my staff settings"}</button>:null}
-                </details>
+                  {onManageSalon?<button className={`${button} mt-3`} onClick={()=>onManageSalon(salon.salonId,salon.mode??"staff")}><WorkspaceText text="Edit" /> <WorkspaceText text={salon.mode==="manage"?"salon settings":"my staff settings"} /></button>:null}
+                </SettingsDetails>
               ))
             ) : (
               <p className={`${card} text-sm text-zinc-500`}>
-                You have no connected salons yet.
+                <WorkspaceText text="You have no connected salons yet." />
               </p>
             )}
           </section>
-          {adding && (
+          {<SettingsChildPage title={<WorkspaceText text="Add connection"/>} defer>
             <section className="grid gap-3">
-              <h3 className="font-semibold">Find a salon</h3>
+              <h3 className="font-semibold"><WorkspaceText text="Find a salon" /></h3>
               <form
                 className={`${card} grid gap-3`}
                 onSubmit={async (event) => {
@@ -329,7 +328,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                 }}
               >
                 <label className="grid gap-1 text-sm">
-                  Salon name
+                  <WorkspaceText text="Salon name" />
                   <input
                     className={field}
                     name="query"
@@ -339,11 +338,11 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="grid gap-1 text-sm">
-                    City
+                    <WorkspaceText text="City" />
                     <input className={field} name="city" disabled={busy} />
                   </label>
                   <label className="grid gap-1 text-sm">
-                    State
+                    <WorkspaceText text="State" />
                     <input className={field} name="state" disabled={busy} />
                   </label>
                 </div>
@@ -351,12 +350,12 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                   className={`${button} justify-self-start`}
                   disabled={busy}
                 >
-                  Search
+                  <WorkspaceText text="Search" />
                 </button>
               </form>
               {searched && !results.length && (
                 <p className="text-sm text-zinc-500">
-                  No salons found. Try a salon name or location.
+                  <WorkspaceText text="No salons found. Try a salon name or location." />
                 </p>
               )}
               {results.map((salon) => {
@@ -368,13 +367,13 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                 );
                 return (
                   <article className={card} key={salon.salon_id}>
-                    <h4 className="font-semibold">{salon.salon_name}</h4>
+                    <h4 className="font-semibold"><SalonName name={salon.salon_name} salonId={salon.salon_id}/></h4>
                     <p className="mt-1 text-sm text-zinc-500">
                       {address(salon)}
                     </p>
                     {connected || waiting ? (
                       <p className="mt-3 text-sm text-zinc-500">
-                        {connected ? "Already connected" : "Request pending"}
+                        <WorkspaceText text={connected ? "Already connected" : "Request pending"} />
                       </p>
                     ) : selected === salon.salon_id ? (
                       <form
@@ -391,7 +390,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                         }}
                       >
                         <label className="grid gap-1 text-sm">
-                          Requested position (optional)
+                          <WorkspaceText text="Requested position (optional)" />
                           <input
                             className={field}
                             name="title"
@@ -399,7 +398,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                           />
                         </label>
                         <label className="grid gap-1 text-sm">
-                          Message (optional)
+                          <WorkspaceText text="Message (optional)" />
                           <textarea
                             className={field}
                             name="message"
@@ -409,7 +408,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                         </label>
                         <div className="flex gap-2">
                           <button className={button} disabled={busy}>
-                            Send application
+                            <WorkspaceText text="Send application" />
                           </button>
                           <button
                             className={button}
@@ -417,7 +416,7 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                             type="button"
                             onClick={() => setSelected(null)}
                           >
-                            Cancel
+                            <WorkspaceText text="Cancel" />
                           </button>
                         </div>
                       </form>
@@ -427,30 +426,30 @@ export function ConnectionsPanel({onChanged,onManageSalon}: {onChanged?:()=>Prom
                         disabled={busy}
                         onClick={() => setSelected(salon.salon_id)}
                       >
-                        Apply
+                        <WorkspaceText text="Apply" />
                       </button>
                     )}
                   </article>
                 );
               })}
             </section>
-          )}
+          </SettingsChildPage>}
           {applications.length > 0 && (
             <section className="grid gap-3">
-              <h3 className="font-semibold">Pending applications</h3>
+              <h3 className="font-semibold"><WorkspaceText text="Pending applications" /></h3>
               {applications.map(requestCard)}
             </section>
           )}
           {history.length > 0 && (
-            <details>
+            <SettingsDetails>
               <summary className="cursor-pointer text-sm font-semibold text-zinc-600">
-                Connection history
+                <WorkspaceText text="Connection history" />
               </summary>
               <div className="mt-3 grid gap-3">{history.map(requestCard)}</div>
-            </details>
+            </SettingsDetails>
           )}
         </>
       )}
-    </div>
+    </div></div>
   );
 }

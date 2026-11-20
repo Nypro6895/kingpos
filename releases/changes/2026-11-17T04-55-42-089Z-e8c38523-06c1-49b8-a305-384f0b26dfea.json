@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "status": "needs-integration",
+  "changeId": "ios-submission-scope-20261116",
+  "summary": "Completed source-bound first-iOS scope and App Privacy worksheet with owner-confirmed Market/ad transactions; runtime/provider and final declarations remain pending",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116",
+    "retained-storage-ownership-20261116",
+    "public-image-safety-20261116"
+  ],
+  "validation": [
+    {
+      "name": "130 current source hashes and220 exact source references reconciled; 12 commerce groups,11 business groups,11 native flows,8 provider boundaries",
+      "result": "passed",
+      "evidence": "artifacts/ios-submission-scope-20261116/validation.json"
+    },
+    {
+      "name": "251 local links, JSON consistency, credential-shaped content scan and scoped whitespace",
+      "result": "passed",
+      "evidence": "artifacts/ios-submission-scope-20261116/validation.json"
+    },
+    {
+      "name": "Owner confirmed first-iOS Market/ad-credit audit/declaration scope; no pricing/activation authority inferred",
+      "result": "passed",
+      "evidence": "docs/ios-submission-scope-20261116.json"
+    },
+    {
+      "name": "Public policy HTTP200 readback confirms old24-hour wording remains; no deployment/source or mailbox inference",
+      "result": "passed",
+      "evidence": "artifacts/ios-submission-scope-20261116/public-policy-readback.json"
+    },
+    {
+      "name": "Hosted provider/data/log/backup/retention evidence, actual classifier, native device and final App Privacy/age declarations",
+      "result": "pending"
+    }
+  ],
+  "files": [
+    "docs/ios-submission-scope-20261116.md",
+    "docs/ios-submission-scope-20261116.json",
+    "docs/ios-submission-app-privacy-20261116.md",
+    "docs/ios-submission-commerce-scope-20261116.md",
+    "docs/ios-submission-native-data-map-20261116.md",
+    "docs/ios-submission-business-data-map-20261116.md",
+    "releases/changes/2026-11-17T04-39-17-461Z-7a4012f2-04cb-4060-a4b1-504fa910c563.json"
+  ],
+  "source": {
+    "snapshot": "artifacts/ios-submission-scope-20261116/frozen/scope",
+    "commit": "08c877386d010d283be61ed77e3ccf6f0c63a677"
+  },
+  "snapshotSha256": "0638a326e2851a5540d12e9735f9cf98bbe997f2d701b8364ae6ec704f2b7f22",
+  "id": "e8c38523-06c1-49b8-a305-384f0b26dfea",
+  "recordedAt": "2026-11-17T04:55:42.089Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

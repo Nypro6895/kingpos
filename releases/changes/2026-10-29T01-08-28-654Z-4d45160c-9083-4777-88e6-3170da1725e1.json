@@ -1,0 +1,79 @@
+{
+  "kind": "change",
+  "changeId": "settings-grouped-style-20261028",
+  "status": "ready",
+  "summary": "Completed grouped Settings navigation, function-specific icons, shared field groups and controls; local checks pass; inherited image route blocks full production build; integrated against actual web baseline and native build60",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/settings-hub.css",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/notification-preferences-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/team-payroll-panels.tsx",
+    "app/settings/plugin-settings-row.tsx",
+    "lib/vietnamese-dictionary.ts",
+    "tests/settings-hub-ui.test.mjs",
+    "app/settings/settings-navigation.ts",
+    "app/settings/settings-icon.tsx",
+    "app/settings/settings-controls.css",
+    "lib/vietnamese-settings-copy.json",
+    "tests/settings-grouped-editors.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028\\artifacts\\combined-ui13\\selected-frozen-js-final",
+    "commit": "e33b5f5fd13dc81c546536c0bc10209e36e92659",
+    "integratedFromEvent": "c8040fef-9c24-4734-9c19-159e943bddf1",
+    "baselineWeb": "dpl_43heZjrRn8eGRQPeaojtBJ7MpsSZ",
+    "baselineNative": "5dfdb9eab0080b9d0a52421cca14c9a627f342ec"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Integrated production build/typecheck/scoped lint and focused UI tests",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/build-js-final.log; artifacts/combined-ui13/all-focused-source-final.log; artifacts/combined-ui13/native-js-final-tests.log; artifacts/combined-ui13/navigation-browser.log; artifacts/combined-ui13/period-browser-final2.log"
+    },
+    {
+      "name": "Unchanged native CSP static JavaScript WebP encoder including1600x1600 and zero fetch",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/native-js-csp-large.log"
+    },
+    {
+      "name": "Exact-source234 native tests, unsigned/signed archive and accepted Apple VALID upload",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/native-final-verified.json"
+    },
+    {
+      "name": "3459 deployed web source hashes and protected read-only smoke",
+      "result": "passed",
+      "evidence": "artifacts/combined-ui13/web-js-final-source-verified.json; artifacts/combined-ui13/web-js-protected-smoke.json"
+    }
+  ],
+  "id": "4d45160c-9083-4777-88e6-3170da1725e1",
+  "recordedAt": "2026-10-29T01:08:28.654Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-ui13-release-20261028",
+  "fileHashes": {
+    "app/settings/settings-hub-client.tsx": "da498e6d53a83d63796e84030ee798bef738602b5b017fc6795ce613f0ba60ad",
+    "app/settings/settings-hub.css": "5bb9620f233155583d22321753bcd9782a9ec25fe4d6de19bebd6df81573cb34",
+    "app/settings/direct-settings-ui.tsx": "4297bdbb2f04e6769a4eaa2fbff3b1a295bd3e01bc233c7083cf97202565569c",
+    "app/settings/direct-settings-panel.tsx": "cbbedeaa9ac7e99c9d24dd59d2b5f87f50c674461116982091c014af76f2972c",
+    "app/settings/notification-preferences-panel.tsx": "364e2939597778846e5b531797001746bb23114c44da4d3f62429523af33ef09",
+    "app/settings/salon-settings-panels.tsx": "9527bce3314222df6d3350d75e4646b0fa5dfe1f8cb4e38899f5c005f348f893",
+    "app/settings/team-payroll-panels.tsx": "6a24c1c85163d1cb72b1b68451ab614b793429bb79d01dc770c7d961dc8b4c1c",
+    "app/settings/plugin-settings-row.tsx": "9c196d554e42049e6e66900d6f0e52eaac1dd07cc5cb3829a7ead347845b31fa",
+    "lib/vietnamese-dictionary.ts": "affaf83538bbae36daa52f72eea0033c94c6146353d0e742d4012d984d22607f",
+    "tests/settings-hub-ui.test.mjs": "842a976afc7786501e3f0037f854d34b29da1638c058c9379a219d28bdfce88d",
+    "app/settings/settings-navigation.ts": "6178e7639dc4d77a5ed4ffdd8b199148231a9c56f0c763de89d095ded52becf5",
+    "app/settings/settings-icon.tsx": "1e0096d88375f137ec19ceb9ed3004cfca5c93b27dd011065b30a17ad6ba08e3",
+    "app/settings/settings-controls.css": "ef2ec2d15682d3a39e5b436c1f9b177c74b5e6f4ba35ec665a1081317efa8daf",
+    "lib/vietnamese-settings-copy.json": "d71bb64e5ea44f865a74a178f5429c75ffdd9a12dee9f0c193a4ed4d0e897f2c",
+    "tests/settings-grouped-editors.test.mjs": "f81731d5ea296fa17d967389e4165abc5d01a0815f310ef5a425c47b0f26389d"
+  }
+}

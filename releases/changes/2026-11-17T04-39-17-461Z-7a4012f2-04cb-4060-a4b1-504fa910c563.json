@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "ios-submission-scope-20261116",
+  "status": "working",
+  "summary": "Prepare source-bound iOS submission feature scope, commerce review and data/provider/App Privacy worksheet; preserve product behavior and unresolved owner decisions",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ios-submission-scope-20261116.md",
+    "docs/ios-submission-scope-20261116.json",
+    "docs/ios-submission-app-privacy-20261116.md",
+    "docs/ios-submission-commerce-scope-20261116.md",
+    "docs/ios-submission-native-data-map-20261116.md",
+    "docs/ios-submission-business-data-map-20261116.md"
+  ],
+  "source": {
+    "commit": "5b9609c"
+  },
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116",
+    "retained-storage-ownership-20261116",
+    "public-image-safety-20261116"
+  ],
+  "validation": [
+    {
+      "name": "Source evidence, cross-map reconciliation, draft status and secret-free artifact validation",
+      "result": "pending"
+    }
+  ],
+  "id": "7a4012f2-04cb-4060-a4b1-504fa910c563",
+  "recordedAt": "2026-11-17T04:39:17.461Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

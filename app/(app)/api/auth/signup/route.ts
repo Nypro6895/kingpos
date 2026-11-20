@@ -1,8 +1,13 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
+import { isSignupPhoneAvailable } from "@/lib/signup-phone-availability";
+import { DUPLICATE_SIGNUP_PHONE_MESSAGE } from "@/lib/signup-phone-policy";
+import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
+import { createSignupTicket, getAbuseErrorResponse } from "@/lib/abuse-server";
+import { recordAdvertisingSignup } from "@/lib/advertising-attribution";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   createSupabaseServerClient,
-  getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
 import {
   fallbackPostAuthWorkspaceNavigation,
@@ -12,6 +17,8 @@ import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import { writeNormalizedWorkspaceContextCookies } from "@/lib/current-context";
 import { NextResponse } from "next/server";
+import { normalizePhoneForIdentity } from "@/lib/phone-normalization";
+import { signupPhonePath } from "@/lib/signup-phone-routing";
 
 const LOGIN_PATH = "/login";
 const SIGNUP_PATH = "/signup";
@@ -36,9 +43,10 @@ function signupErrorResponse(
   message: string,
   status: number,
   nextPath: string,
+  security?: { code: string; challengeRequired: boolean },
 ) {
   if (wantsJsonResponse(request)) {
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ error: message, ...security }, { status, headers: { "Cache-Control": "no-store" } });
   }
 
   const params = new URLSearchParams({
@@ -58,11 +66,13 @@ function signupSuccessResponse(request: Request, redirectTo: string) {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return Response.json({ error: "Invalid request origin. Reload the page and try again." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const supabase = createSupabaseServerClient();
   const formData = await request.formData();
   const email = readString(formData, "email").toLowerCase();
   const password = readString(formData, "password");
   const displayName = readString(formData, "display_name");
+  const phone = normalizePhoneForIdentity(readString(formData, "phone"));
   const requestedPath = readString(formData, "next");
   const nextPath = sanitizeAuthReturnPath(requestedPath);
 
@@ -84,17 +94,44 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!phone) {
+    return signupErrorResponse(request, "Enter the phone number you use at the salon.", 400, nextPath);
+  }
+
+  const onboardingPath = signupPhonePath(nextPath === "/explore" ? "/activity" : nextPath);
+
+  let signupTicket: string;
+  try {
+    signupTicket = await createSignupTicket(email);
+  } catch (error) {
+    const security = getAbuseErrorResponse(error);
+    return signupErrorResponse(request, security.error, security.status, nextPath, {
+      code: security.code,
+      challengeRequired: security.challengeRequired,
+    });
+  }
+
+  try {
+    if (!await isSignupPhoneAvailable(phone)) return signupErrorResponse(request, DUPLICATE_SIGNUP_PHONE_MESSAGE, 409, nextPath);
+  } catch { return signupErrorResponse(request, "Phone numbers could not be checked. Please try again later.", 503, nextPath); }
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      // This server client uses email confirmation's implicit flow. It has no
+      // browser PKCE verifier, so confirmation returns to password login.
+      emailRedirectTo: new URL(`${LOGIN_PATH}?next=${encodeURIComponent(onboardingPath)}`, request.url).href,
       data: {
+        abuse_signup_ticket: signupTicket,
         display_name: displayName || email,
+        signup_phone: phone,
+        signup_phone_complete: false,
       },
     },
   });
 
   if (error) {
+    try { if (!await isSignupPhoneAvailable(phone)) return signupErrorResponse(request, DUPLICATE_SIGNUP_PHONE_MESSAGE, 409, nextPath); } catch { /* Preserve original Auth error on a transient recheck failure. */ }
     const authError = getSupabaseAuthErrorResponse(
       error,
       "Unable to create account.",
@@ -108,10 +145,12 @@ export async function POST(request: Request) {
     );
   }
 
+  await recordAdvertisingSignup(request, data.user);
+
   if (!data.session) {
     const loginParams = new URLSearchParams({
       message: "Account created. Please confirm your email, then log in.",
-      next: nextPath,
+      next: onboardingPath,
     });
 
     return signupSuccessResponse(
@@ -122,28 +161,32 @@ export async function POST(request: Request) {
 
   const navigation = await getPostAuthWorkspaceNavigation({
     accessToken: data.session.access_token,
-    requestedPath,
+    requestedPath: onboardingPath,
   }).catch((error: unknown) => {
     console.error("Unable to resolve post-signup workspace navigation", {
       message: error instanceof Error ? error.message : String(error),
     });
 
-    return fallbackPostAuthWorkspaceNavigation();
+    return { ...fallbackPostAuthWorkspaceNavigation(), redirectTo: onboardingPath };
   });
   const response = signupSuccessResponse(request, navigation.redirectTo);
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     data.session.access_token,
-    getSupabaseCookieOptions(data.session.expires_in),
+    sessionCookieOptions(true),
   );
   response.cookies.set(
     REFRESH_TOKEN_COOKIE,
     data.session.refresh_token,
-    getSupabaseCookieOptions(60 * 60 * 24 * 30),
+    sessionCookieOptions(true),
   );
   if (navigation.workspace) {
-    writeNormalizedWorkspaceContextCookies(response.cookies, navigation.workspace);
+    writeNormalizedWorkspaceContextCookies(
+      response.cookies,
+      navigation.workspace,
+    );
   }
 
+  writeLoginPolicy(response.cookies, data.session.access_token, true);
   return response;
 }

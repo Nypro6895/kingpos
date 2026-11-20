@@ -1,0 +1,24 @@
+{
+  "kind": "change",
+  "changeId": "quality-ticket-history-fixture-navigation-20261103",
+  "status": "working",
+  "summary": "Keep the existing actual ticket history renderer compatible with the current OverlayDismissal pathname hook",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/helpers/ticket-correction-history-fixture.mjs"
+  ],
+  "validation": [
+    {
+      "name": "Original ticket history visibility cases and broader assembled regression",
+      "result": "pending"
+    }
+  ],
+  "id": "eaaf5453-86bf-40ae-b299-d7217040e81e",
+  "recordedAt": "2026-11-04T02:54:45.093Z",
+  "worktree": "C:\\Reylumi-worktrees\\quality-combined-release-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,4 +1,6 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 
 import {
   cancelCustomerBookingAction,
@@ -125,7 +127,7 @@ function directionsHref(booking: CustomerBookingDetail) {
     return null;
   }
 
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
 }
 
 function contactLinks(booking: CustomerBookingDetail) {
@@ -613,14 +615,18 @@ export function BookingDetailActions({
   canViewSalon,
 }: BookingDetailActionsProps) {
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  useTransientOverlay(() => setRescheduleOpen(false), rescheduleOpen);
   const [cancelOpen, setCancelOpen] = useState(false);
+  useTransientOverlay(() => setCancelOpen(false), cancelOpen);
   const [contactOpen, setContactOpen] = useState(false);
+  useTransientOverlay(() => setContactOpen(false), contactOpen);
   const contactOptions = useMemo(() => contactLinks(booking), [booking]);
   const upcoming = canChange;
 
   return (
     <>
       <aside className={embedded ? "" : "lg:sticky lg:top-6"}>
+        {!embedded ? <BookingDepositReceipt booking={booking} /> : null}
         <div className={embedded ? "" : "rounded-2xl border border-[#f0e6df] bg-white p-4 shadow-[0_1px_0_rgba(33,28,36,0.03)]"}>
           {!embedded ? <div className="flex items-center justify-between gap-3">
             <div>
@@ -645,7 +651,7 @@ export function BookingDetailActions({
             ) : null}
 
             {canBookAgain ? (
-              <Link
+              <Link prefetch={false}
                 className={embedded ? "inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-brand-orange px-3 text-sm font-semibold text-white hover:bg-brand-orange-hover" : classNames(styles.primaryButton, "w-full px-4")}
                 href={`/book/${booking.salon_id}`}
               >
@@ -681,7 +687,7 @@ export function BookingDetailActions({
             ) : null}
 
             {!embedded && canViewSalon ? (
-              <Link
+              <Link prefetch={false}
                 className={classNames(styles.secondaryButton, "w-full px-4")}
                 href={`/explore/salons/${booking.salon_id}`}
               >

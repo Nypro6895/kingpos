@@ -1,0 +1,84 @@
+{
+  "kind": "change",
+  "changeId": "tax-refinement-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Whole-period setting dates, correct published earnings breakdown, automatic new-version selection, simplified paystub sheet and owner/staff phone content; not deployed Original handoff 08ff43d5-0c43-4a68-ae74-800c55dedcca. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/(tax)/tax/qa/page.tsx",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx",
+    "app/tax/tax-entry.tsx",
+    "app/tax/tax-refinements.css",
+    "app/tax/tax-workspace.tsx",
+    "lib/payroll.ts",
+    "lib/tax-workspace-model.ts",
+    "lib/tax-workspace-qa.ts",
+    "scripts/qa-tax-workspace.mjs",
+    "tests/tax-personal-workspace.integration.test.mjs",
+    "tests/tax-workspace-model.test.mjs",
+    "types/tax-workspace.ts",
+    "lib/payroll-setting-period.ts",
+    "supabase/migrations/20261110230000_tax_period_alignment.sql",
+    "docs/tax-refinement-20261110.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "tax-workspace-20261109"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "ab73db82-d384-4397-bec6-95bef32d7fd9",
+  "recordedAt": "2026-11-12T02:06:23.369Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "27ec8bcce980f3b7f4c9efee7ba26f93a30d165b8a21f953dbf136decfdf098a",
+    "app/(tax)/tax/qa/page.tsx": "f923f9abf13aedab24e8984d68adc049b7e3213037370b1aaeb279dd06f2288a",
+    "app/payroll/staff-payroll-setting-inline-edit.tsx": "70ae4f4059108269d417cf48fec8ab1a8c41fd0b7e00e75d4bebd64b69157fc8",
+    "app/tax/tax-entry.tsx": "499fd31253504128f0a8f5ccfef59e41feb13460e68b431e3ea972a8d005a06d",
+    "app/tax/tax-refinements.css": "7ceff167ec42eb05258ee5c317bbfd01ef7b9a52b5c124bb5a8bfbcb2f6b160f",
+    "app/tax/tax-workspace.tsx": "b3c56ccae57b6fa717a28de967837449a0dc6a356be5257fc18a4d8eed42e0bd",
+    "lib/payroll.ts": "29ab2a4cef9671bc3293c648c11d579dff0fd90008f14316d7e2dda6cba5861c",
+    "lib/tax-workspace-model.ts": "e1a9b579bbafdb4af3e6f55dfa5beec2f58a0774c16047b7021d7643ae61a741",
+    "lib/tax-workspace-qa.ts": "64ad1399572cfb26a4724a3e4b76cdf7ecac26c73527598b19059a2ed2e73af7",
+    "scripts/qa-tax-workspace.mjs": "fceeb1df26001dae7420bf3b61a27f322e7eea3909bcd150e7140763aa88988c",
+    "tests/tax-personal-workspace.integration.test.mjs": "2b5664de37af312444cf7df9879c6f49deb3a57284bbb2e160f7a4b634ad0dbe",
+    "tests/tax-workspace-model.test.mjs": "f818c13be387eb395dd540f7f25de95bc2fe58096e40dec5972c55cca053e65d",
+    "types/tax-workspace.ts": "d6aacf29378fb64043ea9ed2e4d867cd276f10c5cf507d464e0f03500079a00c",
+    "lib/payroll-setting-period.ts": "a66e0c654d8e5041b802e36e03fe735c53088281baded257342d7d273949573c",
+    "supabase/migrations/20261110230000_tax_period_alignment.sql": "e463b81774324739b2f38b649a3836c1d603807943d3eacadcd640fbf7ad3741",
+    "docs/tax-refinement-20261110.md": "e9b7f9459f30f6bba1b40df3bae0d4400c10eb8140a88241170ba5cd370632dc"
+  }
+}

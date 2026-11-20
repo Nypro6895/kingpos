@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "changeId": "app-local-native-foundation",
+  "status": "needs-integration",
+  "summary": "Preserve permitted unsupported cold hints through HTTPS and return usable ordinary hosted login destinations to installed UI only after fresh matching context; preserve sensitive flows and stale navigation guards.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/.gitattributes",
+    "ios/Reylumi/NativeBridge.js",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Native bridge VM12",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-js-verification.json"
+    },
+    {
+      "name": "Hosted SPA/visible-frame VM11",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-hosted-ready-verification.json"
+    },
+    {
+      "name": "Owned source diff/LF manifest",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-source-manifest-r8.json"
+    },
+    {
+      "name": "Actual macOS complete XCTest (37 local foundation cases) and unsigned archive for r8",
+      "result": "pending"
+    },
+    {
+      "name": "Parent actual generated bundle with final route adapters",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\native-frozen-r8"
+  },
+  "id": "55fcb7d2-5c54-48d8-a55a-86f4f07de046",
+  "recordedAt": "2026-10-16T17:46:33.597Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

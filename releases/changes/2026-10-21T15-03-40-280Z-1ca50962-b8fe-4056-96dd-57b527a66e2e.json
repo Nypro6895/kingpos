@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "payroll-hide-review-notices-20261021",
+  "status": "needs-integration",
+  "summary": "Completed and locally validated payroll presentation-only removal of historical review and adjusted badges; integrate by hunk with concurrent UI flatten task before any release.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "lib/app-local-owner-payroll-view.tsx",
+    "app/payroll/payroll-ledger-panel.tsx",
+    "app/payroll/tax-company-table.tsx",
+    "app/staff/my-work/staff-pay-analysis.tsx",
+    "tests/payroll-status-presentation.test.mjs"
+  ],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "4c4b4602e9813cee676a7655e1d3932164ce306888797e37d22b59f4566717cd",
+    "lib/app-local-owner-payroll-view.tsx": "9facebebd7feabb4c895dcb2b5adfe3728613ac6044dfdd8d2c21588ff263184",
+    "app/payroll/payroll-ledger-panel.tsx": "e7c4f558c85bd4355cc0a35485aa55d3680379959aaa8ba006b05ec0c21f13e5",
+    "app/payroll/tax-company-table.tsx": "1d1030c8c610052e81cb29313d48bf7d7964e4c26100f17bcf37fc61a8d36e2d",
+    "app/staff/my-work/staff-pay-analysis.tsx": "14390b5aae4f7575c3c898131231ee48a0e7c61e87452360088f865bbe34bb63",
+    "tests/payroll-status-presentation.test.mjs": "16814c4d61be23a45a78752df4a5aa6607941de4023ea5218bd6ad4b8143ed7a"
+  },
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\frozen",
+    "baselineCommit": "d75cf764215adbd97b34a473929b480e9edf6528",
+    "branch": "codex/payroll-hide-review-notices-20261021"
+  },
+  "dependencies": [
+    "payroll-period-ledger-20261015"
+  ],
+  "validation": [
+    {
+      "name": "Offline payroll UI render and regression tests",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\ui-regression.tap"
+    },
+    {
+      "name": "Full project TypeScript --noEmit --incremental false",
+      "result": "passed",
+      "evidence": "Exit 0; existing dependency tree, no build output"
+    },
+    {
+      "name": "ESLint source and regression test",
+      "result": "passed",
+      "evidence": "0 errors; 17 source warnings confirmed unchanged from baseline in lint-verification.json; test-lint.txt"
+    },
+    {
+      "name": "Protected logic SHA-256 and retained styles",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\scope-verification.json"
+    },
+    {
+      "name": "Common assembly with UI flatten and release baseline",
+      "result": "pending",
+      "evidence": "Coordinator must merge only intended hunks, preserving concurrent task 01a15ef1-d1a0-77ef-a34e-458e76860034; no push/deploy/native release authorized in this task."
+    }
+  ],
+  "integrationNotes": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\HANDOFF.txt",
+  "id": "1ca50962-b8fe-4056-96dd-57b527a66e2e",
+  "recordedAt": "2026-10-21T15:03:40.280Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-20\\task\\payroll-status-ui-20261021\\candidate",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

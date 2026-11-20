@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "salon-claim-lookup-diagnostics-20261014",
+  "status": "working",
+  "summary": "Local-only privacy-safe diagnostics for failed salon duplicate lookup; no behavior, schema or release changes authorized.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/claim/actions.ts",
+    "app/salons/actions.ts",
+    "lib/business-claim-diagnostics.ts",
+    "tests/business-claim-diagnostics.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\diagnostics-before",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+  },
+  "validation": [
+    {
+      "name": "Diagnostic logging and safe reproduction",
+      "result": "pending"
+    }
+  ],
+  "id": "4612827e-31d1-4720-8a0a-3f73a548de2b",
+  "recordedAt": "2026-10-14T23:56:05.108Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

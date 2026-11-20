@@ -1,0 +1,5 @@
+.notice { margin-block: 12px; padding: 12px 14px; border: 1px solid #b8dfcf; border-radius: 12px; background: #eef8f3; color: #18583f; font-size: 13px; line-height: 1.5; }
+.notice strong { font-size: 15px; }
+.notice p { margin: 4px 0; }
+.notice small { display: block; font-size: 12px; }
+.compact { display: block; margin-top: 4px; font-size: 12px; font-weight: 600; color: #27674f; line-height: 1.5; }

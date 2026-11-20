@@ -1,0 +1,23 @@
+Phát hành đã xác minh — 16:06:57 29/10/26 America/Chicago
+
+Web: https://reylumi.com — dpl_2y9eNg7nYiVU5pSx1zBLZ5PM7EvE
+iOS: TestFlight 1.0.0 (70); Apple VALID, IN_BETA_TESTING, cả hai nhóm hiện có đã xác minh.
+Nguồn web: abd50d9b653b1f75013f9937436324fc08a4b24a
+Nguồn native: 3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631 (chỉ khác web ở hai file cleanup fixture test và metadata; mã ứng dụng trùng nhau)
+
+Đã phát hành 13 gói hoàn tất từ các chat: Settings/font/màu/lề, bỏ khung địa chỉ kỹ thuật, Legal name chung Personal–Staff–Payroll, tự gộp tại Customers, POS Services/Staff picker, Check In và trạng thái đồng bộ chỉ ở POS chính. Giữ + Add/Reset phía trên và Services ✎ phía dưới.
+
+Kiểm tra: 3.582 file web khớp/0 khác/0 thừa; 16 tuyến HTTP không có lỗi5xx; 325 migration chạy trên Postgres cô lập; 7 thân hàm production khớp SHA256; 28 kiểm tra SQL/identity/customer/payroll/editor, các fixture mobile/tablet và POS sync; 235/0 native tests trên nguồn fixture đã dọn. Hai lượt nguồn trước timeout các fixture WK riêng, upload đều bị skip; các bằng chứng thất bại được giữ, toàn bộ assertions và timeout budgets không đổi.
+
+Hai migration thường lệ đã áp dụng: 20261028180000, 20261029160000. QA không gọi gộp dữ liệu khách thật hoặc phát sinh giao dịch tiền. Cơ chế tự gộp mới chạy khi người có quyền mở Customers; các luồng phone-canonicalization cũ được giữ nguyên.
+
+Còn chờ: Developer Market/publisher phụ thuộc nền tảng chưa có trên production và các gate riêng; history Payroll chưa chốt logic; Check Writer chưa mở bán/kích hoạt3SQL/key/catalog/provider.
+Kiểm tra iPhone thật trên binary mới: chưa thực hiện; blocker automation328/329 được giữ, bằng chứng68 không đổi nhãn thành bản mới.
+
+Web source SHA256: 910687df7f57a69abcefa142f7ffe0b356b555e3fa69ddf8ffb24ca15ec01d6e
+Web overlay SHA256: b1513d3b1702d9e2ef4d3dbb56df829ed299d49321a9d7ef9c71338936165349
+Native source SHA256: 646bf46e2e52b5875cd7d46794f48b54ee037cab94219d281144f1c98ae55b95
+Native bundle SHA256: 5ccbbd178b3dc7190fde0765bb80eff3827cb03a71f233cd0ad8238d35dfdcac
+Receipt cuối: 1ccb10a6-36a9-407b-844d-85e39941a608
+Receipt12 gói trước: cf7b3391-cb83-4468-a120-5cb7b4c4ece6; hiệu chỉnh snapshot: 76f7ed11-9339-4e33-92b2-f4d5507c86ad
+Bản69 đã được xác minh trước khi chọn làm baseline native cho nguồn cuối.

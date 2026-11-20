@@ -1,0 +1,177 @@
+{
+  "kind": "change",
+  "changeId": "campaign-credit-lifecycle-r5-20261021",
+  "status": "needs-integration",
+  "summary": "Owner-confirmed sticky Pause holds reserve; explicit Resume reuses it, Cancel releases once. Active-demand automatic credit claims, safe pending recovery, durable processing-month cap/idempotent payment reconciliation and status/notification consistency verified locally. Separate final integration/native/staging/fallback gates remain; no release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/campaigns/campaign-preview.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/credit-panel.tsx",
+    "lib/campaign-payments.ts",
+    "lib/campaign-status.ts",
+    "releases/changes/2026-10-21T19-26-05-001Z-678bba16-40f9-4893-b5de-e8965213abbb.json",
+    "releases/changes/2026-10-21T19-40-51-884Z-41095141-685b-4a51-b55c-fafa1276d143.json",
+    "supabase/migrations/20261021100000_campaign_paused_reserve_lifecycle.sql",
+    "supabase/migrations/20261021110000_campaign_credit_demand_and_budget.sql",
+    "tests/campaign-credit-demand-budget.test.mjs",
+    "tests/campaign-credit-queue.test.mjs",
+    "tests/campaign-owner-status-ui.test.mjs",
+    "tests/campaign-paused-reserve-lifecycle.test.mjs",
+    "tests/campaign-pending-claim-worker.test.mjs",
+    "tests/campaign-status-presentation.test.mjs",
+    "tests/fixtures/campaign-owner-status-ui.mjs",
+    "tests/fixtures/campaign-search-preview-ui.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-lifecycle-r5\\source",
+    "commit": "a61cce68abdb2eb1b8a2ecff26bc8f3b267cdacf",
+    "manifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\frozen-lifecycle-r5\\manifest.json",
+    "sha256": "4658809997a5db9c9a3c0cddf8d87034eecb9d6d7af85419efbafa3021536c71"
+  },
+  "dependencies": [
+    "unified-owner-guest-integration-20261021"
+  ],
+  "validation": [
+    {
+      "name": "campaign-logic",
+      "result": "passed",
+      "testsPassed": 218,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\lifecycle-r5-validation\\final\\campaign-logic.json",
+      "sha256": "87f3d85feb05b322d5a11f1bbf1205e1f7b6e6498ed9f7df2885ce98a126856a"
+    },
+    {
+      "name": "campaign-browser",
+      "result": "passed",
+      "testsPassed": 7,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\lifecycle-r5-validation\\final\\campaign-browser.json",
+      "sha256": "cac5259b622b6b47801f32b69cd01f2edc9055a0f2653e5b56014f0a498a67e2"
+    },
+    {
+      "name": "campaign-webkit",
+      "result": "passed",
+      "testsPassed": 3,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\lifecycle-r5-validation\\final\\campaign-webkit.json",
+      "sha256": "cf10a7425f4c00d64cb8e0bba744e673d6a9fb6a2a239f9e30bb389a12e84319"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\lifecycle-r5-validation\\final\\lint.json",
+      "sha256": "f6905898185a928bfd96c8a4a087a13bb2c656726a4df9beba10993296f86de2"
+    },
+    {
+      "name": "typecheck",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\lifecycle-r5-validation\\final\\typecheck.json",
+      "sha256": "ce025bcb28e68fc0d97654a1ee16af088f1d137d09ce4b68fc062782959a0c78"
+    },
+    {
+      "name": "build",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\lifecycle-r5-validation\\final\\build.json",
+      "sha256": "a3fef0efa75792211000221f94429d0f181e36e1029b0268292c0a279ba6e530"
+    },
+    {
+      "name": "offline-assets",
+      "result": "passed",
+      "testsPassed": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\lifecycle-r5-validation\\final\\offline-assets.json",
+      "sha256": "70defd455261c3f302ae5e38f7c018a115081f30219ee7d3107a5dc3b8f94763"
+    },
+    {
+      "name": "real-postgresql-final-lifecycle-races",
+      "result": "passed",
+      "testsPassed": 63,
+      "testsFailed": 0,
+      "testsNotRun": 0,
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\lifecycle-r5-validation\\postgres-race\\DELIVERY.json",
+      "sha256": "43e02ddad92b869b559f3adcbaf9a9637c3e3a36ba7bcaa89fd9d8c2de2ef4d7"
+    },
+    {
+      "name": "separate-final-integration",
+      "result": "pending",
+      "evidence": "New integration coordinator reconciles this exact R4-based delta with later iOS/UI/Windows handoffs and tests the combined candidate. Do not copy whole files over active worktrees."
+    },
+    {
+      "name": "native-and-authenticated-host-qa",
+      "result": "pending",
+      "evidence": "Existing iOS coordinator and Windows task validate the final merged source, authenticated POS/offline/role changes and native fallback without real transactions."
+    },
+    {
+      "name": "real-auth-scheduler-provider-staging",
+      "result": "pending",
+      "evidence": "Validate actual PostgREST ACL, scheduling/lease wiring, owner-only24h/7d notifications and provider sandbox callbacks/reconciliation on authorized staging."
+    },
+    {
+      "name": "legacy-data-and-fallback",
+      "result": "pending",
+      "evidence": "Inspect legacy completed-and-released pauses, pause timestamps at/after old end, unresolved processing and attribution fallback on authorized staging; rehearse forward-compatible code/database fallback."
+    },
+    {
+      "name": "release-baseline",
+      "result": "pending",
+      "evidence": "Parent captures exact deployed web/uploaded native baseline, reconciles all source, validates code/database/iOS fallback and decides one release."
+    }
+  ],
+  "gates": [
+    {
+      "id": "separate-final-integration",
+      "status": "PENDING",
+      "action": "New integration coordinator reconciles this exact R4-based delta with later iOS/UI/Windows handoffs and tests the combined candidate. Do not copy whole files over active worktrees.",
+      "ownerThread": "01a16001-873f-74ad-9294-fb99b4b1c00d"
+    },
+    {
+      "id": "native-and-authenticated-host-qa",
+      "status": "PENDING_FINAL_COMBINED_SOURCE",
+      "action": "Existing iOS coordinator and Windows task validate the final merged source, authenticated POS/offline/role changes and native fallback without real transactions.",
+      "limit": "Campaign Chromium/WebKit fixtures and historical R4 tests do not certify final native/host sessions."
+    },
+    {
+      "id": "real-auth-scheduler-provider-staging",
+      "status": "PENDING",
+      "action": "Validate actual PostgREST ACL, scheduling/lease wiring, owner-only24h/7d notifications and provider sandbox callbacks/reconciliation on authorized staging.",
+      "limit": "Local SQL uses fixture prerequisites; no real provider/card calls or notification delivery. Unknown legacy/aged processing needs verified provider/operator reconciliation; nonterminal requires_action/payment_method is never assumed failed."
+    },
+    {
+      "id": "legacy-data-and-fallback",
+      "status": "PENDING_STAGING_REVIEW",
+      "action": "Inspect legacy completed-and-released pauses, pause timestamps at/after old end, unresolved processing and attribution fallback on authorized staging; rehearse forward-compatible code/database fallback.",
+      "limit": "No production data inspected or migrated. Legacy completed pauses cannot regain already released reserves; invalid remaining-time legacy pauses retain credits with explicit Cancel recovery."
+    },
+    {
+      "id": "release-baseline",
+      "status": "HELD_BY_USER",
+      "action": "Parent captures exact deployed web/uploaded native baseline, reconciles all source, validates code/database/iOS fallback and decides one release.",
+      "limit": "No push/deploy/upload/native release build/production mutation performed."
+    }
+  ],
+  "limits": [
+    "Pause reserves remain unavailable to other campaigns. New Pause is accepted only during a running period; repeated accepted Pause is idempotent even beyond the old end.",
+    "Resume extends end by elapsed paused time while preserving starts_at, ledger, per-period credit limit, impression/cap counters and pacing inputs; legacy already-settled rows retain the explicit old new-period funding path.",
+    "Automatic cap is attributed at first processing claim in America/Chicago and includes processing plus paid. Legacy unresolved processing receives a conservative migration-month reservation because its actual claim time is unknown; historical paid uses recorded purchase ledger time when available.",
+    "Atomic claim is the in-flight boundary: a claim committed before Pause may settle later exactly once. Pause committed first prevents a new claim when no other active demand exists. No late callback resumes a campaign.",
+    "Never-claimed no-demand automatic intent may be superseded by explicit manual purchase. Explicit owner pack change may supersede its own never-claimed automatic intent; processing/manual/unknown evidence is protected.",
+    "Provider outcome unknown: retain processing, immutable payload/key and cap reservation. Known reference uses GET-only; unknown requests stop before provider key-retention expiry. Confirmed canceled permits terminal recovery without toggling owner preference; subsequent scheduled purchase still requires demand/cap.",
+    "Historical migration-specific tests remain historical regression checks. New cumulative SQL tests and final real PostgreSQL races validate the new lifecycle, while browser/provider fixtures have no real financial effects.",
+    "The source candidate inherits R4 but is a Campaign-only handoff, not the final integration or a release. Unchanged Windows/iOS suites were not repeated by this task after parent split integration ownership."
+  ],
+  "rollback": {
+    "localBeforeDatabaseApply": "After matching base/current hashes and ownership, apply lifecycle-product-inverse.patch to undo only the15Campaign product/test paths and retain immutable journals. The snapshot inverse is proof-only. Never reset/stash/clean or overwrite R4/other QA worktrees.",
+    "databaseAfterApply": "Do not remove migrations1000/1100 or restore old expiry/worker logic after new state exists. Keep paused-reserve trigger ordering, demand checks, processing-month metadata, immutable claim payload/key and exactly-once ledger. Use tested forward correction; Git inverse is not a database rollback.",
+    "workerCompatibility": "Old R4 worker can ignore provider_reference and misclassify unknown outcomes; do not run it against new processing orders. Keep the new worker/DB guards or hold dispatch and reconcile every in-flight order before a separately tested compatibility fallback. No automatic rollback executed.",
+    "iosWindows": "No native bundle/Swift/host/config changes in this delta. Existing coordinators must validate combined code/native fallback against actually uploaded/installed source.",
+    "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\lifecycle-r5-validation\\pause\\CAUSAL-ROLLBACK.txt"
+  },
+  "id": "df7e32b3-7171-47d3-86c6-2335990a478f",
+  "recordedAt": "2026-10-21T20:06:04.896Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-lifecycle-r5",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,75 @@
+{
+  "kind": "change",
+  "changeId": "experiences-approved-mockup-20261112",
+  "status": "ready",
+  "summary": "Coordinator integrated experiences-approved-mockup-20261112 against verified 2026-11-14 live baseline; exact assembled source with scoped validation and unchanged acceptance limitations.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/experiences.module.css",
+    "app/activity/visit-reply-controls.tsx",
+    "components/experience-reply-composer.tsx",
+    "components/experience-reply-composer.module.css",
+    "lib/vietnamese-dictionary.ts",
+    "tests/experiences-approved.browser.test.mjs",
+    "tests/salon-profile-compact.test.mjs",
+    "tests/visit-feedback-final.browser.test.mjs",
+    "docs/qa/experiences-approved-20261112.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\complete-release-20261114\\artifacts\\release-20261114\\frozen-final",
+    "commit": "830f0a6ec3029177c94e88137a8165f784c47ae4",
+    "baselineCommit": "274a3ab4300956a458c564ad6beab44ff85e7264",
+    "baselineDeploymentId": "dpl_BttRV5Vqgdpcihhyfau2bUcZqTmU",
+    "integratedFromEvent": "3712094d-758f-4942-b609-4447e3cf7ef5",
+    "originalSource": {
+      "snapshot": "C:\\Reylumi-worktrees\\experiences-approved-mockup-20261112\\artifacts\\experiences-approved\\frozen-no-awaiting"
+    },
+    "assembledOverlaySha256": "f5aab9f737e66b7169804dd034acdbd2aedb95e90203f22bf7ea8815e80880c8",
+    "originalOccurredAt": "2026-11-13T02:51:31.817Z"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\build-final-corrected.log"
+    },
+    {
+      "name": "Frozen source integrity and integration review",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\frozen-source-final.json; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-audit.md"
+    },
+    {
+      "name": "Scoped functional and browser regressions on assembled source",
+      "result": "passed",
+      "evidence": "C:\\Reylumi\\artifacts\\release-review-20261114\\qa-audit.md; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-forum-loading.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-wave2.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-ui-booking.log; C:\\Reylumi\\artifacts\\release-review-20261114\\scope-support-cta.log; C:\\Reylumi\\artifacts\\release-review-20261114\\financial-lifecycle-final.log"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "limitations": [
+    "Physical current-candidate iPhone/iPad acceptance not run; available installed binaries are builds 97 and 99.",
+    "Physical Safari smoke blocked by controller startup side effects and lack of guaranteed fresh tab.",
+    "Android emulator availability is not physical Android or Play Store acceptance.",
+    "Check Writer source is preserved from baseline; sales/trial flags, provider acceptance and physical printer/MICR gates are unchanged.",
+    "iPhone Simulator/signing/upload and Apple/TestFlight distribution are verified independently before their publication receipt. iPad Simulator execution alone does not establish iPhone viewport or physical-device acceptance."
+  ],
+  "id": "b4bbc6f8-5c6a-4a00-b823-05e0e726f126",
+  "recordedAt": "2026-11-14T06:48:08.930Z",
+  "worktree": "C:\\Reylumi-worktrees\\complete-release-20261114",
+  "fileHashes": {
+    "app/salon-profile/salon-profile-view.tsx": "e85fd23a49cba1845ec7d8331f55171a81704dc5e045c8683cd7acc003ca3636",
+    "app/salon-profile/experiences.module.css": "4b4ccc76f9e9ca715a32a025bdc33d5224c984828542089ffb5b99c43bb4fff2",
+    "app/activity/visit-reply-controls.tsx": "5c6ffd856d1e30c3ee182e43417f011e78ff33f63a753d188b1a64916b9a8743",
+    "components/experience-reply-composer.tsx": "bbe1707785a3b0264dd8a5e7ec1763a34c3c7242850bdefde429fa1321024387",
+    "components/experience-reply-composer.module.css": "53c9b74c2c5be93bb65c0806278eaea5eb9a278755945f5cd91a7b0705dc6280",
+    "lib/vietnamese-dictionary.ts": "75e5b43562c7eee67c1b6cc34232b4136e68a48df0e35c7a60b18789cb277c1e",
+    "tests/experiences-approved.browser.test.mjs": "cc0b6bf644d054307120e94eec73addb67f3f39bdc31252c3f5ac7282bc3c368",
+    "tests/salon-profile-compact.test.mjs": "b244624f76da04752d7b4ceb67ada481cde2c2bd22e3cea6c6cfb75fd735744e",
+    "tests/visit-feedback-final.browser.test.mjs": "cee73581ee6674f596947c0c8dbbf696dc078b7285f826eac1904d1412c7a9a0",
+    "docs/qa/experiences-approved-20261112.md": "152efa2bb60538e27d2144b9c9d5fcccc7eed1e270bedb87c35716e1bbebf710"
+  }
+}

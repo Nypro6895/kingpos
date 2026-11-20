@@ -1,0 +1,100 @@
+{
+  "kind": "change",
+  "changeId": "customer-identity-auto-merge-20261023",
+  "status": "ready",
+  "summary": "Customer identity integrated with current Activity, display offline seed, read cancellation and stable native commands. No mass merge performed.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/customers/actions.ts",
+    "app/customers/customer-form.tsx",
+    "app/customers/customer-identity-fields.tsx",
+    "app/customers/manual-merge-picker.tsx",
+    "app/(app)/customers/page.tsx",
+    "app/(app)/customers/[customerId]/page.tsx",
+    "app/activity/customer-merge-actions.ts",
+    "app/activity/my-customer-profiles.tsx",
+    "app/check-in/[entry]/actions.ts",
+    "app/check-in/[entry]/phone-checkin.tsx",
+    "app/pos/actions.ts",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "components/customer-identity-choices.tsx",
+    "types/customer-identity.ts",
+    "lib/customers.ts",
+    "lib/customer-visits.ts",
+    "lib/customer-identity-match.ts",
+    "lib/booking-domain/customer-identity.ts",
+    "supabase/migrations/20261023080000_customer_identity_matching.sql",
+    "supabase/migrations/20261023081000_customer_identity_checkin.sql",
+    "supabase/migrations/20261023082000_customer_identity_create.sql",
+    "supabase/migrations/20261023083000_customer_identity_self_service.sql",
+    "supabase/migrations/20261023084000_customer_identity_booking.sql",
+    "tests/customer-identity-merge.test.mjs",
+    "tests/customer-identity-ui.test.mjs",
+    "tests/customer-management-contract.test.mjs",
+    "tests/customer-identity-full-schema.integration.test.mjs",
+    "app/activity/customer-activity-view.tsx",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2\\frozen-source",
+    "baselineDeploymentId": "dpl_Cv45Rf5qKcR1zN1xND8QUVEGx1MF"
+  },
+  "validation": [
+    {
+      "name": "Assembled production build and scoped ESLint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/build-r2.log; C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/lint.log"
+    },
+    {
+      "name": "103 focused regressions and independent full-schema Customer, Phone and Market acceptance",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/focused-tests-r2.log; customer-fullschema.log; phone-fullschema.log; market-fullschema.log"
+    },
+    {
+      "name": "Production baseline preservation and native command pin integration",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\all-pending-20261023-r2/assembly-plan.json; command-pins.json"
+    }
+  ],
+  "supersedesEvents": [],
+  "id": "08d7db43-2418-4ef3-b621-5e1a528cd389",
+  "recordedAt": "2026-10-23T18:54:34.822Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/customers/actions.ts": "10e9f8bd06b340b862c446a6e3394eab9a66326b3a9cd1744c9505b28cf677fb",
+    "app/customers/customer-form.tsx": "b7f49e5de3f1795a15685e79192251640464b146b8fda45ed65fa76055480a35",
+    "app/customers/customer-identity-fields.tsx": "049ead59858c57c1adac5bafe14eb98eaf24de2b1fa1d6e981a6a7a2b596de5f",
+    "app/customers/manual-merge-picker.tsx": "6d392124bdf23ab0039f8e1efb95f8419def739f416f7df473eba5ff25482b8e",
+    "app/(app)/customers/page.tsx": "500b02be5efb7e0be5d8959a07471d5b00a2f197f93b8e1a6aa10bfc9e6048a4",
+    "app/(app)/customers/[customerId]/page.tsx": "ad7b28400eee780cfd48703da6182e545acbf3177f9ac8893a6978238d363f98",
+    "app/activity/customer-merge-actions.ts": "39a6f95b8e78d80ca757635e3997be190ccd9ca22154ed0387216b13701f1639",
+    "app/activity/my-customer-profiles.tsx": "8f18aec0cf4c42fb96ca8fe0e20800f3c0a9b33a18c528797d8c5bd0c8376dff",
+    "app/check-in/[entry]/actions.ts": "e23060b3af3e293dde2457e1cb5c6e73c2a772abe6735bda9c7ddd87aaccfef8",
+    "app/check-in/[entry]/phone-checkin.tsx": "ae5671432a7185ba79ef4f9544f5d37a0df81b492721971514e8fc3007aeea85",
+    "app/pos/actions.ts": "76cb63569f1c0b8e7e3960e4f14dff4c2626bbfc51f5743da6c894fd86130fb9",
+    "app/pos/customer-display/customer-display-client.tsx": "774c155a3caa75c8febed33f8c56fa14afcb432fe2e1f86b5e5c4b971edc697f",
+    "components/customer-identity-choices.tsx": "3e5d1a9714df7ef32cb3d6d18d610f79faaa5501cac189ac97ecbe75873d5037",
+    "types/customer-identity.ts": "3d62e27a5e4d4896490a11af0b8730f5f7cd6bfb449e2844e3ab313b5574f204",
+    "lib/customers.ts": "357b763b096896ff73339eeb1488529d359cd9f93a1d8da93d9fcfe8caa40a2a",
+    "lib/customer-visits.ts": "6445d8b0d25dfc93bfc36031fcc4ca06a51b4841d60972c38feffe1ec6ceb14f",
+    "lib/customer-identity-match.ts": "98c4f3b75c4a87de11f1d115d6df53873f0af6880956de8fa607ab1eebbe3097",
+    "lib/booking-domain/customer-identity.ts": "ba0f2c63dfbf8a48a0df9660988c900c6a9e25a884462439fb89300438aa2887",
+    "supabase/migrations/20261023080000_customer_identity_matching.sql": "b44f4b81ed05649f2afff57043d164cbafed1407e7c07ff8e13745a7f256f6a4",
+    "supabase/migrations/20261023081000_customer_identity_checkin.sql": "30bfb28f365550d949423727d220e3d6411ed5d60f1d123d60d9df05d3a4ec7e",
+    "supabase/migrations/20261023082000_customer_identity_create.sql": "11e1e7e06a8a7cce420753834ccc145ff28055a99617611511475fe244fb148e",
+    "supabase/migrations/20261023083000_customer_identity_self_service.sql": "1efa3736de61c12fc78c5d1ea9d2437bd866a7aff8327c95c3adcd820503030c",
+    "supabase/migrations/20261023084000_customer_identity_booking.sql": "c04b40f6c5c90e11764cb97ca75057c595d066497bb472871a86ceb0a96eaa2b",
+    "tests/customer-identity-merge.test.mjs": "a5dc4588d0bdc9b55dc917fc1a6b0cd609d011d652459cb317487af9d86be92f",
+    "tests/customer-identity-ui.test.mjs": "1c5ce4d6515e399bf90fe638c09eb8e0c9d6069457693b95ae4c0366e7c5c6cf",
+    "tests/customer-management-contract.test.mjs": "32ff20f6294d9a11b79f6b28025a368f413d432ed52d41b6c6028affc6594891",
+    "tests/customer-identity-full-schema.integration.test.mjs": "8de5e5ae503834976c04ed32e9577ab9d4d3a40febf8b0e29e0d897283e62fb0",
+    "app/activity/customer-activity-view.tsx": "dae932ae292a6d4a2d52788520332045288964f63b1f6b31f172ae68f1c68555",
+    "lib/app-local-command-policy.json": "655eec4ea9d2e7c1879a8c65541f6bc10d411c629e368b40088e49e5dac4dfc4",
+    "lib/app-local-commands-server.generated.ts": "6b8b6317a2ad4e0f41b6e77c31b7ca4c7fe6ef8e909661ba1c7f58e742c35e14"
+  }
+}

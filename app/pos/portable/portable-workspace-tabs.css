@@ -1,0 +1,8 @@
+/* Keep the existing POS tabs reachable beside the device controls on phones. */
+@media (max-width: 639px) {
+  .portable-workspace-header-row { flex-wrap: wrap; gap: 0 12px; }
+  .portable-workspace-header-row > nav { order: 2; flex: 0 0 100%; width: 100%; }
+  .portable-workspace-header-row > nav > a { min-height: 48px; padding-inline: 5px; font-size: 12px; }
+  .portable-workspace-header-actions { min-height: 48px; }
+  .portable-workspace-header-actions button { min-width: 44px; min-height: 44px; }
+}

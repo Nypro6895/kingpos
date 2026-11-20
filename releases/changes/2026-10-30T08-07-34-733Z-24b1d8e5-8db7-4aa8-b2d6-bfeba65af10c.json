@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "salon-qr-hosted-handoff-wide-layout-20261030",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Validated hosted-only salon check-in warm/cold repair and readable wide paired-display QR;physical before-Confirm smoke passed",
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "app/pos/customer-display/customer-idle-screen.css"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030\\artifacts\\release-20261030\\repair-ready-source",
+    "commit": "9f2244340a0d47737021ac40abea738fed4e2f6c"
+  },
+  "dependencies": [
+    "personal-qr-explicit-app-handoff-20261030",
+    "customer-display-qr-fallback-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Exact source-bound238 runtime XCTest cases14isolated hosts,signed archive,upload accepted",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/native-verified.json"
+    },
+    {
+      "name": "AppleVALID and both existing TestFlight groups",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/availability-verified.json"
+    },
+    {
+      "name": "Actual TestFlight Safari Open app warm+cold reaches correct salon catalog before Confirm",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/physical74-verified.json"
+    },
+    {
+      "name": "Live web3655exactfiles and actual refreshed Portable readable QR card decoded",
+      "result": "passed",
+      "evidence": "artifacts/release-20261030/web-live-source-verified.json; artifacts/release-20261030/portable-live-qa.json"
+    }
+  ],
+  "releaseLimits": [
+    "No real check-in/payment/customer writes",
+    "Universal Links and full Camera acceptance remain deferred"
+  ],
+  "id": "24b1d8e5-8db7-4aa8-b2d6-bfeba65af10c",
+  "recordedAt": "2026-10-30T08:07:34.733Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "0ae286ad476ab0566f451d503eaa59996a04a430165dcfecb16085999b9aa314",
+    "ios/Reylumi/NavigationPolicy.swift": "f792d414071b559c971ef0438f602557d777c043caea47744a08a108a915ceb1",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "a3fadd06727e1011b3b96f2237b96053872e3787a7cd8b8dd9428e94c093bcf0",
+    "ios/ReylumiTests/NavigationPolicyTests.swift": "4147c641ccf1322793395024e5ae5dd0a1fd643755544d5498e289d3976b881f",
+    "app/pos/customer-display/customer-idle-screen.css": "da11dd46a33675721184a1b199e3fcbfef04bba4576916f70f5a5db7b61ce844"
+  }
+}

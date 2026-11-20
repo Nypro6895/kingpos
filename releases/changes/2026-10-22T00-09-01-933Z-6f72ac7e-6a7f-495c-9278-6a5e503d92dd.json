@@ -1,0 +1,107 @@
+{
+  "kind": "change",
+  "changeId": "ios-auth-observability-qa-20261021",
+  "status": "working",
+  "summary": "Test-only scope amendment: actual named-read route trace protocol must be loaded in shared Staff critical-path fixture. Preserve27 retained bootstrap failures; no assertion weakening or business behavior changes. Continue scoped cache/timing/QA work under Simulator-required physical-optional acceptance.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-role-read-cache.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "tests/app-local-role-read-cache.test.mjs",
+    "tests/app-local-role-return-cache.test.mjs",
+    "tests/app-local-scoped-invalidation-ui.test.mjs",
+    "scripts/ios/acceptance-report.mjs",
+    "tests/ios-acceptance-report.test.mjs",
+    "docs/ios-acceptance-measurement.md",
+    "lib/read-request-timing.ts",
+    "lib/supabase/server.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/app-local/context/route.ts",
+    "lib/read-request-trace-protocol.ts",
+    "lib/app-local-host.ts",
+    "lib/experience-trace.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "tests/context-today-timing.test.mjs",
+    "tests/app-local-read-correlation.test.mjs",
+    "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+    "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+    "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+    "tests/staff-my-work-critical-path.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos-auth-observability-20261021",
+    "commit": "f1c03026009b158e7ce58f283aa3bdcff73d21f7"
+  },
+  "dependencies": [
+    "r6-confirmed-auth-rejection-20261021"
+  ],
+  "validation": [
+    {
+      "name": "Exact3249 raw source baseline preserved; original8776/f1 snapshot unchanged",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\baseline-proof.json"
+    },
+    {
+      "name": "Scoped invalidation controls and acceptance reporter",
+      "result": "pending"
+    }
+  ],
+  "releaseHold": true,
+  "ownershipExcludes": [
+    "services-catalog*",
+    "lib/reset-experience-cache.ts",
+    "lib/app-local-page-registry.tsx",
+    "lib/app-local-platform-resources-server.ts",
+    "scripts/build-app-local-bundle.mjs"
+  ],
+  "ownership": {
+    "web_auth_audit": [
+      "lib/app-local-role-read-cache.ts",
+      "lib/app-local-resource.ts",
+      "app/local-app/entry.tsx",
+      "tests/app-local-role-read-cache.test.mjs",
+      "tests/app-local-role-return-cache.test.mjs",
+      "tests/app-local-scoped-invalidation-ui.test.mjs"
+    ],
+    "ios_audit": [
+      "scripts/ios/acceptance-report.mjs",
+      "tests/ios-acceptance-report.test.mjs",
+      "docs/ios-acceptance-measurement.md"
+    ],
+    "provenance_audit": [
+      "lib/read-request-timing.ts",
+      "lib/supabase/server.ts",
+      "lib/staff-portal-identity.ts",
+      "lib/staff-my-work-resource-server.ts",
+      "app/api/app-local/read/route.ts",
+      "app/api/app-local/context/route.ts",
+      "lib/read-request-trace-protocol.ts",
+      "lib/app-local-host.ts",
+      "lib/experience-trace.ts",
+      "ios/Reylumi/ReylumiLocalAppTransport.swift",
+      "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+      "ios/Reylumi/ReylumiLocalAppViewController.swift",
+      "tests/context-today-timing.test.mjs",
+      "tests/app-local-read-correlation.test.mjs",
+      "ios/ReylumiTests/LocalDiagnosticsTests.swift",
+      "ios/ReylumiTests/CommandDiagnosticsTransportTests.swift",
+      "ios/ReylumiTests/OwnerTodayDiagnosticsTests.swift",
+      "tests/staff-my-work-critical-path.test.mjs"
+    ],
+    "root": "integration/fixtures/handoff; resource/entry hooks authored only by web_auth_audit"
+  },
+  "acceptancePolicyRecord": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\auth-observability\\resume-checkpoint-20261022T000244567698Z\\acceptance-policy-update.json",
+  "id": "6f72ac7e-6a7f-495c-9278-6a5e503d92dd",
+  "recordedAt": "2026-10-22T00:09:01.933Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,5 @@
+.page { background:var(--surface-muted,#fbfaf8) !important; }
+.group { display:grid; overflow:hidden; border:1px solid var(--border-subtle,#ece7e2); border-radius:12px; background:var(--surface,#fff); }
+.item { padding-block:10px; }
+.item:last-child { border-bottom:0; }
+@media (min-width:768px) { .group { grid-template-columns:repeat(2,minmax(0,1fr)); } .item:last-child { border-bottom:1px solid var(--border-subtle,#ece7e2); } }

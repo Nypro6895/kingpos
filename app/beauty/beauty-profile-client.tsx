@@ -1,19 +1,38 @@
 "use client";
+import { SalonName } from "@/components/salon-member-badge";
+
+import { useTransientOverlay } from "@/components/overlay-dismissal";
+import { useOverlayViewport } from "@/components/use-overlay-viewport";
+import { compressImageCanvas } from "@/lib/image-upload-client";
+import { BeautyComposerDialog } from "./beauty-composer-dialog";
+import { ContentViewer } from "@/components/content-viewer";
+import { MediaUploadProgress } from "@/components/media-upload-progress";
+import { mediaBatchProgress, type MediaUploadPhase } from "@/lib/media-upload-progress";
+import { PublicImageUploadCancelledError, runPublicImageUploadBatch } from "@/lib/public-image-upload-client";
+import { clearPublicPostReceipt, readPublicPostReceipt, writePublicPostReceipt } from "@/lib/public-post-receipt";
+import { PublicPhotoProcessingPermission, usePublicPhotoProcessingPermission } from "@/components/public-photo-processing-permission";
+import { PUBLIC_PHOTO_PROCESSING_DECLINE_NOTICE, type PublicPhotoProcessingConsent } from "@/lib/public-photo-processing-consent";
+
+import { BeautyProfileHeader } from "@/components/beauty-profile-header";
+import { SettingsIcon } from "@/components/settings-icon";
+import { POST_CHANGED_EVENT, usePostCaption } from "@/components/post-change-state";
+import type { PostChange } from "@/types/post-actions";
+import { PostActions } from "@/app/salon-profile/post-actions";
+import { useHiddenPosts, postIdentity } from "@/components/post-safety";
 
 import {
   createBeautyPostAction,
   deleteBeautyAvatarMediaAction,
   deleteBeautyMediaAction,
-  deleteBeautyPostAction,
   getBeautyAvatarUploadSessionAction,
   getBeautyMediaUploadSessionAction,
   loadBeautyTimelineAction,
   searchBeautyAttributionSalonsAction,
-  updateBeautyPostCaptionAction,
   updateBeautyProfileAction,
 } from "@/app/beauty/actions";
 import Link from "next/link";
-import NextImage from "next/image";
+import { createPortal, flushSync } from "react-dom";
+import { BeautyHome } from "./beauty-home";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import "./beauty-profile.css";
 import { BeautyLibrary } from "./beauty-library";
@@ -35,6 +54,7 @@ import type {
   BeautyAttributionSalon,
   BeautyAttributionStaff,
   BeautyPostMediaInput,
+  BeautyPostCreateInput,
   BeautyProfileSummary,
   BeautyProfileVisibility,
   BeautyRecentVisitCandidate,
@@ -46,6 +66,7 @@ import type { PostCommentViewer } from "@/types/post-comments";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -58,6 +79,10 @@ import {
 
 type BeautyProfileClientProps = {
   appointment?: ReactNode;
+  favorites?: ReactNode;
+  home?: boolean;
+  libraryPage?: boolean;
+  initialSection?: "overview" | "posts" | "library";
   commentViewer: PostCommentViewer;
   initialTimeline: BeautyTimelinePage;
   profile: BeautyProfileSummary;
@@ -70,6 +95,11 @@ type TimelineFilter = "all" | "before_after";
 type UploadedBeautyMedia = BeautyPostMediaInput & {
   id: string;
   previewUrl: string;
+};
+
+type ComposerBeautyMedia = Omit<UploadedBeautyMedia, "objectPath"> & {
+  file?: File;
+  objectPath?: string;
 };
 
 type UploadedProfileImage = {
@@ -89,9 +119,26 @@ type SelectedAttribution = {
   source: "customer_claimed" | "recent_visit_suggestion";
 };
 
+type BeautyPublishAttempt = {
+  requestId: string;
+  scope: string;
+  epoch: number;
+  caption: string;
+  mode: ComposerMode;
+  media: ComposerBeautyMedia[];
+  attribution: SelectedAttribution | null;
+  photoProcessingConsent?: PublicPhotoProcessingConsent;
+  input: (BeautyPostCreateInput & { requestId: string }) | null;
+  submitted: boolean;
+};
+type PendingBeautyPost = Pick<BeautyPublishAttempt, "requestId" | "scope" | "caption" | "media"> & {
+  phase: "uploading" | "checking" | "unknown" | "failed";
+  error: string | null;
+  canRetry: boolean;
+};
+
 const acceptedMimeTypes = new Set<string>(BEAUTY_ALLOWED_IMAGE_TYPES);
 const acceptedAvatarMimeTypes = new Set<string>(ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES);
-const composerImageTargetBytes = 1.6 * 1024 * 1024;
 const timelineFilters: Array<{ id: TimelineFilter; label: string }> = [
   { id: "all", label: "All" },
   { id: "before_after", label: "Before & After" },
@@ -195,6 +242,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const shareButtonRef = useRef<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
+  useTransientOverlay(() => setOpen(false), open);
   const [status, setStatus] = useState("");
   const hintId = `share-reward-hint-${post.id}`;
   const dialogTitleId = `share-post-title-${post.id}`;
@@ -284,7 +332,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
           ref={shareButtonRef}
           type="button"
         >
-          <ReylumiIcon name="share" />
+          <ReylumiIcon name="share" /><span>Share</span>
         </button>
         <span
           className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 hidden w-64 rounded-2xl bg-text-primary px-3 py-2 text-left text-xs font-semibold leading-5 text-white shadow-lg group-hover:block group-focus-within:block"
@@ -295,7 +343,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
         </span>
       </span>
 
-      {open ? (
+      {open ? createPortal(
         <div
           aria-labelledby={dialogTitleId}
           aria-modal="true"
@@ -405,7 +453,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
               </p>
             ) : null}
           </div>
-        </div>
+        </div>, document.body,
       ) : null}
     </>
   );
@@ -418,6 +466,7 @@ function readImage(file: File) {
 
     image.onload = () => {
       URL.revokeObjectURL(url);
+      if (image.naturalWidth * image.naturalHeight > 40_000_000) { reject(new Error("Choose an image smaller than 40 megapixels.")); return; }
       resolve(image);
     };
     image.onerror = () => {
@@ -425,23 +474,6 @@ function readImage(file: File) {
       reject(new Error("Image could not be read."));
     };
     image.src = url;
-  });
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("Image could not be processed."));
-          return;
-        }
-
-        resolve(blob);
-      },
-      "image/webp",
-      quality,
-    );
   });
 }
 
@@ -467,20 +499,15 @@ async function processBeautyImage(file: File) {
   canvas.height = height;
   context.drawImage(image, 0, 0, width, height);
 
-  let quality = 0.9;
-  let blob = await canvasToBlob(canvas, quality);
-
-  while (blob.size > composerImageTargetBytes && quality > 0.7) {
-    quality -= 0.06;
-    blob = await canvasToBlob(canvas, quality);
-  }
+  const compressed = await compressImageCanvas(canvas);
+  const blob = compressed.blob;
 
   return {
     file: new File([blob], `beauty-${crypto.randomUUID()}.webp`, {
       type: "image/webp",
     }),
-    height,
-    width,
+    height: compressed.height,
+    width: compressed.width,
   };
 }
 
@@ -501,13 +528,7 @@ async function processAvatarImage(file: File) {
   canvas.height = outputSize;
   context.drawImage(image, sx, sy, side, side, 0, 0, outputSize, outputSize);
 
-  let quality = 0.9;
-  let blob = await canvasToBlob(canvas, quality);
-
-  while (blob.size > 500 * 1024 && quality > 0.72) {
-    quality -= 0.06;
-    blob = await canvasToBlob(canvas, quality);
-  }
+  const { blob } = await compressImageCanvas(canvas, { maxWidth: 1024, maxHeight: 1024 });
 
   return new File([blob], `beauty-avatar-${crypto.randomUUID()}.webp`, {
     type: "image/webp",
@@ -554,20 +575,15 @@ async function processCoverImage(file: File) {
     height,
   );
 
-  let quality = 0.9;
-  let blob = await canvasToBlob(canvas, quality);
-
-  while (blob.size > composerImageTargetBytes && quality > 0.7) {
-    quality -= 0.06;
-    blob = await canvasToBlob(canvas, quality);
-  }
+  const compressed = await compressImageCanvas(canvas);
+  const blob = compressed.blob;
 
   return {
     file: new File([blob], `beauty-cover-${crypto.randomUUID()}.webp`, {
       type: "image/webp",
     }),
-    height,
-    width,
+    height: compressed.height,
+    width: compressed.width,
   };
 }
 
@@ -579,14 +595,20 @@ function uploadToSupabase(input: {
   onProgress?: (value: number) => void;
   path: string;
   supabaseUrl: string;
+  signal?: AbortSignal;
 }) {
   return new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    if (input.signal?.aborted) { reject(new PublicImageUploadCancelledError()); return; }
+    const abort = () => xhr.abort();
+    input.signal?.addEventListener("abort", abort, { once: true });
+    const finish = () => input.signal?.removeEventListener("abort", abort);
     const objectUrl = `${input.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${encodeURIComponent(
       input.bucket,
     )}/${encodeStoragePath(input.path)}`;
 
     xhr.open("POST", objectUrl);
+    xhr.timeout = 120_000;
     xhr.setRequestHeader("Authorization", `Bearer ${input.accessToken}`);
     xhr.setRequestHeader("apikey", input.anonKey);
     xhr.setRequestHeader("Content-Type", input.blob.type);
@@ -597,6 +619,7 @@ function uploadToSupabase(input: {
       }
     };
     xhr.onload = () => {
+      finish();
       if (xhr.status >= 200 && xhr.status < 300) {
         input.onProgress?.(100);
         resolve();
@@ -605,8 +628,9 @@ function uploadToSupabase(input: {
 
       reject(new Error(xhr.responseText || "Upload failed."));
     };
-    xhr.onerror = () => reject(new Error("Upload failed."));
-    xhr.onabort = () => reject(new Error("Upload cancelled."));
+    xhr.onerror = () => { finish(); reject(new Error("Upload failed.")); };
+    xhr.ontimeout = () => { finish(); reject(new Error("Upload timed out. Check your connection and try again.")); };
+    xhr.onabort = () => { finish(); reject(new PublicImageUploadCancelledError()); };
     xhr.send(input.blob);
   });
 }
@@ -790,6 +814,7 @@ function PostCard({
   canManage,
   commentViewer,
   onCaptionUpdated,
+  onArchived,
   onCommentCountChange,
   onDeleted,
   post,
@@ -799,26 +824,18 @@ function PostCard({
   canManage: boolean;
   commentViewer: PostCommentViewer;
   onCaptionUpdated: (postId: string, caption: string | null) => void;
+  onArchived: (postId: string) => void;
   onCommentCountChange: (postId: string, count: number) => void;
   onDeleted: (postId: string) => void;
   post: BeautyTimelinePost;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const hiddenPosts = useHiddenPosts(commentViewer.userId, canManage);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
-  const commentsDialogRef = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    if (commentsOpen) commentsDialogRef.current?.showModal();
-    else commentsDialogRef.current?.close();
-  }, [commentsOpen]);
   const [commentCountState, setCommentCountState] = useState(() => ({
     count: post.commentCount,
     postId: post.id,
   }));
-  const [draftCaption, setDraftCaption] = useState(post.caption ?? "");
-  const [error, setError] = useState("");
-  const [pending, startTransition] = useTransition();
   const attribution = post.attribution;
   const showCaptionBelowMedia = post.media.length > 0;
   const commentTarget = {
@@ -828,6 +845,7 @@ function PostCard({
     sourceType: "beauty_post" as const,
     title: post.caption ?? "Beauty post",
   };
+  const caption = usePostCaption(commentTarget, post.caption, commentViewer.userId);
   const commentCount =
     commentCountState.postId === post.id ? commentCountState.count : post.commentCount;
 
@@ -836,41 +854,7 @@ function PostCard({
     onCommentCountChange(post.id, count);
   }
 
-  function saveCaption(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-
-    startTransition(async () => {
-      const result = await updateBeautyPostCaptionAction({
-        caption: draftCaption,
-        postId: post.id,
-      });
-
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-
-      onCaptionUpdated(post.id, draftCaption.trim() || null);
-      setEditing(false);
-    });
-  }
-
-  function deletePost() {
-    setError("");
-    startTransition(async () => {
-      const result = await deleteBeautyPostAction(post.id);
-
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-
-      setConfirmingDelete(false);
-      onDeleted(post.id);
-    });
-  }
-
+  if (hiddenPosts.includes(postIdentity(commentTarget))) return null;
   return (
     <article data-continuous-surface className="beauty-post grid gap-3 rounded-[1.35rem] bg-surface p-3 shadow-[0_18px_52px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80 sm:p-4">
       <div className="flex items-start justify-between gap-3 px-1">
@@ -894,33 +878,15 @@ function PostCard({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1"><VerificationBadge verification={post.verification} />{canManage && !editing ? (            <details data-dismissible-popover className="relative">
-              <summary
-                aria-label="More post actions"
-                className="grid min-h-10 min-w-10 cursor-pointer list-none place-items-center bg-transparent px-2 text-text-secondary transition marker:hidden hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              >
-                <ReylumiIcon name="more" className="h-5 w-5" />
-              </summary>
-              <div className="absolute right-0 top-12 z-20 grid min-w-32 gap-1 rounded-2xl bg-surface p-2 shadow-xl ring-1 ring-divider-subtle">
-                <button type="button" className="min-h-10 px-3 text-left text-sm" disabled={pending} onClick={() => setEditing(true)}>Edit caption</button>
-                <button
-                  className="min-h-10 rounded-xl px-3 text-left text-sm font-bold text-red-700 transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-wait disabled:opacity-60"
-                  disabled={pending}
-                  onClick={() => setConfirmingDelete(true)}
-                  type="button"
-                >
-                  Delete
-                </button>
-              </div>
-            </details>) : null}</div>
+        <div className="flex items-center gap-1"><VerificationBadge verification={post.verification} /><PostActions target={commentTarget} viewerId={commentViewer.userId} onHidden={()=>onDeleted(post.id)} onChanged={change => { if (change?.action === "edit") onCaptionUpdated(post.id, change.caption ?? null); else if (change?.action === "archive") onArchived(post.id); }} /></div>
       </div>
 
-      <PostMedia post={post} />
+      <PostMedia post={{ ...post, caption: caption ?? null }} />
 
       <div className="grid gap-3 px-1 pb-1">
         {attribution ? (
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-            <Link href={`/explore/salons/${attribution.salonId}`} className="font-semibold text-text-primary hover:text-brand-orange">{attribution.salonName}</Link>
+            <Link href={`/explore/salons/${attribution.salonId}`} className="font-semibold text-text-primary hover:text-brand-orange"><SalonName name={attribution.salonName} salonId={attribution.salonId}/></Link>
             {post.salonPublication ? <span className="text-[11px] text-text-muted">Salon publication: {post.salonPublication.status}</span> : null}
             {attribution.staffName ? (
               <p className="font-semibold text-text-secondary">
@@ -930,125 +896,43 @@ function PostCard({
           </div>
         ) : null}
 
-        {editing ? (
-          <form className="grid gap-3" onSubmit={saveCaption}>
-            <label className="grid gap-1.5">
-              <span className="text-xs font-bold uppercase text-text-secondary">
-                Caption
-              </span>
-              <textarea
-                className="min-h-24 rounded-2xl border border-border-subtle bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
-                maxLength={2200}
-                onChange={(event) => setDraftCaption(event.currentTarget.value)}
-                value={draftCaption}
-              />
-            </label>
-            <div className="flex flex-wrap justify-end gap-2">
-              <button
-                className="min-h-10 rounded-full border border-border-subtle px-4 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
-                disabled={pending}
-                onClick={() => {
-                  setDraftCaption(post.caption ?? "");
-                  setEditing(false);
-                }}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="min-h-10 rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
-                disabled={pending}
-                type="submit"
-              >
-                {pending ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </form>
-        ) : showCaptionBelowMedia && post.caption ? (
-          <p className="whitespace-pre-wrap text-sm font-semibold leading-6 text-text-primary">
-            {post.caption}
-          </p>
-        ) : null}
-
-        {error ? (
-          <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
-            {error}
-          </p>
+        {showCaptionBelowMedia && caption ? (
+          <p className="whitespace-pre-wrap text-sm font-semibold leading-6 text-text-primary">{caption}</p>
         ) : null}
 
         {post.visibility === "public" ? (
-          <div className="beauty-post-actions">
+          <div className="post-action-toolbar">
             {savedState ? <SavePostButton size="toolbar" initialSaved={savedState.saved} saveCount={savedState.count} onSavedChange={saved => onSavedChange(post.id, saved)} isAuthenticated={commentViewer.isAuthenticated} target={{ sourceId: post.id, sourceType: "beauty_post" }} /> : <span className="beauty-action text-text-muted" aria-label="Loading Love status"><ReylumiIcon name="heart" /></span>}
-            <button type="button" className="beauty-action" aria-label={`Comments (${commentCount})`} aria-haspopup="dialog" aria-expanded={commentsOpen} onClick={() => { setCommentsLoaded(true); setCommentsOpen(true); }}><ReylumiIcon name="message" /><span className="text-xs">{commentCount || ""}</span></button>
-            <SharePostAction post={post} />
-            {post.bookingAction ? <Link className="beauty-action text-brand-teal" href={canManage ? `/book/${post.bookingAction.salonId}` : post.bookingAction.href}>{canManage ? "Book again" : "Book"}</Link> : null}
+            <button type="button" className="beauty-action" aria-label={`Comments (${commentCount})`} aria-haspopup="dialog" aria-expanded={commentsOpen} onClick={() => { setCommentsLoaded(true); setCommentsOpen(true); }}><ReylumiIcon name="message" /><span>Comment</span><span data-post-action-count className="text-xs">{commentCount || ""}</span></button>
+            <SharePostAction post={{ ...post, caption: caption ?? null }} />
+            {post.bookingAction ? <Link aria-label="Book appointment" className="beauty-action text-brand-teal" href={canManage ? `/book/${post.bookingAction.salonId}` : post.bookingAction.href}><ReylumiIcon name="calendar" /><span data-booking-action-label>Book appointment</span></Link> : null}
           </div>
         ) : null}
-        <dialog ref={commentsDialogRef} onClose={() => setCommentsOpen(false)} onClick={event => { if (event.target === event.currentTarget) setCommentsOpen(false); }} className="beauty-comments-dialog" aria-labelledby={`comments-title-${post.id}`}>
+        <ContentViewer open={commentsOpen} onClose={() => setCommentsOpen(false)} aria-labelledby={`comments-title-${post.id}`} className="place-items-end sm:place-items-center"><div className="w-full max-w-[560px] overflow-y-auto rounded-t-2xl bg-surface text-text-primary shadow-xl sm:rounded-2xl">
           <header className="flex items-center justify-between border-b border-border-subtle p-3"><h2 id={`comments-title-${post.id}`} className="font-semibold">Comments</h2><button type="button" className="beauty-action" aria-label="Close comments" onClick={() => setCommentsOpen(false)}><ReylumiIcon name="close" /></button></header>
           <div className="p-4">{commentsLoaded ? <PostCommentThread compact initialCount={commentCount} onCountChange={handleCommentCountChange} target={commentTarget} viewer={commentViewer} /> : null}</div>
-        </dialog>
+        </div></ContentViewer>
 
 
       </div>
 
-      {confirmingDelete ? (
-        <div
-          aria-labelledby={`delete-beauty-post-${post.id}`}
-          aria-modal="true"
-          className="fixed inset-0 z-[60] grid place-items-end bg-zinc-950/45 p-0 backdrop-blur-sm sm:place-items-center sm:p-6"
-          role="dialog"
-        >
-          <div className="grid max-h-[calc(100dvh-1rem)] w-full gap-4 overflow-y-auto rounded-t-2xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl ring-1 ring-divider-subtle sm:max-w-sm sm:rounded-2xl sm:p-5">
-            <div>
-              <h2
-                className="text-lg font-extrabold text-text-primary"
-                id={`delete-beauty-post-${post.id}`}
-              >
-                Delete this Beauty post?
-              </h2>
-              <p className="mt-1 text-sm font-semibold leading-6 text-text-secondary">
-                This removes it from your Beauty timeline.
-              </p>
-            </div>
-            {error ? (
-              <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
-                {error}
-              </p>
-            ) : null}
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button
-                className="min-h-11 rounded-full bg-surface-muted px-4 text-sm font-extrabold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
-                disabled={pending}
-                onClick={() => setConfirmingDelete(false)}
-                type="button"
-              >
-                Keep post
-              </button>
-              <button
-                className="min-h-11 rounded-full bg-red-600 px-4 text-sm font-extrabold text-white transition hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-wait disabled:opacity-60"
-                disabled={pending}
-                onClick={deletePost}
-                type="button"
-              >
-                {pending ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+
     </article>
   );
 }
 
 export function BeautyProfileClient({
   appointment,
+  favorites,
+  home = false,
+  libraryPage = false,
+  initialSection = "overview",
   commentViewer,
   initialTimeline,
   profile: initialProfile,
   visitCandidates,
 }: BeautyProfileClientProps) {
-  const [section, setSection] = useState<"overview" | "posts" | "library">("overview");
+  const [section, setSection] = useState<"overview" | "posts" | "library">(initialSection);
   const [overviewContinuation, setOverviewContinuation] = useState(false);
   const [savedStates, setSavedStates] = useState<Record<string, { saved: boolean; count?: number }>>({});
   const [savedLoadError, setSavedLoadError] = useState(false);
@@ -1059,15 +943,42 @@ export function BeautyProfileClient({
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const composerDialogRef = useRef<HTMLDivElement | null>(null);
   const profileEditorDialogRef = useRef<HTMLFormElement | null>(null);
+  const profileEditorLayerRef = useRef<HTMLDivElement | null>(null);
   const profileEditButtonRef = useRef<HTMLButtonElement | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const loadingMoreRef = useRef(false);
+  const timelineGenerationRef = useRef(0);
   const publishingRef = useRef(false);
   const profileSavingRef = useRef(false);
   const objectUrlsRef = useRef(new Set<string>());
+  const uploadEpochRef = useRef(0);
+  const uploadAliveRef = useRef(true);
+  const uploadControllersRef = useRef(new Set<AbortController>());
+  const uploadJobsRef = useRef(new Map<string, Promise<UploadedBeautyMedia>>());
+  const uploadingRef = useRef(false);
+  const publishAttemptRef = useRef<BeautyPublishAttempt | null>(null);
+  const pendingCardRef = useRef<HTMLElement | null>(null);
+  const revealPendingCardRef = useRef(false);
+  const authorScope = commentViewer.isAuthenticated && commentViewer.userId && initialProfile.isSelf
+    ? `beauty:${commentViewer.userId}:${initialProfile.id}` : null;
+  const authorScopeRef = useRef(authorScope);
+  useLayoutEffect(() => { authorScopeRef.current = authorScope; }, [authorScope]);
+  const previousAuthorScopeRef = useRef(authorScope);
   const [profile, setProfile] = useState(initialProfile);
+  useEffect(() => {
+    const changed = (event: Event) => {
+      const detail = (event as CustomEvent<{ change: PostChange; viewerId: string | null }>).detail;
+      if (!detail?.change || detail.viewerId !== commentViewer.userId || detail.change.action !== "feature" || detail.change.target.sourceType !== "beauty_post") return;
+      const change = detail.change;
+      if (change.coverImageUrl) setProfile(current => !current.isSelf || (change.target.profileId && change.target.profileId !== current.id) ? current : ({ ...current, coverImageUrl: change.coverImageUrl!, ...(change.coverMediaPath ? { coverMediaPath: change.coverMediaPath } : {}) }));
+    };
+    window.addEventListener(POST_CHANGED_EVENT, changed);
+    return () => window.removeEventListener(POST_CHANGED_EVENT, changed);
+  }, [commentViewer.userId]);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  useOverlayViewport(profileEditorLayerRef, profileEditorOpen);
+  useTransientOverlay(() => setProfileEditorOpen(false), profileEditorOpen);
   const [profileDraftBio, setProfileDraftBio] = useState(initialProfile.bio ?? "");
   const [profileDraftVisibility, setProfileDraftVisibility] =
     useState<BeautyProfileVisibility>(initialProfile.visibility);
@@ -1087,6 +998,7 @@ export function BeautyProfileClient({
   const [posts, setPosts] = useState(initialTimeline.items);
   const savedTargetsKey = JSON.stringify(posts.filter(post => post.visibility === "public").map(post => ({ sourceId: post.id, sourceType: "beauty_post" })));
   useEffect(() => {
+    if (home || libraryPage) return;
     let active = true;
     const targets = JSON.parse(savedTargetsKey) as AccountSavedPostTarget[];
     if (!targets.length) return;
@@ -1098,7 +1010,7 @@ export function BeautyProfileClient({
       setSavedStates(current => ({ ...current, ...Object.fromEntries(targets.map(target => [target.sourceId, { saved: keys.has(`beauty_post:${target.sourceId}`), count: result.saveCountsByKey[`beauty_post:${target.sourceId}`] }])) }));
     }).catch(() => { if (active) setSavedLoadError(true); });
     return () => { active = false; };
-  }, [savedTargetsKey, savedRetry]);
+  }, [home, libraryPage, savedTargetsKey, savedRetry]);
 
   const [activeFilter, setActiveFilter] = useState<TimelineFilter>("all");
   const [cursor, setCursor] = useState<BeautyTimelineCursor | null>(
@@ -1110,16 +1022,22 @@ export function BeautyProfileClient({
   );
   const [loadingMore, setLoadingMore] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
+  useTransientOverlay(() => setComposerOpen(false), composerOpen);
   const [composerMode, setComposerMode] = useState<ComposerMode>("regular");
   const [caption, setCaption] = useState("");
-  const [normalMedia, setNormalMedia] = useState<UploadedBeautyMedia[]>([]);
-  const [beforeMedia, setBeforeMedia] = useState<UploadedBeautyMedia | null>(
+  const [normalMedia, setNormalMedia] = useState<ComposerBeautyMedia[]>([]);
+  const [beforeMedia, setBeforeMedia] = useState<ComposerBeautyMedia | null>(
     null,
   );
-  const [afterMedia, setAfterMedia] = useState<UploadedBeautyMedia | null>(null);
+  const [afterMedia, setAfterMedia] = useState<ComposerBeautyMedia | null>(null);
+  const [pendingPost, setPendingPost] = useState<PendingBeautyPost | null>(null);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
   const [composerError, setComposerError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadPhase, setUploadPhase] = useState<MediaUploadPhase>("preparing");
+  const [uploadBatch, setUploadBatch] = useState({ current: 1, total: 1 });
+  const [failedUpload, setFailedUpload] = useState<{ items: ComposerBeautyMedia[]; role: "image" | "before" | "after" } | null>(null);
   const [attribution, setAttribution] = useState<SelectedAttribution | null>(
     null,
   );
@@ -1138,8 +1056,21 @@ export function BeautyProfileClient({
     composerMode === "regular"
       ? normalMedia
       : [beforeMedia, afterMedia].filter(
-          (item): item is UploadedBeautyMedia => Boolean(item),
+          (item): item is ComposerBeautyMedia => Boolean(item),
         );
+  const photoPermission = usePublicPhotoProcessingPermission(JSON.stringify([
+    authorScope, composerMode, attribution?.salonId ?? null, currentComposerMedia.map(item => item.id),
+  ]));
+  // Rank only the visit history supplied by the server.
+  const suggestedSalons = useMemo(() => {
+    const grouped = new Map<string, { candidate: BeautyRecentVisitCandidate; count: number }>();
+    for (const candidate of visitCandidates) {
+      const existing = grouped.get(candidate.salonId);
+      if (existing) existing.count += 1;
+      else grouped.set(candidate.salonId, { candidate, count: 1 });
+    }
+    return [...grouped.values()].sort((a, b) => b.count - a.count).slice(0, 4).map(item => item.candidate);
+  }, [visitCandidates]);
   const composerBusy = uploading || publishing;
   const profileEditorBusy = profileUpload !== null || savingProfile;
   const displayedCoverUrl = removeCover
@@ -1156,11 +1087,49 @@ export function BeautyProfileClient({
     [activeFilter, posts],
   );
   const composerTitle =
-    composerMode === "before_after" ? "Create Before & After" : "Share a beauty moment";
+    composerMode === "before_after" ? "Before & After" : "New post";
   const composerDescription =
     composerMode === "before_after"
       ? "Add the transformation, then choose the salon visit if it applies."
       : "Add a caption, photos, or both. Keep it easy.";
+
+  useEffect(() => {
+    const alive = uploadAliveRef, epoch = uploadEpochRef;
+    const controllers = uploadControllersRef.current;
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      epoch.current++;
+      for (const controller of controllers) controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (previousAuthorScopeRef.current === authorScope) return;
+    previousAuthorScopeRef.current = authorScope;
+    uploadEpochRef.current++;
+    for (const controller of uploadControllersRef.current) controller.abort();
+    uploadJobsRef.current.clear();
+    uploadingRef.current = false;
+    publishAttemptRef.current = null;
+    revealPendingCardRef.current = false;
+    publishingRef.current = false;
+    for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
+    objectUrlsRef.current.clear();
+    setNormalMedia([]); setBeforeMedia(null); setAfterMedia(null);
+    setPendingPost(null); setFailedUpload(null); setUploading(false);
+    setReceiptError(null);
+    setCaption(""); setAttribution(null); setComposerError(""); setComposerOpen(false);
+    setSuccessNotice("");
+    timelineGenerationRef.current++;
+    loadingMoreRef.current = false;
+    setLoadingMore(false);
+    setProfile(initialProfile); setPosts(initialTimeline.items);
+    setCoverUpload(null); setAvatarUpload(null); setRemoveCover(false); setRemoveAvatar(false);
+    setProfileEditorOpen(false); setProfileDraftBio(initialProfile.bio ?? ""); setProfileDraftVisibility(initialProfile.visibility);
+    setCursor(initialTimeline.nextCursor); setHasMore(initialTimeline.hasMore);
+    setSavedStates({});
+  }, [authorScope, initialProfile, initialTimeline]);
 
   const loadMorePosts = useCallback(async () => {
     if (!cursor || loadingMoreRef.current) {
@@ -1168,11 +1137,14 @@ export function BeautyProfileClient({
     }
 
     loadingMoreRef.current = true;
+    const generation = timelineGenerationRef.current;
     setLoadingMore(true);
     setTimelineError("");
 
     try {
       const page = await loadBeautyTimelineAction(profile.id, cursor);
+
+      if (generation !== timelineGenerationRef.current) return;
 
       if (page.error) {
         setTimelineError(page.error);
@@ -1187,9 +1159,13 @@ export function BeautyProfileClient({
       });
       setCursor(page.nextCursor);
       setHasMore(page.hasMore);
+    } catch (error) {
+      if (generation === timelineGenerationRef.current) throw error;
     } finally {
-      loadingMoreRef.current = false;
-      setLoadingMore(false);
+      if (generation === timelineGenerationRef.current) {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      }
     }
   }, [cursor, profile.id]);
 
@@ -1230,7 +1206,7 @@ export function BeautyProfileClient({
   }, [profileEditorOpen]);
 
   useEffect(() => {
-    if (!composerOpen || composerMode !== "before_after" || !manualSalonSearchOpen) {
+    if (!composerOpen || !manualSalonSearchOpen) {
       return;
     }
 
@@ -1271,7 +1247,7 @@ export function BeautyProfileClient({
   useEffect(() => {
     const node = sentinelRef.current;
 
-    if (!node || loadingMore || section === "library" ||
+    if (!node || home || loadingMore || section === "library" ||
         (section === "posts" && !hasMore) ||
         (section === "overview" && (posts.length === 0 || (posts.length < 2 && !hasMore)))) {
       return;
@@ -1296,7 +1272,7 @@ export function BeautyProfileClient({
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [hasMore, loadMorePosts, loadingMore, section, posts.length]);
+  }, [home, hasMore, loadMorePosts, loadingMore, section, posts.length]);
 
   const selectedStaffOptions = useMemo(
     () => attribution?.staffOptions ?? [],
@@ -1572,7 +1548,7 @@ export function BeautyProfileClient({
     }
   }
 
-  function releaseMedia(media: UploadedBeautyMedia | null) {
+  function releaseMedia(media: ComposerBeautyMedia | UploadedBeautyMedia | null) {
     if (!media) {
       return;
     }
@@ -1582,27 +1558,35 @@ export function BeautyProfileClient({
       objectUrlsRef.current.delete(media.previewUrl);
     }
 
-    void deleteBeautyMediaAction(media.objectPath);
+    uploadJobsRef.current.delete(media.id);
+
+    if (media.objectPath) void deleteBeautyMediaAction(media.objectPath).catch(() => {});
   }
 
   function openComposer(mode: ComposerMode) {
+    if (publishAttemptRef.current) return;
+    photoPermission.reset();
     setComposerMode(mode);
     setComposerOpen(true);
     setComposerError("");
-    setManualSalonSearchOpen(mode === "before_after" && visitCandidates.length === 0);
+    setManualSalonSearchOpen(visitCandidates.length === 0);
   }
 
   function resetComposer(cleanup: boolean) {
+    photoPermission.reset();
     if (cleanup) {
       normalMedia.forEach(releaseMedia);
       releaseMedia(beforeMedia);
       releaseMedia(afterMedia);
     }
+    for (const media of failedUpload?.items ?? []) releaseObjectUrl(media.previewUrl);
 
     setCaption("");
     setNormalMedia([]);
     setBeforeMedia(null);
     setAfterMedia(null);
+    setFailedUpload(null);
+    setUploadPhase("preparing");
     setComposerError("");
     setUploadProgress(0);
     setAttribution(null);
@@ -1621,7 +1605,13 @@ export function BeautyProfileClient({
     setComposerOpen(false);
   }
 
-  async function uploadBeautyFile(file: File, role: BeautyPostMediaInput["role"]) {
+  async function uploadBeautyFile(file: File, role: BeautyPostMediaInput["role"], options: {
+    processed: Awaited<ReturnType<typeof processBeautyImage>>;
+    onProgress: (value: number) => void;
+    selection: ComposerBeautyMedia;
+    signal: AbortSignal;
+    isCurrent: () => boolean;
+  }) {
     if (!acceptedMimeTypes.has(file.type)) {
       throw new Error("Use a JPEG, PNG, or WebP image.");
     }
@@ -1630,42 +1620,37 @@ export function BeautyProfileClient({
       throw new Error(`Image must be ${formatBytes(BEAUTY_IMAGE_LIMIT)} or smaller.`);
     }
 
-    let previewUrl: string | null = null;
     let uploadedPath: string | null = null;
 
     try {
-      const processed = await processBeautyImage(file);
-      previewUrl = URL.createObjectURL(processed.file);
-      rememberObjectUrl(previewUrl);
+      const processed = options.processed;
+      if (!options.isCurrent()) throw new PublicImageUploadCancelledError();
       const session = await getBeautyMediaUploadSessionAction(role);
-      uploadedPath = session.path;
+      uploadedPath = session.objectPath ?? session.path;
+      if (!options.isCurrent()) throw new PublicImageUploadCancelledError();
 
       await uploadToSupabase({
         accessToken: session.accessToken,
         anonKey: session.anonKey,
         blob: processed.file,
         bucket: session.bucket,
-        onProgress: setUploadProgress,
+        onProgress: options.onProgress,
         path: session.path,
         supabaseUrl: session.supabaseUrl,
+        signal: options.signal,
       });
 
       return {
         bytes: processed.file.size,
         height: processed.height,
-        id: crypto.randomUUID(),
+        id: options.selection.id,
         mimeType: processed.file.type,
-        objectPath: session.path,
-        previewUrl,
+        objectPath: uploadedPath,
+        previewUrl: options.selection.previewUrl,
         role,
         width: processed.width,
       } satisfies UploadedBeautyMedia;
     } catch (error) {
-      if (previewUrl && objectUrlsRef.current.has(previewUrl)) {
-        URL.revokeObjectURL(previewUrl);
-        objectUrlsRef.current.delete(previewUrl);
-      }
-
       if (uploadedPath) {
         try {
           await deleteBeautyMediaAction(uploadedPath);
@@ -1678,81 +1663,144 @@ export function BeautyProfileClient({
     }
   }
 
-  async function addNormalFiles(files: FileList | null) {
-    const selected = Array.from(files ?? []).slice(0, 4 - normalMedia.length);
-
-    if (selected.length === 0) {
-      return;
-    }
-
+  async function runSelectedUploads(items: ComposerBeautyMedia[], role: "image" | "before" | "after", previous?: ComposerBeautyMedia | null) {
+    const scope = authorScopeRef.current;
+    const epoch = uploadEpochRef.current;
+    if (!scope || !items.length || uploadingRef.current) return;
+    uploadingRef.current = true;
+    const isCurrent = () => uploadAliveRef.current && authorScopeRef.current === scope && uploadEpochRef.current === epoch;
+    const controller = new AbortController();
+    uploadControllersRef.current.add(controller);
     setComposerError("");
     setUploading(true);
     setUploadProgress(0);
-
-    const uploaded: UploadedBeautyMedia[] = [];
-
+    setUploadPhase("preparing");
+    setUploadBatch({ current: 1, total: items.length });
+    setFailedUpload(null);
+    const work = (async () => {
+      const prepared = await runPublicImageUploadBatch({
+        items, concurrency: 2, isCurrent,
+        upload: item => {
+          if (!item.file) throw new Error("Choose this photo again before uploading.");
+          return processBeautyImage(item.file);
+        }, cleanup: () => {},
+      });
+      const totalBytes = prepared.reduce((sum, item) => sum + item.file.size, 0);
+      const progress = new Array<number>(items.length).fill(0);
+      let completed = 0;
+      if (!isCurrent()) throw new PublicImageUploadCancelledError();
+      setUploadPhase("uploading");
+      return runPublicImageUploadBatch({
+        items, concurrency: 2, isCurrent,
+        upload: async (item, index) => {
+          const result = await uploadBeautyFile(item.file!, item.role, {
+            processed: prepared[index], selection: item, signal: controller.signal, isCurrent,
+            onProgress: value => {
+              if (!isCurrent()) return;
+              progress[index] = value;
+              const transferred = prepared.reduce((sum, file, i) => sum + file.file.size * progress[i] / 100, 0);
+              setUploadProgress(mediaBatchProgress(transferred, 0, 0, totalBytes));
+              setUploadPhase(progress.every(percent => percent >= 100) ? "confirming" : "uploading");
+            },
+          });
+          if (isCurrent()) setUploadBatch({ current: Math.min(++completed + 1, items.length), total: items.length });
+          return result;
+        },
+        cleanup: result => deleteBeautyMediaAction(result.objectPath),
+      });
+    })();
+    for (const item of items) {
+      const job = work.then(results => results.find(result => result.id === item.id)!);
+      void job.catch(() => {});
+      uploadJobsRef.current.set(item.id, job);
+    }
     try {
-      for (const file of selected) {
-        uploaded.push(await uploadBeautyFile(file, "image"));
+      const uploaded = await work;
+      if (!isCurrent()) return;
+      const merged = new Map(uploaded.map(item => [item.id, item]));
+      if (role === "image") setNormalMedia(current => current.map(item => merged.has(item.id) ? { ...item, ...merged.get(item.id)! } : item));
+      else {
+        const next = { ...items[0], ...uploaded[0] };
+        if (role === "before") setBeforeMedia(next); else setAfterMedia(next);
+        if (previous && previous.id !== next.id) releaseMedia(previous);
       }
-
-      setNormalMedia((current) => [...current, ...uploaded].slice(0, 4));
+      setUploadPhase("complete");
+      setUploadProgress(100);
     } catch (error) {
-      uploaded.forEach(releaseMedia);
+      if (!isCurrent()) return;
+      setFailedUpload({ items, role });
+      if (role !== "image" && previous) {
+        if (role === "before") setBeforeMedia(previous); else setAfterMedia(previous);
+      }
       setComposerError(
         error instanceof Error ? error.message : "Upload failed.",
       );
     } finally {
-      setUploading(false);
-      setUploadProgress(0);
-
-      if (normalFileInputRef.current) {
-        normalFileInputRef.current.value = "";
+      uploadControllersRef.current.delete(controller);
+      if (isCurrent()) {
+        uploadingRef.current = false;
+        setUploading(false);
+        if (normalFileInputRef.current) normalFileInputRef.current.value = "";
+        if (beforeInputRef.current) beforeInputRef.current.value = "";
+        if (afterInputRef.current) afterInputRef.current.value = "";
       }
     }
+  }
+
+  function selectedMedia(file: File, role: BeautyPostMediaInput["role"]): ComposerBeautyMedia {
+    if (!acceptedMimeTypes.has(file.type)) throw new Error("Use a JPEG, PNG, or WebP image.");
+    if (!file.size || file.size > BEAUTY_IMAGE_LIMIT) throw new Error(`Choose an image under ${formatBytes(BEAUTY_IMAGE_LIMIT)}.`);
+    const previewUrl = URL.createObjectURL(file);
+    rememberObjectUrl(previewUrl);
+    return { id: crypto.randomUUID(), file, role, previewUrl, mimeType: file.type };
+  }
+
+  async function addNormalFiles(files: FileList | File[] | null) {
+    if (composerBusy || uploadingRef.current || publishAttemptRef.current) return;
+    const items: ComposerBeautyMedia[] = [];
+    try {
+      for (const file of Array.from(files ?? []).slice(0, 4 - normalMedia.length)) items.push(selectedMedia(file, "image"));
+    } catch (error) {
+      items.forEach(item => releaseObjectUrl(item.previewUrl));
+      setComposerError(error instanceof Error ? error.message : "Choose a valid image.");
+      return;
+    }
+    if (!items.length) return;
+    photoPermission.reset();
+    setNormalMedia(current => [...current, ...items]);
+    await runSelectedUploads(items, "image");
   }
 
   async function replaceBeforeAfterFile(
     file: File | null,
     role: "after" | "before",
   ) {
-    if (!file) {
+    if (!file || composerBusy || uploadingRef.current || publishAttemptRef.current) {
       return;
     }
 
-    setComposerError("");
-    setUploading(true);
-    setUploadProgress(0);
-
     try {
-      const uploaded = await uploadBeautyFile(file, role);
-
-      if (role === "before") {
-        releaseMedia(beforeMedia);
-        setBeforeMedia(uploaded);
-      } else {
-        releaseMedia(afterMedia);
-        setAfterMedia(uploaded);
-      }
+      const item = selectedMedia(file, role);
+      photoPermission.reset();
+      const previous = role === "before" ? beforeMedia : afterMedia;
+      if (role === "before") setBeforeMedia(item); else setAfterMedia(item);
+      await runSelectedUploads([item], role, previous);
     } catch (error) {
       setComposerError(
         error instanceof Error ? error.message : "Upload failed.",
       );
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-
-      if (beforeInputRef.current) {
-        beforeInputRef.current.value = "";
-      }
-      if (afterInputRef.current) {
-        afterInputRef.current.value = "";
-      }
     }
   }
 
-  function removeNormalMedia(media: UploadedBeautyMedia) {
+  function removeNormalMedia(media: ComposerBeautyMedia) {
+    photoPermission.reset();
     releaseMedia(media);
+    uploadJobsRef.current.delete(media.id);
+    setFailedUpload(current => {
+      if (!current || current.role !== "image") return current;
+      const items = current.items.filter(item => item.id !== media.id);
+      return items.length ? { ...current, items } : null;
+    });
     setNormalMedia((current) => current.filter((item) => item.id !== media.id));
   }
 
@@ -1806,77 +1854,190 @@ export function BeautyProfileClient({
     });
   }
 
-  function publishPost() {
-    if (composerBusy || publishingRef.current) {
-      return;
-    }
+  function attemptIsCurrent(attempt: BeautyPublishAttempt) {
+    return uploadAliveRef.current && authorScopeRef.current === attempt.scope &&
+      uploadEpochRef.current === attempt.epoch && publishAttemptRef.current === attempt;
+  }
 
-    setComposerError("");
-
-    const media = currentComposerMedia.map((item) => ({
-      bytes: item.bytes,
-      height: item.height,
-      mimeType: item.mimeType,
-      objectPath: item.objectPath,
-      role: item.role,
-      width: item.width,
-    }));
-
-    if (composerMode === "regular" && !caption.trim() && media.length === 0) {
-      setComposerError("Write a caption or add a photo.");
-      return;
-    }
-
-    if (composerMode === "before_after") {
-      if (!beforeMedia || !afterMedia) {
-        setComposerError("Add one before image and one after image.");
-        return;
+  function restorePendingReceipt(scope: string) {
+    try {
+      const saved = readPublicPostReceipt<BeautyPostCreateInput & { requestId: string }>(scope);
+      setReceiptError(null);
+      if (!saved) return false;
+      const input = saved.input;
+      if (!Array.isArray(input.media) || input.media.length > 4 ||
+          !["regular", "before_after"].includes(input.postType) ||
+          (input.caption != null && typeof input.caption !== "string") ||
+          input.media.some(item => !item || typeof item.objectPath !== "string" || !["image", "before", "after"].includes(item.role))) {
+        throw new Error("The saved post needs review before another copy can be created. Contact support.");
       }
-
-      if (!attribution) {
-        setComposerError("Choose the salon for this Before & After.");
-        return;
-      }
+      const media: ComposerBeautyMedia[] = input.media.map((item, index) => ({ ...item, id: `${saved.requestId}:${index}`, previewUrl: "" }));
+      const attempt: BeautyPublishAttempt = {
+        scope, requestId: saved.requestId, epoch: uploadEpochRef.current,
+        caption: input.caption ?? "", mode: input.postType,
+        attribution: input.salonId ? { salonId: input.salonId, salonName: "Selected salon", staffId: input.staffId ?? null, staffName: null, staffOptions: [], source: input.attributionSource ?? "customer_claimed" } : null,
+        media, input, submitted: true,
+      };
+      publishAttemptRef.current = attempt;
+      setCaption(attempt.caption); setComposerMode(attempt.mode);
+      setAttribution(attempt.attribution);
+      setNormalMedia(media.filter(item => item.role === "image"));
+      setBeforeMedia(media.find(item => item.role === "before") ?? null);
+      setAfterMedia(media.find(item => item.role === "after") ?? null);
+      setComposerOpen(false);
+      showPendingAttempt(attempt, "unknown", "A previous post has not been confirmed. Retry the same saved request safely.");
+      return true;
+    } catch (error) {
+      setReceiptError(error instanceof Error ? error.message : "Saved post status is unavailable. Restore browser storage before posting.");
+      return true;
     }
+  }
 
+  function showPendingAttempt(attempt: BeautyPublishAttempt, phase: PendingBeautyPost["phase"], error: string | null = null) {
+    if (attemptIsCurrent(attempt)) setPendingPost({ ...attempt, phase, error, canRetry: Boolean(attempt.input) });
+  }
+
+  useEffect(() => {
+    let active = true;
+    // Hydrate the external browser receipt after this author scope commits.
+    queueMicrotask(() => { if (active && authorScope && authorScopeRef.current === authorScope) restorePendingReceipt(authorScope); });
+    return () => { active = false; };
+  // A receipt is scoped to the authenticated author, never the current route.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authorScope]);
+
+  const pendingRequestId = pendingPost?.requestId;
+  const pendingScope = pendingPost?.scope;
+  useEffect(() => {
+    if (!pendingRequestId || pendingScope !== authorScope || !revealPendingCardRef.current) return;
+    revealPendingCardRef.current = false;
+    const frame = requestAnimationFrame(() => {
+      if (authorScopeRef.current === pendingScope) pendingCardRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pendingRequestId, pendingScope, authorScope]);
+
+  function submitPublishAttempt(attempt: BeautyPublishAttempt) {
+    if (publishingRef.current || !attemptIsCurrent(attempt)) return;
     publishingRef.current = true;
-
+    showPendingAttempt(attempt, attempt.input || !attempt.media.some(item => !item.objectPath) ? "checking" : "uploading");
     startPublishing(async () => {
       try {
-        const result = await createBeautyPostAction({
-          attributionSource: attribution?.source,
-          caption,
-          media,
-          postType: composerMode,
-          salonId: attribution?.salonId ?? null,
-          staffId: attribution?.staffId ?? null,
-        });
-
-        if (result.error !== null) {
-          setComposerError(result.error);
+        if (!attempt.input) {
+          const ready = await Promise.all(attempt.media.map(item => {
+            if (item.objectPath) return Promise.resolve(item as UploadedBeautyMedia);
+            const job = uploadJobsRef.current.get(item.id);
+            if (!job) throw new Error("Retry the photo upload before posting.");
+            return job;
+          }));
+          if (!attemptIsCurrent(attempt)) return;
+          attempt.input = {
+            requestId: attempt.requestId,
+            attributionSource: attempt.attribution?.source ?? "customer_claimed",
+            caption: attempt.caption,
+            media: ready.map(({ bytes, height, mimeType, objectPath, role, width }) => ({ bytes: bytes ?? null, height: height ?? null, mimeType: mimeType ?? null, objectPath, role, width: width ?? null })),
+            postType: attempt.mode,
+            salonId: attempt.attribution?.salonId ?? null,
+            staffId: attempt.attribution?.staffId ?? null,
+            ...(attempt.photoProcessingConsent ? { photoProcessingConsent: attempt.photoProcessingConsent } : {}),
+          };
+        }
+        // A lost response or route reload must never turn the next tap into a
+        // fresh create request. Persist only the frozen JSON input, not files.
+        writePublicPostReceipt(attempt.scope, { requestId: attempt.requestId, input: attempt.input });
+        showPendingAttempt(attempt, "checking");
+        attempt.submitted = true;
+        const result = await createBeautyPostAction(attempt.input);
+        if (!attemptIsCurrent(attempt)) return;
+        if ("requestId" in result && result.requestId && result.requestId !== attempt.requestId) {
+          showPendingAttempt(attempt, "unknown", "This post response could not be matched. Retry the same saved request safely.");
           return;
         }
-
-        const newestPost = result.timeline.items[0];
-        const newestVerification = newestPost?.verification;
-
-        setPosts(result.timeline.items);
-        setCursor(result.timeline.nextCursor);
-        setHasMore(result.timeline.hasMore);
+        if (result.error !== null) {
+          if (!("outcome" in result && result.outcome === "unknown")) clearPublicPostReceipt(attempt.scope, attempt.requestId);
+          setComposerError(result.error);
+          showPendingAttempt(attempt, "outcome" in result && result.outcome === "unknown" ? "unknown" : "failed", result.error);
+          return;
+        }
+        if ("publicationStatus" in result && result.publicationStatus !== "published") {
+          showPendingAttempt(attempt, "unknown", "Your post has not been confirmed. Retry this same post to check safely.");
+          return;
+        }
+        clearPublicPostReceipt(attempt.scope, attempt.requestId);
+        window.dispatchEvent(new CustomEvent("reylumi:post-published"));
+        const newestVerification = result.timeline.items[0]?.verification;
+        timelineGenerationRef.current++;
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+        if (!result.timeline.error) {
+          setPosts(result.timeline.items);
+          setCursor(result.timeline.nextCursor);
+          setHasMore(result.timeline.hasMore);
+        }
         setTimelineError(result.timeline.error ?? "");
-        setSuccessNotice(
-          composerMode === "before_after"
+        setSuccessNotice(result.timeline.error ? "Your post was created. The timeline could not refresh yet."
+          : attempt.mode === "before_after"
             ? newestVerification?.state === "verified"
               ? "Before & After published with a verified visit. Salon approval is pending."
               : "Before & After published. Salon approval and visit verification are pending."
-            : "Beauty moment shared.",
-        );
+            : "Beauty moment shared.");
+        for (const media of attempt.media) {
+          releaseObjectUrl(media.previewUrl);
+          uploadJobsRef.current.delete(media.id);
+        }
+        const publishedIds = new Set(attempt.media.map(item => item.id));
+        for (const media of [...normalMedia, beforeMedia, afterMedia]) {
+          if (media && !publishedIds.has(media.id)) releaseMedia(media);
+        }
+        publishAttemptRef.current = null;
+        setPendingPost(null);
         resetComposer(false);
         setComposerOpen(false);
+      } catch (error) {
+        if (!attemptIsCurrent(attempt)) return;
+        const message = attempt.submitted
+          ? "We could not confirm whether your post was created. Retry this same post safely."
+          : error instanceof Error ? error.message : "The photos could not be uploaded. Your draft is still here.";
+        setComposerError(message);
+        showPendingAttempt(attempt, attempt.submitted ? "unknown" : "failed", message);
       } finally {
-        publishingRef.current = false;
+        if (authorScopeRef.current === attempt.scope && uploadEpochRef.current === attempt.epoch) publishingRef.current = false;
       }
     });
+  }
+
+  function editPendingDraft() {
+    if (publishingRef.current || pendingPost?.phase === "unknown") return;
+    publishAttemptRef.current = null;
+    setPendingPost(null);
+    photoPermission.reset();
+    setComposerOpen(true);
+  }
+
+  function publishPost() {
+    if (publishingRef.current || publishAttemptRef.current) return;
+    if (!authorScope) { setComposerError("Sign in to your own Beauty profile before posting."); return; }
+    if (restorePendingReceipt(authorScope)) return;
+    if (composerMode === "regular" && !caption.trim() && !currentComposerMedia.length) {
+      setComposerError("Write a caption or add a photo."); return;
+    }
+    if (composerMode === "before_after" && (!beforeMedia || !afterMedia || !attribution)) {
+      setComposerError(!beforeMedia || !afterMedia ? "Add one before image and one after image." : "Choose the salon for this Before & After."); return;
+    }
+    if (currentComposerMedia.length && !photoPermission.consent) {
+      setComposerError(PUBLIC_PHOTO_PROCESSING_DECLINE_NOTICE); return;
+    }
+    setComposerError("");
+    const attempt: BeautyPublishAttempt = {
+      requestId: crypto.randomUUID(), scope: authorScope, epoch: uploadEpochRef.current,
+      caption, mode: composerMode, media: currentComposerMedia.map(item => ({ ...item })),
+      attribution: attribution ? { ...attribution } : null, input: null, submitted: false,
+      ...(currentComposerMedia.length ? { photoProcessingConsent: photoPermission.consent } : {}),
+    };
+    publishAttemptRef.current = attempt;
+    revealPendingCardRef.current = true;
+    setComposerOpen(false);
+    submitPublishAttempt(attempt);
   }
 
   function updatePostCaption(postId: string, nextCaption: string | null) {
@@ -1905,21 +2066,42 @@ export function BeautyProfileClient({
     setPosts((current) => current.filter((post) => post.id !== postId));
   }
 
+  function archivePost(postId: string) {
+    setPosts(current => current.map(post => post.id === postId ? { ...post, visibility: "self" as const } : post));
+  }
+
   return (
     <main className="beauty-profile-page min-h-screen overflow-x-hidden bg-surface-muted px-3 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto grid w-full max-w-3xl gap-4">
-        <section className="beauty-identity">
-          <div className="beauty-cover">{profile.coverImageUrl ? <NextImage alt={`${profile.displayName} Beauty cover`} src={profile.coverImageUrl} fill sizes="(min-width: 1024px) 960px, 100vw" /> : null}
-            {profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="beauty-settings" ref={profileEditButtonRef} onClick={openProfileEditor}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 3 2 3-1 2 2 3-2 1-3 3-1v-4l-3-1-1-3h-4Z"/><circle cx="12" cy="12" r="3"/></svg></button> : null}
-          </div>
-          <div className="beauty-person"><ProfileAvatar className="beauty-profile-avatar" profile={profile} /><div><h1 className="text-2xl font-semibold">{profile.displayName}</h1>{profile.bio ? <p className="mt-1 text-sm text-text-secondary">{profile.bio}</p> : null}<p className="mt-1 text-xs text-text-secondary">{profile.visibility === "public" ? "Public profile" : "Private profile"}</p></div></div>
-        </section>
-        <nav className="beauty-sections" aria-label="Beauty sections">{(["overview", "posts", "library"] as const).map(id => <button key={id} type="button" aria-pressed={section === id} onClick={() => { setOverviewContinuation(false); setSection(id); }}>{id === "overview" ? "Overview" : id === "posts" ? "My posts" : "Library"}</button>)}</nav>
-        {(section === "overview" || (section === "posts" && overviewContinuation)) && profile.isSelf ? appointment : null}
+      <div className="grid w-full min-w-0 gap-4">
+        {receiptError && authorScope ? <div role="alert" className="grid gap-2 rounded-2xl bg-surface p-4 text-sm text-red-700"><p>{receiptError}</p><button type="button" className="beauty-action" onClick={() => restorePendingReceipt(authorScope)}>Check saved post status</button></div> : null}
+        {pendingPost && pendingPost.scope === authorScope && initialProfile.isSelf ? (
+          <article ref={pendingCardRef} aria-label="Your pending Beauty post" data-publication-status={pendingPost.phase} className="grid min-w-0 gap-3 rounded-2xl bg-surface p-4 ring-1 ring-divider-subtle" style={{ overflowWrap: "anywhere" }}>
+            <div><strong className="text-sm">Your Beauty post</strong><p className="text-xs text-text-secondary">Only you can see this pending card.</p></div>
+            {pendingPost.caption ? <p className="whitespace-pre-wrap text-sm">{pendingPost.caption}</p> : null}
+            {pendingPost.media.length ? <div className={classNames("grid gap-2", pendingPost.media.length === 1 ? "grid-cols-1" : "grid-cols-2")}>{pendingPost.media.map(media => (
+              // eslint-disable-next-line @next/next/no-img-element
+              media.previewUrl ? <img key={media.id} src={media.previewUrl} alt={media.role === "image" ? "Your selected photo" : `${media.role} photo`} className="max-h-64 w-full rounded-lg object-contain" /> : <p key={media.id} className="rounded-lg bg-surface-muted p-4 text-xs text-text-secondary">Photo uploaded. Local preview is unavailable after reloading.</p>
+            ))}</div> : null}
+            <p role="status" className="text-sm font-semibold text-brand-teal">{pendingPost.phase === "uploading" ? "Uploading your photos…" : pendingPost.phase === "checking" ? "Checking and posting…" : pendingPost.phase === "unknown" ? "Posting has not been confirmed" : "Your draft needs attention"}</p>
+            {pendingPost.phase === "uploading" ? <MediaUploadProgress phase={uploadPhase} progress={uploadProgress} current={uploadBatch.current} total={uploadBatch.total} /> : null}
+            {pendingPost.error ? <p role="alert" className="text-sm text-red-700">{pendingPost.error}</p> : null}
+            {pendingPost.phase === "failed" || pendingPost.phase === "unknown" ? <div className="flex flex-wrap gap-2">
+              {pendingPost.canRetry ? <button type="button" disabled={publishing} className="beauty-action" onClick={() => { const attempt = publishAttemptRef.current; if (attempt) submitPublishAttempt(attempt); }}>Retry this same post</button> : null}
+              {pendingPost.phase === "failed" ? <button type="button" disabled={publishing} className="beauty-action" onClick={editPendingDraft}>Review draft</button> : <p className="text-xs text-text-secondary">Keep this draft while we confirm the result. A retry uses the same request.</p>}
+            </div> : null}
+          </article>
+        ) : null}
+        {home ? <BeautyHome profile={profile} posts={posts} viewerId={commentViewer.userId} appointment={appointment} favorites={favorites} onCompose={photo => {
+          flushSync(() => openComposer("regular"));
+          if (photo) normalFileInputRef.current?.click();
+        }}/> : <>
+        {libraryPage ? <header><Link href="/beauty" className="inline-flex min-h-11 items-center text-sm text-brand-teal">← Beauty</Link><h1 className="text-xl font-semibold">Library</h1></header> : <><BeautyProfileHeader profile={profile} actions={profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="grid size-11 place-items-center rounded-full bg-surface text-text-primary shadow-sm" ref={profileEditButtonRef} onClick={openProfileEditor}><SettingsIcon /></button> : null} />
+        <nav className="beauty-sections" aria-label="Beauty sections">{(["overview", "posts", "library"] as const).map(id => <button key={id} type="button" aria-pressed={section === id} onClick={() => { setOverviewContinuation(false); setSection(id); }}>{id === "overview" ? "Overview" : id === "posts" ? "My posts" : "Library"}</button>)}</nav></>}
         {section !== "library" && profile.isSelf ? <button type="button" className="beauty-composer" onClick={() => openComposer("regular")}><ProfileAvatar profile={profile} /><span className="flex-1 text-left text-sm text-text-secondary">Share a beauty moment…</span><ReylumiIcon name="image" /></button> : null}
         {section === "library" ? <section aria-label="Your photo library"><BeautyLibrary posts={posts} />{hasMore ? <button type="button" className="beauty-action mt-3" disabled={loadingMore} onClick={() => void loadMorePosts()}>{loadingMore ? "Loading…" : "Load more photos"}</button> : null}{timelineError ? <p role="alert" className="text-sm text-red-700">{timelineError}</p> : null}</section> : null}
+        </>}
 
-        {savedLoadError ? <button type="button" className="beauty-action" onClick={() => setSavedRetry(value => value + 1)}>Could not load Love status. Retry</button> : null}
+        {!home && !libraryPage && savedLoadError ? <button type="button" className="beauty-action" onClick={() => setSavedRetry(value => value + 1)}>Could not load Love status. Retry</button> : null}
         {successNotice ? (
           <p
             aria-live="polite"
@@ -1929,7 +2111,7 @@ export function BeautyProfileClient({
           </p>
         ) : null}
 
-        <section className="grid gap-4" aria-label="Beauty timeline" data-continuation={overviewContinuation} hidden={section === "library"}>
+        {!home && !libraryPage && <section className="grid gap-4" aria-label="Beauty timeline" data-continuation={overviewContinuation} hidden={section === "library"}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-extrabold text-text-primary">
@@ -1964,7 +2146,7 @@ export function BeautyProfileClient({
           </div>
 
           {posts.length === 0 ? (
-            <div className="overflow-hidden rounded-[1.35rem] bg-surface p-5 text-center shadow-[0_18px_52px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80">
+            <div className="overflow-hidden bg-surface p-5 text-center rounded-none border-0 shadow-none">
               <div className="mx-auto flex h-24 w-36 items-center justify-center">
                 <span className="grid h-20 w-20 place-items-center rounded-full bg-brand-orange-soft text-xs font-extrabold uppercase text-brand-orange ring-1 ring-brand-orange/15">
                   Before
@@ -1999,7 +2181,7 @@ export function BeautyProfileClient({
               ) : null}
             </div>
           ) : section === "posts" && visiblePosts.length === 0 ? (
-            <div className="rounded-[1.35rem] bg-surface p-5 text-center shadow-sm ring-1 ring-divider-subtle/80">
+            <div className="bg-surface p-5 text-center">
               <h3 className="text-lg font-extrabold text-text-primary">
                 No Before & After posts yet
               </h3>
@@ -2017,6 +2199,7 @@ export function BeautyProfileClient({
                   commentViewer={commentViewer}
                   key={post.id}
                   onCaptionUpdated={updatePostCaption}
+                  onArchived={archivePost}
                   onCommentCountChange={updatePostCommentCount}
                   onDeleted={removeDeletedPost}
                   post={post}
@@ -2040,8 +2223,8 @@ export function BeautyProfileClient({
 
           {loadingMore ? (
             <div className="grid gap-4" aria-label="Loading more Beauty posts">
-              <div className="h-[26rem] animate-pulse rounded-[1.35rem] bg-white shadow-sm ring-1 ring-divider-subtle/70" />
-              <div className="h-32 animate-pulse rounded-[1.35rem] bg-white shadow-sm ring-1 ring-divider-subtle/70" />
+              <div className="h-[26rem] animate-pulse bg-surface-muted" />
+              <div className="h-32 animate-pulse bg-surface-muted" />
             </div>
           ) : null}
 
@@ -2052,11 +2235,11 @@ export function BeautyProfileClient({
               You are all caught up
             </p>
           ) : null}
-        </section>
+        </section>}
       </div>
 
       {profileEditorOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-0 py-0 backdrop-blur-sm sm:items-center sm:px-6 sm:py-6">
+        <div ref={profileEditorLayerRef} className="beauty-profile-editor-layer fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-0 py-0 backdrop-blur-sm sm:items-center sm:px-6 sm:py-6">
           <button
             aria-label="Close Beauty profile editor"
             className="absolute inset-0 cursor-default"
@@ -2067,7 +2250,7 @@ export function BeautyProfileClient({
             aria-describedby="beauty-profile-editor-description"
             aria-labelledby="beauty-profile-editor-title"
             aria-modal="true"
-            className="relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl"
+            className="beauty-profile-editor settings-style relative flex max-h-[min(100dvh,100%)] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[min(90vh,100%)] sm:max-w-xl sm:rounded-2xl"
             onSubmit={saveBeautyProfile}
             ref={profileEditorDialogRef}
             role="dialog"
@@ -2274,13 +2457,7 @@ export function BeautyProfileClient({
                 </section>
 
                 {profileUpload ? (
-                  <p
-                    aria-live="polite"
-                    className="rounded-2xl border border-brand-orange/20 bg-brand-orange-soft px-3 py-2 text-sm font-extrabold text-brand-orange"
-                  >
-                    Uploading {profileUpload}
-                    {profileUploadProgress ? ` ${profileUploadProgress}%` : "..."}
-                  </p>
+                  <MediaUploadProgress progress={profileUploadProgress || undefined} />
                 ) : null}
 
                 {profileEditorError ? (
@@ -2313,23 +2490,13 @@ export function BeautyProfileClient({
       ) : null}
 
       {composerOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-0 py-0 backdrop-blur-sm sm:items-center sm:px-6 sm:py-6">
-          <button
-            aria-label="Close composer"
-            className="absolute inset-0 cursor-default"
-            onClick={closeComposer}
-            type="button"
-          />
+        <BeautyComposerDialog busy={composerBusy} onClose={closeComposer}>
           <div
-            aria-describedby="beauty-composer-description"
-            aria-labelledby="beauty-composer-title"
-            aria-modal="true"
-            className="relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
+            className="settings-style relative outline-none flex h-full min-h-0 w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:h-auto sm:max-h-full sm:max-w-2xl sm:rounded-2xl"
             ref={composerDialogRef}
-            role="dialog"
             tabIndex={-1}
           >
-            <div className="flex min-h-16 items-start justify-between gap-3 border-b border-border-subtle px-4 py-4 sm:px-5">
+            <div className="flex shrink-0 min-h-16 items-start justify-between gap-3 border-b border-border-subtle px-4 py-4 sm:px-5">
               <div>
                 <h2
                   className="text-lg font-extrabold text-text-primary"
@@ -2344,6 +2511,7 @@ export function BeautyProfileClient({
                   {composerDescription}
                 </p>
               </div>
+              <div className="flex shrink-0 items-center gap-1">
               <button
                 className="min-h-10 rounded-full px-3 text-sm font-bold text-text-secondary transition hover:bg-surface-muted hover:text-text-primary"
                 disabled={composerBusy}
@@ -2352,11 +2520,15 @@ export function BeautyProfileClient({
               >
                 Close
               </button>
+                <button type="button" onClick={publishPost} disabled={publishing || Boolean(pendingPost) || Boolean(currentComposerMedia.length && !photoPermission.accepted)} className="min-h-11 rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white disabled:opacity-60">
+                {publishing ? "Posting..." : "Post"}
+              </button>
+              </div>
             </div>
 
             <div className="min-h-0 flex-1 overscroll-contain overflow-auto px-4 py-4 sm:px-5">
-              <div className="grid gap-5">
-                <div className="flex gap-2" aria-label="Post type"><button type="button" className="beauty-action" aria-pressed={composerMode === "regular"} disabled={composerBusy} onClick={() => setComposerMode("regular")}>Photo</button><button type="button" className="beauty-action" aria-pressed={composerMode === "before_after"} disabled={composerBusy} onClick={() => setComposerMode("before_after")}>Before &amp; After</button></div>
+              <div className="grid gap-4">
+                <div className="flex gap-2" aria-label="Post type"><button type="button" className="beauty-action" aria-pressed={composerMode === "regular"} disabled={composerBusy} onClick={() => { photoPermission.reset(); setComposerMode("regular"); }}>Photo</button><button type="button" className="beauty-action" aria-pressed={composerMode === "before_after"} disabled={composerBusy} onClick={() => { photoPermission.reset(); setComposerMode("before_after"); }}>Before &amp; After</button></div>
                 {composerMode === "regular" ? (
                   <>
                     <label className="grid gap-1.5">
@@ -2364,7 +2536,8 @@ export function BeautyProfileClient({
                         Caption
                       </span>
                       <textarea
-                        className="min-h-28 rounded-2xl border border-border-subtle bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+                        className="min-h-24 rounded-2xl border border-border-subtle bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+                        disabled={composerBusy}
                         maxLength={2200}
                         onChange={(event) => setCaption(event.currentTarget.value)}
                         placeholder="What changed, what you loved, or how it feels..."
@@ -2377,7 +2550,7 @@ export function BeautyProfileClient({
                           Photos
                         </p>
                         <p className="mt-1 text-sm font-semibold leading-6 text-text-secondary">
-                          Add up to four images.
+                          Up to 4 photos.
                         </p>
                       </div>
                       <input
@@ -2391,7 +2564,7 @@ export function BeautyProfileClient({
                         type="file"
                       />
                       <button
-                        className="min-h-28 rounded-2xl border border-dashed border-border-subtle bg-surface-muted px-4 text-sm font-extrabold text-text-secondary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60"
+                        className="min-h-12 rounded-2xl border border-dashed border-border-subtle bg-surface-muted px-4 text-sm font-extrabold text-text-secondary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60"
                         disabled={composerBusy || normalMedia.length >= 4}
                         onClick={() => normalFileInputRef.current?.click()}
                         type="button"
@@ -2401,26 +2574,26 @@ export function BeautyProfileClient({
                           : "Add photos"}
                       </button>
                       {normalMedia.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        <div className="grid grid-cols-4 gap-2">
                           {normalMedia.map((media) => (
                             <div
                               className="relative aspect-square overflow-hidden rounded-2xl bg-surface-muted"
                               key={media.id}
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
+                              {media.previewUrl ? <img
                                 alt="Selected Beauty post preview"
                                 className="h-full w-full object-cover"
                                 src={media.previewUrl}
-                              />
+                              /> : <p className="grid h-full place-items-center p-3 text-xs text-text-secondary">Photo uploaded. Select a new photo to replace it.</p>}
                               <button
                                 aria-label="Remove photo"
-                                className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-white/90 text-sm font-extrabold text-text-primary shadow-sm"
+                                className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full bg-white/90 text-sm font-extrabold text-text-primary shadow-sm"
                                 disabled={composerBusy}
                                 onClick={() => removeNormalMedia(media)}
                                 type="button"
                               >
-                                x
+                                ×
                               </button>
                             </div>
                           ))}
@@ -2473,7 +2646,7 @@ export function BeautyProfileClient({
                               onClick={() => slot.inputRef.current?.click()}
                               type="button"
                             >
-                              {slot.media ? (
+                              {slot.media?.previewUrl ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   alt={`${slot.label} preview`}
@@ -2481,7 +2654,7 @@ export function BeautyProfileClient({
                                   src={slot.media.previewUrl}
                                 />
                               ) : (
-                                slot.label
+                                slot.media ? `${slot.label} photo uploaded` : slot.label
                               )}
                               <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-extrabold uppercase text-text-primary shadow-sm">
                                 {slot.label}
@@ -2498,6 +2671,7 @@ export function BeautyProfileClient({
                       </span>
                       <textarea
                         className="min-h-24 rounded-2xl border border-border-subtle bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+                        disabled={composerBusy}
                         maxLength={2200}
                         onChange={(event) => setCaption(event.currentTarget.value)}
                         placeholder="Optional: what changed or how it feels..."
@@ -2505,23 +2679,27 @@ export function BeautyProfileClient({
                       />
                     </label>
 
+
+                  </>
+                )}
+
                     <section className="grid gap-3">
                       <div>
                         <p className="text-xs font-bold uppercase text-text-secondary">
-                          Where was this done?
+                          Tag a salon
                         </p>
                         <p className="mt-1 text-sm font-semibold leading-6 text-text-secondary">
-                          Verified salon transformations may qualify for Beauty rewards.
+                          {composerMode === "before_after" ? "Choose the salon for this transformation." : "Optional · give your salon credit."}
                         </p>
                       </div>
 
-                      {visitCandidates.length > 0 && !manualSalonSearchOpen ? (
+                      {visitCandidates.length > 0 ? (
                         <div className="grid gap-2">
                           <p className="text-sm font-extrabold text-text-primary">
-                            Was this from a recent visit?
+                            From your visits
                           </p>
                           <div className="grid gap-2">
-                            {visitCandidates.slice(0, 4).map((candidate) => (
+                            {suggestedSalons.map((candidate) => (
                               <button
                                 className={classNames(
                                   "rounded-2xl px-3 py-3 text-left text-sm ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal",
@@ -2532,12 +2710,13 @@ export function BeautyProfileClient({
                                     : "bg-surface-muted text-text-primary ring-divider-subtle hover:ring-brand-teal/35",
                                 )}
                                 disabled={composerBusy}
+                                aria-pressed={attribution?.salonId === candidate.salonId}
                                 key={candidate.visitKey}
                                 onClick={() => selectVisitCandidate(candidate)}
                                 type="button"
                               >
                                 <span className="block font-extrabold">
-                                  {candidate.salonName}
+                                  <SalonName name={candidate.salonName} salonId={candidate.salonId}/>
                                 </span>
                                 <span className="mt-1 block font-semibold text-text-secondary">
                                   {sourceLabel(candidate.source)} -{" "}
@@ -2575,6 +2754,7 @@ export function BeautyProfileClient({
                               onChange={(event) =>
                                 updateSalonQuery(event.currentTarget.value)
                               }
+                              disabled={composerBusy}
                               placeholder="Search salon"
                               value={salonQuery}
                             />
@@ -2589,12 +2769,13 @@ export function BeautyProfileClient({
                               {salonResults.map((salon) => (
                                 <button
                                   className="rounded-2xl bg-surface-muted px-3 py-3 text-left text-sm ring-1 ring-divider-subtle transition hover:ring-brand-orange/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                                  disabled={composerBusy}
                                   key={salon.salonId}
                                   onClick={() => selectSalonResult(salon)}
                                   type="button"
                                 >
                                   <span className="block font-extrabold text-text-primary">
-                                    {salon.salonName}
+                                    <SalonName name={salon.salonName} salonId={salon.salonId}/>
                                   </span>
                                   {[salon.city, salon.state].filter(Boolean)
                                     .length > 0 ? (
@@ -2613,12 +2794,15 @@ export function BeautyProfileClient({
 
                       {attribution ? (
                         <div className="grid gap-3 rounded-2xl bg-brand-teal-soft p-3 ring-1 ring-brand-teal/20">
+                          <div className="flex items-center justify-between gap-2">
                           <p className="text-sm font-extrabold text-brand-teal">
-                            {attribution.salonName}
+                            <SalonName name={attribution.salonName} salonId={attribution.salonId}/>
                             {attribution.staffName
                               ? ` with ${attribution.staffName}`
                               : ""}
                           </p>
+                          <button type="button" disabled={composerBusy} className="min-h-11 px-2 text-sm font-bold text-brand-teal" onClick={() => { setAttribution(null); setSalonQuery(""); setSalonResults([]); }}>Remove tag</button>
+                          </div>
                           {attribution.source === "customer_claimed" &&
                           selectedStaffOptions.length > 0 ? (
                             <label className="grid gap-1.5">
@@ -2630,6 +2814,7 @@ export function BeautyProfileClient({
                                 onChange={(event) =>
                                   updateSelectedStaff(event.currentTarget.value)
                                 }
+                                disabled={composerBusy}
                                 value={attribution.staffId ?? ""}
                               >
                                 <option value="">No specific professional</option>
@@ -2644,43 +2829,32 @@ export function BeautyProfileClient({
                         </div>
                       ) : null}
                     </section>
-                  </>
-                )}
+
+                {currentComposerMedia.length ? <PublicPhotoProcessingPermission accepted={photoPermission.accepted} disabled={publishing || Boolean(pendingPost)} onChange={photoPermission.setAccepted} /> : null}
 
                 {uploading ? (
-                  <p className="rounded-2xl border border-brand-orange/20 bg-brand-orange-soft px-3 py-2 text-sm font-extrabold text-brand-orange">
-                    Uploading{uploadProgress ? ` ${uploadProgress}%` : "..."}
-                  </p>
+                  <MediaUploadProgress phase={uploadPhase} progress={uploadProgress} current={uploadBatch.current} total={uploadBatch.total} />
                 ) : null}
 
+                {uploadPhase === "complete" && !uploading && currentComposerMedia.length > 0 ? <p role="status" className="text-sm font-semibold text-brand-teal">✓ {currentComposerMedia.length} photo{currentComposerMedia.length === 1 ? "" : "s"} ready</p> : null}
                 {composerError ? (
-                  <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
+                  <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
                     {composerError}
                   </p>
                 ) : null}
+                {failedUpload && !composerBusy ? <button type="button" className="min-h-11 justify-self-start rounded-full bg-brand-teal-soft px-5 text-sm font-semibold text-brand-teal" onClick={() => {
+                  if (failedUpload.role === "image") void runSelectedUploads(failedUpload.items, "image");
+                  else {
+                    const previous = failedUpload.role === "before" ? beforeMedia : afterMedia;
+                    if (failedUpload.role === "before") setBeforeMedia(failedUpload.items[0]); else setAfterMedia(failedUpload.items[0]);
+                    void runSelectedUploads(failedUpload.items, failedUpload.role, previous);
+                  }
+                }}>Try again</button> : null}
               </div>
             </div>
 
-            <div className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:flex-row sm:justify-end sm:px-5 sm:py-4">
-              <button
-                className="min-h-11 w-full rounded-full border border-border-subtle px-4 text-sm font-extrabold text-text-primary sm:w-auto"
-                disabled={composerBusy}
-                onClick={closeComposer}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="min-h-11 w-full rounded-full bg-brand-orange px-5 text-sm font-extrabold text-white shadow-sm transition hover:bg-brand-orange-hover disabled:cursor-wait disabled:opacity-60 sm:w-auto"
-                disabled={composerBusy}
-                onClick={publishPost}
-                type="button"
-              >
-                {publishing ? "Publishing..." : "Publish"}
-              </button>
-            </div>
           </div>
-        </div>
+        </BeautyComposerDialog>
       ) : null}
     </main>
   );

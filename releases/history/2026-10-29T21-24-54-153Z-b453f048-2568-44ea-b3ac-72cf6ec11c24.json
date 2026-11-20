@@ -1,0 +1,28 @@
+{
+  "kind": "release",
+  "summary": "My Pay native attempt1 failed before cookie assertions: isolated WK blank HTML profile startup timeout; upload skipped; existing TestFlight70 remains actual native baseline",
+  "changes": [
+    "ed191f56-53e9-40df-8ee4-39817fca6943"
+  ],
+  "targets": {
+    "ios": {
+      "status": "failed",
+      "verified": false,
+      "commit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+      "evidence": "artifacts/release-20261029-mypay/native-evidence/test.log"
+    }
+  },
+  "failure": {
+    "test": "NativeCookieAuthorityWKTests.testAuthorityCookieExpiryStillRejectsBeforeResponseCookieWrites",
+    "location": "IsolatedWKCookieProfileOwner.prepare",
+    "error": "URLError -1001 while loading constant blank local HTML within unchanged5s fixture budget",
+    "tests": 235,
+    "failures": 1,
+    "upload": "skipped",
+    "swiftSourceSameAsVerified70": true
+  },
+  "nextAction": "One bounded unchanged-source full-job rerun on fresh runner; preserve every test/assertion/timeout and all failed evidence; no further repeated reruns without new diagnosis",
+  "id": "b453f048-2568-44ea-b3ac-72cf6ec11c24",
+  "recordedAt": "2026-10-29T21:24:54.153Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029"
+}

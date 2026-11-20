@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "ios-today-startup-recovery-20261018",
+  "status": "ready",
+  "summary": "Bounded cold-start context recovery and same-route authentication coalescing in the installed app; security preserved, locally and Xcode checked, not deployed",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "lib/app-local-context-recovery.ts",
+    "tests/app-local-context-recovery.test.mjs",
+    "tests/app-local-entry-recovery-ui.test.mjs",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\ios-today-startup-recovery-20261018\\frozen-source",
+    "commit": "1f251a1665d25482c47052a6b90058ff74b66d06",
+    "baseCommit": "8c65ce7a2bc262e8bcafe292304b72642134f377",
+    "sourceSha256": "39137af4170e7c7c2b9cf2330fb6d61c1c43b90c72385e2e7a462166f4c19c4d"
+  },
+  "dependencies": [
+    "owner-today-auth-progressive-20261018"
+  ],
+  "integrationNote": "An independent admin/Campaigns production release occurred during CI (804ab4ac8a7270d05cf5e612ec9d796f0dde174b); it does not contain this Auth/Today change. Future release must capture the then-current production baseline and preserve its unrelated changes.",
+  "validation": [
+    {
+      "name": "46 selected auth/Today/context regression cases; TypeScript and ESLint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\ios-today-startup-recovery-20261018\\verification.json"
+    },
+    {
+      "name": "Actual bundled entry: 8 Chromium and 8 WebKit cold/open/revisit/network/access cases",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\ios-today-startup-recovery-20261018\\ui-verification.json"
+    },
+    {
+      "name": "344 local resource hashes and existing public configuration preserved",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\ios-today-startup-recovery-20261018\\bundle-integrity.json"
+    },
+    {
+      "name": "Xcode Simulator and unsigned archive; exact native source and archived bundle hashes",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018\\artifacts\\ios-today-startup-recovery-20261018\\native-ci-verification.json"
+    }
+  ],
+  "id": "dd1af9e6-7c50-4eed-b402-0073d1dcef2c",
+  "recordedAt": "2026-10-18T23:27:41.073Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\owner-today-auth-progressive-20261018",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "acb37bc0b811f2e328cc062c648e508d13d35c287610e75bc8596533a0cf677c",
+    "lib/app-local-context-recovery.ts": "3fe72b64bbd027629438d19007945f1da51fb7f4862277b91fb14e3a58e5cc17",
+    "tests/app-local-context-recovery.test.mjs": "db93d3d936873bd15fb5eb0341e54776d0df8e3ec5999da2952a72373f7109de",
+    "tests/app-local-entry-recovery-ui.test.mjs": "5e038211859966a3529a606f0c35a1760dea8d11db89ccef349f67e90e920203",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "471fa16ded7fcb807b5bace3f4a331ddb8a6cc26eea36ce78786a0d423b0992e",
+    "ios/Reylumi/LocalAppBundle/app.js": "124d66bb1193801aae79fc37edc8eb03fd85bbb547c76814a51af845c79f68c5",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "89f54c92652ae4238c073d2396bc3c12d355451fdd7acba89526a306b1dd3ac5"
+  }
+}

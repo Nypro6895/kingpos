@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "ios-approved-consent-admin-coordination-20261118",
+  "status": "working",
+  "summary": "Integrate and validate the owner-approved OpenAI per-post consent UI and compact admin exact-text Hide/Restore r2, preserving drafts, current authority and separate Support resolution. Local combined handoff only.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ios-approved-ui-implementation-20261118.md",
+    "docs/ios-approved-ui-acceptance-20261118.json"
+  ],
+  "validation": [
+    {
+      "name": "Combined product build, exact source verification and scoped acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "openai-photo-live-acceptance-20261118"
+  ],
+  "id": "991785ac-e4d9-4fa0-890d-64a488ad25ff",
+  "recordedAt": "2026-11-19T03:36:28.906Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

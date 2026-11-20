@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-29T21:59:57.631Z",
+  "webOverlayCommit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+  "nativeCommit": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+  "sharedRuntimeSourceIdentical": true,
+  "normalizedPlatformSourceDifferences": [
+    ".github/workflows/reylumi-ios-testflight.yml",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/ReylumiTests/BackgroundCookieAuthorityWKTests.swift",
+    "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/NativeCookieAuthorityWKTests.swift",
+    "ios/ReylumiTests/WorkspaceSwitchTests.swift",
+    "ios/scripts/check-build.sh"
+  ],
+  "webPreservedBaselineBytes": true
+}

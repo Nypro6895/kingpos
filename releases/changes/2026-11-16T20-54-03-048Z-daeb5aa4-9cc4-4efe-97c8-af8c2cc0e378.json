@@ -1,0 +1,89 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-privacy-remediation-20261116",
+  "status": "needs-integration",
+  "summary": "Prepared and locally verified Tax personal erasure, export expiry/signing and reviewable legal candidate; held for live integration and final declarations",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/account/account-deletion-panel.tsx",
+    "app/account/actions.ts",
+    "app/api/account/erase-due/route.ts",
+    "app/salon-settings/actions.ts",
+    "app/salon-settings/salon-lifecycle-section.tsx",
+    "docs/ios-store-age-rating-worksheet-20261116.md",
+    "docs/ios-store-moderation-proposal-20261116.md",
+    "docs/ios-store-privacy-remediation-20261116.md",
+    "lib/account-erasure-worker.ts",
+    "lib/account-retention-policy.ts",
+    "lib/legal-policies.ts",
+    "lib/lifecycle-export-expiry.ts",
+    "lib/lifecycle-export-storage.ts",
+    "supabase/migrations/20261116210000_tax_profile_account_erasure.sql",
+    "supabase/migrations/20261116211000_lifecycle_export_expiry.sql",
+    "tests/account-maintenance-route.test.mjs",
+    "tests/helpers/tax-erasure-fixture.mjs",
+    "tests/lifecycle-export-download.test.mjs",
+    "tests/lifecycle-export-expiry.integration.test.mjs",
+    "tests/tax-profile-account-erasure.concurrent.test.mjs",
+    "tests/tax-profile-account-erasure.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "f8db5f63816ad910e1ac70fcbf6e9c387fb86852",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116/artifacts/ios-store-privacy-20261116/frozen",
+    "sourceSha256": "d1602156cd67eea9bd16eb4c789f8b9a9f4a33b70b346ea17154471e55e3228d",
+    "manifest": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116/artifacts/ios-store-privacy-20261116/frozen-manifest.json"
+  },
+  "validation": [
+    {
+      "name": "Focused regression suite",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-privacy-20261116/tests-final-complete.log (47/47, zero skipped)"
+    },
+    {
+      "name": "Complete isolated Supabase and actual Storage/Auth",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-privacy-20261116/full-schema/privacy-full-schema-acceptance.json (430 migrations)"
+    },
+    {
+      "name": "Production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-privacy-20261116/build-final.log; artifacts/ios-store-privacy-20261116/typecheck.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-privacy-20261116/lint-final.log"
+    },
+    {
+      "name": "Actual local legal-route rendering",
+      "result": "passed",
+      "evidence": "artifacts/ios-store-privacy-20261116/legal-preview-result.json (12 pages/viewports)"
+    },
+    {
+      "name": "Current production baseline, hosted schema/provider acceptance",
+      "result": "pending",
+      "evidence": "No publication performed; refresh exact live source and ACLs before integration."
+    },
+    {
+      "name": "Final legal/provider/retention/child-data/IP declarations and owner review",
+      "result": "pending",
+      "evidence": "docs/ios-store-privacy-remediation-20261116.md"
+    },
+    {
+      "name": "Public-content moderation decision and iOS candidate acceptance",
+      "result": "pending",
+      "evidence": "docs/ios-store-moderation-proposal-20261116.md; no native upload/submission"
+    }
+  ],
+  "dependencies": [],
+  "scopeBoundary": "No production data/schema changes, historical bulk purge, public policy publication, store metadata/declarations, upload or submission. Previously issued bearer tokens and historical residuals remain separately gated.",
+  "nativeAssessment": "UI and policy text also exist in app-local bundled assets; a later native build must preserve uploaded source and align marketing version only after current-source integration.",
+  "id": "daeb5aa4-9cc4-4efe-97c8-af8c2cc0e378",
+  "recordedAt": "2026-11-16T20:54:03.048Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

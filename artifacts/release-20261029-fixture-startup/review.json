@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-29T21:58:05.266Z",
+  "file": "ios/ReylumiTests/IsolatedWKCookieProfileOwner.swift",
+  "onlyBehaviorDelta": "Blank-document fixture preparation timeout5s ->45s",
+  "stillFinite": true,
+  "preparationBeforeCookieSeedingInBothCallers": true,
+  "all235TestMethodBodiesUnchanged": true,
+  "appSwiftAndSharedRuntimeUnchanged": true,
+  "functionalAndAuthorityDeadlinesUnchanged": true,
+  "fixtureBootstrapBudgetUnchanged": false,
+  "priorSource": "b76b5181d93bab8fca115df4849eb8bfd84c2989",
+  "requiresFullRuntime235": true
+}

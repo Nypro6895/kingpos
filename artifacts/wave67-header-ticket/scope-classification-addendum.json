@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-29T09:57:01.605Z",
+  "amends": "artifacts/wave66/include-defer-exclude.json",
+  "reason": "Finite integration completed and fresh production metadata/key presence audited. Latest parent owner instruction explicitly allows compatible disabled code without holding Settings for DB/key/provider decisions.",
+  "checkWriter": {
+    "originalEvents": [
+      "569f9c54-0d9b-4519-8a53-ddcf9411f9d0",
+      "a487d2ab-008b-41c0-9699-c4107a62c95e",
+      "6db51b3f-1463-4749-93e9-bae876ed2f68"
+    ],
+    "decision": "CODE_ONLY_INTEGRATED_ACTIVATION_DEFERRED",
+    "shippingReadyEvent": "08e308fd-0719-41f3-b029-95fd3d308320",
+    "productionSqlApplied": [],
+    "productionCatalogEntry": null,
+    "encryptionKeyCreated": false,
+    "salesFlagCreated": false,
+    "salesOpened": false,
+    "originalActivationEventsRemainPending": true
+  },
+  "mobileSpacing": {
+    "originalEvent": "ab5644b4-ec46-4fae-9cb3-f00a6171950e",
+    "alreadyPublishedReadyEvent": "0f195937-99a2-4cac-a28f-cca7e4a7f49a",
+    "priorReceipt": "5d197e2f-983c-4f85-a152-d1fb227bc4e7",
+    "decision": "Already in baseline, preserved by exact native66/web66 source ancestry; do not replay old snapshot."
+  },
+  "queueDelta": "Fresh104pending versus101original:12new deltaevents all current coordinator records, no external producer additions."
+}

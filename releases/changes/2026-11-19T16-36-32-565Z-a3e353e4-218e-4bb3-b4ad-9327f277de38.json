@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "compact-filters-ios16-compatibility-20261119",
+  "status": "ready",
+  "summary": "Restore shared CompactFilters on declared iOS16 minimum using same-visual in-place dialog fallback; preserve form controls, owned submissions and retained overlay lifecycle. Source checks only; physical iOS16 acceptance remains pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/compact-filters.tsx",
+    "components/workspace-toolbar.module.css",
+    "tests/compact-filters-compatibility.browser.test.mjs",
+    "docs/compact-filters-ios16-compatibility-20261119.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "fcc50a5734f7a7546de42f14d3bd3824191190f3",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\compact-filters-ios16-implementation-r4\\frozen-source"
+  },
+  "validation": [
+    {
+      "name": "Actual-component native and missing-Popover capability fixture14",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\compact-filters-ios16-implementation-r4\\focused-capability-14.log"
+    },
+    {
+      "name": "Existing Search15 Help7 read-only filters10 regressions",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\compact-filters-ios16-implementation-r4\\search-help-readfilter-32.log"
+    },
+    {
+      "name": "Scoped TypeScript ESLint tracked and staged-newfile whitespace",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261119-next\\compact-filters-ios16-implementation-r4\\verification-receipt.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "acceptanceLimitations": [
+    {
+      "name": "Actual iOS16 Safari physical acceptance; not established by Chromium capability simulation",
+      "evidence": "C:\\Reylumi-worktrees\\combined-store-release-20261119\\docs\\compact-filters-ios16-compatibility-20261119.md"
+    }
+  ],
+  "id": "a3e353e4-218e-4bb3-b4ad-9327f277de38",
+  "recordedAt": "2026-11-19T16:36:32.565Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "fileHashes": {
+    "components/compact-filters.tsx": "829f8e122c73a966dccef4a938656e5937f6a835e677a3ae7884d59248ee628d",
+    "components/workspace-toolbar.module.css": "16e81ded54688c16132cd9d70b0eab9c988beaf6fca135aceea969c82bb92e70",
+    "tests/compact-filters-compatibility.browser.test.mjs": "4b2cc7ff20d67d1c24d5b96da017357c0f3779ef922ac76d301351b26e89c1f5",
+    "docs/compact-filters-ios16-compatibility-20261119.md": "f31e7da61034732a88e053b4425f0759209d51636d20c03327bf58e274e4c573"
+  }
+}

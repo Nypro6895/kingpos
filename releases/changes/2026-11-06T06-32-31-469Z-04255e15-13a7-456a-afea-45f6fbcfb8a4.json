@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "salon-profile-compact-20261106",
+  "status": "needs-integration",
+  "summary": "Compact experiences, anchor profile tabs and move rewards into Overview",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-home.tsx",
+    "app/(app)/explore/salons/[salonId]/page.tsx",
+    "components/rewardlumi/reward-salon-panel.module.css",
+    "tests/salon-profile-compact.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "Focused experience and tab behavior: 3 tests",
+      "result": "passed"
+    },
+    {
+      "name": "Rewards Playwright: 12 groups including 320px",
+      "result": "passed",
+      "evidence": "artifacts/reward-experience-redesign/salon-browser/result.json"
+    },
+    {
+      "name": "Scoped ESLint and diff check",
+      "result": "passed"
+    },
+    {
+      "name": "Repository TypeScript",
+      "result": "failed",
+      "evidence": "Existing missing pdf-lib and @pdf-lib/fontkit dependencies"
+    },
+    {
+      "name": "Existing website layout fixture",
+      "result": "failed",
+      "evidence": "Fixture resolver cannot load ./read-request-metrics"
+    },
+    {
+      "name": "Full profile and physical iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\salon-profile-compact-20261106\\artifacts\\salon-profile-compact\\snapshot"
+  },
+  "id": "04255e15-13a7-456a-afea-45f6fbcfb8a4",
+  "recordedAt": "2026-11-06T06:32:31.469Z",
+  "worktree": "C:\\Reylumi-worktrees\\salon-profile-compact-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

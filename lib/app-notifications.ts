@@ -3,7 +3,7 @@ import "server-only";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 
 const APP_NOTIFICATION_SELECT =
-  "id, salon_id, recipient_kind, notification_type, booking_id, title, body, href, read_at, created_at";
+  "id, salon_id, recipient_kind, notification_type, booking_id, title, body, href, read_at, created_at, event_key";
 
 export type AppNotification = {
   thumbnail_url?: string | null;

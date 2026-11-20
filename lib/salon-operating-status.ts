@@ -1,4 +1,5 @@
 import "server-only";
+import {publicExploreCardRpc} from "./public-explore-card-rpc";
 
 import {
   addLocalDays,
@@ -63,10 +64,10 @@ type PublicStatusInputRow = {
 };
 
 type RpcError = {
-  code?: string;
-  details?: string;
-  hint?: string;
-  message: string;
+  code?: unknown;
+  details?: unknown;
+  hint?: unknown;
+  message?: unknown;
 };
 
 type RpcRunner = (
@@ -637,6 +638,7 @@ export async function getPublicSalonOperatingHours(salonId: string): Promise<Sal
 
 export async function getPublicSalonOperatingStatusesBySalonId(
   salonIds: string[],
+  rpcRunner?: RpcRunner,
 ) {
   const ids = normalizeSalonOperatingStatusSalonIds(salonIds);
   const statuses = new Map<string, SalonOperatingStatus>();
@@ -645,9 +647,9 @@ export async function getPublicSalonOperatingStatusesBySalonId(
     return statuses;
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase = rpcRunner ? null : createSupabaseServerClient();
 
-  if (!supabase) {
+  if (!rpcRunner && !supabase) {
     for (const salonId of ids) {
       statuses.set(salonId, defaultSalonOperatingStatus());
     }
@@ -655,8 +657,9 @@ export async function getPublicSalonOperatingStatusesBySalonId(
     return statuses;
   }
 
-  const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
-  const { data, error } = await rpc("get_public_salon_operating_status_inputs", {
+  const rpc = rpcRunner ?? (supabase!.rpc.bind(supabase) as unknown as RpcRunner);
+  const batch = await publicExploreCardRpc(rpc,ids);
+  const { data, error } = await batch("get_public_salon_operating_status_inputs", {
     target_salon_ids: ids,
   });
 

@@ -1,6 +1,8 @@
 "use client";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
 
 import { toggleBeautyProfileFollowAction } from "@/app/explore/actions";
+import { useExploreAuthenticated } from "@/components/explore-account-actions";
 import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
 import { useState, useTransition } from "react";
 
@@ -23,11 +25,13 @@ export function BeautyFollowButton({
   initialFollowing,
   profileId,
 }: BeautyFollowButtonProps) {
+  const authenticated = useExploreAuthenticated();
   const [isFollowing, setFollowing] = useState(initialFollowing);
   const [count, setCount] = useState(Math.max(0, followerCount));
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  useTransientOverlay(() => setAuthPromptOpen(false), authPromptOpen);
   const [isPending, startTransition] = useTransition();
 
   function toggleFollow() {
@@ -91,6 +95,7 @@ export function BeautyFollowButton({
       </span>
       {authPromptOpen ? (
         <AuthIntentPrompt
+          returningUser={authenticated}
           kicker="Follow intent"
           onClose={() => setAuthPromptOpen(false)}
           title="Follow this artist?"

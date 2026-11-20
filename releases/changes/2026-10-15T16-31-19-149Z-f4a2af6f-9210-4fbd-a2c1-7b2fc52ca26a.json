@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "experience-reload-loop-fix-20261015",
+  "status": "working",
+  "summary": "Fix repeated Activity revalidation/reload loops while preserving authorized page cache, scoped data freshness, and fail-closed identity/access checks.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/session-expiry-prompt.tsx",
+    "components/experience-scope.tsx",
+    "lib/experience-mutations.ts",
+    "lib/experience-reload.ts",
+    "tests/experience-reload-loop-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\reload-fix-20261015\\baseline-dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6",
+    "commit": "34ea63589e7e8caf5718bf4ffe54e403eab6775a",
+    "deploymentId": "dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6",
+    "sourceSha256": "0c33d7ad406527dbec871a0e98179acf670a5234b52c5b7f0fbbcfe70d2f034c"
+  },
+  "validation": [
+    {
+      "name": "Original production-source defect reproduction",
+      "result": "passed",
+      "evidence": "artifacts/reload-diagnostic-20261015/mutation-activity-result.json: 14 false mutation/Activity cycles in 3.2 seconds; 3 timer cycles in 7.2 seconds."
+    },
+    {
+      "name": "Fix validation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "f4a2af6f-9210-4fbd-a2c1-7b2fc52ca26a",
+  "recordedAt": "2026-10-15T16:31:19.149Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

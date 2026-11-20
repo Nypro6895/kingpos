@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "public-post-media-deletion-20261118",
+  "status": "needs-integration",
+  "summary": "Conservative terminal-delete photo cleanup queue with permanent reference/Storage fencing, retained review/business references and bounded fair retries.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261118220000_public_post_media_deletion.sql",
+    "tests/public-post-media-deletion.integration.test.mjs",
+    "docs/public-post-media-deletion-20261118.md"
+  ],
+  "dependencies": [
+    "public-image-safety-20261116"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\public-post-media-deletion-20261118\\frozen",
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26"
+  },
+  "validation": [
+    {
+      "name": "10/10 integration tests including real PostgreSQL races, actual worker Storage API removal and 435 full-schema migrations",
+      "result": "passed",
+      "evidence": "artifacts/public-post-media-deletion-20261118/full-schema/post-media-deletion-acceptance.json"
+    },
+    {
+      "name": "Exact final SQL hash independently reviewed; no further concrete blocker",
+      "result": "passed",
+      "evidence": "docs/public-post-media-deletion-20261118.md"
+    },
+    {
+      "name": "Owned test ESLint and source whitespace",
+      "result": "passed"
+    },
+    {
+      "name": "Combined release baseline/build and hosted activation",
+      "result": "pending"
+    }
+  ],
+  "id": "022bc82d-b5af-48cf-9fb9-42650c90fc2a",
+  "recordedAt": "2026-11-18T21:41:10.494Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

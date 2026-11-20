@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "staff-my-work-verified-read-identity-20261021",
+  "status": "working",
+  "summary": "Amend isolated Staff verified-read implementation scope with two existing test dependency-loader mappings only; preserve baseline bootstrap failures and all assertions.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/read-context-scope.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-workdays.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "tests/staff-my-work-verified-read-identity.test.mjs",
+    "tests/staff-my-work-critical-path.test.mjs",
+    "tests/live-workspace-experience.test.mjs"
+  ],
+  "source": {
+    "commit": "c7016e00d12b39a9cdbeb4bb67fdb380870acdf9",
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\loader-compatibility-before-20261021T223327886764Z\\before"
+  },
+  "validation": [
+    {
+      "name": "preserved actual pre-mapping fixture bootstrap failure",
+      "result": "failed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\loader-compatibility-before-20261021T223327886764Z\\bootstrap-result.json"
+    },
+    {
+      "name": "complete scoped product and fixture regression checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "43d4d966-43cb-4bc8-8a73-12bdefb2f5db",
+  "recordedAt": "2026-10-21T22:33:29.250Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-staff-identity-reuse-20261021",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

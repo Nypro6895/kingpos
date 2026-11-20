@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "iphone-staff-authoritative-date-read-pipeline-20261028",
+  "status": "ready",
+  "summary": "For a branded Staff read use the original self snapshot authoritative date directly; preserve legacy clock fallback, snapshot identity checks, ticket amounts and final fresh revocation probe. Reuse authenticated request timezone helper; expose existing bootstrap stage timings. Physical first-load improvement still unproven.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/staff-workdays.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "lib/app-local-bootstrap-server.ts",
+    "tests/staff-authoritative-date-read.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-cold-release-20261028\\staff173-selected-frozen"
+  },
+  "validation": [
+    {
+      "name": "26 snapshot/date/financial-amount/legacy/final-revocation/bootstrap tests",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript noEmit incremental false",
+      "result": "passed"
+    }
+  ],
+  "id": "55ae5f3e-6fe1-452f-909e-fe8bbb7316eb",
+  "recordedAt": "2026-10-28T21:11:47.793Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-next-server-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/staff-workdays.ts": "c055c4bb3a0ea599d84aa65624fdfcbd70fc74504751c16bc485bb08dff0ab0c",
+    "lib/staff-my-work-resource-server.ts": "39ea07381c8baaff4edd96c70169de8f7c34695de0b8fb9241efc126a419dfac",
+    "lib/app-local-bootstrap-server.ts": "73769ba129d79091a5376edd5c9b3babc822214dbf47d20e7e9d3453f2f4b2b5",
+    "tests/staff-authoritative-date-read.test.mjs": "7e733590717fa731eeeb3d9b338688c8dca9e541c0205379039f0cc15a79ecfa"
+  }
+}

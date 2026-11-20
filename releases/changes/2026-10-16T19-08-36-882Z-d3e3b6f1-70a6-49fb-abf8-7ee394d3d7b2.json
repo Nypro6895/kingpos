@@ -1,0 +1,25 @@
+{
+  "channels": [
+    "web"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "artifacts/salon-setup-review-20261016/before"
+  },
+  "changeId": "salon-setup-review-20261016",
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Inspect current settings and publication rules; reproduce with isolated test data"
+    }
+  ],
+  "status": "working",
+  "kind": "change",
+  "files": [],
+  "summary": "Audit create-salon to initial settings, publication/discovery, map messaging and draft-safe saves. Small reproduced fixes only; no deployment or test salon publication.",
+  "id": "d3e3b6f1-70a6-49fb-abf8-7ee394d3d7b2",
+  "recordedAt": "2026-10-16T19:08:36.882Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

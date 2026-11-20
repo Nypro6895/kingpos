@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "app-local-native-foundation",
+  "status": "needs-integration",
+  "summary": "Installed native host r6: fixed real NSURLSession delegate teardown crash; strict Portable display lease/token scope; explicit fresh/logout metadata; local document retention and existing hosted payment/auth navigation. Exact binary resource bytes preserved.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/.gitattributes"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Native JS bridge VM11 regressions",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/native-js-verification.json"
+    },
+    {
+      "name": "Owned source diff whitespace and LF manifest",
+      "result": "passed"
+    },
+    {
+      "name": "Complete actual macOS XCTest31 + archive for this exact revision",
+      "result": "pending"
+    },
+    {
+      "name": "Parent generated actual bundled resources + coverage readiness",
+      "result": "pending"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\native-frozen-r6"
+  },
+  "id": "10bb9efb-f78d-4a24-b1bd-f1ed35b760a8",
+  "recordedAt": "2026-10-16T17:22:50.081Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

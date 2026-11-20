@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "ads-reporting-transparency-implementation-20261118",
+  "status": "needs-integration",
+  "summary": "Approved ad Why/Report flow with frozen selection and exact immutable display-admission trace, actor-scoped uncertain retry, private canonical Support intake and read-only admin evidence",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "types/ad-disclosure.ts",
+    "lib/ad-disclosure-ticket.ts",
+    "lib/ad-reporting.ts",
+    "app/api/advertising/reports/route.ts",
+    "app/api/campaigns/delivery/route.ts",
+    "app/api/explore/advertising/route.ts",
+    "lib/campaign-delivery-area.ts",
+    "components/ad-disclosure-controls.tsx",
+    "components/owner-sponsored-post.tsx",
+    "components/explore-advertising.tsx",
+    "app/(app)/layout.tsx",
+    "supabase/migrations/20261119021000_owner_ad_disclosure_trace.sql",
+    "tests/ad-disclosure-ticket.test.mjs",
+    "tests/ad-reporting.test.mjs",
+    "tests/ad-disclosure-controls.test.mjs",
+    "tests/owner-ad-disclosure-trace.test.mjs",
+    "docs/ad-reporting-transparency-implementation-20261118.md",
+    "lib/platform-admin/report-context.ts",
+    "app/(app)/admin/reports/report-evidence.tsx",
+    "app/(app)/admin/reports/report-case-view.tsx",
+    "tests/owner-campaign-post-layout.browser.test.mjs",
+    "supabase/migrations/20261119022000_platform_ad_disclosure_trace.sql",
+    "tests/platform-ad-disclosure-trace.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "artifacts/ads-reporting-transparency-20261118/implementation/frozen",
+    "sha256": "b3837677d7120d9959ed272e7db89c8fb6422ad62008f064136a56c79261b75a",
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "validation": [
+    {
+      "name": "Final scoped actual crypto/routes/renderers/SQL parity and existing affected regressions:35/35, zero skips",
+      "result": "passed",
+      "evidence": "artifacts/ads-reporting-transparency-20261118/implementation/final-scoped-tests.json"
+    },
+    {
+      "name": "Platform trace:4/4 including actual441-migration disposable PostgREST acceptance; exact frozen SQL hash",
+      "result": "passed",
+      "evidence": "artifacts/ads-reporting-transparency-20261118/implementation/platform-trace/platform-ad-trace-acceptance.json"
+    },
+    {
+      "name": "Owned TS/TSX ESLint and whitespace; frozen runtime hash match",
+      "result": "passed",
+      "evidence": "artifacts/ads-reporting-transparency-20261118/implementation/final-static-checks.json"
+    },
+    {
+      "name": "Local typecheck:only3 existing missing dependencies, no owned-source errors",
+      "result": "pending",
+      "evidence": "artifacts/ads-reporting-transparency-20261118/implementation/final-typecheck.log"
+    },
+    {
+      "name": "Coordinator combined exact-source Next build, final browser/native/device/reviewer and applied-runtime checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-store-completion-20261118"
+  ],
+  "id": "9f5b5847-413f-4754-ab23-8a2fce2e5804",
+  "recordedAt": "2026-11-19T05:18:21.361Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

@@ -164,9 +164,11 @@ export function ResetPasswordForm({ nextPath = "/explore" }: { nextPath?: string
     setIsSubmitting(true);
 
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) { setError("Use a valid password reset link."); return; }
+      const response = await fetch("/api/auth/recovery-password", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ password: newPassword }) });
+      const result = await response.json();
+      const updateError = response.ok && result.ok ? null : { message: result.error || "Unable to update password." };
 
       if (updateError) {
         setError(updateError.message || "Unable to update password.");

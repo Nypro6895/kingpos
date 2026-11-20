@@ -1,0 +1,91 @@
+{
+  "kind": "change",
+  "changeId": "shop-money-expenses-20261031",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Owner Shop collected/remaining/reserved/available UI; zero unentered days and late edit audit; Reports/Today expenses, rent/card fees; Gift/Reward/Discount reconciliation and packaged native transport",
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/api/shop-money/route.ts",
+    "app/payroll/payroll-dashboard.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/payroll-tabs.tsx",
+    "app/payroll/shop-money-workspace.tsx",
+    "app/payroll/shop-money.module.css",
+    "app/reports/owner-live-reports.tsx",
+    "app/reports/quick-expense.tsx",
+    "app/reports/report-controls.tsx",
+    "app/staff/today/today-dashboard-view.tsx",
+    "docs/shop-money-expenses-20261031.md",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/app-local-platform-types.ts",
+    "lib/app-local-role-http-server.ts",
+    "lib/payroll-history-navigation.ts",
+    "lib/payroll-live-dashboard.ts",
+    "lib/payroll.ts",
+    "lib/shop-money.ts",
+    "supabase/migrations/20261101040000_shop_money.sql",
+    "types/shop-money.ts",
+    "tests/shop-money.test.mjs",
+    "tests/shop-money.integration.test.mjs",
+    "tests/helpers/shop-money-browser.mjs",
+    "tests/helpers/shop-money-ui-entry.tsx",
+    "tests/payroll-service-tip-projection.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\shop-money-expenses-20261031\\artifacts\\shop-money-20261031\\frozen-source"
+  },
+  "validation": [
+    {
+      "name": "44 financial and Payroll/native-route regressions",
+      "result": "passed",
+      "evidence": "artifacts/shop-money-20261031/regression-final.log"
+    },
+    {
+      "name": "Exact-source SQL and actual mobile components/SQL write readback",
+      "result": "passed",
+      "evidence": "artifacts/shop-money-20261031/acceptance-final.log"
+    },
+    {
+      "name": "Production build and scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/shop-money-20261031/build.log"
+    }
+  ],
+  "id": "18cecbfb-8c9b-4f57-90a8-945243a2a640",
+  "recordedAt": "2026-11-01T04:12:19.895Z",
+  "worktree": "C:\\Reylumi-worktrees\\shop-money-expenses-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/payroll/page.tsx": "cd462fcb27257eed554de09390feb3964309b5ef405930d93b7a63cf3495eb06",
+    "app/api/shop-money/route.ts": "1f7339e476f2664375fb1f6a4852e9c8c082683b6b04ca840c6052b5338366ee",
+    "app/payroll/payroll-dashboard.tsx": "cb576b2f8f43d195b60151a863883d9b4e8a3fcd9282a2befdacefc670694db5",
+    "app/payroll/payroll-mobile.module.css": "f5caa3efd4c58c06691598b8c9e1025cce36d8f66ad76f9373f959220509af84",
+    "app/payroll/payroll-tabs.tsx": "4886736deaf0a25159e8d16fb87d80f993820b8cd92a6cf097e727049ba75731",
+    "app/payroll/shop-money-workspace.tsx": "d96e799dce1af9568d39571f5873365295e96927968115516aa4403b46e1f04e",
+    "app/payroll/shop-money.module.css": "117bbe90f47e0351e20ed0c215cd686805d5e799235349ba57c75217aa90d916",
+    "app/reports/owner-live-reports.tsx": "ba64d64ddd17c564ec77f85b74b4c7c62ffa02b087f0c9f39c8e28b178775bf3",
+    "app/reports/quick-expense.tsx": "a712ffa73f411962770a07b3b94876bc283d8c0687184f36f7c41da63d95e075",
+    "app/reports/report-controls.tsx": "6d5a991cf614e124a6166cd08e2fac20fd3969a80cd56f2c367ca1abe07772bb",
+    "app/staff/today/today-dashboard-view.tsx": "ace6941fdb82dc3cfd781076ff0dce781132af218aa07e122d206cc690e893ec",
+    "docs/shop-money-expenses-20261031.md": "943a668833b3558e57509f9e791bdaacd3d6fe9f681b76d01c571b5c9bb2c58b",
+    "lib/app-local-owner-payroll-view.tsx": "75b8aea6101f745bf972318be1f83c4b9e6fd9273955e8c61bd3f4333f78a957",
+    "lib/app-local-platform-types.ts": "a0cec477e5ec2aeea6e8b03481813572cc63630b5a3080210b7656fb8bd30cbf",
+    "lib/app-local-role-http-server.ts": "069efffa5cf6b9e8b7814e08b9c97caae400c212b54cffbf665474a755d9216e",
+    "lib/payroll-history-navigation.ts": "601402991c9d329dd3b06d8c6670abeeb6328fd57faaedc15a9f1e90c349a622",
+    "lib/payroll-live-dashboard.ts": "4037f593e12779a1332a9dc43fbcc74e7e46547f605d2e40c6195f1215bc8cc2",
+    "lib/payroll.ts": "bc83e72374431e77b74f1467324012f8af02ebffae43a23a6a396645efdcbbee",
+    "lib/shop-money.ts": "181ce93337ce1d14bb0033ba78d2eb7551ba8f2a2fb561679d31ef47c8b03b10",
+    "supabase/migrations/20261101040000_shop_money.sql": "0d5154320c4c91ead2dedca8d608b57ec771e26c40958d41f91bee8e18ec804d",
+    "types/shop-money.ts": "850e4a4ac3ff837abf2b0028bdb30c84783835662da87e585114c8376e91dd1f",
+    "tests/shop-money.test.mjs": "b841c593c7d6352a960a5f574e79c4bde8cc57e234ba8f26853a965bc57335c7",
+    "tests/shop-money.integration.test.mjs": "ccfc3ab3840d60ca2035b24e590849d2a81a7217cd016d26eadd991a10c9dbda",
+    "tests/helpers/shop-money-browser.mjs": "5debf914e592ea55e1b86b645fe0a4445a309cba85399bf7f0d230fe8b88ffb0",
+    "tests/helpers/shop-money-ui-entry.tsx": "d54f8554451a3e096f2bccf14fc47e999978ff8e11bc56b9a3235ffba1340343",
+    "tests/payroll-service-tip-projection.test.mjs": "294aa2a6b943f103c58c72415e52c7d88c74b4d8cd3743ee6e13f20aacd5162b"
+  }
+}

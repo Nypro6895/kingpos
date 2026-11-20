@@ -107,7 +107,7 @@ export type StaffInviteEmailDelivery =
   | {
       reason: string;
       recipient: string;
-      status: "failed";
+      status: "failed" | "unknown";
     };
 
 export type StaffConnectionInviteTokenDetails = {

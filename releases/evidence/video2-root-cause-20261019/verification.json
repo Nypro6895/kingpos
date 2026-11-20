@@ -1,0 +1,529 @@
+{
+  "verifiedAt": "2026-10-19T06:35:47.520Z",
+  "changeId": "video2-native-authority-boundaries-20261019",
+  "implementationOnly": true,
+  "baselineCommit": "48b56d29a819a519c636253ba9e2ca2ddaf895bc",
+  "baselineShippedProductCommit": "1c2628c4df2069de0722874ce8972231945e7146",
+  "productCommit": "9eebc09fb1fbf48ab4c99bef86a79dbad771053d",
+  "branch": "codex/video2-root-cause-20261019",
+  "overlaySha256": "5dd3dbaaa1a82b0a6481dd8a9e7041b467316b8f597964791210b140c92d970c",
+  "files": [
+    {
+      "file": "app/(app)/workspace/open/route.ts",
+      "sha256": "e8873e543df39acaf0dd72eebdb96b7007e8ee9a206bc578ceea2d5ddecd2600",
+      "bytes": 1043
+    },
+    {
+      "file": "app/api/app-local/command/route.ts",
+      "sha256": "450fd3c86539d07a86961f7e1bac8f6d44444f3ad028bfcf5f32382edc526b86",
+      "bytes": 8580
+    },
+    {
+      "file": "app/local-app/entry.tsx",
+      "sha256": "5aadc95f336805cf74fff07139f0b42c0130717ff10c55919499c99cc075bc67",
+      "bytes": 45484
+    },
+    {
+      "file": "app/local-app/scope.tsx",
+      "sha256": "72e1f0d0265461417d740061691274c49819727aa8a5a51bac5cc077bc88c908",
+      "bytes": 2740
+    },
+    {
+      "file": "app/staff/today/today-progressive-client.tsx",
+      "sha256": "bd5683635f08c59939e3daee3e4a4356e1fc0598d73cd0d920684b6fc2bccd74",
+      "bytes": 12947
+    },
+    {
+      "file": "ios/Reylumi/LocalAppBundle/app.css",
+      "sha256": "b36418614170eb9ea19b54d60aba435987da23a9130fc80f20415f606155cce7",
+      "bytes": 573011
+    },
+    {
+      "file": "ios/Reylumi/LocalAppBundle/app.js",
+      "sha256": "9a42685a99ed84299ba1311a66f01ecd33a63904b21cfe38ae2c17ebe70f9911",
+      "bytes": 4227891
+    },
+    {
+      "file": "ios/Reylumi/LocalAppBundle/brand/reylumi-admin-favicon.svg",
+      "sha256": "18f6dc326f40dfebbd4e76dd624848122a9f0dac99bdd1b940bb34fe769d463c",
+      "bytes": 24219
+    },
+    {
+      "file": "ios/Reylumi/LocalAppBundle/manifest.json",
+      "sha256": "1552f6c65054e3439895e34053220cb01dd8fed263c3d92cdc64b449b9d041e9",
+      "bytes": 157111
+    },
+    {
+      "file": "ios/Reylumi/ReylumiBackgroundSync.swift",
+      "sha256": "d6afe9a853eb6e88de6debc8be4e959bc9d6795cc938e54f694db6caa3f400ed",
+      "bytes": 21754
+    },
+    {
+      "file": "ios/Reylumi/ReylumiCookieAuthority.swift",
+      "sha256": "0cae483857d40e0a2221411161d09dfb57a794e29d4f1a040bd4924a46dd8721",
+      "bytes": 1906
+    },
+    {
+      "file": "ios/Reylumi/ReylumiLocalAppTransport.swift",
+      "sha256": "9bc8e3a765d5d7ec5ac32706b7cbd20b1909082a7141f7c7409ac970286bcaef",
+      "bytes": 44347
+    },
+    {
+      "file": "ios/Reylumi/ReylumiLocalReadStore.swift",
+      "sha256": "d4dabb59d334a06d6f6ae6a191ba892bd547640343693e6e9f0562395e6e044d",
+      "bytes": 20934
+    },
+    {
+      "file": "ios/ReylumiTests/LocalReadStoreTests.swift",
+      "sha256": "ce48a39bed26f24dda36b1e01c62469432a3fb39ece9ca7faa6dd4d01938e952",
+      "bytes": 20524
+    },
+    {
+      "file": "ios/ReylumiTests/NativeCookieAuthorityTests.swift",
+      "sha256": "3e1eb728636e50895ed5a17aa2d43b14d058d263edf1773a21e160f33d6d11b2",
+      "bytes": 20303
+    },
+    {
+      "file": "lib/app-local-page-admission.ts",
+      "sha256": "0585579d5aee0bb8b1c8a3729201754f242245b961d05e46e5e7935c4e5b217e",
+      "bytes": 2543
+    },
+    {
+      "file": "lib/app-local-resource.ts",
+      "sha256": "727d363c3ce80968143bb06d5222424423b595c6848ac65124e5523c0be031f3",
+      "bytes": 20669
+    },
+    {
+      "file": "lib/app-local-shell-server.ts",
+      "sha256": "1a7f1617cf0cf59f00a0c13767600fc7027046f25a3723058d6e1deee55b87a3",
+      "bytes": 12061
+    },
+    {
+      "file": "lib/workspace-selection.ts",
+      "sha256": "f8e99560e28f93aa6e15f176ad5718a570290389b0204ba322cc7ea86086861b",
+      "bytes": 2230
+    },
+    {
+      "file": "tests/app-local-entry-recovery-ui.test.mjs",
+      "sha256": "cb71e868121fd642f342f30d046222883e4be6fba338cd640026e521be906cdd",
+      "bytes": 16908
+    },
+    {
+      "file": "tests/app-local-page-admission-ui.test.mjs",
+      "sha256": "828b43df24e95032d1425215cbcee2150eb029c0a83d7c1583cdb61fcad449cd",
+      "bytes": 15970
+    },
+    {
+      "file": "tests/app-local-scope-admission.test.mjs",
+      "sha256": "02e4b8a04e90b268c9f25cf2c3cfac07923bf15ad8e7748424015a047d7bd35e",
+      "bytes": 5811
+    },
+    {
+      "file": "tests/app-local-workspace-recovery-ui.test.mjs",
+      "sha256": "aac41fb2ef82ebfc83f341ef14d9f3ca52dbc7c18f5c437a114a2f323eaa6f86",
+      "bytes": 18334
+    },
+    {
+      "file": "tests/owner-today-progressive-ui.test.mjs",
+      "sha256": "578219257ea34c8c86f332f8fc9ca8e9b61be01d68ffe6e188b12f21558af13b",
+      "bytes": 28086
+    },
+    {
+      "file": "tests/workspace-selection-contract.test.mjs",
+      "sha256": "99eb7763d0cae886c534a5763ce338c70095720be3699050c7e59f30094902b1",
+      "bytes": 14546
+    }
+  ],
+  "before": {
+    "cookie": {
+      "runId": 39207645489,
+      "jobId": 117913863303,
+      "url": "https://github.com/Nypro6895/kingpos/actions/runs/39207645489",
+      "sourceCheckpoint": "e764d53",
+      "testBuild": "passed",
+      "testExecution": "failed-as-expected-regression",
+      "totalTests": 121,
+      "failedTestCases": 6,
+      "failedAssertions": 32,
+      "unexpectedFailures": 0,
+      "prior112Tests": "passed",
+      "newRegressionCases": {
+        "total": 9,
+        "failed": [
+          "testAdvertisingCookieRotationCannotRevokeConcurrentRead",
+          "testAllAuditedNonAuthorityMarkersStayStoredWithoutRevokingParallelRead",
+          "testBackgroundReadUsesSameBenignCookieBoundary",
+          "testMissingAdvertisingCookieInsertionCannotRevokeConcurrentRead",
+          "testUnknownUnprefixedOriginCookieRemainsConservativelyAuthoritative",
+          "testUnrelatedDomainCookieCannotInvalidateThisOrigin"
+        ],
+        "passed": [
+          "testAuthWorkspaceAbuseAndUnknownPrefixedCookieChangesStillRevoke",
+          "testBackgroundReadStillDiscardsChangedAuthAndUnknownOriginCookies",
+          "testExistingValidAdvertisingCookieValueAndReversedReplyOrderControls"
+        ]
+      },
+      "infrastructureOrCompileFailure": false,
+      "notes": [
+        "Advertising insertion/rotation and all seven audited markers reproduce 409 plus full reset in real LocalAppTransport.",
+        "BackgroundSync discards valid response when unrelated advertising marker changes.",
+        "Valid existing ad value and reversed-order controls pass; account/workspace/MFA/POS/admin/abuse/unknown-prefixed revocation controls pass.",
+        "Unknown unprefixed case is a new security tightening, not the physical-video root cause.",
+        "Unrelated-domain case proves missing origin-scoped identity comparison.",
+        "Native full transport/store executed on iOS Simulator; HTTP/cookie-jar boundary remains controlled, not physical iPhone."
+      ]
+    },
+    "resourceWithdrawal": {
+      "runId": 39208707286,
+      "jobId": 117917091453,
+      "url": "https://github.com/Nypro6895/kingpos/actions/runs/39208707286",
+      "sourceCheckpoint": "3c2e973",
+      "testBuild": "passed",
+      "testExecution": "one-expected-resource-regression",
+      "totalTests": 124,
+      "failedTestCases": 1,
+      "failedAssertions": 3,
+      "unexpectedFailures": 0,
+      "prior112Tests": "passed",
+      "nativeCookieFixRegressionCases": {
+        "total": 11,
+        "passed": [
+          "testAdvertisingCookieRotationCannotRevokeConcurrentRead",
+          "testAllAuditedNonAuthorityMarkersStayStoredWithoutRevokingParallelRead",
+          "testAuthorityProjectionUsesOriginAndDomainLabelBoundaries",
+          "testAuthWorkspaceAbuseAndUnknownPrefixedCookieChangesStillRevoke",
+          "testBackgroundReadStillDiscardsChangedAuthAndUnknownOriginCookies",
+          "testBackgroundReadUsesSameBenignCookieBoundary",
+          "testExactMarkerNamesCannotExcludeUnknownOrDifferentlyCasedAuthority",
+          "testExistingValidAdvertisingCookieValueAndReversedReplyOrderControls",
+          "testMissingAdvertisingCookieInsertionCannotRevokeConcurrentRead",
+          "testUnknownUnprefixedOriginCookieRemainsConservativelyAuthoritative",
+          "testUnrelatedDomainCookieCannotInvalidateThisOrigin"
+        ]
+      },
+      "resourceRemovalRegression": {
+        "failed": [
+          "testExplicitResourceRemovalFencesPendingReadAndItsOfflineFallback"
+        ],
+        "verifiedDefects": [
+          "Pending HTTP200 delivered after explicit exact-key cache withdrawal.",
+          "Withdrawn DTO repopulated the encrypted native read store.",
+          "Subsequent URLError retry returned that withdrawn DTO through offline fallback."
+        ]
+      },
+      "infrastructureOrCompileFailure": false,
+      "scope": "Actual Swift LocalAppTransport and encrypted store on Simulator; controlled HTTP/cookie fixtures, not physical-device proof."
+    },
+    "workspace": "6 original contract cases: 5 failed, 1 passed; original handler execution, no business I/O",
+    "pageAdmission": "Actual entry and real context/offline-context route regressions failed before correction",
+    "todayRecovery": "Same-path Open Today did not request fresh validation before correction"
+  },
+  "after": {
+    "webRelatedTests": 116,
+    "chromiumUICases": 40,
+    "webkitUICases": 40,
+    "failed": 0,
+    "skipped": 0,
+    "typecheck": "passed",
+    "focusedESLint": "passed",
+    "productionBuild": "passed",
+    "webOfflineAssets": {
+      "count": 430,
+      "totalBytes": 8475745
+    },
+    "authContextCallsWithinWorkspaceCommand": {
+      "before": 3,
+      "after": 1
+    },
+    "native": {
+      "runId": "39209692361",
+      "url": "https://github.com/Nypro6895/kingpos/actions/runs/39209692361",
+      "commit": "9eebc09fb1fbf48ab4c99bef86a79dbad771053d",
+      "tests": {
+        "total": 126,
+        "failed": 0,
+        "skipped": 0,
+        "cookieAuthorityAndTransportCases": 12,
+        "newStoreFenceCases": 2,
+        "installedOwnerTodayScenarios": 4
+      },
+      "provenance": {
+        "receiptCommitExact": true,
+        "workflowHeadCommitExact": true,
+        "allCommittedNativeBlobHashesMatch": true,
+        "allFrozenSourceHashesMatch": true,
+        "committedNativeFilesVerified": 400,
+        "frozenFilesVerified": 25,
+        "frozenNativeFilesVerified": 10,
+        "legacyFixtureCandidateBaseLabel": "2ef993bb88d368d7e318b0965f5193db2a9f6ec0",
+        "legacyLabelIsProvenance": false
+      },
+      "bundle": {
+        "buildId": "a33d8d1db1b70f540f25fd0bf9343ee424160fdc86acb676b5eddf9eb95e9645",
+        "archiveFilesVerified": 345,
+        "productionReady": true,
+        "archiveMatchesReceiptAndCommittedSource": true,
+        "bridgeFilesVerified": 3
+      },
+      "simulatorSigning": "ad-hoc; own application-identifier and Keychain access group verified",
+      "archiveUnsigned": true,
+      "deviceArchive": {
+        "version": "1.0.0",
+        "build": "1",
+        "bundleId": "com.reylumi.ios",
+        "signing": "unsigned",
+        "installableOnIPhone": false,
+        "uploaded": false
+      },
+      "ownerToday": [
+        {
+          "scenario": "idle_visible_60s_touch_foreground",
+          "passed": true,
+          "counts": {
+            "commands": 0,
+            "context": 3,
+            "reads": {
+              "advertising": 2,
+              "notifications": 1,
+              "shell_configuration": 2,
+              "shell_navigation": 2,
+              "shell_notice": 2,
+              "shell_summary": 2,
+              "today_bookings": 2,
+              "today_extras": 2,
+              "today_financials": 2,
+              "today_shell": 2,
+              "today_staff": 2,
+              "today_waiting": 2
+            }
+          },
+          "checkpoints": {
+            "actualOSSuspendResume": false,
+            "afterForeground": {
+              "commands": 0,
+              "context": 3,
+              "reads": {
+                "advertising": 2,
+                "notifications": 1,
+                "shell_configuration": 2,
+                "shell_navigation": 2,
+                "shell_notice": 2,
+                "shell_summary": 2,
+                "today_bookings": 2,
+                "today_extras": 2,
+                "today_financials": 2,
+                "today_shell": 2,
+                "today_staff": 2,
+                "today_waiting": 2
+              }
+            },
+            "afterIdle": {
+              "commands": 0,
+              "context": 2,
+              "reads": {
+                "advertising": 2,
+                "notifications": 1,
+                "shell_configuration": 1,
+                "shell_navigation": 1,
+                "shell_notice": 1,
+                "shell_summary": 1,
+                "today_bookings": 1,
+                "today_extras": 1,
+                "today_financials": 1,
+                "today_shell": 1,
+                "today_staff": 1,
+                "today_waiting": 1
+              }
+            },
+            "afterTouch": {
+              "commands": 0,
+              "context": 2,
+              "reads": {
+                "advertising": 2,
+                "notifications": 1,
+                "shell_configuration": 1,
+                "shell_navigation": 1,
+                "shell_notice": 1,
+                "shell_summary": 1,
+                "today_bookings": 1,
+                "today_extras": 1,
+                "today_financials": 1,
+                "today_shell": 1,
+                "today_staff": 1,
+                "today_waiting": 1
+              }
+            },
+            "beforeIdle": {
+              "commands": 0,
+              "context": 1,
+              "reads": {
+                "advertising": 2,
+                "shell_configuration": 1,
+                "shell_navigation": 1,
+                "shell_notice": 1,
+                "shell_summary": 1,
+                "today_bookings": 1,
+                "today_extras": 1,
+                "today_financials": 1,
+                "today_shell": 1,
+                "today_staff": 1,
+                "today_waiting": 1
+              }
+            },
+            "nativeForegroundHandlerInvoked": true,
+            "retainedTodayDOM": true,
+            "syntheticTouch": true,
+            "visible": true,
+            "visibleIdleMs": 61734.79175
+          },
+          "documentLoads": 1,
+          "invalidations": 0
+        },
+        {
+          "scenario": "cold_transient_503",
+          "passed": true,
+          "counts": {
+            "commands": 0,
+            "context": 2,
+            "reads": {
+              "advertising": 1,
+              "shell_configuration": 1,
+              "shell_navigation": 1,
+              "shell_notice": 1,
+              "shell_summary": 1,
+              "today_bookings": 1,
+              "today_extras": 1,
+              "today_financials": 1,
+              "today_shell": 1,
+              "today_staff": 1,
+              "today_waiting": 1
+            }
+          },
+          "checkpoints": {
+            "ready": {
+              "commands": 0,
+              "context": 2,
+              "reads": {
+                "advertising": 1,
+                "shell_configuration": 1,
+                "shell_navigation": 1,
+                "shell_notice": 1,
+                "shell_summary": 1,
+                "today_bookings": 1,
+                "today_extras": 1,
+                "today_financials": 1,
+                "today_shell": 1,
+                "today_staff": 1,
+                "today_waiting": 1
+              }
+            }
+          },
+          "documentLoads": 1,
+          "invalidations": 0
+        },
+        {
+          "scenario": "cold_encrypted_cache",
+          "passed": true,
+          "counts": {
+            "commands": 0,
+            "context": 2,
+            "reads": {
+              "advertising": 2
+            }
+          },
+          "checkpoints": {
+            "ready": {
+              "commands": 0,
+              "context": 2,
+              "reads": {
+                "advertising": 2
+              }
+            },
+            "todayDiskCacheHits": 6
+          },
+          "documentLoads": 1,
+          "invalidations": 0
+        },
+        {
+          "scenario": "cold_empty_warm_revisit",
+          "passed": true,
+          "counts": {
+            "commands": 0,
+            "context": 1,
+            "reads": {
+              "advertising": 3,
+              "shell_configuration": 1,
+              "shell_navigation": 1,
+              "shell_notice": 1,
+              "shell_summary": 1,
+              "today_bookings": 1,
+              "today_extras": 1,
+              "today_financials": 1,
+              "today_shell": 1,
+              "today_staff": 1,
+              "today_waiting": 1
+            }
+          },
+          "checkpoints": {
+            "coldReady": {
+              "commands": 0,
+              "context": 1,
+              "reads": {
+                "advertising": 2,
+                "shell_configuration": 1,
+                "shell_navigation": 1,
+                "shell_notice": 1,
+                "shell_summary": 1,
+                "today_bookings": 1,
+                "today_extras": 1,
+                "today_financials": 1,
+                "today_shell": 1,
+                "today_staff": 1,
+                "today_waiting": 1
+              }
+            },
+            "retainedTodayDOM": true,
+            "warmReady": {
+              "commands": 0,
+              "context": 1,
+              "reads": {
+                "advertising": 3,
+                "shell_configuration": 1,
+                "shell_navigation": 1,
+                "shell_notice": 1,
+                "shell_summary": 1,
+                "today_bookings": 1,
+                "today_extras": 1,
+                "today_financials": 1,
+                "today_shell": 1,
+                "today_staff": 1,
+                "today_waiting": 1
+              }
+            }
+          },
+          "documentLoads": 1,
+          "invalidations": 0
+        }
+      ]
+    }
+  },
+  "preservation": {
+    "securityAndBusinessGuardsUnchanged": true,
+    "noDatabaseMigration": true,
+    "noProductionDataMutation": true,
+    "noCommandReplay": true,
+    "webWorkspaceRedirectCompatibilityPreserved": true,
+    "staffPostPreserved": true
+  },
+  "physicalDeviceVerified": false,
+  "productionDeploymentPerformed": false,
+  "testflightUploadPerformed": false,
+  "appStorePublicationPerformed": false,
+  "nativeBuildRequiredForRelease": true,
+  "limits": [
+    "HTTP/Auth/database boundaries use controlled fixtures; these are not production latency measurements.",
+    "iOS Simulator synthetic touch and foreground invocation are not physical-iPhone OS suspend/resume.",
+    "Build 38 video has no release trace to attribute every observed frame or timeout to a single cause.",
+    "Auth cross-writer rotation and production SQL/RLS/context latency remain unmeasured; no timeout extension or speculative SQL change."
+  ]
+}

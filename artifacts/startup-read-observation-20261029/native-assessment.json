@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-29T10:40:32.403Z",
+  "nativeRequired": false,
+  "retainedNative": "1.0.0(67)/d20058a06c0c71a04830346b0ad444657bca2acd",
+  "runtimeDelta": [
+    "lib/app-local-read-observation.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/app-local/context/route.ts"
+  ],
+  "serverOnly": true,
+  "actualEsbuildInputs": 841,
+  "diagnosticResources": 345,
+  "allBeforeAfterResourceBytesIdentical": true,
+  "productionReadyClaim": false,
+  "authLeaseBindingAndDTOLogicChanged": false,
+  "expiryUTC": "2026-10-29T11:30:00Z"
+}

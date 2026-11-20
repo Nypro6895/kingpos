@@ -1,0 +1,93 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [
+    "salon-setup-review-20261016",
+    "reylumi-glass-app-logo-20261016"
+  ],
+  "changeId": "salon-setup-release-integration-20261016",
+  "files": [
+    "lib/app-local-business-server.ts",
+    "lib/app-local-business-registry.tsx",
+    "components/app-local-salon-settings.tsx",
+    "components/app-local-salons.tsx",
+    "tests/app-local-business-server.test.mjs",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/index.html",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-192.png",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-512.png",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-favicon.png",
+    "tests/settings-save-feedback.test.mjs",
+    "tests/settings-regressions.test.mjs",
+    "tests/all-settings-direct-actions.test.mjs",
+    "tests/settings-target-context.test.mjs",
+    "tests/settings-salon-list.test.mjs",
+    "tests/salon-lifecycle-rules.test.mjs",
+    "tests/public-booking-entry.test.mjs",
+    "tests/public-booking-routes.test.mjs",
+    "tests/public-booking-availability-route.test.mjs",
+    "tests/public-booking-confirm-route.test.mjs"
+  ],
+  "summary": "Preserve current production and uploaded iPhone 21.1 foundation; apply the reviewed setup status corrections to app-local profile/settings/salon list and rebuild its exact verified resource bundle.",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-setup-release-20261016\\frozen-source-r2",
+    "commit": "e376723c94082de7a8984f5acd64f068d8f53f8e"
+  },
+  "validation": [
+    {
+      "name": "50 settings, lifecycle, booking and app-local authorization/public-link tests",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/integration-tests.log"
+    },
+    {
+      "name": "Production webpack build including TypeScript and offline assets",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/integration-build-final.log"
+    },
+    {
+      "name": "Lint of integration and new components",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/integration-lint.log"
+    },
+    {
+      "name": "344 native bundled resources match manifest byte lengths and hashes",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-setup-release-20261016/frozen-selection.json"
+    }
+  ],
+  "id": "a6162a5c-d3e3-43ae-aff4-f8c7cf0ce79c",
+  "recordedAt": "2026-10-16T20:11:09.398Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-business-server.ts": "1454ce9ef11df008cd9759486e6c344a0871d33a2ae387af50f600eb5c78b911",
+    "lib/app-local-business-registry.tsx": "add504b7dcb7c957e83060bff34b4b1eadcac1a80af29538270ebbbb0d7ec32c",
+    "components/app-local-salon-settings.tsx": "3475b27ae1280b8a2718a4d1e2f47e32fd576b711dcc88aa51674395e667be65",
+    "components/app-local-salons.tsx": "22499891fba113b71fe75ef51374b411f80a337102e71ce6a0daeb52e39db142",
+    "tests/app-local-business-server.test.mjs": "7355c6276830dde727c980d2489e41b05415224e5d00217b0c33441e9b6d826d",
+    "ios/Reylumi/LocalAppBundle/app.css": "5d40105478265810baf445b1696fe23c2e776b69bfe657020b9b2591ef4bd14d",
+    "ios/Reylumi/LocalAppBundle/app.js": "a0673f09eefd5e6a861d109aa2c3da3ed8047d6e831104a907f8b4cf68e81440",
+    "ios/Reylumi/LocalAppBundle/index.html": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "eee733a46df061a9e2ee22932b1d54d0876bdcabf0aa63f8f001ec843cb7891d",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-192.png": "affae267c226c80f087c20e137a92471c111e2bbd5dcc307a9dd4f38e40b7843",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-app-512.png": "812acf9e4257ae833fb3d093e5ff19a63f2c78db565a8efaffb485e4b472b397",
+    "ios/Reylumi/LocalAppBundle/brand/reylumi-favicon.png": "5b0e664fd83473b099ee9bb6f8e8f6547afa31209e1ea0ae2ea798c6184d4a71",
+    "tests/settings-save-feedback.test.mjs": "0e4866d28e4b59eb905ea4997a3f6208181dc4bc379225481d003e388703dd71",
+    "tests/settings-regressions.test.mjs": "14d89d2f0866dce3737224b70e8cdec8e7aea8f7c92156271c8df1b3f0afeb54",
+    "tests/all-settings-direct-actions.test.mjs": "8860bcfe662abc00b2dbc8dc4d14dd7970c823ac6c8c1ee2b44231ec445c6647",
+    "tests/settings-target-context.test.mjs": "23afab3d36534d85f5c927b98378b2f5273bb7b52ef447e32c6e3130a3b39c21",
+    "tests/settings-salon-list.test.mjs": "ec9f373b17005a03ab2612d335c61d22f8399f9e434072acd057e0ceb1a629e5",
+    "tests/salon-lifecycle-rules.test.mjs": "9dd19f612b96df4b025d5f8acfc48657d2cc2436e89cc879265f055f202cdc9c",
+    "tests/public-booking-entry.test.mjs": "8ef30e04c25fa373578b50d232dfd45e9fb69a0ea3bc943f1086b169ac3f8287",
+    "tests/public-booking-routes.test.mjs": "276b9738bd7313dbf270d8391dabe7d343275892b107ada90ac326280bf66915",
+    "tests/public-booking-availability-route.test.mjs": "85fbad3d2966f5f0eacfbf192307f095fe6337f03412570adde76f282548a64a",
+    "tests/public-booking-confirm-route.test.mjs": "ac6a688a917a1b12d4282aee0c91213fe8a0221baafb4c053e54c0ddecc3bd6d"
+  }
+}

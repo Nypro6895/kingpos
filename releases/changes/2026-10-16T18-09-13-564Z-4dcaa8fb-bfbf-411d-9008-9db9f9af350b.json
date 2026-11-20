@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "app-local-native-foundation",
+  "status": "working",
+  "summary": "Accept only exact same-response cookie rotation across parallel native reads, serialize multi-cookie commits, and preserve hard rejection for unrelated account/workspace/logout changes.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/.gitattributes",
+    "ios/Reylumi/NativeBridge.js",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "ios/Reylumi/ReylumiAppDelegate.swift"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Concurrent exact cookie rotation and changed authority XCTest",
+      "result": "pending"
+    },
+    {
+      "name": "Actual macOS XCTest and archive r11",
+      "result": "pending"
+    }
+  ],
+  "id": "4dcaa8fb-bfbf-411d-9008-9db9f9af350b",
+  "recordedAt": "2026-10-16T18:09:13.564Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "ios-commerce-store-next-20261118",
+  "status": "needs-integration",
+  "summary": "Source-backed US iOS commerce disclosure/reviewer-note draft; exact ad-report/targeting gap, auto-topup distinction and pending refund/storefront evidence",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "docs/ios-commerce-store-next-20261118.md"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "commit": "8a9d9335207db37969bff824e6ef3e55f37b6484",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\ios-commerce-store-next-20261118\\frozen",
+    "sourceSha256": "38acb3f2423941bbac7c059e386bfa76cdd5e303ff54ee163603dac48a8b4fd9",
+    "fileSha256": {
+      "docs/ios-commerce-store-next-20261118.md": "061fe3800b8dd4e02a8ff8339e64f52b6ad2b71923bd2be19956f809aada7724"
+    },
+    "evidenceSha256": "5c3670ed9e6491f55803e98cd2b021b9f1132b85750b62daf8553ee1f3314c74"
+  },
+  "validation": [
+    {
+      "name": "Fresh official Apple primary-source and actual commerce branch review",
+      "result": "passed",
+      "evidence": "artifacts/ios-commerce-store-next-20261118/source-evidence.json"
+    },
+    {
+      "name": "51 source hashes,55 local links,1827-byte draft and11 protected frozen files",
+      "result": "passed",
+      "evidence": "artifacts/ios-commerce-store-next-20261118/validation.json"
+    },
+    {
+      "name": "Final actual storefront/runtime, ad UI gap disposition, commercial terms and candidate reviewer walkthrough",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-commerce-return-acceptance-20261118"
+  ],
+  "id": "fb130f5f-2db8-41a2-b7ec-c51a2f7bf7d0",
+  "recordedAt": "2026-11-18T22:20:06.107Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "supersedesEvents": []
+}

@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "app-local-platform-20261016",
+  "status": "working",
+  "summary": "Implement bundled whole-app UI and public reference content, scoped durable local read models and immediate local navigation with background versioned reconciliation, preserving existing business and authorization rules.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-host.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "app/local-app/index.html",
+    "app/local-app/app.css",
+    "scripts/build-app-local-bundle.mjs",
+    "docs/app-local-platform-20261016.txt",
+    "app/api/app-local/context/route.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/app-local/command/route.ts",
+    "lib/app-local-command-codec.ts",
+    "lib/app-local-command-client.ts",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "app/local-app/navigation.tsx",
+    "tests/app-local-platform.test.mjs",
+    ".gitattributes",
+    "app/local-app/scope.tsx",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "snapshot": "C:/Users/giuse/.codex/worktrees/app-local-platform/kingpos",
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "validation": [
+    {
+      "name": "Whole route coverage and local ready behavior before network, scoped refresh/commands and native offline binary bundle",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "0e0ad6a4-c5bb-42e2-9a76-68794c608f5e",
+  "recordedAt": "2026-10-16T16:22:40.273Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

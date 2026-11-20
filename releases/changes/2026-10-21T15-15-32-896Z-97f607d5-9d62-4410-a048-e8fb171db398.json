@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "campaign-pc-common-integration-20261021",
+  "status": "working",
+  "summary": "Integrate verified Campaign v3 into isolated PC common candidate; reconcile public native delivery, read-only status and exact geographic aliases; primary untouched",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/api/app-local/command/route.ts",
+    "app/api/campaigns/delivery/route.ts",
+    "app/campaigns/actions.ts",
+    "app/campaigns/campaign-preview.tsx",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/preview-actions.ts",
+    "app/explore/explore-client.tsx",
+    "components/owner-sponsored-post.tsx",
+    "lib/app-local-command-policy.json",
+    "lib/app-local-commands-server.generated.ts",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/campaign-delivery-area.ts",
+    "lib/campaign-search-intent.ts",
+    "supabase/migrations/20261021010000_campaign_selection_daily_cap.sql",
+    "supabase/migrations/20261021020000_campaign_search_relevance.sql",
+    "tests/app-local-campaign-events.test.mjs",
+    "tests/campaign-admission-boundaries.test.mjs",
+    "tests/campaign-delivery-placement-ui.test.mjs",
+    "tests/campaign-delivery-route.test.mjs",
+    "tests/campaign-impression-ui-boundaries.test.mjs",
+    "tests/campaign-local-rotation.test.mjs",
+    "tests/campaign-native-delivery.test.mjs",
+    "tests/campaign-owner-preview.test.mjs",
+    "tests/campaign-progressive-ui.test.mjs",
+    "tests/campaign-search-cost.test.mjs",
+    "tests/campaign-search-preview-ui.test.mjs",
+    "tests/campaign-search-relevance.test.mjs",
+    "tests/campaign-search-route.test.mjs",
+    "tests/campaign-selection-cost.test.mjs",
+    "tests/campaign-selection-daily-cap.test.mjs",
+    "tests/campaign-ticket-boundaries.test.mjs",
+    "tests/fixtures/campaign-progressive-ui.mjs",
+    "tests/fixtures/campaign-search-preview-ui.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\candidate-preimage",
+    "commit": "35dfdc1d493ccf59cbfa3c588eb497d13a44af78"
+  },
+  "validation": [
+    {
+      "name": "Archive and32 source hash verification",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-input\\local-input-verification.json"
+    },
+    {
+      "name": "Combined candidate tests",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "campaign-search-relevance-20261021",
+    "campaign-owner-preview-20261021",
+    "pc-ios-reliability-20261021"
+  ],
+  "id": "97f607d5-9d62-4410-a048-e8fb171db398",
+  "recordedAt": "2026-10-21T15:15:32.896Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\candidate",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

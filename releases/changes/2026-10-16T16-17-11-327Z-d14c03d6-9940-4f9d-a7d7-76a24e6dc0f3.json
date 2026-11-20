@@ -1,0 +1,43 @@
+{
+  "kind": "change",
+  "changeId": "app-local-owner-http-20261016",
+  "status": "ready",
+  "summary": "Bridge three original owner GET/receipt endpoints through fixed native names without changing browser transport, original authority or outbox retry",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-http-client.ts",
+    "lib/app-local-http-server.ts",
+    "tests/app-local-http-adapters.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\owner-frozen-source"
+  },
+  "validation": [
+    {
+      "name": "18 local owner/HTTP regression cases",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/owner-validation.json"
+    },
+    {
+      "name": "Scoped lint",
+      "result": "passed",
+      "evidence": "0 errors; 15 inherited warnings"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "id": "d14c03d6-9940-4f9d-a7d7-76a24e6dc0f3",
+  "recordedAt": "2026-10-16T16:17:11.327Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-http-client.ts": "cfbc3ccceacc5a9729ebfa981dc9d35c73171ac2c954031800c54de2081631fc",
+    "lib/app-local-http-server.ts": "ef91c326106c4335f0deec20d112673eb9db96ab3cbe6d84837b1b9952f628aa",
+    "tests/app-local-http-adapters.test.mjs": "f31f47f37fb897a49d0d28f2e71eaf77685eb964797ac2b6ab2111a5d8356d71"
+  }
+}

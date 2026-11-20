@@ -1,0 +1,63 @@
+{
+  "kind": "change",
+  "changeId": "customer-auto-merge-20261028",
+  "status": "needs-integration",
+  "summary": "Owner queued automatic customer consolidation for the next coordinated live release on 2026-10-29; integrate the frozen patch and validate full schema before publication.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/customers/page.tsx",
+    "app/customers/actions.ts",
+    "app/customers/automatic-customer-merge.tsx",
+    "supabase/migrations/20261028180000_customer_automatic_consolidation.sql",
+    "tests/customer-automatic-consolidation.test.mjs",
+    "tests/customer-automatic-merge-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts\\customer-auto-merge-20261028\\snapshot"
+  },
+  "validation": [
+    {
+      "name": "33 targeted SQL, regression, Unicode and browser checks",
+      "result": "passed",
+      "evidence": "artifacts\\customer-auto-merge-20261028\\verification.json"
+    },
+    {
+      "name": "ESLint changed application files",
+      "result": "passed"
+    },
+    {
+      "name": "Production baseline integration and full-schema migration validation",
+      "result": "pending"
+    },
+    {
+      "name": "Recheck targeted consolidation SQL and automatic merge UI tests",
+      "result": "passed",
+      "evidence": "2026-10-29 audit: node --test tests/customer-automatic-consolidation.test.mjs tests/customer-automatic-merge-ui.test.mjs; 7 passed, 0 failed"
+    },
+    {
+      "name": "Production active-visit and account-claim guard acceptance",
+      "result": "pending",
+      "evidence": "Read-only service role lacks SELECT on protected tables. Validate using the authorized deployment workflow without weakening permissions."
+    }
+  ],
+  "queue": {
+    "requestedAt": "2026-10-29T14:51:42.168Z",
+    "instruction": "Dua vao hang cho de len live",
+    "mode": "next-coordinated-release",
+    "deployNow": false
+  },
+  "priorEventId": "72dc491a-317d-4c76-909d-14e61dabb4d2",
+  "releaseRequirements": [
+    "Integrate only the scoped delta into the exact current live source; preserve unrelated shipped changes.",
+    "Validate migration 20261028180000_customer_automatic_consolidation.sql against full schema and preserve financial history and account/active-visit safeguards.",
+    "Keep unrelated names sharing a phone separate; do not bypass identity guards.",
+    "Verify deployed automatic trigger and authorized end-to-end behavior before marking published."
+  ],
+  "id": "e9c3aeff-eb1e-4125-8717-0583210dba2c",
+  "recordedAt": "2026-10-29T14:51:42.310Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

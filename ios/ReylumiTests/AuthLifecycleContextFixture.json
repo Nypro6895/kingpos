@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "context": {
+    "scope": "v3:290520396c7d7fbd25695eeca8f8808d6650d89b54f4b6226a3bf5f85d939ce2",
+    "viewerId": "00000000-0000-4000-8000-000000000001",
+    "workspaceId": "manage:00000000-0000-4000-8000-000000000002",
+    "salonId": "00000000-0000-4000-8000-000000000002",
+    "permissionRevision": "[\"owner\",[\"booking.read\",\"salon.read\"],\"2026-10-18T00:00:00.000Z\",\"active\",\"active\",\"active\",\"active\"]",
+    "authenticated": true
+  },
+  "home": "/staff/today",
+  "grant": {
+    "version": 1,
+    "scope": "v3:290520396c7d7fbd25695eeca8f8808d6650d89b54f4b6226a3bf5f85d939ce2",
+    "scopes": [
+      "v3:290520396c7d7fbd25695eeca8f8808d6650d89b54f4b6226a3bf5f85d939ce2"
+    ],
+    "viewerId": "00000000-0000-4000-8000-000000000001",
+    "workspaceId": "manage:00000000-0000-4000-8000-000000000002",
+    "salonId": "00000000-0000-4000-8000-000000000002",
+    "grantRevision": "24ea1f0fa39a6cd7cbccc6b86cf80d0bad929fac8400fd8f03ebfe543443852d",
+    "generation": "actual-route-contract-generation-20261019",
+    "issuedAt": 1792422180435,
+    "expiresAt": 1792508580435,
+    "path": "/staff/today",
+    "kind": "owner"
+  },
+  "grantStatus": 200,
+  "display": {
+    "name": "Synthetic contract account",
+    "language": "en",
+    "role": "owner"
+  },
+  "access": {
+    "ownerWorkspace": true,
+    "staffWorkspace": false
+  },
+  "onlineValidatedAt": 1792422180435
+}

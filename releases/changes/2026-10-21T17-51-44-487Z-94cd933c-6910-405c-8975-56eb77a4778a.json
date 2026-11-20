@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "campaign-pending-claim-demand-20261021",
+  "status": "working",
+  "summary": "Revalidate current demand under wallet lock before pending automatic top-up becomes processing; preserve processing/paid, amount, idempotency and valid demand from other campaigns. Parent authorized policy boundary; local only.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261021090000_campaign_pending_claim_demand.sql",
+    "tests/campaign-pending-claim-demand.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\pending-claim-preimage",
+    "commit": "acd29c2bf86ab4fbb2e44d132cd1d2a643e13d18"
+  },
+  "dependencies": [
+    "campaign-causal-settlement-reporting-20261021"
+  ],
+  "validation": [
+    {
+      "name": "preimage-and-ownership",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\pending-claim-preimage\\manifest.json"
+    }
+  ],
+  "constraints": {
+    "noProductionWrites": true,
+    "noRelease": true,
+    "noRealPayments": true,
+    "processingPaidUnchanged": true
+  },
+  "id": "94cd933c-6910-405c-8975-56eb77a4778a",
+  "recordedAt": "2026-10-21T17:51:44.487Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\campaign-causal-candidate",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

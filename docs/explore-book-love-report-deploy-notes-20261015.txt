@@ -1,0 +1,86 @@
+BÀN GIAO EXPLORE BOOK / LOVE / REPORT VÀ KIỂM TRA JSX
+Cập nhật ngày 15/10/2026 (America/Chicago). Không thực hiện deploy trong lượt ghi chú này.
+
+1. PHẠM VI ĐÃ LƯU
+
+- Thẻ nail inspiration và khung xem ảnh dùng một nút Book thay View salon / Call salon.
+  Salon có booking hợp lệ mở Quick Booking; salon chưa bật booking dùng hướng dẫn liên hệ hiện có.
+- Love hiển thị lỗi mạng, cho phép thử lại, chặn bấm trùng, đồng bộ các nút tim cùng đối tượng,
+  và ngăn phản hồi đọc cũ ghi đè trạng thái vừa lưu. Luồng tiếp tục sau đăng nhập được giữ.
+- Report giữ khả năng báo cáo khi truy vấn quyền bị lỗi mạng; quyền quản lý thất bại thì đóng.
+  Đã kiểm tra chọn lý do, lỗi mạng, gửi lại, chặn gửi trùng, liên kết hội thoại và ẩn đúng bài.
+- Các kiểm tra hồi quy và fixture liên quan được lưu cùng mã; không sửa dữ liệu production.
+
+Nguồn bàn giao gốc:
+  Nhánh local: codex/explore-book-love-report-20261015
+  Commit mã gốc: b876f0313d05db66b4d5c8a089b33a9dd834cd34
+  Commit so sánh trước sửa: 720141041f286eb97548e01b455aafbf240925ab
+  Event hoàn tất gốc: 95a7964f-3814-4ed5-9457-675371f3c826
+  Snapshot: work/explore-book-love-report-20261015/source
+  Manifest/hash: work/explore-book-love-report-20261015/handoff.json
+  Patch: work/explore-book-love-report-20261015/overlay.patch
+  SHA-256 patch: 23e02e1d66c0266332e25fe3dd6b74f4e8905fae7231c8cf839cab309d95a04b
+
+Chín file của snapshot gốc vẫn khớp hash tại lần đối chiếu này.
+
+2. TRẠNG THÁI EXPLORE THEO NHẬT KÝ PHÁT HÀNH
+
+Một coordinator khác đã tích hợp thay đổi gốc vào source Explore được tối ưu đang phát hành:
+  Event ready: 26948845-ba80-4e73-a0b4-8489f233a648
+  Record: releases/changes/2026-10-15T18-21-11-892Z-26948845-ba80-4e73-a0b4-8489f233a648.json
+  Snapshot tích hợp: artifacts/signup-inline-security-20261015/source-v1
+  Receipt: releases/history/2026-10-15T18-33-19-999Z-7e606ec5-c1ba-43a5-97af-1b4a68993412.json
+  Deployment được receipt xác nhận: dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT
+  Baseline của lượt release đó: dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA
+  Thời điểm receipt: 2026-10-15T18:33:19.999Z (13:33:19 America/Chicago).
+
+Receipt ghi rõ web published và verified cho event ready trên; mười hash của snapshot ready khớp.
+Đây là đối chiếu hồ sơ local, không phải lần kiểm tra độc lập alias production trong lượt này.
+Không coi snapshot gốc là một thay đổi Explore mới chưa phát hành. Source đã tích hợp giữ
+ExploreViewportImage, xếp hạng kết quả liên quan và các tối ưu feed hiện tại; snapshot gốc có
+mã xung quanh cũ hơn. Khi deploy sau, giữ source mới nhất và chỉ ghép phần còn thiếu đã kiểm chứng.
+
+3. LỖI JSX VÀ QUYỀN SỞ HỮU BẢN SỬA
+
+Lỗi trước đây tại app/market/booking-deposit-panel.tsx:17 là hai phần tử <p> cạnh nhau trong
+biểu thức !settingsOnly && mà thiếu phần tử cha. File hiện tại đã bọc cả hai trong <>...</>.
+Khi settingsOnly=true, cả hai đoạn giới thiệu đều ẩn; khi false, cả hai cùng hiển thị.
+Không thay đổi phí, đăng ký, thanh toán, quyền, dữ liệu hoặc hợp đồng native bridge.
+
+Bản sửa này đã có trước khi lượt xác minh bắt đầu, thuộc task đang làm:
+  changeId: booking-release-unblock-20261015
+  Event working: 6c291093-df30-41b6-a274-83bcc97afb56
+  Record: releases/changes/2026-10-15T18-31-29-679Z-6c291093-df30-41b6-a274-83bcc97afb56.json
+  Ghi chú của task: docs/booking-release-handoff-20261015.md
+  Snapshot quan sát: work/explore-jsx-deploy-handoff-20261015/before/app/market/booking-deposit-panel.tsx
+  SHA-256: 714cc824f6bfa4ea437ffc4191b476d4c71fc3a19c8e58b8686b0e705dc64832
+
+Lượt này giữ nguyên bản sửa của task đó và không tự đánh dấu toàn bộ task đó ready/published.
+Trước phát hành, đọc event hoàn tất mới nhất của booking-release-unblock-20261015, đối chiếu
+hash và receipt hiện hành. Không lấy event working làm nguồn phát hành hoàn tất.
+
+4. KIỂM TRA
+
+- Lượt Explore gốc: 59 kiểm tra liên quan đạt, gồm browser fixtures và PGlite cục bộ;
+  TypeScript phạm vi thay đổi và ESLint đạt (hai cảnh báo mock có sẵn).
+- Event Explore đã tích hợp ghi nhận production webpack build, TypeScript, ESLint và 59/59
+  kiểm tra hồi quy đạt; xem evidence trong event ready 26948845... nêu trên.
+- Lượt này: TypeScript toàn checkout hiện tại đạt, exit 0, bằng lệnh:
+  node node_modules/typescript/bin/tsc --noEmit --incremental --tsBuildInfoFile work/explore-jsx-deploy-handoff-20261015/typecheck.tsbuildinfo
+  Log: work/explore-jsx-deploy-handoff-20261015/typecheck.log
+- Parse/render JSX thực tế đạt cho cả hai giá trị settingsOnly; các điều khiển cài đặt vẫn có.
+  Evidence: work/explore-jsx-deploy-handoff-20261015/booking-deposit-ssr-verification.json.
+- ESLint riêng panel đạt, không lỗi/cảnh báo.
+  Evidence: work/explore-jsx-deploy-handoff-20261015/booking-deposit-eslint.json.
+- Không chạy production build mới, publish web, migration, upload native, hoặc gửi email/SMS
+  trong lượt này. Kiểm tra local không thay thế build source release đã ghép.
+
+5. KHI CÓ LỆNH DEPLOY SAU
+
+Đọc AGENTS.md và docs/release-policy.txt; lấy khóa coordinator trước khi chụp alias/source
+production. Đọc release-journal pending, các worktree và receipt mới nhất. Kiểm tra snapshot/hash,
+tránh đưa lại phần Explore đã ship, chờ task JSX có nguồn hoàn tất nếu chưa có. Ghép đúng phần
+chưa phát hành lên source hiện đang live; giữ Explore/location và mọi thay đổi đã ship khác.
+Chạy kiểm tra và production build trên nguồn đã ghép; chạy verify-production-base ngay trước
+promotion. Chỉ ghi published sau khi xác minh thực tế. Các thay đổi trong ghi chú này tương thích
+web và không tự đòi hỏi build iOS mới; coordinator đánh giá lại theo toàn bộ release lúc đó.

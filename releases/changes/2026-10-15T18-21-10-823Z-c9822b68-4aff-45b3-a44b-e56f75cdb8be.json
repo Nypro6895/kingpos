@@ -1,0 +1,69 @@
+{
+  "kind": "change",
+  "changeId": "booking-access-review-20261015",
+  "status": "ready",
+  "summary": "Integrate verified booking access/privacy/notification guards and safe customer readers on current production source.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/helpers/isolated-supabase-fixture.mjs",
+    "tests/booking-access.integration.test.mjs",
+    "supabase/migrations/20261015050000_booking_access_guards.sql"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\signup-inline-security-20261015\\source-v1",
+    "baselineDeploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA",
+    "integratesEvent": "9684890e-52b6-4ded-81fb-e7c8ae60eb18"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Final production webpack build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/signup-inline-security-20261015/production-build.log"
+    },
+    {
+      "name": "Assembled product ESLint",
+      "result": "passed",
+      "evidence": "artifacts/signup-inline-security-20261015/assembled-eslint.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Customer booking projection",
+      "result": "passed",
+      "tests": 7,
+      "skipped": 0
+    },
+    {
+      "name": "Notification dispatch capture",
+      "result": "passed",
+      "tests": 11,
+      "skipped": 0
+    },
+    {
+      "name": "Isolated Supabase Auth/PostgREST/RLS and notification outbox",
+      "result": "passed",
+      "tests": 94,
+      "skipped": 0,
+      "migrationsPerFixture": 265,
+      "evidence": [
+        "booking-integration-verification/booking-access-results.json",
+        "booking-integration-verification/booking-notification-results.json"
+      ]
+    }
+  ],
+  "id": "c9822b68-4aff-45b3-a44b-e56f75cdb8be",
+  "recordedAt": "2026-10-15T18:21:10.823Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "tests/helpers/isolated-supabase-fixture.mjs": "625eea3b591a4642d9084b95084feab941843dfdec1bd9a72f53d78c62dec849",
+    "tests/booking-access.integration.test.mjs": "8281501ea572db4f892c11532e27d05718a722d7447e0b6da086ec36f1055266",
+    "supabase/migrations/20261015050000_booking_access_guards.sql": "55c2e87eaea6a0a1da1ee032b8c4d299b7fdccb9f826192a27913e840e8ca65b"
+  }
+}

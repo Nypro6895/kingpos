@@ -1,0 +1,7 @@
+import { AdminActionForm } from "./action-form";
+import { updateAdminUserMembershipAction } from "../workflow-actions";
+import { SelectInput, TextArea, SubmitButton } from "./admin-ui";
+export function MembershipEditor({ userId, membershipId, scope, role, status }: { userId:string; membershipId:string; scope:"business"|"salon"; role:string; status:string }) {
+  if (role.toUpperCase()==="OWNER") return <p className="mt-3 text-xs text-zinc-500">Owner changes use the salon ownership transfer workflow.</p>;
+  return <details className="mt-3"><summary className="cursor-pointer text-sm font-medium text-orange-700">Edit membership</summary><AdminActionForm action={updateAdminUserMembershipAction} confirmMessage="Update this user's membership and access to this business or salon?" className="mt-3 grid gap-3 rounded-lg border bg-zinc-50 p-4 sm:grid-cols-2"><input name="user_id" type="hidden" value={userId}/><input name="membership_id" type="hidden" value={membershipId}/><input name="scope" type="hidden" value={scope}/><SelectInput name="role" label="Role" defaultValue={role.toUpperCase()} options={[{label:"Manager",value:"MANAGER"},{label:"Staff",value:"STAFF"}]}/><SelectInput name="status" label="Access" defaultValue={status} options={[{label:"Active",value:"active"},{label:"Inactive",value:"inactive"},{label:"Suspended",value:"suspended"}]}/><div className="sm:col-span-2"><TextArea name="reason" label="Change reason" required rows={2}/></div><SubmitButton>Save membership</SubmitButton></AdminActionForm></details>;
+}

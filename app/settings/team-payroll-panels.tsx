@@ -1,5 +1,15 @@
 "use client";
-import { useState } from "react";
+import { PayrollTaxItemFields } from "@/app/payroll/payroll-tax-item-fields";
+import { payrollTaxSettingsFromForm } from "@/lib/payroll-tax-settings";
+import { salonSetupHref } from "@/lib/salon-setup-navigation";
+import { StaffHoursBooking } from "./staff-hours-booking";
+import {SettingsDetails} from "@/app/settings/settings-child-pages";
+
+import { getStaffLegalName, staffHasPersonalAccount } from "@/lib/staff-legal-name";
+import Link from "next/link";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { useEffect, useRef, useState } from "react";
+import type { StaffPayrollSetting } from "@/types/payroll";
 import {
   saveDirectStaff,
   runDirectStaffRequest,
@@ -7,6 +17,11 @@ import {
 } from "./direct-settings-actions";
 import {
   Field,
+  SettingsFieldGroup,
+  SettingsEditSection,
+  SettingsReadRow,
+  SettingsIdentity,
+
   Check,
   Select,
   InlineForm,
@@ -20,6 +35,7 @@ import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-edito
 import { saveSettingsPublicTeam } from "./settings-extra-actions";
 import { DeleteUnusedButton } from "./delete-unused-button";
 import { resetDirectStaffPasscode } from "./direct-pos-actions";
+import { saveStaffCustomerContacts } from "./staff-customer-contact-actions";
 export function TeamSettingsPanel({
   data,
   onSaved,
@@ -27,17 +43,20 @@ export function TeamSettingsPanel({
   data: Extract<DirectData, { kind: "staff-team" }>;
   onSaved: () => Promise<void>;
 }) {
-  const [adding, setAdding] = useState(false);
+  const __vt = useWorkspaceTranslation();
+
+  const [addRevision, setAddRevision] = useState(0);
+  const [savedStaffId, setSavedStaffId] = useState("");
   function editor(staff?: StaffDirectoryMember) {
     return (
       <InlineForm
         key={staff?.id ?? "new"}
-        label={staff ? "Save staff" : "Create staff"}
+        label={__vt(staff ? "Save staff" : "Create staff")}
         onSaved={async () => {
           await onSaved();
-          if (!staff) setAdding(false);
+          if (!staff) setAddRevision(value=>value+1);
         }}
-        save={(form) => {
+        save={async (form) => {
           const common = {
             display_name: text(form, "display_name"),
             first_name: text(form, "first_name") || null,
@@ -52,17 +71,15 @@ export function TeamSettingsPanel({
             postal_code: staff?.postal_code,
             is_active: checked(form, "is_active"),
             pos_enabled: checked(form, "pos_enabled"),
+            online_booking_enabled: staff?.online_booking_enabled ?? checked(form, "online_booking_enabled"),
           };
-          return saveDirectStaff(
+          const result = await saveDirectStaff(
             data.salonId,
             staff
               ? {
                   ...common,
                   staff_id: staff.id,
-                  online_booking_enabled: checked(
-                    form,
-                    "online_booking_enabled",
-                  ),
+                  online_booking_enabled: staff.online_booking_enabled,
                   salon_profile_content_posting_enabled: checked(
                     form,
                     "salon_profile_content_posting_enabled",
@@ -70,70 +87,82 @@ export function TeamSettingsPanel({
                 }
               : common,
           );
+          if(result.ok)setSavedStaffId(!staff && common.is_active && common.online_booking_enabled ? result.staffId : "");
+          return result;
         }}
       >
+        <SettingsFieldGroup title="Staff identity & contact">
         <Field
           name="display_name"
-          label="Display name"
+          label={__vt("Display name")}
           value={staff?.display_name}
           required
         />
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field
-            name="first_name"
-            label="First name"
-            value={staff?.first_name}
-          />
-          <Field name="last_name" label="Last name" value={staff?.last_name} />
-          <Field name="email" label="Email" type="email" value={staff?.email} />
-          <Field name="phone" label="Phone" type="tel" value={staff?.phone} />
+          {staff && staffHasPersonalAccount(staff) ? (
+            <p className="text-sm text-zinc-600 sm:col-span-2">
+              <WorkspaceText text="Legal name:" /> {getStaffLegalName(staff) || <WorkspaceText text="Not set" />}<br />
+              <WorkspaceText text="Legal name is managed by this person in Personal." />
+            </p>
+          ) : <>
+            <Field name="first_name" label={__vt("Legal first name")} value={staff?.first_name} />
+            <Field name="last_name" label={__vt("Legal last name")} value={staff?.last_name} />
+          </>}
+          <Field name="email" label={__vt("Email")} type="email" value={staff?.email} />
+          <Field name="phone" label={__vt("Phone")} type="tel" value={staff?.phone} />
         </div>
-        <Field name="job_title" label="Position" value={staff?.job_title} />
+        <Field name="job_title" label={__vt("Position")} value={staff?.job_title} />
+        </SettingsFieldGroup>
+        <SettingsFieldGroup title="Staff access & booking">
         <Check
           name="is_active"
-          label="Active staff"
+          label={__vt("Active staff")}
           checked={staff?.is_active ?? true}
         />
         <Check
           name="pos_enabled"
-          label="Allow POS access"
+          label={__vt("Allow POS access")}
           checked={staff?.pos_enabled ?? true}
         />
+        {!staff?<Check name="online_booking_enabled" label={__vt("Allow online booking")} checked/>:null}
+        {!staff?<p className="text-sm text-zinc-600"><WorkspaceText text="If online booking is on, save this person first, then choose their services and booking hours."/></p>:null}
         {staff && (
           <>
-            <Check
-              name="online_booking_enabled"
-              label="Allow online booking"
-              checked={staff.online_booking_enabled}
-            />
+            
             <Check
               name="salon_profile_content_posting_enabled"
-              label="Allow salon content posts"
+              label={__vt("Allow salon content posts")}
               checked={staff.salon_profile_content_posting_enabled}
             />
           </>
         )}
+        </SettingsFieldGroup>
       </InlineForm>
     );
   }
   return (
     <div className="grid gap-4">
+      {savedStaffId && !data.staff.some(s=>s.id===savedStaffId && (!s.is_active || !s.online_booking_enabled || data.setup.readinessByStaffId[s.id]?.ready))?<aside className="salon-setup-guide settings-page-persistent" role="status"><p><WorkspaceText text="Staff saved. Choose their services and booking hours to start accepting online appointments."/></p><a href={salonSetupHref(data.salonId,"staff-team",`staff-${savedStaffId}`)}><WorkspaceText text="Continue setting up this staff member"/> →</a></aside>:null}
+      {data.canManageCustomerContacts && <InlineForm
+        label={__vt("Save customer contact settings")}
+        disabled={data.customerContactsVisible === null}
+        save={form => saveStaffCustomerContacts(data.salonId, checked(form, "customer_contacts_visible"))}
+        onSaved={onSaved}
+      >
+        <Check name="customer_contacts_visible" label={__vt("Staff can view customer contact details")} checked={data.customerContactsVisible === true} />
+        <p className="text-xs text-zinc-500"><WorkspaceText text="Show customer phone numbers, email addresses and contact links to staff. When off, schedules and pay remain available; customer lookup requires a full phone number." /></p>
+        {data.customerContactsVisible === null && <p role="alert" className="text-sm text-red-700"><WorkspaceText text="Customer contact settings could not load. Please reload." /></p>}
+      </InlineForm>}
       {data.canManage && (
         <>
-          <button
-            className="min-h-10 justify-self-end rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white"
-            onClick={() => setAdding(!adding)}
-          >
-            {adding ? "Close form" : "+ Add staff"}
-          </button>
-          {adding && editor()}
-          <details>
+          <SettingsEditSection title="Add staff" key={addRevision}>{editor()}</SettingsEditSection>
+          <SettingsDetails>
             <summary className="cursor-pointer text-sm font-semibold">
-              Invite staff
+              <WorkspaceText text="Invite staff" />
             </summary>
             <div className="mt-3">
               <InlineForm
-                label="Send invitation"
+                label={__vt("Send invitation")}
                 save={(form) =>
                   runDirectStaffRequest(data.salonId, {
                     action: "invite",
@@ -144,39 +173,30 @@ export function TeamSettingsPanel({
                 }
                 onSaved={onSaved}
               >
-                <Select name="staff_id" label="Staff profile" value="" options={[["","Create a new staff profile"],...data.staff.filter(s=>!s.account_user_id&&!s.user_id).map(s=>[s.id,s.display_name] as const)]}/><Field name="name" label="Staff name (for new profile)" />
-                <Field name="email" label="Email" type="email" required />
+                <Select name="staff_id" label={__vt("Staff profile")} value="" options={[["","Create a new staff profile"],...data.staff.filter(s=>!s.account_user_id&&!s.user_id).map(s=>[s.id,s.display_name] as const)]}/><Field name="name" label={__vt("Staff name (for new profile)")} />
+                <Field name="email" label={__vt("Email")} type="email" required />
               </InlineForm>
             </div>
-          </details>
+          </SettingsDetails>
         </>
       )}
       {!data.staff.length && (
-        <p className="text-sm text-zinc-500">No staff yet.</p>
+        <p className="text-sm text-zinc-500"><WorkspaceText text="No staff yet." /></p>
       )}
       {data.staff.map((staff) => (
-        <details
-          className="rounded-lg border border-zinc-200 bg-white p-4"
-          key={staff.id}
-        >
-          <summary className="cursor-pointer font-semibold">
-            {staff.staff_profile_display_name || staff.display_name}
-            <span className="ml-2 text-xs font-normal text-zinc-500">
-              {staff.job_title ?? "Staff"} ·{" "}
-              {staff.is_active ? "Active" : "Inactive"}
-            </span>
-          </summary>
+        <SettingsEditSection id={`staff-${staff.id}`} key={staff.id} title={staff.staff_profile_display_name||staff.display_name} action={data.canManage?"Manage":"View"} closeOnSave={false} heading={<SettingsIdentity name={staff.staff_profile_display_name||staff.display_name} imageUrl={staff.staff_profile_avatar_url} subtitle={[__vt(staff.job_title||"Staff"),__vt(staff.is_active?"Active":"Inactive")].join(" · ")}/>}>
           <div className="mt-3 grid gap-3">
-            <p className="text-sm text-zinc-600">{staff.connected_user?`${staff.connected_user.email||staff.connected_user.display_name||staff.connected_user.id} is linked to this staff profile`:`No app account is linked${staff.email?` · Contact: ${staff.email}`:""}`}</p>
+            <p className="text-sm text-zinc-600"><WorkspaceText text={staff.connected_user?`${staff.connected_user.email||staff.connected_user.display_name||staff.connected_user.id} is linked to this staff profile`:staffHasPersonalAccount(staff)?"An app account is linked to this staff profile":`No app account is linked${staff.email?` · Contact: ${staff.email}`:""}`} /></p>
             {data.canManage ? (
               <>
                 {editor(staff)}
-                <details><summary className="cursor-pointer text-sm font-semibold">Public staff profile · photo, bio & specialties</summary><div className="mt-3"><StaffPublicProfileEditor expectedSalonId={data.salonId} staffId={staff.id} displayName={staff.staff_profile_display_name||staff.display_name} avatarUrl={staff.staff_profile_avatar_url} bio={staff.public_bio} jobTitle={staff.job_title} specialties={staff.specialties} canEditSalonRole showPasscodeControls={false} onSaved={onSaved}/></div></details>
-                {data.canManagePublicTeam?<details><summary className="cursor-pointer text-sm font-semibold">Public team order</summary><div className="mt-3"><InlineForm onSaved={onSaved} label="Save public team order" save={form=>saveSettingsPublicTeam(data.salonId,[{staffId:staff.id,profileDisplayOrder:number(form,"profile_display_order"),onlineBookingEnabled:staff.online_booking_enabled,salonProfileContentPostingEnabled:staff.salon_profile_content_posting_enabled}])}><Field name="profile_display_order" label="Display order (lower comes first)" type="number" min={0} value={staff.profile_display_order}/><p className="text-xs text-zinc-500">{staff.public_profile_visible?"Visible on the salon website":"Hidden on the salon website"}</p></InlineForm></div></details>:null}
+                  {data.setup.staff.find(member=>member.id===staff.id)?<StaffHoursBooking key={`booking-${staff.id}-${staff.online_booking_enabled}`} salonId={data.salonId} member={data.setup.staff.find(member=>member.id===staff.id)!} setup={data.setup} canManageOnline={data.canManageStaffOnlineBooking} onSaved={onSaved}/>:null}
+                <SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Public staff profile · photo, bio & specialties" /></summary><div className="mt-3"><StaffPublicProfileEditor expectedSalonId={data.salonId} staffId={staff.id} displayName={staff.staff_profile_display_name||staff.display_name} avatarUrl={staff.staff_profile_avatar_url} bio={staff.public_bio} jobTitle={staff.job_title} specialties={staff.specialties} canEditSalonRole showPasscodeControls={false} onSaved={onSaved}/></div></SettingsDetails>
+                {data.canManagePublicTeam?<SettingsDetails><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Public team order" /></summary><div className="mt-3"><InlineForm onSaved={onSaved} label={__vt("Save public team order")} save={form=>saveSettingsPublicTeam(data.salonId,[{staffId:staff.id,profileDisplayOrder:number(form,"profile_display_order"),onlineBookingEnabled:staff.online_booking_enabled,salonProfileContentPostingEnabled:staff.salon_profile_content_posting_enabled}])}><Field name="profile_display_order" label={__vt("Display order (lower comes first)")} type="number" min={0} value={staff.profile_display_order}/><p className="text-xs text-zinc-500"><WorkspaceText text={staff.public_profile_visible?"Visible on the salon website":"Hidden on the salon website"} /></p></InlineForm></div></SettingsDetails>:null}
                 <DeleteUnusedButton kind="staff" id={staff.id} name={staff.display_name} expectedSalonId={data.salonId} onDeleted={onSaved}/>
-                <details>
+                <SettingsDetails>
                   <summary className="cursor-pointer text-sm font-semibold">
-                    Reset POS passcode
+                    <WorkspaceText text="Reset POS passcode" />
                   </summary>
                   <div className="mt-3">
                     <InlineForm
@@ -184,23 +204,23 @@ export function TeamSettingsPanel({
                         resetDirectStaffPasscode(data.salonId, staff.id, form)
                       }
                       onSaved={onSaved}
-                      label="Reset passcode"
+                      label={__vt("Reset passcode")}
                     >
                       <Field
                         name="passcode"
-                        label="New passcode (4–8 digits)"
+                        label={__vt("New passcode (4–8 digits)")}
                         type="password"
                         required
                       />
                     </InlineForm>
                   </div>
-                </details>
+                </SettingsDetails>
               </>
             ) : (
-              <p className="text-sm text-zinc-500">Read-only for your role.</p>
+              <p className="text-sm text-zinc-500"><WorkspaceText text="Read-only for your role." /></p>
             )}
           </div>
-        </details>
+        </SettingsEditSection>
       ))}
       {data.requests
         .filter((r) => r.status === "pending")
@@ -210,36 +230,34 @@ export function TeamSettingsPanel({
             key={request.id}
           >
             <p className="text-sm font-semibold">
-              {request.staff?.display_name ??
+              <WorkspaceText text={request.staff?.display_name ??
                 request.account?.display_name ??
                 request.target_email_normalized ??
-                "Staff request"}
+                "Staff request"} />
             </p>
             <p className="text-sm text-zinc-500">
-              {request.direction === "salon_invite"
+              <WorkspaceText text={request.direction === "salon_invite"
                 ? "Invitation pending"
-                : "Application pending"}
+                : "Application pending"} />
               {request.requested_job_title
                 ? ` · ${request.requested_job_title}`
                 : ""}
             </p>
-            {request.message && <p className="text-sm">{request.message}</p>}
+            {request.message && <p className="text-sm"><WorkspaceText text={request.message} /></p>}
             {data.canManage && (
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="settings-request-actions">
                 {(request.direction === "staff_application"
                   ? (["accept", "decline"] as const)
                   : (["resend", "revoke"] as const)
                 ).map((action) => (
-                  <InlineForm
+                  <InlineForm actionOnly
                     key={action}
-                    label={
-                      {
+                    label={__vt({
                         accept: "Accept",
                         decline: "Decline",
                         resend: "Resend invitation",
                         revoke: "Revoke invitation",
-                      }[action]
-                    }
+                      }[action])}
                     save={() =>
                       runDirectStaffRequest(data.salonId, {
                         action,
@@ -248,7 +266,7 @@ export function TeamSettingsPanel({
                     }
                     onSaved={onSaved}
                   >
-                    <span className="sr-only">{action} staff request</span>
+                    <span className="sr-only">{action} <WorkspaceText text="staff request" /></span>
                   </InlineForm>
                 ))}
               </div>
@@ -259,6 +277,26 @@ export function TeamSettingsPanel({
   );
 }
 
+function TeamPayrollTaxItemFields({ setting }: { setting: StaffPayrollSetting | null }) {
+  const host = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState<Partial<StaffPayrollSetting>>(setting ?? {});
+  useEffect(() => {
+    const form = host.current?.closest("form");
+    if (!form) return;
+    const update = () => {
+      const fields = new FormData(form);
+      setCurrent(previous => ({ ...previous,
+        pay_type: fields.get("pay_type") === "fixed" ? "fixed" : "commission",
+        apply_tax_to_fixed_pay: fields.get("apply_tax_to_fixed_pay") === "on" || fields.get("apply_tax_to_fixed_pay") === "true",
+        tax_rate: Number(fields.get("tax_rate") ?? 0),
+      }));
+    };
+    form.addEventListener("change", update);
+    return () => form.removeEventListener("change", update);
+  }, []);
+  return <div ref={host}><PayrollTaxItemFields setting={current} /></div>;
+}
+
 export function PayrollSettingsPanel({
   data,
   onSaved,
@@ -266,16 +304,19 @@ export function PayrollSettingsPanel({
   data: Extract<DirectData, { kind: "payroll" }>;
   onSaved: () => Promise<void>;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   if (!data.canManage)
     return (
       <p className="text-sm text-zinc-500">
-        Payroll settings are read-only for your role.
+        <WorkspaceText text="Payroll settings are read-only for your role." />
       </p>
     );
   return (
     <div className="grid gap-4">
+      <SettingsEditSection title={__vt("Pay cycle")} preview={<><SettingsReadRow label="Pay cycle" value={__vt(data.schedule.cycle_type==="biweekly"?"Every two weeks":data.schedule.cycle_type==="semi_monthly"?"Twice monthly":"Monthly")}/>{data.schedule.biweekly_anchor_date?<SettingsReadRow label="Anchor date" value={data.schedule.biweekly_anchor_date}/>:null}</>}>
       <InlineForm
-        label="Save pay cycle"
+        label={__vt("Save pay cycle")}
         save={(form) =>
           saveDirectPayroll(data.salonId, {
             cycleType: text(form, "cycle_type") as
@@ -287,7 +328,7 @@ export function PayrollSettingsPanel({
       >
         <Select
           name="cycle_type"
-          label="Pay cycle"
+          label={__vt("Pay cycle")}
           value={data.schedule.cycle_type}
           options={[
             ["monthly", "Monthly"],
@@ -297,28 +338,24 @@ export function PayrollSettingsPanel({
         />
         <Field
           name="anchor"
-          label="Anchor date (required for every two weeks)"
+          label={__vt("Anchor date (required for every two weeks)")}
           type="date"
           value={data.schedule.biweekly_anchor_date}
         />
       </InlineForm>
+      </SettingsEditSection>
       {data.staff.map((row) => {
         const s = row.setting;
         return (
-          <details
-            className="rounded-lg border border-zinc-200 bg-white p-4"
-            key={row.staff.id}
-          >
-            <summary className="cursor-pointer font-semibold">
-              {row.staffProfileDisplayName || row.staff.display_name}
-            </summary>
+          <SettingsEditSection key={row.staff.id} title={row.staffProfileDisplayName||row.staff.display_name} heading={<SettingsIdentity name={row.staffProfileDisplayName||row.staff.display_name} subtitle={s?.pay_type==="fixed"?__vt("Fixed pay"):__vt("Commission")+" · "+(s?.commission_rate??60)+"%"}/>}>
             <div className="mt-3">
               <InlineForm
                 save={(form) =>
                   saveDirectPayroll(data.salonId, {
                     staffId: row.staff.id,
+                    itemTaxSettings: payrollTaxSettingsFromForm(form),
+                    expectedSettingId:s?.id??null,expectedUpdatedAt:s?.updated_at??null,
                     effectiveFrom: text(form, "effective_from"),
-                    legalName: text(form, "legal_name") || null,
                     payType:
                       text(form, "pay_type") === "fixed"
                         ? "fixed"
@@ -327,9 +364,9 @@ export function PayrollSettingsPanel({
                     fixedPayAmount: number(form, "fixed_pay_amount"),
                     checkRate: number(form, "check_rate"),
                     taxRate: number(form, "tax_rate"),
-                    taxTips: checked(form, "tax_tips"),
-                    taxBonus: checked(form, "tax_bonus"),
-                    cashToTaxCompany: checked(form, "cash_to_tax_company"),
+                    taxTips: text(form, "tax_tips") === "true",
+                    taxBonus: text(form, "tax_bonus") === "true",
+                    cashToTaxCompany: Boolean(s?.cash_to_tax_company),
                     applyTaxToFixedPay: checked(form, "apply_tax_to_fixed_pay"),
                     tipPayoutMethod:
                       text(form, "tip_payout_method") === "check"
@@ -343,21 +380,21 @@ export function PayrollSettingsPanel({
                 }
                 onSaved={onSaved}
               >
+                <SettingsFieldGroup title="Pay details">
                 <Field
                   name="effective_from"
-                  label="Effective from"
+                  label={__vt("Effective from")}
                   type="date"
                   value={s?.effective_from ?? data.today}
                   required
                 />
-                <Field
-                  name="legal_name"
-                  label="Legal name"
-                  value={s?.legal_name}
-                />
+                <p className="text-sm text-zinc-600">
+                  <WorkspaceText text="Legal name:" /> {getStaffLegalName(row.staff) || <WorkspaceText text="Not set" />} {" · "}
+                  {staffHasPersonalAccount(row.staff) ? <WorkspaceText text="Managed in Personal" /> : <Link className="underline" href="/staff"><WorkspaceText text="Edit staff" /></Link>}
+                </p>
                 <Select
                   name="pay_type"
-                  label="Pay type"
+                  label={__vt("Pay type")}
                   value={s?.pay_type ?? "commission"}
                   options={[
                     ["commission", "Commission"],
@@ -366,7 +403,7 @@ export function PayrollSettingsPanel({
                 />
                 <Field
                   name="commission_rate"
-                  label="Commission (%)"
+                  label={__vt("Commission (%)")}
                   type="number"
                   step="0.01"
                   min={0}
@@ -376,7 +413,7 @@ export function PayrollSettingsPanel({
                 />
                 <Field
                   name="fixed_pay_amount"
-                  label="Fixed pay ($)"
+                  label={__vt("Fixed pay ($)")}
                   type="number"
                   step="0.01"
                   min={0}
@@ -385,7 +422,7 @@ export function PayrollSettingsPanel({
                 />
                 <Field
                   name="check_rate"
-                  label="Check share (%)"
+                  label={__vt("Check share (%)")}
                   type="number"
                   step="0.01"
                   min={0}
@@ -393,9 +430,11 @@ export function PayrollSettingsPanel({
                   value={s?.check_rate ?? 60}
                   required
                 />
+                </SettingsFieldGroup>
+                <SettingsFieldGroup title="Tax company settings">
                 <Field
                   name="tax_rate"
-                  label="Tax company rate (%)"
+                  label={__vt("Default tax rate (%)")}
                   type="number"
                   step="0.01"
                   min={0}
@@ -403,29 +442,18 @@ export function PayrollSettingsPanel({
                   value={s?.tax_rate ?? 0}
                   required
                 />
-                <Check
-                  name="tax_tips"
-                  label="Include tips in tax company calculation"
-                  checked={s?.tax_tips}
-                />
-                <Check
-                  name="tax_bonus"
-                  label="Include bonuses in tax company calculation"
-                  checked={s?.tax_bonus}
-                />
-                <Check
-                  name="cash_to_tax_company"
-                  label="Send cash portion to tax company"
-                  checked={s?.cash_to_tax_company}
-                />
+                <input type="hidden" name="cash_to_tax_company" value={String(Boolean(s?.cash_to_tax_company))} />
+                <TeamPayrollTaxItemFields setting={s} />
                 <Check
                   name="apply_tax_to_fixed_pay"
-                  label="Apply tax company rate to fixed pay"
+                  label={__vt("Default tax on fixed pay")}
                   checked={s?.apply_tax_to_fixed_pay}
                 />
+                </SettingsFieldGroup>
+                <SettingsFieldGroup title="Tip & bonus payouts">
                 <Select
                   name="tip_payout_method"
-                  label="Tip payout"
+                  label={__vt("Tip payout")}
                   value={s?.tip_payout_method ?? "cash"}
                   options={[
                     ["cash", "Cash"],
@@ -434,16 +462,17 @@ export function PayrollSettingsPanel({
                 />
                 <Select
                   name="bonus_payout_method"
-                  label="Bonus payout"
+                  label={__vt("Bonus payout")}
                   value={s?.bonus_payout_method ?? "check"}
                   options={[
                     ["cash", "Cash"],
                     ["check", "Check"],
                   ]}
                 />
+                </SettingsFieldGroup>
               </InlineForm>
             </div>
-          </details>
+          </SettingsEditSection>
         );
       })}
     </div>

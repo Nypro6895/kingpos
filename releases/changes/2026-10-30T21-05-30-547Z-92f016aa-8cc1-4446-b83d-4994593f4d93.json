@@ -1,0 +1,52 @@
+{
+  "changeId": "audited-ui-completion-20261030",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Final validated three-scope release: Library link plus exact Beauty active-state guard, flat Payroll Download and Reports details; supersedes unpromoted candidate; preserves Gift Reward75 and exclusions",
+  "source": {
+    "snapshot": "C:\\Reylumi\\audited-ui-completion-20261030\\artifacts\\audited-ui-completion-20261030\\frozen-source-v2"
+  },
+  "status": "ready",
+  "validation": [
+    {
+      "evidence": "artifacts/audited-ui-completion-20261030/build-v2.log",
+      "result": "passed",
+      "name": "Final five-file overlay on verified3703file production source; production build/TypeScript"
+    },
+    {
+      "evidence": "artifacts/audited-ui-completion-20261030/ui/result.json",
+      "result": "passed",
+      "name": "32 current regression tests and actual component UI320/390/1280; exclusive Beauty/Library/Bookings active states, flat surfaces and no overflow"
+    },
+    {
+      "evidence": "artifacts/audited-ui-completion-20261030/scope-verified.json",
+      "result": "passed",
+      "name": "AST financial behavior equivalence; exact shared-navigation guard; scoped lint zero errors"
+    }
+  ],
+  "files": [
+    "app/role-navigation.ts",
+    "app/payroll/data-download-panel.tsx",
+    "app/reports/operational-report-dashboard.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/navigation-shell.tsx"
+  ],
+  "kind": "change",
+  "dependencies": [],
+  "supersedesEvents": [
+    "ef7215c7-aa3f-4222-bf04-57b65796c073"
+  ],
+  "id": "92f016aa-8cc1-4446-b83d-4994593f4d93",
+  "recordedAt": "2026-10-30T21:05:30.547Z",
+  "worktree": "C:\\Reylumi\\audited-ui-completion-20261030",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/role-navigation.ts": "e1bf667966ddc46feee6e05ced35ac694841ea6fc0165980a956594a9592a59b",
+    "app/payroll/data-download-panel.tsx": "8e5a40316ae861ced7cce088d33578ae7f8dc1e8be655eda8e2f42c843e0f666",
+    "app/reports/operational-report-dashboard.tsx": "e80372892eec86b9c8c0c3e4465d37674c44610e989f9fa41deb40279af2ffe8",
+    "app/reports/owner-live-reports.tsx": "d042650894e8e8a20e3d717f959cb0cb3715e0483b53ca0f7b44d2ec525e8bae",
+    "app/navigation-shell.tsx": "56c311649dae1aad108cb6a938a08b3b3be0e9e4bdce3bf13c4842a6c5bbcab6"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-29T21:28:50.510Z",
+  "event": "61a9a430-1afd-478b-bc54-0a383a997a1f",
+  "integratedReady": "ed191f56-53e9-40df-8ee4-39817fca6943",
+  "file": "app/staff/my-work/staff-pay-analysis.tsx",
+  "sha256": "a8e6f958c10eade1764fabd7d2d84793e35d4d556611b8a8192f4059784fb8a5",
+  "producerWebAndNativeBytesIdentical": true,
+  "commit": "c976282fc1bc33b0545f4e0356668e67e6c18485",
+  "preservedNativeBaseline": "3e8cfe8957b3a2662f01b2b6f57f17b7c10a5631",
+  "runtimeDeltaFromUploaded70": "Only2 removed display lines in selected file; all Swift unchanged"
+}

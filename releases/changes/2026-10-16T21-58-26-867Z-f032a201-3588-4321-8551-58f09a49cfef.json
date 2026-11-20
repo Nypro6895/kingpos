@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "salon-address-booking-20261016",
+  "status": "working",
+  "summary": "Keep salon addresses as text when MapTiler is unconfigured; improve the created salon handoff and guidance to existing booking setup without changing business rules.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/salon-address-summary.tsx",
+    "app/settings/salon-list-actions.ts",
+    "app/settings/salon-list-panel.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/direct-settings-panel.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/(app)/salon-settings/page.tsx",
+    "components/app-local-salon-settings.tsx",
+    "lib/vietnamese-workspace-copy.json"
+  ],
+  "source": {
+    "commit": "cbc0ee6"
+  },
+  "validation": [
+    {
+      "name": "Implementation and isolated fixture checks",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "salon-setup-review-20261016"
+  ],
+  "scope": "Implementation only. No MapTiler credential or Vercel configuration changes; no production publication, booking, payment or deploy. Preserve unrelated root checkout.",
+  "id": "f032a201-3588-4321-8551-58f09a49cfef",
+  "recordedAt": "2026-10-16T21:58:26.867Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

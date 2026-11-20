@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "maps-explore-profile-20261106",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Improve Explore map lifecycle/directions and add click-to-load maps to both salon profile surfaces Original handoff 0fa4d5ba-53ee-468d-b944-8627633167db. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/explore/explore-map.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/salon-profile/salon-website-home.tsx",
+    "components/salon-location-map.tsx",
+    "lib/location/map-links.ts",
+    "tests/maps-explore-profile-runtime.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "1539e92c-a016-4245-bc4e-69d148325895",
+  "recordedAt": "2026-11-12T02:06:20.245Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/explore/explore-map.tsx": "0ff2352bd89f5c783422e2a141a5128cf1d78c8dafee1535ff047ada55361a07",
+    "app/salon-profile/salon-profile-view.tsx": "8854fcd954017d3684b754450a3b3ed74bcac2e202bce9dc3f5a3d646510f336",
+    "app/salon-profile/salon-website-home.tsx": "117f4cd6eee7c3d461f1915bd2de64ffb453c02af7d8bdf3aa40d9d2a6519535",
+    "components/salon-location-map.tsx": "0588077579856e0064cb3be3a6a8c5497f3cd59c6af9f57db6804ee4dac3292a",
+    "lib/location/map-links.ts": "033b76c15e7c3d75d0736aa0db98e7d35d327e70be580992230828550e4eb75d",
+    "tests/maps-explore-profile-runtime.mjs": "0ff484ef7acda854d93917870b0e2f8ec956cfb83e55d05ec517311f65e38d8e"
+  }
+}

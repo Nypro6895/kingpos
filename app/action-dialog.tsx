@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import Link from "next/link";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import {
@@ -50,7 +51,7 @@ function DialogAction({
   if (action.href) {
     return (
       <Link className={className} href={action.href} onClick={onClose}>
-        {action.label}
+        <WorkspaceText text={action.label} />
       </Link>
     );
   }
@@ -61,7 +62,7 @@ function DialogAction({
       onClick={() => runButtonAction(action, onClose)}
       type="button"
     >
-      {action.label}
+      <WorkspaceText text={action.label} />
     </button>
   );
 }
@@ -74,6 +75,8 @@ export function ActionDialog({
   secondaryAction,
   title,
 }: ActionDialogProps) {
+  const __vt = useWorkspaceTranslation();
+
   useCloseOnNavigation(onClose, open);
   const titleId = useId();
   const descriptionId = useId();
@@ -159,14 +162,14 @@ export function ActionDialog({
         <div className="flex min-w-0 items-start gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold" id={titleId}>
-              {title}
+              <WorkspaceText text={title} />
             </h2>
             <p className="mt-2 text-sm leading-6 text-zinc-600" id={descriptionId}>
               {description}
             </p>
           </div>
           <button
-            aria-label="Close dialog"
+            aria-label={__vt("Close dialog")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
             onClick={onClose}
             ref={closeButtonRef}

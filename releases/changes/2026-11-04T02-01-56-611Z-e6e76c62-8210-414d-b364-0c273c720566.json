@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "market-logo-allocation-20261103",
+  "status": "needs-integration",
+  "summary": "Build only the selected Market logo mark with unchanged SVG output; verified lower element allocations and local render CPU",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/market/app-logo.tsx",
+    "tests/market-logo-allocation.test.mjs",
+    "tests/market-read-coalescing.test.mjs",
+    "artifacts/iphone-quality-audit-20261103/market-logo-allocation/app-logo-before.tsx"
+  ],
+  "source": {
+    "commit": "96f6e4fee23cdd79cfa3812d6faa404101507090",
+    "snapshot": "artifacts/iphone-quality-audit-20261103/market-logo-allocation/frozen"
+  },
+  "validation": [
+    {
+      "name": "Four actual source parity/allocation/production CPU and hook-coalescing checks",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/market-logo-allocation/checks.json"
+    },
+    {
+      "name": "Restored current live Market source byte-identical to measured baseline",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/market-logo-allocation/live-base-comparison.json"
+    },
+    {
+      "name": "Targeted TypeScript, ESLint and whitespace checks",
+      "result": "passed",
+      "evidence": "artifacts/iphone-quality-audit-20261103/market-logo-allocation/checks.json"
+    },
+    {
+      "name": "Combined release build, bundled client and live/device acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "e6e76c62-8210-414d-b364-0c273c720566",
+  "recordedAt": "2026-11-04T02:01:56.611Z",
+  "worktree": "C:\\Reylumi-worktrees\\iphone-quality-audit-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

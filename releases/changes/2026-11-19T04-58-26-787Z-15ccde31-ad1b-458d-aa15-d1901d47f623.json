@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "rights-case-evidence-query-20261118",
+  "status": "needs-integration",
+  "summary": "Case-assigned operator enumeration with safe object IDs/state, existing evidence history and no private Storage pointers",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "supabase/migrations/20261119011000_rights_case_evidence_query.sql",
+    "tests/rights-case-evidence-query.integration.test.mjs",
+    "docs/rights-case-evidence-query-20261118.md"
+  ],
+  "source": {
+    "snapshot": "artifacts/rights-case-evidence-query-20261118/frozen",
+    "commit": "a4fe43e2da823586f52b1a5a4f309d0769b3d14d"
+  },
+  "dependencies": [
+    "rights-image-evidence-backend-20261118"
+  ],
+  "validation": [
+    {
+      "name": "Actual full-schema PostgREST RPC/grants/canonical filtering/revocation/legacy/history/special-risk",
+      "result": "passed",
+      "evidence": "artifacts/rights-case-evidence-query-20261118/acceptance/rights-case-query-acceptance.json"
+    },
+    {
+      "name": "Scoped ESLint and owned whitespace",
+      "result": "passed"
+    },
+    {
+      "name": "Combined operator UI/build/deployment and actual policy/operator activation",
+      "result": "pending"
+    }
+  ],
+  "id": "15ccde31-ad1b-458d-aa15-d1901d47f623",
+  "recordedAt": "2026-11-19T04:58:26.787Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

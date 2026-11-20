@@ -1,0 +1,22 @@
+{
+  "kind": "change",
+  "changeId": "combined-recent-chats-20261103",
+  "status": "working",
+  "summary": "Integrate completed recent chat changes against exact production source, preserve prior releases, rebuild native when required",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "validation": [
+    {
+      "name": "Integration/build/publication",
+      "result": "pending"
+    }
+  ],
+  "id": "0e63c705-c1ed-4664-b2f4-e01b9c5597e8",
+  "recordedAt": "2026-11-03T19:14:41.363Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-recent-chats-20261103",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,29 @@
+{
+  "source": {
+    "commit": "88246c1"
+  },
+  "channels": [
+    "web"
+  ],
+  "validation": [
+    {
+      "name": "Implementation",
+      "result": "pending"
+    }
+  ],
+  "summary": "Owner financial attention, persistent ignore, Today-only header and compact Expense",
+  "files": [
+    "lib/owner-financial-attention.ts"
+  ],
+  "kind": "change",
+  "dependencies": [
+    "shop-money-expenses-20261031"
+  ],
+  "changeId": "owner-financial-attention-20261101",
+  "status": "working",
+  "id": "f4174bc1-9f5b-4d3a-81d0-740ff6a91e9d",
+  "recordedAt": "2026-11-01T06:24:32.665Z",
+  "worktree": "C:\\Reylumi-worktrees\\owner-financial-attention-20261101",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

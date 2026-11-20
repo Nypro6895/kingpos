@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "startup-read-observation-20261029",
+  "status": "working",
+  "summary": "Remove finite observation hooks, helper and privacy test after original named measurements; preserve frozen sanitized evidence. No TTL extension. Combine with bounded prefetch release.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/api/app-local/context/route.ts",
+    "app/api/app-local/read/route.ts",
+    "lib/app-local-read-observation.ts",
+    "tests/app-local-read-observation.test.mjs"
+  ],
+  "deletedFiles": [
+    "lib/app-local-read-observation.ts",
+    "tests/app-local-read-observation.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "source cleanup and live no-new-event readback",
+      "result": "pending"
+    }
+  ],
+  "id": "9ba66b33-b9b5-475b-9cf8-cd08b57c261c",
+  "recordedAt": "2026-10-29T11:02:04.285Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "supersedesEvents": []
+}

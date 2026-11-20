@@ -1,0 +1,64 @@
+{
+  "kind": "change",
+  "changeId": "app-local-customer-display-20261016",
+  "status": "ready",
+  "summary": "Exact Customer Display client under original owner or paired-device authority; unchanged HTTPS token/PIN pairing; canonical public QR links on installed custom scheme only. Optional paired-device initial snapshot seeds original client while preserving normal web behavior.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-display-metadata.ts",
+    "lib/app-local-display-server.ts",
+    "lib/app-local-display-registry.tsx",
+    "lib/app-local-display-http-client.ts",
+    "lib/browser-public-origin.ts",
+    "app/service-relay/customer-relay.tsx",
+    "tests/app-local-display-server.test.mjs",
+    "tests/app-local-display-ui.test.mjs",
+    "app/pos/customer-display/customer-display-client.tsx"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\integrated-frozen-r3",
+    "commit": "260e26849b807f841046edef634246aeec49ff84"
+  },
+  "validation": [
+    {
+      "name": "173 isolated integration behavior/authority/offline tests, zero failures/skips",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/final-validation.json"
+    },
+    {
+      "name": "Assembled production Next build and 411 offline web assets",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/next-production-final.log"
+    },
+    {
+      "name": "81 actual iOS XCTest cases and unsigned archive at exact source",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/38945864401"
+    }
+  ],
+  "dependencies": [
+    "app-local-portable-workspaces-20261016"
+  ],
+  "supersedesEvents": [
+    "0522c8df-f650-458d-a128-022b6be71df5"
+  ],
+  "metadataCorrection": "Normalize integration dependency identifiers; product source and verification are unchanged.",
+  "id": "ee009ae6-8928-42de-8b98-bb7bd974c5c3",
+  "recordedAt": "2026-10-16T18:24:33.329Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "fileHashes": {
+    "lib/app-local-display-metadata.ts": "55fa364ad2fe38607d54d6ac9523aceeff993d526f6bd19ec2675f3b09b7cc0b",
+    "lib/app-local-display-server.ts": "bbe587a79afbfb4a16dfd0500d559e9803bd2f0f13396170913aec8e0d7f4f01",
+    "lib/app-local-display-registry.tsx": "625d737906b1184cf0ffbac60485effc92888603f4ebf34ffff25220b234d2e4",
+    "lib/app-local-display-http-client.ts": "b9cbd3f28071d96df0cc66970dd9bba9559496ba73f9a50469ca3b0687891881",
+    "lib/browser-public-origin.ts": "28a443b3bd122e2d0d4aef7633ee91accbee333439f1c57a16933eaaccfc81c2",
+    "app/service-relay/customer-relay.tsx": "55be246b525f9e2940f1fd9f6eaaa1da3c123ae77d41e553c61a9738287626a3",
+    "tests/app-local-display-server.test.mjs": "c63d3d1db220ed5e404b3644963cb592154aec626d716afd68e8acfec91112de",
+    "tests/app-local-display-ui.test.mjs": "5e0e9263fb828d50764307c46b9a2e57f98db8281781f86ebc6cabce9b41bf08",
+    "app/pos/customer-display/customer-display-client.tsx": "d487c3442017a95812c1a644982625fe2a81486ef02a5268cad4a996f0ccbeb5"
+  }
+}

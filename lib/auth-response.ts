@@ -1,5 +1,7 @@
 ﻿export type AuthResponse = {
   error?: string;
+  code?: "security_check_required" | "rate_limited" | "restricted" | "security_unavailable";
+  challengeRequired?: boolean;
   message?: string;
   mfa?: {
     challengeId: string;

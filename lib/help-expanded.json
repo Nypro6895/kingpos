@@ -1,0 +1,1607 @@
+{
+  "groups": [
+    {
+      "id": "start",
+      "title": "Getting started",
+      "slugs": [
+        "overview",
+        "account",
+        "open-or-claim"
+      ]
+    },
+    {
+      "id": "booking",
+      "title": "Bookings & visits",
+      "slugs": [
+        "find-and-book",
+        "manage-bookings",
+        "personal-qr",
+        "visit-history",
+        "booking-setup",
+        "booking-deposits"
+      ]
+    },
+    {
+      "id": "benefits",
+      "title": "Rewards & gift cards",
+      "slugs": [
+        "my-rewards",
+        "reward-program",
+        "my-gift-cards",
+        "gift-card-management"
+      ]
+    },
+    {
+      "id": "salon",
+      "title": "Salon & POS",
+      "slugs": [
+        "salon-settings",
+        "services-menu",
+        "customers",
+        "owner-tips",
+        "windows-portable",
+        "pos-and-displays",
+        "check-in-and-checkout"
+      ]
+    },
+    {
+      "id": "team",
+      "title": "Team & money",
+      "slugs": [
+        "staff-management",
+        "staff-connections",
+        "staff-schedule",
+        "payroll-and-tax",
+        "reports-and-mobile",
+        "check-writer"
+      ]
+    },
+    {
+      "id": "sharing",
+      "title": "Profiles & promotion",
+      "slugs": [
+        "profiles-and-posts",
+        "photo-library",
+        "saved-and-following",
+        "campaigns",
+        "market",
+        "owner-forum"
+      ]
+    },
+    {
+      "id": "account",
+      "title": "Settings & support",
+      "slugs": [
+        "membership",
+        "settings-security",
+        "notifications",
+        "troubleshooting"
+      ]
+    }
+  ],
+  "overrides": {
+    "overview": {
+      "title": "Start with Reylumi",
+      "summary": "Choose your workspace.",
+      "steps": [
+        {
+          "title": "Open My place",
+          "body": "Choose Personal, a salon you manage, or your staff workplace."
+        },
+        {
+          "title": "Check your access",
+          "body": "Check the salon name. Available tools depend on your role and permissions."
+        }
+      ]
+    },
+    "account": {
+      "title": "Account & sign-in",
+      "summary": "Sign up, sign in or recover access.",
+      "steps": [
+        {
+          "title": "Create or open your account",
+          "body": "Use Sign up for a new account, or sign in with your existing account."
+        },
+        {
+          "title": "Check My place",
+          "body": "Open the right workspace. Use Forgot password if you cannot sign in."
+        }
+      ]
+    },
+    "open-or-claim": {
+      "title": "Add or claim a salon",
+      "summary": "Find your salon before adding one.",
+      "steps": [
+        {
+          "title": "Search first",
+          "body": "Look for the salon by name and address to avoid duplicates."
+        },
+        {
+          "title": "Create or request access",
+          "body": "Add a new salon, or follow the claim steps for an existing listing. Wait for the result."
+        }
+      ]
+    },
+    "find-and-book": {
+      "title": "Find & book a salon",
+      "summary": "Choose a salon, service and time.",
+      "steps": [
+        {
+          "title": "Find a salon",
+          "body": "Open Explore and choose a salon. Open its booking page."
+        },
+        {
+          "title": "Choose and confirm",
+          "body": "Select services, staff and an available time. Review the details, submit and check the booking status."
+        }
+      ]
+    },
+    "booking-setup": {
+      "title": "Set up online booking",
+      "summary": "Services, staff and available hours.",
+      "steps": [
+        {
+          "title": "Prepare services and staff",
+          "body": "Activate services, assign booking staff and set their working hours."
+        },
+        {
+          "title": "Review booking settings",
+          "body": "Open booking settings, check availability and share the public booking link."
+        }
+      ]
+    },
+    "owner-tips": {
+      "title": "Daily salon checklist",
+      "summary": "Open, serve customers and close the day.",
+      "steps": [
+        {
+          "title": "Before opening",
+          "body": "Check the salon, services, staff, bookings and POS sync status."
+        },
+        {
+          "title": "Before leaving",
+          "body": "Review closed tickets and actual collections. Reconcile the business day."
+        }
+      ]
+    },
+    "windows-portable": {
+      "title": "Windows POS",
+      "summary": "Daily use, syncing and staff turns.",
+      "steps": [
+        {
+          "title": "Open the correct salon",
+          "body": "Sign in with your POS ID and check the salon and sync status."
+        },
+        {
+          "title": "Keep work in sync",
+          "body": "Save your work and check pending items before closing the app. Use the tasks below for staff turns."
+        }
+      ]
+    },
+    "pos-and-displays": {
+      "title": "POS & customer display",
+      "summary": "Install POS and pair a second screen.",
+      "steps": [
+        {
+          "title": "Open POS settings",
+          "body": "Choose the Windows app or the available browser option. Check staff access."
+        },
+        {
+          "title": "Pair the display",
+          "body": "Follow the customer display setup. Open the pairing link on the intended device and check its salon."
+        }
+      ]
+    },
+    "check-in-and-checkout": {
+      "title": "Check-in & checkout",
+      "summary": "Attendance, tickets and payments.",
+      "steps": [
+        {
+          "title": "Check the person and ticket",
+          "body": "Staff check-in records attendance. On a customer ticket, check services, staff, prices and tips."
+        },
+        {
+          "title": "Record payment once",
+          "body": "Collect payment, record the actual amount and method, then complete Checkout. Check the result before retrying."
+        }
+      ]
+    },
+    "staff-connections": {
+      "title": "Connect to your workplace",
+      "summary": "Accept an invite or apply to a salon.",
+      "steps": [
+        {
+          "title": "Open Connections",
+          "body": "Check the salon and staff profile before accepting an invitation or sending an application."
+        },
+        {
+          "title": "Open your staff workplace",
+          "body": "After approval, open the salon in My place and check your schedule and pay access."
+        }
+      ]
+    },
+    "payroll-and-tax": {
+      "title": "Payroll & tax records",
+      "summary": "Live income, change history and payment evidence.",
+      "steps": [
+        {
+          "title": "Review the live calculation",
+          "body": "Choose the salon, period and staff. Review services, tips, hours and effective pay rules, including past periods."
+        },
+        {
+          "title": "Compare payment evidence",
+          "body": "Open Change history and Recorded payments. Recalculation can change the amount due; it does not rewrite an actual payment or transfer money."
+        }
+      ]
+    },
+    "reports-and-mobile": {
+      "title": "Reports & daily closing",
+      "summary": "Review sales, collections and expenses.",
+      "steps": [
+        {
+          "title": "Choose the salon and date",
+          "body": "Open Reports and check the business day and timezone."
+        },
+        {
+          "title": "Compare actual collections",
+          "body": "Compare cash, card totals, tips and expenses. Review differences before saving the day report."
+        }
+      ]
+    },
+    "profiles-and-posts": {
+      "title": "Profiles & posts",
+      "summary": "Edit your profile and share your work.",
+      "steps": [
+        {
+          "title": "Choose the right profile",
+          "body": "Open Beauty for your personal profile, or Salon Profile for the selected salon."
+        },
+        {
+          "title": "Review before sharing",
+          "body": "Add your content, check visibility and publish. Open the shared link to check its destination."
+        }
+      ]
+    },
+    "troubleshooting": {
+      "title": "Fix a problem & get help",
+      "summary": "Check the result before trying again.",
+      "steps": [
+        {
+          "title": "Check the basics",
+          "body": "Check the account, salon, date, permissions and connection. Look for the saved result."
+        },
+        {
+          "title": "Send a clear request",
+          "body": "Open Support. Include the page, time, error and expected result. Hide private information in screenshots."
+        }
+      ]
+    }
+  },
+  "guides": [
+    {
+      "slug": "manage-bookings",
+      "title": "Manage appointments",
+      "summary": "View, change or cancel a booking.",
+      "roles": [
+        "customer",
+        "owner",
+        "staff"
+      ],
+      "entry": {
+        "href": "/my-bookings",
+        "label": "Open My bookings"
+      },
+      "prerequisite": "Use the account linked to your booking. Salon and staff views require the right workplace.",
+      "steps": [
+        {
+          "title": "Your appointments",
+          "body": "Open My bookings. Choose Upcoming, Past or Cancelled."
+        },
+        {
+          "title": "Salon and staff views",
+          "body": "Owners open Bookings for the selected salon. Check the date and the customer before editing."
+        }
+      ],
+      "sections": [
+        {
+          "id": "your-bookings",
+          "title": "Your appointments",
+          "steps": [
+            "Open My bookings. Choose Upcoming, Past or Cancelled.",
+            "Open the appointment details. Use the change or cancellation action when it is available, then check the updated status."
+          ],
+          "check": "The appointment shows the expected time and status.",
+          "example": "A pending request is not a confirmed appointment.",
+          "issues": [
+            "If no change action is offered, contact the salon. Check the existing appointment before creating another."
+          ]
+        },
+        {
+          "id": "team-bookings",
+          "title": "Salon and staff views",
+          "steps": [
+            "Owners open Bookings for the selected salon. Check the date and the customer before editing.",
+            "Staff open Schedule to review assigned appointments and customer notes. Available actions depend on access."
+          ],
+          "check": "You are reviewing the intended salon and appointment.",
+          "example": "Use the staff schedule for your own assigned work.",
+          "issues": [
+            "If an appointment is missing, check the date, salon and staff assignment."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/my-bookings/page.tsx",
+          "app/(app)/bookings/page.tsx",
+          "app/(app)/staff/appointments/page.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "personal-qr",
+      "title": "Personal QR & salon check-in",
+      "summary": "Show your ID or scan the salon QR.",
+      "roles": [
+        "customer"
+      ],
+      "entry": {
+        "href": "/qr",
+        "label": "Open QR"
+      },
+      "prerequisite": "Sign in and connect to the internet to refresh your QR.",
+      "steps": [
+        {
+          "title": "Check in at a salon",
+          "body": "Open QR. Show Personal ID to the salon, or choose Scan salon QR."
+        },
+        {
+          "title": "Follow your visit",
+          "body": "Open the current check-in to see requested services and available staff updates."
+        }
+      ],
+      "sections": [
+        {
+          "id": "scan",
+          "title": "Check in at a salon",
+          "steps": [
+            "Open QR. Show Personal ID to the salon, or choose Scan salon QR.",
+            "Check the salon and select your requested services. Follow the on-screen confirmation and open Your check-ins."
+          ],
+          "check": "Your visit appears under the correct salon.",
+          "example": "The visit QR lets staff find your current visit.",
+          "issues": [
+            "If the camera cannot open, use Have a check-in link? and paste the salon link. Reconnect if the QR has expired."
+          ]
+        },
+        {
+          "id": "visit",
+          "title": "Follow your visit",
+          "steps": [
+            "Open the current check-in to see requested services and available staff updates.",
+            "After payment, use View receipt when it appears."
+          ],
+          "check": "The visit status and saved receipt match your visit.",
+          "example": "Prices appear after staff save them.",
+          "issues": [
+            "A personal check-in does not record staff attendance."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/qr/personal-qr-client.tsx",
+          "app/(app)/qr/page.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "visit-history",
+      "title": "Visits & receipts",
+      "summary": "Find past visits and saved receipts.",
+      "roles": [
+        "customer"
+      ],
+      "entry": {
+        "href": "/activity",
+        "label": "Open Activity"
+      },
+      "prerequisite": "Sign in with the account connected to your visit.",
+      "steps": [
+        {
+          "title": "Find a receipt",
+          "body": "Open Activity and select the visit you want to review."
+        }
+      ],
+      "sections": [
+        {
+          "id": "history",
+          "title": "Find a receipt",
+          "steps": [
+            "Open Activity and select the visit you want to review.",
+            "Open its receipt when available. Review services, discounts, tips, tax and payments."
+          ],
+          "check": "The receipt belongs to the intended salon and date.",
+          "example": "A completed visit can have a saved receipt linked to its ticket.",
+          "issues": [
+            "If a visit is missing, ask the salon to check the customer connection. Avoid creating a second account."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/activity/page.tsx",
+          "app/(app)/activity/receipts/[ticketId]/page.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "salon-settings",
+      "title": "Salon details & opening hours",
+      "summary": "Address, hours and public visibility.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/salon-settings",
+        "label": "Open salon settings"
+      },
+      "prerequisite": "Select the salon you manage. Editing requires salon settings permission.",
+      "steps": [
+        {
+          "title": "Update details and hours",
+          "body": "Open Salon settings. Check the name, address, map location and timezone."
+        },
+        {
+          "title": "Show your salon on Explore",
+          "body": "Review the publishing checklist for missing location details, description or active services."
+        }
+      ],
+      "sections": [
+        {
+          "id": "hours",
+          "title": "Update details and hours",
+          "steps": [
+            "Open Salon settings. Check the name, address, map location and timezone.",
+            "Set weekly hours and special dates. Save settings and review the public status."
+          ],
+          "check": "The saved hours use the salon timezone.",
+          "example": "A holiday closure overrides the weekly schedule for that date.",
+          "issues": [
+            "Opening hours and staff booking availability are separate settings."
+          ]
+        },
+        {
+          "id": "visibility",
+          "title": "Show your salon on Explore",
+          "steps": [
+            "Review the publishing checklist for missing location details, description or active services.",
+            "Complete the required items, save the visibility setting and check your public profile."
+          ],
+          "check": "The public profile shows the intended information.",
+          "example": "A saved address can still be reviewed when the map is temporarily unavailable.",
+          "issues": [
+            "If publishing is unavailable, review the checklist and your permissions."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/salon-settings/page.tsx",
+          "app/settings/settings-hub-client.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "services-menu",
+      "title": "Services & prices",
+      "summary": "Keep the menu ready for POS and booking.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/services",
+        "label": "Open Services"
+      },
+      "prerequisite": "Select the salon and use an account with service management permission.",
+      "steps": [
+        {
+          "title": "Prepare a service",
+          "body": "Open Services. Add or edit the service name, price, duration and active status."
+        }
+      ],
+      "sections": [
+        {
+          "id": "menu",
+          "title": "Prepare a service",
+          "steps": [
+            "Open Services. Add or edit the service name, price, duration and active status.",
+            "Review eligible staff and booking availability, then save and check the service list."
+          ],
+          "check": "The intended service and price can be selected.",
+          "example": "A service can require both active staff and working hours before online times appear.",
+          "issues": [
+            "If a service is missing from booking, check its status, staff assignment and hours."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/services/page.tsx",
+          "app/settings/settings-hub-client.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "customers",
+      "title": "Customers & visit records",
+      "summary": "Find a customer before adding a record.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/customers",
+        "label": "Open Customers"
+      },
+      "prerequisite": "Select your salon. Editing customer records requires permission.",
+      "steps": [
+        {
+          "title": "Find or add a customer",
+          "body": "Search Customers before choosing Create Customer. Check the matching contact details."
+        }
+      ],
+      "sections": [
+        {
+          "id": "records",
+          "title": "Find or add a customer",
+          "steps": [
+            "Search Customers before choosing Create Customer. Check the matching contact details.",
+            "Open the intended customer to review visits, spending and upcoming appointments. Save only confirmed contact changes."
+          ],
+          "check": "The visit and appointment belong to the correct customer.",
+          "example": "Similar names can belong to different people.",
+          "issues": [
+            "For Duplicate? matches, review the records carefully before any merge. Ask for help if you cannot confirm the identity."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/customers/page.tsx",
+          "app/(app)/customers/new/page.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "staff-management",
+      "title": "Staff & access",
+      "summary": "Create profiles, invite accounts and check access.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/staff",
+        "label": "Open Staff"
+      },
+      "prerequisite": "Use the selected salon with staff management permission.",
+      "steps": [
+        {
+          "title": "Add or connect staff",
+          "body": "Open Staff. Find an existing profile before adding a new one."
+        },
+        {
+          "title": "Review booking and pay access",
+          "body": "Check active status, services and working hours for online booking."
+        }
+      ],
+      "sections": [
+        {
+          "id": "team",
+          "title": "Add or connect staff",
+          "steps": [
+            "Open Staff. Find an existing profile before adding a new one.",
+            "Search the exact email or phone when inviting an account. Check the profile and salon before sending."
+          ],
+          "check": "The intended account is linked after the invitation is accepted.",
+          "example": "Creating a staff profile does not automatically connect a personal account.",
+          "issues": [
+            "If more than one account matches, refine the email or phone instead of guessing."
+          ]
+        },
+        {
+          "id": "access",
+          "title": "Review booking and pay access",
+          "steps": [
+            "Check active status, services and working hours for online booking.",
+            "Review payroll setup and allowed actions separately. Keep owner and POS credentials separate."
+          ],
+          "check": "The staff member sees only the tools they are allowed to use.",
+          "example": "Being available for booking does not grant payroll management access.",
+          "issues": [
+            "If a tool is missing, check the linked profile and permissions before creating another profile."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/staff/page.tsx",
+          "app/settings/settings-hub-client.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "staff-schedule",
+      "title": "My schedule & workday",
+      "summary": "Appointments, hours and attendance.",
+      "roles": [
+        "staff"
+      ],
+      "entry": {
+        "href": "/staff/appointments",
+        "label": "Open my schedule"
+      },
+      "prerequisite": "Your account must be linked to an active staff profile in the selected salon.",
+      "steps": [
+        {
+          "title": "Review your schedule",
+          "body": "Open Schedule. Select the day or week and open an assigned appointment."
+        },
+        {
+          "title": "Check your workday",
+          "body": "Open your staff workplace and review the work date and salon."
+        }
+      ],
+      "sections": [
+        {
+          "id": "schedule",
+          "title": "Review your schedule",
+          "steps": [
+            "Open Schedule. Select the day or week and open an assigned appointment.",
+            "Check the time, services and customer notes. Use Settings → My working hours & time off for available schedule settings."
+          ],
+          "check": "The schedule is for the intended salon and staff profile.",
+          "example": "Your online booking hours can differ from your recorded attendance.",
+          "issues": [
+            "Ask the manager if a change requires approval or the controls are unavailable."
+          ]
+        },
+        {
+          "id": "attendance",
+          "title": "Check your workday",
+          "steps": [
+            "Open your staff workplace and review the work date and salon.",
+            "Use the available Check In or Check Out action and verify the saved time."
+          ],
+          "check": "The saved attendance belongs to the correct workday.",
+          "example": "A checked-out workday may be read-only.",
+          "issues": [
+            "If the saved time is wrong, ask the manager to review it rather than repeating check-in."
+          ]
+        },
+        {
+          "id": "scan",
+          "title": "Scan a customer visit",
+          "steps": [
+            "Open Scan in your staff workplace. The salon owner must enable it first.",
+            "Scan the customer visit QR, then check the customer and requested services. Review amounts and the saved status before leaving the screen.",
+            "Stand by closes the editor while keeping current work. Check the result before scanning or submitting again."
+          ],
+          "check": "Your current work shows the intended customer and services.",
+          "example": "Use the visit QR for the current salon visit.",
+          "issues": [
+            "If POS changed the record, review the latest POS values before continuing. Reconnect before sending offline changes."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/staff/appointments/page.tsx",
+          "app/(app)/staff/workday/page.tsx",
+          "app/settings/settings-hub-client.tsx",
+          "app/(app)/staff/scan/page.tsx",
+          "app/staff/scan/staff-scan-client.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "saved-and-following",
+      "title": "Saved posts & following",
+      "summary": "Return to posts, salons and Beauty profiles.",
+      "roles": [
+        "customer",
+        "owner",
+        "staff"
+      ],
+      "entry": {
+        "href": "/more/saved-post",
+        "label": "Open saved posts"
+      },
+      "prerequisite": "Sign in with the account that saved or followed the content.",
+      "steps": [
+        {
+          "title": "Find saved posts",
+          "body": "Open More → Saved Post. Search or filter by the available post types."
+        },
+        {
+          "title": "Manage following",
+          "body": "Open More → Following. Choose Shops or Beauty to narrow the list."
+        }
+      ],
+      "sections": [
+        {
+          "id": "saved",
+          "title": "Find saved posts",
+          "steps": [
+            "Open More → Saved Post. Search or filter by the available post types.",
+            "Open a saved item to return to the original post. Remove it from saved items when you no longer need it."
+          ],
+          "check": "The item opens the intended original content.",
+          "example": "Removing a saved item does not delete the original post.",
+          "issues": [
+            "Removed or restricted posts may no longer open."
+          ]
+        },
+        {
+          "id": "following",
+          "title": "Manage following",
+          "steps": [
+            "Open More → Following. Choose Shops or Beauty to narrow the list.",
+            "Open the intended profile, or use the available unfollow action."
+          ],
+          "check": "The list reflects the profiles followed by this account.",
+          "example": "Following a salon does not create an appointment.",
+          "issues": [
+            "If the list looks wrong, check the signed-in account."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/more/[section]/page.tsx",
+          "lib/account-social.ts"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "campaigns",
+      "title": "Promote salon posts",
+      "summary": "Audience, credit limits and results.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/campaigns",
+        "label": "Open Campaigns"
+      },
+      "prerequisite": "Use the Owner workspace for your active salon. Campaign availability and credits must be checked in the app.",
+      "steps": [
+        {
+          "title": "Review before starting",
+          "body": "Choose the intended salon post. Review the audience area, daily view limit and duration."
+        },
+        {
+          "title": "Review campaign results",
+          "body": "Open Campaigns and select the campaign to review its status and results."
+        }
+      ],
+      "sections": [
+        {
+          "id": "plan",
+          "title": "Review before starting",
+          "steps": [
+            "Choose the intended salon post. Review the audience area, daily view limit and duration.",
+            "Check the maximum campaign credits and final confirmation. Start only after reviewing the amount."
+          ],
+          "check": "The campaign uses the selected post, area and credit limit.",
+          "example": "A daily view limit is a maximum; it does not guarantee views or bookings.",
+          "issues": [
+            "If credits are insufficient, review the current balance and purchase terms before paying."
+          ]
+        },
+        {
+          "id": "results",
+          "title": "Review campaign results",
+          "steps": [
+            "Open Campaigns and select the campaign to review its status and results.",
+            "Use the offered cancellation action if needed. Check the updated status and credit balance afterward."
+          ],
+          "check": "The saved campaign status matches the action taken.",
+          "example": "Example numbers in setup are illustrations, not actual results.",
+          "issues": [
+            "If a credit purchase is still being checked, review its result before starting another purchase."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/campaigns/page.tsx",
+          "components/owner-campaign-dialog.tsx",
+          "app/campaigns/campaign-results.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "market",
+      "title": "Market & add-ons",
+      "summary": "Check availability, permissions and plans.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/market",
+        "label": "Open Market"
+      },
+      "prerequisite": "Select the active salon you own before managing add-ons.",
+      "steps": [
+        {
+          "title": "Review an add-on",
+          "body": "Open Market and select an add-on. Read its features, permissions and availability."
+        }
+      ],
+      "sections": [
+        {
+          "id": "addons",
+          "title": "Review an add-on",
+          "steps": [
+            "Open Market and select an add-on. Read its features, permissions and availability.",
+            "If activation is offered, review the displayed trial or payment terms and confirm for the correct salon."
+          ],
+          "check": "The add-on status shows whether it is active for that salon.",
+          "example": "A preview or sample listing is not an installed feature.",
+          "issues": [
+            "Prices and available plans can change. Check the final screen rather than an older guide."
+          ]
+        },
+        {
+          "id": "booking-sms",
+          "title": "Booking SMS reminders",
+          "steps": [
+            "Open BookSMS in Market for the intended salon. Review its current availability, plan and SMS allowance.",
+            "When access is active, use the plugin settings to configure the salon sender and choose booking updates and reminders."
+          ],
+          "check": "The plugin shows the intended salon sender and preferences.",
+          "example": "Enabling app notifications does not activate booking SMS.",
+          "issues": [
+            "Delivery depends on active access, allowance and provider setup. Review delivery status before sending the same message again."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/market/page.tsx",
+          "app/market/sample-apps.ts",
+          "lib/market-catalog-view.ts",
+          "lib/market-plugins.ts",
+          "app/market/sample-apps.ts"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "booking-deposits",
+      "title": "Booking deposits",
+      "summary": "Set payment rules and check receipts.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/market/booking-deposit",
+        "label": "Open Booking Deposit"
+      },
+      "prerequisite": "The salon needs active access to Booking Deposit and the required Stripe connection.",
+      "steps": [
+        {
+          "title": "Set the booking payment rule",
+          "body": "Open Booking Deposit for the intended salon and complete the offered connection steps."
+        },
+        {
+          "title": "Check a booking payment",
+          "body": "Review the appointment payment status and the available Stripe receipt."
+        }
+      ],
+      "sections": [
+        {
+          "id": "rules",
+          "title": "Set the booking payment rule",
+          "steps": [
+            "Open Booking Deposit for the intended salon and complete the offered connection steps.",
+            "Choose whether payment is required and review the offered fixed, percentage or full-payment options. Save the settings."
+          ],
+          "check": "The saved rule matches the amount customers are asked to pay.",
+          "example": "Booking payment and the remaining visit balance must be reviewed together.",
+          "issues": [
+            "If access or Stripe setup is incomplete, finish those steps before expecting a payment request."
+          ]
+        },
+        {
+          "id": "payment",
+          "title": "Check a booking payment",
+          "steps": [
+            "Review the appointment payment status and the available Stripe receipt.",
+            "Check whether payment completed before asking the customer to pay again. Use the offered support path for an uncertain result."
+          ],
+          "check": "The confirmed payment belongs to the correct appointment.",
+          "example": "An unfinished checkout is not proof that a booking payment succeeded.",
+          "issues": [
+            "Do not assume cancellation automatically refunds a payment; review its actual payment and refund status."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/market/booking-deposit/page.tsx",
+          "app/(app)/market/booking-deposit/settings/page.tsx",
+          "lib/booking-deposit-market.ts",
+          "app/market/sample-apps.ts"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "settings-security",
+      "title": "Settings & account security",
+      "summary": "Profile, devices and account recovery.",
+      "roles": [
+        "customer",
+        "owner",
+        "staff"
+      ],
+      "entry": {
+        "href": "/settings",
+        "label": "Open Settings"
+      },
+      "prerequisite": "Use your own account. Some changes require a security check.",
+      "steps": [
+        {
+          "title": "Choose the right settings",
+          "body": "Open Settings. Choose Personal, a salon you manage, or your staff workplace."
+        },
+        {
+          "title": "Review account access",
+          "body": "Open Login, devices & security. Review sessions, trusted devices and available two-factor options."
+        }
+      ],
+      "sections": [
+        {
+          "id": "settings",
+          "title": "Choose the right settings",
+          "steps": [
+            "Open Settings. Choose Personal, a salon you manage, or your staff workplace.",
+            "Open the needed item, make the change and choose Save. Use Cancel to leave without saving."
+          ],
+          "check": "The saved change belongs to the intended account or salon.",
+          "example": "Personal contact details and salon contact details are separate.",
+          "issues": [
+            "If an item is missing, check the selected workspace and your permissions."
+          ]
+        },
+        {
+          "id": "security",
+          "title": "Review account access",
+          "steps": [
+            "Open Login, devices & security. Review sessions, trusted devices and available two-factor options.",
+            "Follow the security checks before saving. Keep recovery codes private; use account recovery if you lose access."
+          ],
+          "check": "Only your intended sessions and recovery details remain.",
+          "example": "A recovery code is private, just like a password.",
+          "issues": [
+            "Never include passwords, verification codes or recovery codes in a support message."
+          ]
+        },
+        {
+          "id": "ownership-status",
+          "title": "Ownership & salon status",
+          "steps": [
+            "In Settings, open the intended salon and review Owners, ownership history & transfer.",
+            "Use Salon status, backup & permanent closure to review the salon status and any unfinished records. Read all requirements before confirming a change.",
+            "Personal account deletion is a separate option under Personal account. Check its requirements before continuing."
+          ],
+          "check": "You have reviewed the correct salon, owner and unfinished work.",
+          "example": "Permanent salon closure keeps historical records available; it is different from changing weekly hours.",
+          "issues": [
+            "The last owner cannot leave without another owner. Keep all identity checks and confirmation steps."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/settings/settings-hub-client.tsx",
+          "app/(app)/settings/login-security/page.tsx",
+          "app/settings/ownership-lifecycle-panels.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "notifications",
+      "title": "Notifications",
+      "summary": "Read updates and find pending actions.",
+      "roles": [
+        "customer",
+        "owner",
+        "staff"
+      ],
+      "entry": {
+        "href": "/notifications",
+        "label": "Open Notifications"
+      },
+      "prerequisite": "Sign in and check the active account and workplace.",
+      "steps": [
+        {
+          "title": "Review updates",
+          "body": "Open Notifications. Use the All or Unread filter and open an item for details."
+        },
+        {
+          "title": "Choose notification preferences",
+          "body": "Open notification Settings from the page, or Settings → Notifications."
+        }
+      ],
+      "sections": [
+        {
+          "id": "updates",
+          "title": "Review updates",
+          "steps": [
+            "Open Notifications. Use the All or Unread filter and open an item for details.",
+            "Review Needs action separately. Reading an update does not complete the action it asks for."
+          ],
+          "check": "Read status and pending actions match what you have done.",
+          "example": "Mark all viewed changes read status; it does not approve a request.",
+          "issues": [
+            "Use Retry if loading fails, or Load older notifications for earlier items."
+          ]
+        },
+        {
+          "id": "preferences",
+          "title": "Choose notification preferences",
+          "steps": [
+            "Open notification Settings from the page, or Settings → Notifications.",
+            "Review the available preferences and save your choices."
+          ],
+          "check": "Your saved preferences are shown when you reopen settings.",
+          "example": "App preferences and device notification permissions are separate.",
+          "issues": [
+            "If alerts do not appear, check both app preferences and the device settings."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/notifications/notification-center-client.tsx",
+          "app/(app)/notifications/page.tsx",
+          "app/settings/notification-preferences-panel.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "my-rewards",
+      "title": "My rewards",
+      "summary": "Points and offers from each salon.",
+      "roles": [
+        "customer"
+      ],
+      "entry": {
+        "href": "/rewards",
+        "label": "Open My Rewards"
+      },
+      "prerequisite": "Use the personal account linked to your visits. Each salon has its own rules.",
+      "steps": [
+        {
+          "title": "Check your points",
+          "body": "Open My Rewards and choose the salon. Review available points, pending points and offers."
+        },
+        {
+          "title": "Use a reward on a visit",
+          "body": "Open your current visit from My QR, or review the customer display. Choose an eligible reward."
+        }
+      ],
+      "sections": [
+        {
+          "id": "points",
+          "title": "Check your points",
+          "steps": [
+            "Open My Rewards and choose the salon. Review available points, pending points and offers.",
+            "Use your linked account or Personal QR when visiting. Check the completed, fully paid visit before expecting eligible points."
+          ],
+          "check": "Your points appear under the salon where they were earned.",
+          "example": "A booking estimate is pending; it is not available points yet.",
+          "issues": [
+            "If points are missing, review the visit and the salon rules before contacting support."
+          ]
+        },
+        {
+          "id": "redeem",
+          "title": "Use a reward on a visit",
+          "steps": [
+            "Open your current visit from My QR, or review the customer display. Choose an eligible reward.",
+            "Review points, eligible services and minimum spend. Confirm the choice yourself and check the final receipt."
+          ],
+          "check": "The receipt shows the confirmed reward for that visit.",
+          "example": "Staff may suggest a reward; the customer confirms its use.",
+          "issues": [
+            "Points from one salon do not become points at another salon."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/rewards/page.tsx",
+          "components/rewardlumi/reward-workspaces.tsx",
+          "components/rewardlumi/visit-rewards.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "reward-program",
+      "title": "Set up salon rewards",
+      "summary": "Earning rules, offers and local discovery.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/reward-system",
+        "label": "Open Reward System"
+      },
+      "prerequisite": "Use the Owner workspace for the active salon.",
+      "steps": [
+        {
+          "title": "Preview and activate rewards",
+          "body": "Open Reward System. Review earning rules, point costs, discount values and eligible services."
+        },
+        {
+          "title": "Review activity or pause earning",
+          "body": "Review Reward activity for the selected day and compare the related visits."
+        }
+      ],
+      "sections": [
+        {
+          "id": "setup",
+          "title": "Preview and activate rewards",
+          "steps": [
+            "Open Reward System. Review earning rules, point costs, discount values and eligible services.",
+            "Read Customer preview and the readiness checklist. Confirm Activate local rewards when ready, then check the saved status."
+          ],
+          "check": "The saved program shows the intended rules and discovery status.",
+          "example": "Your salon provides the service discounts; reward points belong to that salon.",
+          "issues": [
+            "Spend points use complete thresholds on each fully paid receipt. Remainders do not carry between receipts."
+          ]
+        },
+        {
+          "id": "review",
+          "title": "Review activity or pause earning",
+          "steps": [
+            "Review Reward activity for the selected day and compare the related visits.",
+            "Use Pause, hide discovery or save a draft to adjust new earning or Explore visibility. Save and verify the result."
+          ],
+          "check": "The saved earning and discovery status matches your choice.",
+          "example": "Pausing new earning preserves existing balances and confirmed rewards.",
+          "issues": [
+            "A readiness error may require updating the public salon profile or location."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/reward-system/page.tsx",
+          "components/rewardlumi/reward-owner-setup.tsx",
+          "components/rewardlumi/reward-activity.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "my-gift-cards",
+      "title": "My gift cards",
+      "summary": "Receive, share and use a salon gift card.",
+      "roles": [
+        "customer"
+      ],
+      "entry": {
+        "href": "/gift-cards",
+        "label": "Open gift cards"
+      },
+      "prerequisite": "Check the issuing salon. Keep the card code, PIN and private link secure.",
+      "steps": [
+        {
+          "title": "Receive or share a card",
+          "body": "Open the gift card link and check the salon and balance. Use Add to my Reylumi wallet when offered."
+        },
+        {
+          "title": "Use the card at its salon",
+          "body": "At checkout, follow Gift card → Use on the connected customer flow or ask staff to open it."
+        }
+      ],
+      "sections": [
+        {
+          "id": "wallet",
+          "title": "Receive or share a card",
+          "steps": [
+            "Open the gift card link and check the salon and balance. Use Add to my Reylumi wallet when offered.",
+            "To give the card, use Share link, Save image or the email draft option. Use the newest code and PIN."
+          ],
+          "check": "The wallet or latest transfer shows the intended card.",
+          "example": "Each new transfer replaces the earlier code. Copies of the same current image share one balance.",
+          "issues": [
+            "Anyone with the current code and PIN may spend the card. Do not post them publicly."
+          ]
+        },
+        {
+          "id": "use",
+          "title": "Use the card at its salon",
+          "steps": [
+            "At checkout, follow Gift card → Use on the connected customer flow or ask staff to open it.",
+            "Review the amount applied and any remaining balance. Check the saved receipt before retrying."
+          ],
+          "check": "The card balance and receipt reflect the completed payment.",
+          "example": "A card is valid at its issuing salon.",
+          "issues": [
+            "Do not use an older transfer code after creating a new one."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/gift-cards/page.tsx",
+          "components/gift-card/customer-gift-cards.tsx",
+          "components/gift-card/pos-gift-card.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "gift-card-management",
+      "title": "Sell & manage gift cards",
+      "summary": "Sales, balances, design and activity.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/gift-cards/manage",
+        "label": "Open gift card management"
+      },
+      "prerequisite": "Select the salon you own. Online sales require the offered payment setup.",
+      "steps": [
+        {
+          "title": "Prepare and sell a card",
+          "body": "Open gift card management. Review Settings, sales availability and the card Design."
+        },
+        {
+          "title": "Review cards and activity",
+          "body": "Use Cards for balances and status. Use History to inspect sales and linked tickets."
+        }
+      ],
+      "sections": [
+        {
+          "id": "sales",
+          "title": "Prepare and sell a card",
+          "steps": [
+            "Open gift card management. Review Settings, sales availability and the card Design.",
+            "For counter sales, open POS → Gift card → Buy. Check the amount, payment and recipient, then verify the saved sale."
+          ],
+          "check": "The sale and delivery match the intended salon and value.",
+          "example": "Counter sales can use cash or the existing card terminal; online sales check Stripe readiness.",
+          "issues": [
+            "Do not issue a second card while the first payment result is uncertain."
+          ]
+        },
+        {
+          "id": "activity",
+          "title": "Review cards and activity",
+          "steps": [
+            "Use Cards for balances and status. Use History to inspect sales and linked tickets.",
+            "Review the displayed activity before exporting or using a lock action. Check the result after any change."
+          ],
+          "check": "The card status and activity explain its current balance.",
+          "example": "Disabling new sales preserves existing balances for use.",
+          "issues": [
+            "Voiding an unused sale is separate from returning money through the original payment method."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/gift-cards/manage/page.tsx",
+          "components/gift-card/manage-gift-cards.tsx",
+          "components/gift-card/pos-gift-card.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "membership",
+      "title": "Reylumi membership",
+      "summary": "Compare plans, plugin access and allowances.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/membership",
+        "label": "Explore membership"
+      },
+      "prerequisite": "Membership is assigned per salon. Read the current plan terms.",
+      "steps": [
+        {
+          "title": "Review a plan",
+          "body": "Open Membership and compare monthly or annual plans, included services and support scope."
+        },
+        {
+          "title": "Understand included access",
+          "body": "An active membership includes released Reylumi plugins. Choose and activate the needed tools in Market with their permissions."
+        }
+      ],
+      "sections": [
+        {
+          "id": "plans",
+          "title": "Review a plan",
+          "steps": [
+            "Open Membership and compare monthly or annual plans, included services and support scope.",
+            "If enrollment is open, use the offered contact action. The membership page does not collect payment."
+          ],
+          "check": "You understand the plan for the intended salon and its current enrollment status.",
+          "example": "A preview plan or an Enrollment not open label is not an active membership.",
+          "issues": [
+            "Do not treat a membership request as payment confirmation."
+          ]
+        },
+        {
+          "id": "allowances",
+          "title": "Understand included access",
+          "steps": [
+            "An active membership includes released Reylumi plugins. Choose and activate the needed tools in Market with their permissions.",
+            "Check service allowances, rollover and approved additional usage. Third-party plugins and payment processing are separate."
+          ],
+          "check": "Plugin access and service allowance are understood separately.",
+          "example": "The Reylumi Member badge identifies membership; it does not verify service quality.",
+          "issues": [
+            "Existing separate subscriptions are not automatically cancelled by requesting a membership."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(legal)/membership/page.tsx",
+          "app/(legal)/membership/website.tsx",
+          "lib/membership-model.ts"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "owner-forum",
+      "title": "Owner forum",
+      "summary": "Find discussions, post and follow replies.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/forum",
+        "label": "Open Owner forum"
+      },
+      "prerequisite": "Sign in with an account eligible for the Owner forum.",
+      "steps": [
+        {
+          "title": "Find or start a discussion",
+          "body": "Search the forum and choose a section or state filter to find a relevant topic."
+        },
+        {
+          "title": "Return to discussions",
+          "body": "Use Follow this post or save a topic when you want to return to it."
+        }
+      ],
+      "sections": [
+        {
+          "id": "discuss",
+          "title": "Find or start a discussion",
+          "steps": [
+            "Search the forum and choose a section or state filter to find a relevant topic.",
+            "Open a topic to reply. For a new discussion, enter a short title, choose the section and review the body before posting."
+          ],
+          "check": "The post appears in the intended section.",
+          "example": "Draft text is saved for the current browser session; check that the post was actually published.",
+          "issues": [
+            "Avoid private customer, payroll and account details in public discussions."
+          ]
+        },
+        {
+          "id": "follow",
+          "title": "Return to discussions",
+          "steps": [
+            "Use Follow this post or save a topic when you want to return to it.",
+            "Open the forum profile menu for Following, saved topics or your own posts. Use Report for content that needs review."
+          ],
+          "check": "The followed or saved discussion is available in the matching list.",
+          "example": "Following a forum topic is separate from following a salon profile.",
+          "issues": [
+            "A locked discussion or participation restriction can limit posting. Read its message or contact support."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/forum/page.tsx",
+          "app/(app)/forum/forum.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "check-writer",
+      "title": "Check Writer",
+      "summary": "Prepare, review and print checks.",
+      "roles": [
+        "owner"
+      ],
+      "entry": {
+        "href": "/check-writer",
+        "label": "Open Check Writer"
+      },
+      "prerequisite": "Use the Owner workspace with active Check Writer access. Unlock it when required.",
+      "steps": [
+        {
+          "title": "Review a check before printing",
+          "body": "Open Check Writer. Choose the available payroll source or New check, then verify the payee and amount."
+        },
+        {
+          "title": "Review print history",
+          "body": "Open History to check whether a check was already created before starting another one."
+        }
+      ],
+      "sections": [
+        {
+          "id": "prepare",
+          "title": "Review a check before printing",
+          "steps": [
+            "Open Check Writer. Choose the available payroll source or New check, then verify the payee and amount.",
+            "Review check settings and the preview. Test alignment on plain paper before using check stock."
+          ],
+          "check": "The preview has the correct payee, amount and alignment.",
+          "example": "A printed check is not proof that a bank payment has cleared.",
+          "issues": [
+            "Keep the unlock check. Do not put bank details in screenshots or support messages."
+          ]
+        },
+        {
+          "id": "history",
+          "title": "Review print history",
+          "steps": [
+            "Open History to check whether a check was already created before starting another one.",
+            "Use only the available recovery or reprint action after reviewing the existing result."
+          ],
+          "check": "You can identify the intended check without creating a duplicate.",
+          "example": "An interrupted print can still have a saved check record.",
+          "issues": [
+            "Do not bypass access or create another check solely because printing did not finish."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/check-writer/page.tsx",
+          "app/check-writer/check-writer.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    },
+    {
+      "slug": "photo-library",
+      "title": "Photo library",
+      "summary": "Find photos from your Beauty posts.",
+      "roles": [
+        "customer",
+        "owner",
+        "staff"
+      ],
+      "entry": {
+        "href": "/beauty/library",
+        "label": "Open Library"
+      },
+      "prerequisite": "Sign in with the account that published the photos.",
+      "steps": [
+        {
+          "title": "Find a photo or its post",
+          "body": "Open Library. Choose All, Photos or Before & After to filter your photos."
+        }
+      ],
+      "sections": [
+        {
+          "id": "photos",
+          "title": "Find a photo or its post",
+          "steps": [
+            "Open Library. Choose All, Photos or Before & After to filter your photos.",
+            "Browse photos grouped by month. Tap a photo to open its original post."
+          ],
+          "check": "The photo opens the matching Beauty post.",
+          "example": "Library shows photos from your posts; it is separate from Saved Post.",
+          "issues": [
+            "If the view is empty, try All and check the account. A post needs available photo media to appear."
+          ]
+        }
+      ],
+      "notes": [],
+      "evidence": {
+        "sourceFiles": [
+          "app/(app)/beauty/library/page.tsx",
+          "app/beauty/beauty-library.tsx"
+        ],
+        "sourceReviewed": true,
+        "productionFlowVerified": false,
+        "screenshots": []
+      }
+    }
+  ]
+}

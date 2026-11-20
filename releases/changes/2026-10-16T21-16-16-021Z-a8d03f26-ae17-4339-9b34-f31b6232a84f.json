@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "installed-owner-ticket-detail-navigation-20261016",
+  "status": "working",
+  "summary": "Keep the original owner POS navigation visible on the installed canonical ticket detail route while its read is pending, failed or complete; legacy detail shell and existing authority remain unchanged.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-daily-registry.tsx",
+    "tests/app-local-daily-ui.test.mjs"
+  ],
+  "dependencies": [
+    "installed-pos-menu-cart-recovery-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Focused original ticket page runtime regression",
+      "result": "pending"
+    }
+  ],
+  "id": "a8d03f26-ae17-4339-9b34-f31b6232a84f",
+  "recordedAt": "2026-10-16T21:16:16.021Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

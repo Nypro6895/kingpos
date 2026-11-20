@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "explore-session-recovery-20261017",
+  "status": "ready",
+  "summary": "Recover failed Explore session startup, same-page selection and cached iOS authority without UI changes or command replay. Owner requests holding for combined release. Integrated and validated against dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ with iOS 1.0.0 package parity.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "docs/explore-session-recovery-release-note-20261017.txt",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "lib/app-local-host.ts",
+    "tests/app-local-bundle-session-recovery.test.mjs",
+    "tests/app-local-host-deadline.test.mjs",
+    "tests/app-local-session-recovery.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "sourceEventId": "01653877-fee8-494b-8889-ee71dc6871e6"
+  },
+  "supersedesEvents": [
+    "01653877-fee8-494b-8889-ee71dc6871e6"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/web-build.log"
+    },
+    {
+      "name": "277 integration/browser regression cases; initial five fixture failures repaired and rerun, two Chrome-only tests explicitly executed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/validation-summary.json"
+    },
+    {
+      "name": "Actual native package and four version-preflight checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/final-package-tests.log"
+    },
+    {
+      "name": "Rollback-only actual-schema rehearsal, 16 functions and seven preserved authorities",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/database-rehearse.json"
+    },
+    {
+      "name": "Existing live Stripe webhook receives card setup event",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/payment-webhooks.json"
+    }
+  ],
+  "id": "ea383ffb-2353-49a6-8791-9603f82f4570",
+  "recordedAt": "2026-10-17T22:06:55.113Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\release-audit-ios-1-0-0-20261017",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "50d9656004b86b9afe4c380f53827cd194a3bde8ca061fe79f00560b56526884",
+    "docs/explore-session-recovery-release-note-20261017.txt": "07fac550ae00bf3fcebd778c206318a7ae33acf18823d932ea81e9393045eb71",
+    "ios/Reylumi/LocalAppBundle/app.js": "f3106cce7d053f74efc739bc5229f0b735b9d1205ff38e280e7da15244471751",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "af5643c5fdf7143f24a177351681ae161bc37d7787dae79d5ce9f03c51f5b2de",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "e5a979da6e20c0d2bfb79c8c1ec7b94988b206ec8a3cd9f6f02df547838a1aec",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "9c3fd3d02a2b0ec755c12b4a5c243cb3938da12e838fee4101ca7f58f78c5bd8",
+    "lib/app-local-host.ts": "9d5b03b77ecd98167cc3063b4686c1546859f6a24a0ef84ff83edaa6472199e3",
+    "tests/app-local-bundle-session-recovery.test.mjs": "6d0f5e5f20f32d34e7f8c6b518af2739d176917befee8f45e712dabb1854e8ad",
+    "tests/app-local-host-deadline.test.mjs": "3bb8cdd6b46be979c5c0003e9d5a335b8422bbf02c7259660260799e617a9af6",
+    "tests/app-local-session-recovery.test.mjs": "86d457b0a9c9e52c05e4378eb0d939a68d8b259156647314331cafca20735f3a"
+  }
+}

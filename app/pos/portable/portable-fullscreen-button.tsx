@@ -1,13 +1,14 @@
 "use client";
 
+import { useWorkspaceTranslation } from "@/components/workspace-language";
 import { useCallback, useEffect, useState } from "react";
 import { desktopDevice } from "@/lib/portable-device-storage";
 
-function FullscreenIcon() {
+function FullscreenIcon({ active }: { active: boolean }) {
   return (
     <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path
-        d="M8 4H4v4m12-4h4v4M8 20H4v-4m16 0v4h-4"
+        d={active ? "M4 8h4V4m8 0v4h4M4 16h4v4m8 0v-4h4" : "M8 4H4v4m12-4h4v4M8 20H4v-4m16 0v4h-4"}
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -17,7 +18,9 @@ function FullscreenIcon() {
   );
 }
 
-export function PortableFullscreenButton() {
+export function PortableFullscreenButton({ cornerExit = false }: { cornerExit?: boolean }) {
+  const __vt = useWorkspaceTranslation();
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
 
@@ -30,7 +33,7 @@ export function PortableFullscreenButton() {
 
     const readyTimer = window.setTimeout(() => {
       setIsSupported(Boolean(native || document.documentElement.requestFullscreen));
-      if (native) void native.fullscreen().then(setIsFullscreen); else handleFullscreenChange();
+      if (native) void native.fullscreen().then(setIsFullscreen).catch(() => undefined); else handleFullscreenChange();
     }, 0);
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -44,7 +47,7 @@ export function PortableFullscreenButton() {
 
   const enterFullscreen = useCallback(() => {
     const native = desktopDevice()?.windowControls;
-    if (native) { void native.fullscreen(true).then(setIsFullscreen); return; }
+    if (native) { void native.fullscreen(true).then(setIsFullscreen).catch(() => undefined); return; }
     const target =
       document.querySelector<HTMLElement>("[data-portable-pos-shell]") ??
       document.documentElement;
@@ -57,21 +60,22 @@ export function PortableFullscreenButton() {
     void target.requestFullscreen?.().catch(() => undefined);
   }, []);
 
-  if (!isSupported) {
+  if (!isSupported || (cornerExit && !isFullscreen)) {
     return null;
   }
 
-  return (
+  const button = (
     <button
-      aria-label={isFullscreen ? "Exit full view" : "Enter full view"}
+      aria-label={__vt(isFullscreen ? "Exit full view" : "Enter full view")}
       aria-pressed={isFullscreen}
       className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 active:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-emerald-700"
       data-portable-fullscreen-button
       onClick={enterFullscreen}
-      title={isFullscreen ? "Exit full view" : "Full view"}
+      title={__vt(isFullscreen ? "Exit full view" : "Full view")}
       type="button"
     >
-      <FullscreenIcon />
+      <FullscreenIcon active={isFullscreen} />
     </button>
   );
+  return cornerExit ? <div className="portable-fullscreen-corner" data-portable-fullscreen-corner>{button}</div> : button;
 }

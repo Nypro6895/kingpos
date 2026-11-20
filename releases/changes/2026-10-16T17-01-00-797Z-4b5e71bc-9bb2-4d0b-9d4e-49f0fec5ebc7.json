@@ -1,0 +1,38 @@
+{
+  "files": [
+    "app/salon-switcher.tsx",
+    "components/app-local-shell.tsx",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-workspace-navigation.ts",
+    "tests/app-local-shell.test.mjs",
+    "tests/app-local-shell-ui.test.mjs",
+    "components/explore-advertising.tsx"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "status": "working",
+  "source": {
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52"
+  },
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Original shell, safe scoped DTO, named endpoints and retained draft runtime",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "changeId": "app-local-original-shell-20261016",
+  "summary": "Preserve original functional installed shell with stable body portal, scoped language and explicitly disabled public-initial optional runtimes",
+  "id": "4b5e71bc-9bb2-4d0b-9d4e-49f0fec5ebc7",
+  "recordedAt": "2026-10-16T17:01:00.797Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

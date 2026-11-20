@@ -1,4 +1,6 @@
 "use server";
+import { postModerationAction } from "@/app/post-moderation/actions";
+import { PUBLIC_IMAGE_QUARANTINE_BUCKET, publicImageQuarantinePath } from "@/lib/public-image-staging";
 
 import {
   ACCOUNT_AVATAR_BUCKET,
@@ -8,11 +10,9 @@ import {
 import {
   createBeautyPost,
   deleteCurrentBeautyAvatarMedia,
-  deleteBeautyPost,
   deleteCurrentBeautyMedia,
   getBeautyTimelinePage,
   searchBeautyAttributionSalons,
-  updateBeautyPostCaption,
   updateBeautyProfile,
 } from "@/lib/beauty";
 import {
@@ -24,6 +24,7 @@ import {
 import {
   getAccessTokenFromRequest,
   getSupabaseConfig,
+  createAuthenticatedSupabaseServerClient,
 } from "@/lib/supabase/server";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import type {
@@ -41,6 +42,7 @@ export type BeautyMediaUploadSession = {
   anonKey: string;
   bucket: string;
   path: string;
+  objectPath?: string;
   supabaseUrl: string;
 };
 
@@ -50,7 +52,7 @@ export type BeautyAvatarUploadSession = BeautyMediaUploadSession & {
 
 export type BeautyMutationResult<T extends object = object> =
   | ({ error: null } & T)
-  | { error: string };
+  | { error: string; outcome?: "rejected" | "unknown"; requestId?: string };
 
 function isBeautyUploadRole(value: string): value is BeautyUploadRole {
   return BEAUTY_UPLOAD_ROLES.includes(value as BeautyUploadRole);
@@ -78,11 +80,21 @@ export async function getBeautyMediaUploadSessionAction(
     userId: user.id,
   });
 
+  if (role !== "cover") {
+    const client = await createAuthenticatedSupabaseServerClient();
+    if (!client) throw new Error("Photo uploads are temporarily unavailable.");
+    const { error } = await client.rpc("reserve_public_post_image", {
+      p_bucket: BEAUTY_MEDIA_BUCKET, p_path: path, p_purpose: role, p_salon_id: null,
+    });
+    if (error) throw new Error("Photo uploads are temporarily unavailable. Please try again.");
+  }
+
   return {
     accessToken,
     anonKey: config.supabaseAnonKey,
-    bucket: BEAUTY_MEDIA_BUCKET,
-    path,
+    bucket: role === "cover" ? BEAUTY_MEDIA_BUCKET : PUBLIC_IMAGE_QUARANTINE_BUCKET,
+    path: role === "cover" ? path : publicImageQuarantinePath(BEAUTY_MEDIA_BUCKET, path),
+    objectPath: path,
     supabaseUrl: config.supabaseUrl,
   };
 }
@@ -144,6 +156,7 @@ export async function updateBeautyProfileAction(input: {
   }
 
   revalidatePath("/beauty");
+  revalidatePath("/beauty/library");
   revalidatePath("/account");
   revalidatePath("/explore");
   revalidatePath(`/explore/beauty/${result.data.id}`);
@@ -160,24 +173,28 @@ export async function createBeautyPostAction(
 ): Promise<
   BeautyMutationResult<{
     timeline: BeautyTimelinePage;
+    publicationStatus?: "published";
+    requestId?: string;
+    postId?: string;
   }>
 > {
   const result = await createBeautyPost(input);
 
   if (!result.ok) {
-    return { error: result.message };
+    return { error: result.message, outcome: result.outcome ?? "rejected", requestId: input.requestId };
   }
 
-  const timeline = await getBeautyTimelinePage({
-    profileId: result.data.profileId,
-  });
+  try {
+    const timeline = await getBeautyTimelinePage({ profileId: result.data.profileId });
+    if (timeline.error) return { error: "Your post was saved, but the feed could not be refreshed. Retry to check this same post safely.", outcome: "unknown", requestId: input.requestId };
 
-  revalidatePath("/beauty");
+    revalidatePath("/beauty");
+    revalidatePath("/beauty/library");
 
-  return {
-    error: null,
-    timeline,
-  };
+    return { error: null, timeline, publicationStatus: "published", requestId: input.requestId, postId: result.data.postId };
+  } catch {
+    return { error: "Your post was saved, but the feed could not be refreshed. Retry to check this same post safely.", outcome: "unknown", requestId: input.requestId };
+  }
 }
 
 export async function loadBeautyTimelineAction(
@@ -196,31 +213,16 @@ export async function searchBeautyAttributionSalonsAction(
   return searchBeautyAttributionSalons(query);
 }
 
+/** Compatibility entry points for older loaded clients; mutations have one implementation. */
 export async function updateBeautyPostCaptionAction(input: {
   caption: string | null;
   postId: string;
 }): Promise<BeautyMutationResult> {
-  const result = await updateBeautyPostCaption(input);
-
-  if (!result.ok) {
-    return { error: result.message };
-  }
-
-  revalidatePath("/beauty");
-
-  return { error: null };
+  const result = await postModerationAction({ sourceType: "beauty_post", sourceId: input.postId }, "edit", { caption: input.caption });
+  return { error: result.error };
 }
 
-export async function deleteBeautyPostAction(
-  postId: string,
-): Promise<BeautyMutationResult> {
-  const result = await deleteBeautyPost(postId);
-
-  if (!result.ok) {
-    return { error: result.message };
-  }
-
-  revalidatePath("/beauty");
-
-  return { error: null };
+export async function deleteBeautyPostAction(postId: string): Promise<BeautyMutationResult> {
+  const result = await postModerationAction({ sourceType: "beauty_post", sourceId: postId }, "delete");
+  return { error: result.error };
 }

@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "android-portable-pos-shared-receipts-20261118",
+  "status": "working",
+  "summary": "Implement installable Android Portable POS with existing POS UI, durable/offline tickets and shared Windows/iOS/Android receipt setup and printing; no deployment",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "android/app/src/main/java/com/reylumi/android/MainActivity.java",
+    "lib/portable-device-storage.ts",
+    "lib/portable-native-client.ts"
+  ],
+  "source": {
+    "commit": "1fd395c33f277032fe8d36f407ec2e6ca2edce48"
+  },
+  "validation": [
+    {
+      "name": "Scoped Android durable POS and cross-platform receipt implementation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "android-windows-qa-six-fixes-20261117"
+  ],
+  "nativeRequirements": {
+    "android": "Separate local POS QA install; production identity/signing/store activation deferred",
+    "ios": "Assess any receipt bridge delta and verify without publication",
+    "windows": "Reuse existing Portable host and shared receipt pipeline"
+  },
+  "authorization": "User requests Android Portable POS, shared existing POS UI, durable/offline tickets, receipt printing, and common receipt setup for iOS/Windows/Android. Thorough local/QA checks only; no deployment.",
+  "safetyScope": "Preserve POS ID/capabilities, signed offline lease/localCommands, single-writer ownership, immutable receipt/payment authority, drafts, and existing apps. Do not add direct Bluetooth/USB sensitive permissions or register a store identity without a concrete separately authorized decision. System printing/PDF first.",
+  "id": "c560eaa1-52a6-44fd-a6b0-a561c88dc8b5",
+  "recordedAt": "2026-11-18T20:37:46.687Z",
+  "worktree": "C:\\Reylumi-worktrees\\android-portable-pos-20261118",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

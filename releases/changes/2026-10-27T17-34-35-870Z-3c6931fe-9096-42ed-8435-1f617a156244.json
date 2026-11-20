@@ -1,0 +1,27 @@
+{
+  "kind": "change",
+  "changeId": "ios-role-priority-prefetch-20261027",
+  "status": "working",
+  "summary": "Implement scoped role-aware prioritized read prefetch, progressive Today and Explore preparation, and measured native delivery improvements based on iOS build 53.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "snapshot": "C:/Reylumi/kingpos-ios-priority-prefetch-20261027",
+    "commit": "699101149dbf5614ae17ab601b5e306ed311664c"
+  },
+  "validation": [
+    {
+      "name": "Scoped implementation and regression validation",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "3c6931fe-9096-42ed-8435-1f617a156244",
+  "recordedAt": "2026-10-27T17:34:35.870Z",
+  "worktree": "C:\\Reylumi\\kingpos-ios-priority-prefetch-20261027",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

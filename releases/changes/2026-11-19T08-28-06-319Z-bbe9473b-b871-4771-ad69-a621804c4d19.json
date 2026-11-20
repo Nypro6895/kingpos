@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "tax-recipient-storage-custody-20261119",
+  "status": "needs-integration",
+  "summary": "Restore exact frozen recipient PDF access after employment and Tax access changes; retain other financial and tenant restrictions. Seven ordinary full-schema groups pass. Separate delivered-file integrity and final release acceptance remain pending.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261119060000_tax_recipient_storage_custody.sql",
+    "tests/tax-recipient-storage.integration.test.mjs",
+    "tests/helpers/isolated-tax-storage-bytes.mjs",
+    "docs/tax-recipient-storage-custody-20261119.md"
+  ],
+  "source": {
+    "commit": "18a981fb14edd7cb99350f002f405dff8d7a0203",
+    "snapshot": "C:\\Reylumi-worktrees\\combined-store-release-20261119\\artifacts\\tax-recipient-storage-read-completion-r1\\frozen-source"
+  },
+  "validation": [
+    {
+      "name": "Actual complete448-schema ordinary Auth/PostgREST/Storage recipient, coworker, tenant, relink and app-account-deletion regression; seven groups",
+      "result": "passed",
+      "evidence": "C:/Reylumi/qa-evidence/combined-store-final-18a981-20261119-r1/tax-recipient-functional-448-r4/post-run-functional-validation.json"
+    },
+    {
+      "name": "Final committed-source combined SQL acceptance, delivered-file integrity and production/native/Store gates",
+      "result": "pending",
+      "evidence": "docs/tax-recipient-storage-custody-20261119.md"
+    }
+  ],
+  "id": "bbe9473b-b871-4771-ad69-a621804c4d19",
+  "recordedAt": "2026-11-19T08:28:06.319Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,4 +1,6 @@
 "use server";
+import {after} from "next/server";
+import {getSupportEmailConfig,sendSupportEmail} from "@/lib/support-email";
 
 import { normalizePhoneForIdentity } from "@/lib/phone-normalization";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -102,8 +104,8 @@ export async function redeemRecoveryCodeAction(
     return { error: "Enter a valid contact phone." };
   }
 
-  if (!contactEmail && !contactPhone) {
-    return { error: "Enter a contact email or phone for support." };
+  if (!contactEmail) {
+    return { error: "Enter an email you can access now so support can contact you." };
   }
 
   const supabase = createSupabaseServerClient();
@@ -112,7 +114,7 @@ export async function redeemRecoveryCodeAction(
     return { error: "Account recovery is temporarily unavailable. Please try again later." };
   }
 
-  const { error } = await supabase.rpc("redeem_account_recovery_code", {
+  const { data, error } = await supabase.rpc("redeem_account_recovery_code", {
     p_account_identifier: accountIdentifier,
     p_code_digest: recoveryCodeDigest(recoveryCode),
     p_contact_email: contactEmail,
@@ -138,6 +140,7 @@ export async function redeemRecoveryCodeAction(
     return { error: "Account recovery request could not be submitted." };
   }
 
+  if(data?.accepted&&typeof data.request_id==="string"&&contactEmail) after(async()=>{try{await sendSupportEmail(await getSupportEmailConfig(),{id:`recovery-ack-${data.request_id}`,to:contactEmail,name:"there",subject:"Reylumi account recovery request",body:`We received an account recovery request. Reference: ${data.request_id}. Support will verify account ownership before changing access. Reply to support@reylumi.com with this reference. Do not send passwords or sign-in codes.`});}catch{/* The request remains available to support even if acknowledgement delivery is unavailable. */}});
   return {
     error: null,
     message: GENERIC_RECOVERY_MESSAGE,

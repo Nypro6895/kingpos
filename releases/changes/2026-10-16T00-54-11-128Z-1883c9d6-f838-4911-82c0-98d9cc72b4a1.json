@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "performance-coldlaunch-feedback-completion-20261015",
+  "status": "working",
+  "summary": "Pre-promotion review found hidden successful media deletion could leave a deleted draft path. Prior web ready2e52441f and candidateDxf were not published; candidate canceled. Narrow correction independently reviewed and7 focused tests pass, awaiting assembled rebuild before replacement ready revision.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/salon-profile/salon-profile-studio.tsx",
+    "tests/independent-action-feedback-ui.test.mjs"
+  ],
+  "source": {
+    "baseCommit": "7c1243e4a14fb06e8e5ea95c26618bb73368b89f"
+  },
+  "validation": [
+    {
+      "name": "Corrected hidden-success/pending-reveal/wrong-salon removal regression7tests",
+      "result": "passed"
+    },
+    {
+      "name": "Assembled production rebuild for corrected source",
+      "result": "pending"
+    }
+  ],
+  "id": "1883c9d6-f838-4911-82c0-98d9cc72b4a1",
+  "recordedAt": "2026-10-16T00:54:11.128Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "recovery-completion-20261111",
+  "status": "working",
+  "summary": "Unify recovery cases, verify recovery contact by scoped email challenge, track secure access restoration, retain existing login, payroll, booking and ownership boundaries; integrate SMTP dependency onto exact live baseline.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/20261111233000_recovery_completion.sql",
+    "lib/recovery-completion.ts",
+    "app/account-recovery/actions.ts",
+    "lib/platform-admin/user-identity.ts"
+  ],
+  "dependencies": [
+    "hostinger-smtp-20261110"
+  ],
+  "source": {
+    "snapshot": "artifacts/recovery-release",
+    "commit": "4da0e136a55c72bd899da7786fce284910b88a3c"
+  },
+  "validation": [
+    {
+      "name": "Cross-flow recovery safety",
+      "result": "pending"
+    }
+  ],
+  "id": "bb443650-f210-4d00-8a8b-cb6354f34984",
+  "recordedAt": "2026-11-11T23:15:17.586Z",
+  "worktree": "C:\\Reylumi-worktrees\\recovery-completion-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,4 +1,17 @@
 const selector = "details[data-dismissible-popover][open]";
+const portalRegions = new WeakMap<HTMLDetailsElement, Set<HTMLElement>>();
+
+export function registerPopoverPortal(details: HTMLDetailsElement, region: HTMLElement) {
+  const regions = portalRegions.get(details) ?? new Set<HTMLElement>();
+  portalRegions.set(details, regions);
+  regions.add(region);
+  return () => { regions.delete(region); };
+}
+
+export function popoverContains(details: HTMLDetailsElement, target: Node) {
+  return details.contains(target) || [...(portalRegions.get(details) ?? [])].some(region => region.contains(target));
+}
+
 export function installPopoverDismissal(root: Document) {
   function close(details: HTMLDetailsElement, focus = false) {
     details.open = false;
@@ -7,28 +20,33 @@ export function installPopoverDismissal(root: Document) {
   function outside(event: Event) {
     const target = event.target;
     if (!(target instanceof Node)) return;
+    if (event.type === "focusin" && (!(target instanceof Element) || !target.matches(":focus-visible"))) return;
     root.querySelectorAll<HTMLDetailsElement>(selector).forEach((details) => {
-      if (!details.contains(target)) close(details);
+      if (!popoverContains(details, target)) close(details);
     });
   }
   function escape(event: KeyboardEvent) {
     if (event.key !== "Escape") return;
     const open = Array.from(root.querySelectorAll<HTMLDetailsElement>(selector));
     const target = event.target;
-    const active = open.findLast((details) => target instanceof Node && details.contains(target)) ?? open.at(-1);
+    const active = open.findLast((details) => target instanceof Node && popoverContains(details, target)) ?? open.at(-1);
     if (active) { event.preventDefault(); close(active, true); }
   }
   function selection(event: Event) {
     const target = event.target;
     if (!(target instanceof Element)) return;
-    if (target.closest("a[href], [data-dismiss-popover]")) target.closest<HTMLDetailsElement>(selector)?.removeAttribute("open");
+    if (target.closest("a[href], [data-dismiss-popover]")) {
+      root.querySelectorAll<HTMLDetailsElement>(selector).forEach(details => {
+        if (popoverContains(details, target)) close(details);
+      });
+    }
   }
-  root.addEventListener("pointerdown", outside, true);
+  root.addEventListener("click", outside);
   root.addEventListener("focusin", outside, true);
   root.addEventListener("keydown", escape);
   root.addEventListener("click", selection);
   return () => {
-    root.removeEventListener("pointerdown", outside, true);
+    root.removeEventListener("click", outside);
     root.removeEventListener("focusin", outside, true);
     root.removeEventListener("keydown", escape);
     root.removeEventListener("click", selection);

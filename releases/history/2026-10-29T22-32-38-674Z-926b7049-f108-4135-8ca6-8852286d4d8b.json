@@ -1,0 +1,54 @@
+{
+  "kind": "release",
+  "summary": "Post-publication physical QA addendum for TestFlight71: actual71 start/end same bundle, archive hash checked, Staff MyPay→Analysis→MyPay read smoke passed; no new deployment",
+  "changes": [],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "71",
+      "commit": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+      "evidence": "artifacts/release-20261029-physical71/PHYSICAL-SMOKE71.json"
+    }
+  },
+  "publicationReceipt": "67f21d58-f623-4745-a065-13bac2d79655",
+  "metadataOnlyNoNewPublication": true,
+  "physicalQA": {
+    "status": "targeted-smoke-passed",
+    "version": "1.0.0",
+    "build": "71",
+    "nativeSource": "6d332e2a5e5a4137ca83e3cf579807369f2ed749",
+    "actualStartEndBuildVerified": true,
+    "archiveSha256": "8a57be475f7c18a3a17fd25618132efc6a9a9f0756d990cf6c5adcc33fd96977",
+    "scope": "Only release-specific Staff MyPay/Analysis/return read smoke; broader Personal coverage/findings stay in owning audit report",
+    "periodTransitionAccepted": false,
+    "financialOperationsInvoked": false,
+    "allAppAcceptance": false,
+    "evidence": "artifacts/release-20261029-physical71/PHYSICAL-SMOKE71.json"
+  },
+  "deferred": [
+    {
+      "changeId": "market-publishers-20261029",
+      "reason": "Underlying independent Developer Market platform not present in production; required older chain remains needs-integration with commerce/provider acceptance pending. Never overlay publisher-only files."
+    },
+    {
+      "changeId": "payroll-compact-income-20261029",
+      "reason": "Owner explicitly requires history audit and logic agreement before implementation/publication; display-only portions already shipped."
+    },
+    {
+      "changeId": "check-writer-release-gates-20261028",
+      "reason": "Disabled-compatible code already live; sales activation/financial keys/provider readiness not part of this release."
+    }
+  ],
+  "lateAuditFix": {
+    "changeId": "personal-bookings-copy-parity-20261029",
+    "event": "949f8123-0eb4-4282-a811-aa99409a1027",
+    "status": "needs-integration",
+    "notIn71": true,
+    "noNewReleaseAuthorizedByThisAddendum": true
+  },
+  "id": "926b7049-f108-4135-8ca6-8852286d4d8b",
+  "recordedAt": "2026-10-29T22:32:38.674Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029"
+}

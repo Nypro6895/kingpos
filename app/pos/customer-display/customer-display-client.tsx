@@ -1,4 +1,24 @@
 "use client";
+import { SalonName, SalonIdentityContext } from "@/components/salon-member-badge";
+
+import { GiftCustomerControl } from "@/components/gift-card/pos-gift-card";
+import { VisitRewards } from "@/components/rewardlumi/visit-rewards";
+import { CustomerCheckoutHeader, CustomerCheckoutReceipt, CustomerCheckoutTip as TipPanel, type TipReceiptScope } from "./customer-checkout";
+import { completedCustomerCheckoutView } from "@/lib/customer-checkout-view";
+import type { RewardView } from "@/types/rewardlumi";
+import type { GiftSession } from "@/types/gift-card";
+import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
+import { useTransientOverlay } from "@/components/overlay-dismissal";
+import "./customer-display-responsive.css";
+import { CustomerIdleScreen } from "./customer-idle-screen";
+import { CUSTOMER_DISPLAY_APPEARANCE_CHANGED } from "@/lib/customer-display-preferences";
+import { createKioskRequestGuard } from "@/lib/kiosk-request-guard";
+import { AccountSelectionPanel as CustomerIdentityChoices } from "./check-in-panels";
+import type { CustomerIdentityChoice } from "@/types/customer-identity";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { CheckinReceiptPanel } from "./checkin-receipt-panel";
+import { CheckInConfirmationPanel, ServiceSelectionPanel } from "./check-in-panels";
+import { CustomerRelayEntry } from "@/app/service-relay/customer-relay";
 import { notifyWaitingChanged } from "@/lib/portable-waiting";
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 
@@ -71,7 +91,6 @@ type CheckInState = Extract<CustomerDisplayPhoneResult, { mode: "check_in" }>;
 type CustomerDisplayService = CustomerVisitRequestedService;
 
 const CHECKIN_SUCCESS_RESET_MS = 5500;
-const SLIDESHOW_INTERVAL_MS = 7000;
 
 const PHONE_KEYPAD_STYLE = {
   "--customer-display-key-size": "clamp(80px, min(9.6vh, 6.8vw), 94px)",
@@ -183,6 +202,15 @@ function formatMoney(amount: number) {
   }).format(amount);
 }
 
+function formatTipMoney(amount: number) {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
@@ -290,17 +318,13 @@ function getTipOptions(settings: CustomerDisplaySettings, liveDraft: PosLiveDraf
   const percentages = settings.tipSuggestions
     .map((value) => Number(value))
     .filter((value) => Number.isFinite(value) && value > 0)
-    .slice(0, 3);
+    .slice(0, 4);
   const source = percentages.length > 0 ? percentages : [15, 18, 20];
 
   return source.map((percentage) => ({
     amount: roundMoney((base * percentage) / 100),
     percentage,
   }));
-}
-
-function serviceSummaryLabel(services: CustomerDisplayService[]) {
-  return services.map((service) => service.name).join(" / ");
 }
 
 function FullscreenIcon() {
@@ -352,9 +376,11 @@ function FullscreenButton({
   hidden: boolean;
   onClick: () => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <button
-      aria-label={hidden ? "Exit full view" : "Enter full view"}
+      aria-label={__vt(hidden ? "Exit full view" : "Enter full view")}
       className="absolute right-4 top-4 z-40 grid h-12 w-12 place-items-center rounded-lg border border-white/40 bg-white/90 text-zinc-800 opacity-40 shadow-lg backdrop-blur transition hover:bg-white hover:opacity-100 focus-visible:opacity-100"
       data-customer-display-fullscreen-button
       onClick={(event) => {
@@ -362,7 +388,7 @@ function FullscreenButton({
         onClick();
       }}
       onPointerDown={(event) => event.stopPropagation()}
-      title={hidden ? "Exit full view" : "Enter full view"}
+      title={__vt(hidden ? "Exit full view" : "Enter full view")}
       type="button"
     >
       <FullscreenIcon />
@@ -381,6 +407,8 @@ function SalonBrand({
   showName: boolean;
   tone?: "dark" | "light";
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const displayName = name?.trim() || "Your salon";
   const isLight = tone === "light";
 
@@ -394,7 +422,7 @@ function SalonBrand({
       >
         {logoUrl ? (
           <img
-            alt={`${displayName} logo`}
+            alt={__vt(`${displayName} logo`)}
             className="h-full w-full object-cover"
             src={logoUrl}
           />
@@ -412,7 +440,7 @@ function SalonBrand({
               isLight ? "text-white/70" : "text-zinc-500",
             ].join(" ")}
           >
-            Welcome to
+            <WorkspaceText text="Welcome to" />
           </p>
           <p
             className={[
@@ -420,7 +448,7 @@ function SalonBrand({
               isLight ? "text-white" : "text-zinc-950",
             ].join(" ")}
           >
-            {displayName}
+            <SalonName name={displayName}/>
           </p>
         </div>
       ) : null}
@@ -433,6 +461,8 @@ function ReylumiCornerLogo({
 }: {
   behindPanels?: boolean;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <div
       className={[
@@ -446,113 +476,11 @@ function ReylumiCornerLogo({
       }}
     >
       <img
-        alt="Reylumi"
+        alt={__vt("Reylumi")}
         className="h-auto w-24 object-contain drop-shadow-lg sm:w-28"
         src="/brand/reylumi-logo-horizontal.png"
       />
     </div>
-  );
-}
-
-function AttractScreen({
-  currentSlide,
-  error,
-  images,
-  isFullscreen,
-  onBegin,
-  onFullscreen,
-  settings,
-}: {
-  currentSlide: number;
-  error: string | null;
-  images: string[];
-  isFullscreen: boolean;
-  onBegin: () => void;
-  onFullscreen: () => void;
-  settings: CustomerDisplaySettings;
-}) {
-  const displayName = settings.salonName?.trim() || "Your salon";
-
-  return (
-    <section
-      aria-label="Customer display attract screen"
-      className="relative h-full w-full overflow-hidden bg-zinc-950 text-white"
-      data-customer-display-attract
-      onClick={onBegin}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onBegin();
-        }
-      }}
-      role="button"
-      tabIndex={0}
-    >
-      {images.map((imageUrl, index) => (
-        <img
-          alt=""
-          aria-hidden="true"
-          className={[
-            "absolute inset-0 h-full w-full object-contain transition-opacity duration-1000",
-            index === currentSlide % images.length ? "opacity-100" : "opacity-0",
-          ].join(" ")}
-          data-customer-display-ad-image={
-            index === currentSlide % images.length ? "active" : undefined
-          }
-          key={`${imageUrl}-${index}`}
-          src={imageUrl}
-        />
-      ))}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(9,9,11,0.62), rgba(9,9,11,0.18) 45%, rgba(9,9,11,0.72))",
-        }}
-      />
-
-      <FullscreenButton hidden={isFullscreen} onClick={onFullscreen} />
-      <ReylumiCornerLogo />
-
-      <div
-        className="relative z-10 grid h-full min-h-0 px-6 py-6 sm:px-8"
-        style={{ gridTemplateRows: "auto minmax(0, 1fr) auto" }}
-      >
-        <header className="flex min-w-0 items-center justify-between gap-4 pr-14">
-          <SalonBrand
-            logoUrl={settings.salonLogoUrl}
-            name={settings.salonName}
-            showName={settings.customerShowSalonName}
-            tone="light"
-          />
-        </header>
-
-        <div className="grid min-h-0 place-items-center text-center">
-          <div className="max-w-3xl">
-            <p className="text-base font-semibold uppercase tracking-normal text-white/70">
-              {displayName}
-            </p>
-            <h1 className="mt-4 text-5xl font-semibold leading-tight sm:text-6xl lg:text-7xl">
-              Touch anywhere to begin
-            </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-xl leading-8 text-white/82">
-              {settings.customerRightAdText || settings.customerLeftAdText}
-            </p>
-            {error ? (
-              <p className="mx-auto mt-5 max-w-xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                {error}
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        <footer className="flex min-w-0 items-center justify-center gap-3 text-sm font-medium text-white/70">
-          <span className="h-2 w-2 rounded-full bg-emerald-300" />
-          <span>Ready for checkout</span>
-        </footer>
-      </div>
-    </section>
   );
 }
 
@@ -565,6 +493,8 @@ function PhoneKeypad({
   onChange: (value: string) => void;
   value: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const digits = digitsOnly(value);
   const digitKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
   const digitButtonClass =
@@ -588,7 +518,7 @@ function PhoneKeypad({
     >
       {digitKeys.map((digit) => (
         <button
-          aria-label={`Digit ${digit}`}
+          aria-label={__vt(`Digit ${digit}`)}
           className={digitButtonClass}
           disabled={disabled}
           key={digit}
@@ -600,7 +530,7 @@ function PhoneKeypad({
         </button>
       ))}
       <button
-        aria-label="Clear"
+        aria-label={__vt("Clear")}
         className={secondaryButtonClass}
         disabled={disabled || digits.length === 0}
         onClick={() => onChange("")}
@@ -611,10 +541,10 @@ function PhoneKeypad({
         }
         type="button"
       >
-        C
+        <span className="customer-key-clear-short">C</span><span className="customer-key-clear-long"><WorkspaceText text="Clear" /></span>
       </button>
       <button
-        aria-label="Digit 0"
+        aria-label={__vt("Digit 0")}
         className={digitButtonClass}
         disabled={disabled}
         onClick={() => appendDigit("0")}
@@ -624,7 +554,7 @@ function PhoneKeypad({
         0
       </button>
       <button
-        aria-label="Backspace"
+        aria-label={__vt("Backspace")}
         className={secondaryButtonClass}
         disabled={disabled || digits.length === 0}
         onClick={() => onChange(digits.slice(0, -1))}
@@ -666,6 +596,8 @@ function PhoneEntryPanel({
   phoneInput: string;
   showTipShortcut: boolean;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const formattedPhone = formatPhoneDisplay(phoneInput);
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -693,40 +625,40 @@ function PhoneEntryPanel({
 
   return (
     <section
-      className="flex h-full min-h-0 flex-col rounded-2xl border border-stone-200/80 bg-stone-50/95 p-5 shadow-2xl"
+      className="flex h-full min-h-0 flex-col bg-stone-50/95 p-5"
       data-customer-display-interaction-panel
       data-customer-display-phone
     >
       <div>
         <h2 className="text-3xl font-semibold leading-tight text-zinc-950">
-          Enter your phone number
+          <WorkspaceText text="Welcome in" />
         </h2>
         <p className="mt-2 text-sm font-medium leading-6 text-zinc-500">
-          We&apos;ll find your profile and keep your visit connected.
+          <WorkspaceText text="Enter your phone number to check in." />
         </p>
       </div>
 
       <label className="mt-5 block">
-        <span className="sr-only">Phone</span>
+        <span className="sr-only"><WorkspaceText text="Phone" /></span>
         <div
           className="grid min-h-16 items-center gap-3 rounded-2xl border border-stone-200 bg-white/85 px-4 shadow-inner transition focus-within:border-teal-700 focus-within:ring-4 focus-within:ring-teal-700/10"
           style={{ gridTemplateColumns: "minmax(0, 1fr) auto" }}
         >
           <input
-            aria-label="Phone"
+            aria-label={__vt("Phone")}
             autoFocus
             className="min-w-0 bg-transparent text-3xl font-semibold tabular-nums text-zinc-950 outline-none placeholder:text-zinc-400"
             disabled={disabled}
             inputMode="tel"
             onChange={(event) => onPhoneInput(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="(xxx) xxx-xxxx"
+            placeholder={__vt("(xxx) xxx-xxxx")}
             readOnly
             value={formattedPhone}
           />
           <button
-            aria-label="Confirm phone number"
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-teal-700 text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
+            aria-label={__vt("Confirm phone number")}
+            className="customer-phone-inline-confirm grid h-12 w-12 shrink-0 place-items-center rounded-full bg-teal-700 text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
             disabled={disabled || digitsOnly(phoneInput).length < 4}
             onClick={onSubmitPhone}
             type="button"
@@ -744,6 +676,8 @@ function PhoneEntryPanel({
         />
       </div>
 
+      <button className="customer-phone-continue" type="button" disabled={disabled || isCustomerPending || digitsOnly(phoneInput).length < 4} onClick={onSubmitPhone}><WorkspaceText text="Continue" /> <span aria-hidden="true">→</span></button>
+      <p className="customer-phone-privacy"><WorkspaceText text="Your number helps us find your profile." /></p>
       {showTipShortcut ? (
         <button
           className="mt-4 min-h-14 rounded-2xl bg-zinc-950 px-4 text-lg font-semibold text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-zinc-950/20"
@@ -751,19 +685,19 @@ function PhoneEntryPanel({
           onClick={onSkipToTip}
           type="button"
         >
-          Tip
+          <WorkspaceText text="Tip" />
         </button>
       ) : null}
 
-      <div className="mt-4 grid min-h-20 content-start gap-2">
+      <div className="mt-4 grid min-h-20 content-start gap-2" data-customer-display-phone-results>
         {isSearching ? (
           <p className="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-600">
-            Searching
+            <WorkspaceText text="Searching" />
           </p>
         ) : null}
         {customerStatus ? (
           <p className="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-600">
-            {customerStatus}
+            <WorkspaceText text={customerStatus} />
           </p>
         ) : null}
         {customerResults.length > 0 ? (
@@ -792,6 +726,7 @@ function PhoneEntryPanel({
 }
 
 function ProfileCreationPanel({
+  hidden = false,
   customerStatus,
   disabled,
   isPending,
@@ -801,6 +736,7 @@ function ProfileCreationPanel({
   onSubmit,
   phone,
 }: {
+  hidden?: boolean;
   customerStatus: string | null;
   disabled: boolean;
   isPending: boolean;
@@ -810,6 +746,9 @@ function ProfileCreationPanel({
   onSubmit: () => void;
   phone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
+  if (hidden) return null;
   const nameIsReady = nameInput.trim().length >= 2;
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -821,7 +760,7 @@ function ProfileCreationPanel({
 
   return (
     <section
-      className="grid h-full min-h-0 gap-4 rounded-2xl border border-stone-200/80 bg-stone-50/95 p-5 shadow-2xl"
+      className="grid h-full min-h-0 gap-4 bg-stone-50/95 p-5"
       data-customer-display-create-profile
       data-customer-display-interaction-panel
       style={{ gridTemplateRows: "auto auto minmax(0, 1fr) auto" }}
@@ -829,10 +768,10 @@ function ProfileCreationPanel({
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold uppercase text-teal-700">
-            New profile
+            <WorkspaceText text="New profile" />
           </p>
           <h2 className="mt-1 text-3xl font-semibold leading-tight text-zinc-950">
-            Enter customer name
+            <WorkspaceText text="Enter customer name" />
           </h2>
           <p className="mt-2 text-sm font-medium text-zinc-500">
             {maskPhone(phone)}
@@ -844,14 +783,14 @@ function ProfileCreationPanel({
           onClick={onBack}
           type="button"
         >
-          Back
+          <WorkspaceText text="Back" />
         </button>
       </div>
 
       <label className="block">
-        <span className="sr-only">Customer name</span>
+        <span className="sr-only"><WorkspaceText text="Customer name" /></span>
         <input
-          aria-label="Customer name"
+          aria-label={__vt("Customer name")}
           autoComplete="name"
           autoFocus
           className="min-h-16 w-full rounded-2xl border border-stone-200 bg-white/85 px-4 text-2xl font-semibold text-zinc-950 shadow-inner outline-none transition placeholder:text-zinc-400 focus:border-teal-700 focus:bg-white focus:ring-4 focus:ring-teal-700/10"
@@ -859,19 +798,18 @@ function ProfileCreationPanel({
           maxLength={80}
           onChange={(event) => onNameInput(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="First and last name"
+          placeholder={__vt("First and last name")}
           value={nameInput}
         />
       </label>
 
       <div className="grid content-center gap-3">
         <p className="rounded-2xl border border-teal-700/10 bg-teal-50/80 px-4 py-3 text-sm font-medium leading-6 text-teal-900">
-          We did not find this phone number. Create a profile to continue your
-          visit.
+          <WorkspaceText text="Enter your name to find your profile or start a new visit." />
         </p>
         {customerStatus ? (
           <p className="rounded-xl bg-white/80 px-3 py-2 text-sm font-medium text-zinc-600">
-            {customerStatus}
+            <WorkspaceText text={customerStatus} />
           </p>
         ) : null}
       </div>
@@ -882,7 +820,7 @@ function ProfileCreationPanel({
         onClick={onSubmit}
         type="button"
       >
-        {isPending ? "Creating" : "Continue"}
+        {isPending ? "Creating" : <WorkspaceText text="Continue" />}
       </button>
     </section>
   );
@@ -897,6 +835,8 @@ function MoneyKeypad({
   onChange: (value: string) => void;
   value: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
   const buttonClass =
     "grid min-h-14 place-items-center rounded-lg border border-zinc-200 bg-white text-xl font-semibold text-zinc-950 transition hover:border-teal-400 hover:bg-teal-50 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-300";
@@ -910,10 +850,10 @@ function MoneyKeypad({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-2" data-customer-display-money-keypad role="group" aria-label={`${__vt("Custom tip keypad")}: ${formatTipMoney(Number(value || 0))}`}>
       {keys.map((digit) => (
         <button
-          aria-label={`Custom tip digit ${digit}`}
+          aria-label={__vt(`Custom tip digit ${digit}`)}
           className={buttonClass}
           disabled={disabled}
           key={digit}
@@ -924,7 +864,7 @@ function MoneyKeypad({
         </button>
       ))}
       <button
-        aria-label="Clear custom tip"
+        aria-label={__vt("Clear custom tip")}
         className={buttonClass}
         disabled={disabled || value.length === 0}
         onClick={() => onChange("")}
@@ -933,7 +873,7 @@ function MoneyKeypad({
         C
       </button>
       <button
-        aria-label="Custom tip digit 0"
+        aria-label={__vt("Custom tip digit 0")}
         className={buttonClass}
         disabled={disabled}
         onClick={() => appendDigit("0")}
@@ -942,7 +882,7 @@ function MoneyKeypad({
         0
       </button>
       <button
-        aria-label="Delete custom tip digit"
+        aria-label={__vt("Delete custom tip digit")}
         className={buttonClass}
         disabled={disabled || value.length === 0}
         onClick={() => onChange(value.slice(0, -1))}
@@ -950,166 +890,8 @@ function MoneyKeypad({
       >
         <BackspaceIcon />
       </button>
+      <button type="button" className={`${buttonClass} col-span-3`} aria-label={__vt("Custom tip decimal")} disabled={disabled || value.includes(".")} onClick={() => onChange(value ? `${value}.` : "0.")}>.</button>
     </div>
-  );
-}
-
-function TipPanel({
-  confirmedPhone,
-  customTipInput,
-  customTipMode,
-  identityLabel,
-  isTipPending,
-  liveDraft,
-  onChangeCustomer,
-  onConfirmTip,
-  onCustomTipInput,
-  onSetCustomTipMode,
-  tipOptions,
-}: {
-  confirmedPhone: string | null;
-  customTipInput: string;
-  customTipMode: boolean;
-  identityLabel: string;
-  isTipPending: boolean;
-  liveDraft: PosLiveDraftView | null;
-  onChangeCustomer: () => void;
-  onConfirmTip: (amount: number) => void;
-  onCustomTipInput: (value: string) => void;
-  onSetCustomTipMode: (value: boolean) => void;
-  tipOptions: TipOption[];
-}) {
-  const baseTotal = getTipBase(liveDraft);
-  const selectedTip = liveDraft?.tip ?? 0;
-  const isActiveCheckout = liveDraft?.status === "draft";
-  const customTipAmount = roundMoney(Number(customTipInput || 0));
-  const disabled = !isActiveCheckout || isTipPending;
-
-  return (
-    <section
-      className="grid h-full min-h-0 gap-4 rounded-2xl border border-stone-200/80 bg-stone-50/95 p-5 shadow-2xl"
-      data-customer-display-interaction-panel
-      data-customer-display-tip
-      style={{ gridTemplateRows: "auto auto minmax(0, 1fr) auto" }}
-    >
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold uppercase text-teal-700">
-            Customer
-          </p>
-          <h2 className="mt-1 break-words text-2xl font-semibold leading-tight text-zinc-950">
-            {identityLabel}
-          </h2>
-          {confirmedPhone ? (
-            <p className="mt-1 text-sm text-zinc-500">{maskPhone(confirmedPhone)}</p>
-          ) : null}
-        </div>
-        <button
-          className="min-h-11 shrink-0 rounded-xl border border-stone-200 bg-white/80 px-3 text-sm font-semibold text-zinc-700 shadow-sm transition active:translate-y-px focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/15"
-          onClick={onChangeCustomer}
-          type="button"
-        >
-          Change
-        </button>
-      </div>
-
-      <div className="rounded-2xl border border-stone-200 bg-white/82 px-4 py-3 shadow-inner">
-        <p className="text-sm font-medium text-zinc-600">Current total</p>
-        <p className="mt-1 text-3xl font-semibold text-zinc-950">
-          {formatMoney(liveDraft?.total ?? 0)}
-        </p>
-      </div>
-
-      {customTipMode ? (
-        <div
-          className="grid min-h-0 gap-3"
-          style={{ gridTemplateRows: "auto minmax(0, 1fr)" }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold uppercase text-zinc-500">
-                Custom tip
-              </p>
-              <p className="text-3xl font-semibold text-zinc-950">
-                {formatMoney(customTipAmount)}
-              </p>
-            </div>
-            <button
-              className="min-h-11 rounded-xl border border-stone-200 bg-white/80 px-3 text-sm font-semibold text-zinc-700"
-              onClick={() => onSetCustomTipMode(false)}
-              type="button"
-            >
-              Back
-            </button>
-          </div>
-          <MoneyKeypad
-            disabled={disabled}
-            onChange={onCustomTipInput}
-            value={customTipInput}
-          />
-        </div>
-      ) : (
-        <div className="grid min-h-0 content-center gap-3">
-          <p className="text-sm font-medium text-zinc-600">
-            100% goes to your service team
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {tipOptions.map((option) => {
-              const selected = selectedTip === option.amount && option.amount > 0;
-
-              return (
-              <button
-                className={[
-                    "grid min-h-20 place-items-center rounded-2xl border px-2 text-center shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50",
-                    selected
-                      ? "border-teal-700 bg-teal-50 text-zinc-950"
-                      : "border-stone-200 bg-white/90 text-zinc-950 hover:border-teal-400",
-                  ].join(" ")}
-                  disabled={disabled || baseTotal <= 0}
-                  key={option.percentage}
-                  onClick={() => onConfirmTip(option.amount)}
-                  type="button"
-                >
-                  <span className="text-2xl font-semibold">
-                    {option.percentage}%
-                  </span>
-                  <span className="text-sm font-medium text-zinc-500">
-                    {formatMoney(option.amount)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              className="min-h-14 rounded-2xl border border-stone-200 bg-white/90 px-3 font-semibold text-zinc-800 shadow-sm transition active:translate-y-px hover:border-teal-400 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={disabled}
-              onClick={() => onSetCustomTipMode(true)}
-              type="button"
-            >
-              Custom tip
-            </button>
-            <button
-              className="min-h-14 rounded-2xl border border-stone-200 bg-white/90 px-3 font-semibold text-zinc-800 shadow-sm transition active:translate-y-px hover:border-teal-400 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={disabled}
-              onClick={() => onConfirmTip(0)}
-              type="button"
-            >
-              No tip
-            </button>
-          </div>
-        </div>
-      )}
-
-      <button
-        className="min-h-14 rounded-2xl bg-teal-700 px-4 font-semibold text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
-        disabled={disabled}
-        onClick={() => onConfirmTip(customTipMode ? customTipAmount : selectedTip)}
-        type="button"
-      >
-        {isTipPending ? "Saving" : customTipMode ? "Apply custom tip" : "Confirm tip"}
-      </button>
-    </section>
   );
 }
 
@@ -1131,21 +913,23 @@ function safeAppDownloadUrl(value: string) {
 }
 
 function CustomerAppDownloadCard({ appDownloadUrl }: { appDownloadUrl: string }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <aside
-      className="grid w-[clamp(132px,13vw,156px)] justify-items-center gap-1.5 rounded-2xl border border-stone-200 bg-white/86 p-2.5 text-center shadow-inner"
+      className="grid w-[clamp(132px,13vw,156px)] justify-items-center gap-1.5 bg-white/86 p-2.5 text-center"
       data-customer-display-download-card
       data-customer-display-download-url={appDownloadUrl}
     >
       <div className="flex items-center gap-1.5">
         <img
-          alt=""
+          alt={__vt("")}
           aria-hidden="true"
           className="h-5 w-5 shrink-0"
           src="/brand/reylumi-favicon.png"
         />
         <p className="text-sm font-semibold leading-tight text-zinc-950">
-          Get Reylumi
+          <WorkspaceText text="Get Reylumi" />
         </p>
       </div>
       <QrCodeTile
@@ -1157,13 +941,13 @@ function CustomerAppDownloadCard({ appDownloadUrl }: { appDownloadUrl: string })
         valueToEncode={appDownloadUrl}
       />
       <p className="text-[11px] font-medium leading-tight text-zinc-500">
-        Scan to download the app.
+        <WorkspaceText text="Scan to download the app." />
       </p>
     </aside>
   );
 }
 
-function TransactionSummary({
+function TransactionSummaryContent({
   connectionState,
   displayMode,
   identityLabel,
@@ -1176,6 +960,8 @@ function TransactionSummary({
   liveDraft: PosLiveDraftView | null;
   settings: CustomerDisplaySettings;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const lines = liveDraft?.staff_lines ?? [];
   const appDownloadUrl = safeAppDownloadUrl(settings.appDownloadUrl);
   const showAppDownloadCard = displayMode === "tip" && Boolean(appDownloadUrl);
@@ -1201,7 +987,7 @@ function TransactionSummary({
 
   return (
     <section
-      className="grid h-full min-h-0 rounded-2xl border border-stone-200/80 bg-stone-50/95 shadow-2xl"
+      className="grid h-full min-h-0 bg-stone-50/95"
       data-customer-display-summary
       style={RECEIPT_PANEL_STYLE}
     >
@@ -1226,17 +1012,19 @@ function TransactionSummary({
           ) : null}
           <h1
             className="mt-1 text-4xl font-semibold text-zinc-950 lg:text-5xl"
+            data-customer-display-receipt-title
             style={RECEIPT_TITLE_STYLE}
           >
-            Your Receipt
+            <WorkspaceText text="Your Receipt" />
           </h1>
         </div>
         <div className="shrink-0 text-right">
           <p className="text-sm font-semibold uppercase tracking-normal text-zinc-500">
-            Current total
+            <WorkspaceText text="Current total" />
           </p>
           <p
             className="mt-1 text-4xl font-semibold text-teal-800 lg:text-5xl"
+            data-customer-display-receipt-total
             style={RECEIPT_TOTAL_STYLE}
           >
             {formatMoney(liveDraft?.total ?? 0)}
@@ -1254,8 +1042,8 @@ function TransactionSummary({
           data-customer-display-receipt-column-header
           style={RECEIPT_COLUMN_HEADER_STYLE}
         >
-          <span>Item</span>
-          <span className="text-right">Amount</span>
+          <span><WorkspaceText text="Item" /></span>
+          <span className="text-right"><WorkspaceText text="Amount" /></span>
         </div>
 
         {showWaiting ? (
@@ -1266,10 +1054,10 @@ function TransactionSummary({
           >
             <div className="rounded-2xl border border-dashed border-stone-300 bg-white/72 px-5 py-4">
               <p className="text-lg font-semibold text-zinc-600">
-                Waiting for services
+                <WorkspaceText text="Waiting for services" />
               </p>
               <p className="mt-1 text-sm font-medium text-zinc-500">
-                Your receipt will update automatically.
+                <WorkspaceText text="Your receipt will update automatically." />
               </p>
             </div>
           </div>
@@ -1295,7 +1083,7 @@ function TransactionSummary({
                   data-customer-display-receipt-line
                   key={line.id}
                   style={RECEIPT_LINE_ROW_STYLE}
-                  title={`${itemTitle} ${formatMoney(line.amount)}`}
+                  title={__vt(`${itemTitle} ${formatMoney(line.amount)}`)}
                 >
                   <p
                     className="min-w-0 font-semibold text-zinc-950"
@@ -1303,13 +1091,13 @@ function TransactionSummary({
                     style={RECEIPT_ITEM_TEXT_STYLE}
                   >
                     <span data-customer-display-receipt-service>
-                      {label}
+                      <WorkspaceText text={label} />
                     </span>
                     {staffLabel ? (
                       <>
                         <span aria-hidden="true" className="text-zinc-400">
                           {" "}
-                          &middot;{" "}
+                          <WorkspaceText text="&middot;" />{" "}
                         </span>
                         <span
                           className="font-medium text-zinc-500"
@@ -1325,7 +1113,7 @@ function TransactionSummary({
                         data-customer-display-receipt-quantity
                       >
                         {" "}
-                        &times;{quantity}
+                        <WorkspaceText text="&times;" />{quantity}
                       </span>
                     ) : null}
                   </p>
@@ -1356,25 +1144,25 @@ function TransactionSummary({
           style={RECEIPT_SUMMARY_STYLE}
         >
           <div className="flex items-center justify-between gap-4">
-            <span>Subtotal</span>
+            <span><WorkspaceText text="Subtotal" /></span>
             <span>{formatMoney(liveDraft?.subtotal ?? 0)}</span>
           </div>
           {liveDraft?.discount ? (
             <div className="flex items-center justify-between gap-4 text-zinc-500">
-              <span>Discount</span>
+              <span><WorkspaceText text="Discount" /></span>
               <span>-{formatMoney(liveDraft.discount)}</span>
             </div>
           ) : null}
           <div className="flex items-center justify-between gap-4 text-zinc-500">
-            <span>Tax</span>
+            <span><WorkspaceText text="Tax" /></span>
             <span>{formatMoney(liveDraft?.tax ?? 0)}</span>
           </div>
           <div className="flex items-center justify-between gap-4 text-zinc-500">
-            <span>Tip</span>
+            <span><WorkspaceText text="Tip" /></span>
             <span>{formatMoney(liveDraft?.tip ?? 0)}</span>
           </div>
           <div className="mt-1 flex items-center justify-between gap-4 border-t border-stone-200 pt-2 text-lg text-teal-800">
-            <span>Total</span>
+            <span><WorkspaceText text="Total" /></span>
             <span>{formatMoney(liveDraft?.total ?? 0)}</span>
           </div>
         </div>
@@ -1389,20 +1177,90 @@ function TransactionSummary({
       >
         <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-500">
           <img
-            alt=""
+            alt={__vt("")}
             aria-hidden="true"
             className="h-5 w-auto shrink-0"
             src="/brand/reylumi-favicon.png"
           />
-          <span className="truncate">Secure checkout by Reylumi</span>
+          <span className="truncate"><WorkspaceText text="Secure checkout by Reylumi" /></span>
         </span>
         {settings.customerShowReceiptStatus ? (
           <span className="shrink-0 rounded-xl border border-teal-700/10 bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-800">
-            {statusLabel}
+            <WorkspaceText text={statusLabel} />
           </span>
         ) : null}
       </footer>
     </section>
+  );
+}
+
+function TransactionSummary(props: Parameters<typeof TransactionSummaryContent>[0]) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useNativeDialogNavigation(dialogRef);
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  useTransientOverlay(() => setReceiptOpen(false), receiptOpen);
+  const __vt = useWorkspaceTranslation();
+
+  useEffect(() => {
+    if (receiptOpen) dialogRef.current?.showModal();
+  }, [receiptOpen]);
+
+  // A native dialog keeps the long receipt separate from phone entry, traps
+  // focus, supports Escape, and restores focus to the receipt button on close.
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 900px)");
+    const closeOnWideLayout = () => {
+      if (desktop.matches) dialogRef.current?.close();
+    };
+    desktop.addEventListener("change", closeOnWideLayout);
+    return () => desktop.removeEventListener("change", closeOnWideLayout);
+  }, []);
+
+  return (
+    <div className="h-full min-h-0" data-customer-display-receipt-wrapper>
+      <div className="h-full min-h-0" data-customer-display-full-receipt>
+        <TransactionSummaryContent {...props} />
+      </div>
+      <div data-customer-display-compact-receipt>
+        <div className="min-w-0">
+          {props.settings.customerShowSalonName ? (
+            <p className="truncate text-sm font-semibold text-zinc-700">
+              <SalonName name={props.settings.salonName} />
+            </p>
+          ) : null}
+          <p className="text-xl font-semibold text-teal-800">
+            <WorkspaceText text="Total" /> {formatMoney(props.liveDraft?.total ?? 0)}
+          </p>
+        </div>
+        <button
+          aria-haspopup="dialog"
+          className="min-h-11 shrink-0 rounded-xl border border-stone-200 bg-white px-3 font-semibold text-teal-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
+          onClick={() => setReceiptOpen(true)}
+          type="button"
+        >
+          <WorkspaceText text="Your Receipt" />
+        </button>
+      </div>
+      <dialog
+        aria-label={__vt("Your Receipt")}
+        data-customer-display-receipt-dialog
+        onClose={() => setReceiptOpen(false)}
+        ref={dialogRef}
+      >
+        {receiptOpen ? (
+          <>
+            <form method="dialog" className="flex justify-end pb-2">
+              <button className="min-h-11 rounded-xl border border-stone-200 px-4 font-semibold" type="submit" autoFocus>
+                <WorkspaceText text="Close" />
+              </button>
+            </form>
+            <div className="min-h-0">
+              <TransactionSummaryContent {...props} />
+            </div>
+          </>
+        ) : null}
+      </dialog>
+    </div>
   );
 }
 
@@ -1415,6 +1273,9 @@ function CheckoutShell({
   identityLabel,
   liveDraft,
   settings,
+  reward = null,
+  gift = null,
+  rewardsAvailable = true,
 }: {
   backgroundImageUrl: string;
   children: React.ReactNode;
@@ -1424,7 +1285,20 @@ function CheckoutShell({
   identityLabel: string;
   liveDraft: PosLiveDraftView | null;
   settings: CustomerDisplaySettings;
+  reward?: RewardView | null;
+  gift?: GiftSession | null;
+  rewardsAvailable?: boolean;
 }) {
+  if (displayMode === "tip") return <div className="customer-checkout" data-customer-checkout>
+    <div className="customer-checkout-backdrop" aria-hidden="true" style={{ backgroundImage: `url(${backgroundImageUrl})` }} />
+    <CustomerCheckoutHeader settings={settings} />
+    <main className="customer-checkout-grid" data-customer-display-checkout>
+      <CustomerCheckoutReceipt liveDraft={liveDraft} settings={settings} reward={reward} gift={gift} rewardsAvailable={rewardsAvailable} />
+      <div className="customer-checkout-action-region" data-customer-display-action-region>{children}</div>
+    </main>
+    {error && <p className="customer-checkout-error" role="alert"><WorkspaceText text={error} /></p>}
+    <p className="customer-checkout-footer">Beauty. Connected. Rewarded.</p>
+  </div>;
   return (
     <div className="relative h-full w-full overflow-hidden bg-stone-100">
       <div
@@ -1442,7 +1316,7 @@ function CheckoutShell({
         }}
       />
       <ReylumiCornerLogo behindPanels />
-      <div className="relative z-10 grid h-full place-items-center px-4 py-4 sm:px-6 sm:py-6">
+      <div className="relative z-10 grid h-full place-items-center px-4 py-4 sm:px-6 sm:py-6" data-customer-display-checkout-shell>
         <div
           className="grid h-full max-h-[880px] min-h-0 w-full max-w-[1280px] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,430px)]"
           data-customer-display-checkout
@@ -1454,10 +1328,10 @@ function CheckoutShell({
             liveDraft={liveDraft}
             settings={settings}
           />
-          <div className="min-h-0">{children}</div>
+          <div className="min-h-0" data-customer-display-action-region>{children}</div>
           {error ? (
             <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 lg:col-span-2">
-              {error}
+              <WorkspaceText text={error} />
             </p>
           ) : null}
         </div>
@@ -1481,10 +1355,12 @@ function CheckInShell({
   onFullscreen: () => void;
   settings: CustomerDisplaySettings;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <div className="relative h-full w-full overflow-hidden bg-stone-100">
       <img
-        alt=""
+        alt={__vt("")}
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover opacity-100"
         data-customer-display-checkin-background
@@ -1520,7 +1396,7 @@ function CheckInShell({
 
         {error ? (
           <p className="mx-auto max-w-3xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            {error}
+            <WorkspaceText text={error} />
           </p>
         ) : (
           <span />
@@ -1537,6 +1413,7 @@ function CompletedScreen({
   onReset,
   onFullscreen,
   resetSeconds,
+  gift,
 }: {
   backgroundImageUrl: string;
   isFullscreen: boolean;
@@ -1544,9 +1421,13 @@ function CompletedScreen({
   onReset: () => void;
   onFullscreen: () => void;
   resetSeconds: number | null;
+  gift: GiftSession | null;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const firstName = getFirstName(liveDraft?.customer?.name);
   const nameLabel = firstName ? `, ${firstName}` : "";
+  const {settled,total:completedTotal}=completedCustomerCheckoutView(liveDraft,gift);
 
   return (
     <section
@@ -1563,7 +1444,7 @@ function CompletedScreen({
       tabIndex={0}
     >
       <img
-        alt=""
+        alt={__vt("")}
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover opacity-100"
         src={backgroundImageUrl}
@@ -1576,185 +1457,29 @@ function CompletedScreen({
       <ReylumiCornerLogo />
       <div className="relative z-10 max-w-3xl">
         <p className="text-base font-semibold uppercase text-teal-800">
-          Payment complete
+          <WorkspaceText text="Payment complete" />
         </p>
         <h1 className="mt-4 text-6xl font-semibold leading-tight lg:text-7xl">
-          Thank you{nameLabel}!
+          <WorkspaceText text="Thank you" />{nameLabel}!
         </h1>
         <p className="mt-5 text-3xl font-semibold text-zinc-950">
-          Final total {formatMoney(liveDraft?.total ?? 0)}
+          <WorkspaceText text="Final total" /> {formatMoney(completedTotal/100)}
         </p>
+        {settled?.ticketNumber&&<p className="mt-3 text-sm text-zinc-600"><WorkspaceText text="Ticket" /> {settled.ticketNumber}</p>}
+        {!!settled?.giftPurchaseCents&&<p className="mt-2 text-base text-stone-700"><WorkspaceText text="Gift card" /> · {formatMoney(settled.giftPurchaseCents/100)}</p>}
+        {!!settled?.giftPaidCents&&<p className="mt-2 text-base text-teal-800"><WorkspaceText text="Paid with Gift card" /> · {formatMoney(settled.giftPaidCents/100)}</p>}
         <p className="mx-auto mt-5 max-w-2xl text-xl leading-8 text-zinc-800">
-          We appreciate your visit. Please see our team if you need anything else.
+          <WorkspaceText text="We appreciate your visit. Please see our team if you need anything else." />
         </p>
         <p className="mt-6 text-sm font-semibold uppercase text-teal-800">
-          Tap to continue
+          <WorkspaceText text="Tap to continue" />
         </p>
         {resetSeconds !== null ? (
           <p className="mt-6 text-sm font-medium text-zinc-600">
-            Resetting in {resetSeconds}s
+            <WorkspaceText text="Resetting in" /> {resetSeconds}s
           </p>
         ) : null}
       </div>
-    </section>
-  );
-}
-
-function CheckInConfirmationPanel({
-  checkIn,
-}: {
-  checkIn: CheckInState;
-}) {
-  const firstName = checkIn.visit.firstName ?? "Guest";
-  const requestedServices = checkIn.visit.requestedServices;
-  const requestedServiceLabel = serviceSummaryLabel(requestedServices);
-  const title =
-    checkIn.state === "already_checked_in"
-      ? "You are already checked in"
-      : "You are checked in";
-  const sourceLabel =
-    checkIn.visit.source === "appointment"
-      ? "Appointment"
-      : checkIn.visit.source === "walk_in"
-        ? "Walk-in"
-        : "Customer screen";
-
-  return (
-    <section
-      className="grid h-full min-h-0 content-center gap-5 rounded-2xl border border-stone-200/80 bg-stone-50/95 p-5 text-center shadow-2xl"
-      data-customer-display-checkin
-    >
-      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-teal-700 text-white shadow-lg">
-        <CheckIcon />
-      </div>
-      <div>
-        <p className="text-sm font-semibold uppercase text-teal-700">
-          {sourceLabel}
-        </p>
-        <h2 className="mt-2 text-4xl font-semibold leading-tight text-zinc-950">
-          {title}
-        </h2>
-        <p className="mt-3 text-2xl font-semibold text-zinc-800">
-          Thanks, {firstName}.
-        </p>
-      </div>
-      <p className="mx-auto max-w-sm text-base font-medium leading-7 text-zinc-600">
-        {requestedServiceLabel || "Our team has your arrival."}
-      </p>
-      {requestedServiceLabel ? (
-        <p className="mx-auto max-w-sm text-base font-medium leading-7 text-zinc-600">
-          We&apos;ll be with you shortly.
-        </p>
-      ) : null}
-    </section>
-  );
-}
-
-function ServiceSelectionPanel({
-  checkIn,
-  disabled,
-  onBack,
-  onSubmit,
-  selectedServiceIds,
-  services,
-  toggleService,
-}: {
-  checkIn: CheckInState;
-  disabled: boolean;
-  onBack: () => void;
-  onSubmit: () => void;
-  selectedServiceIds: string[];
-  services: CustomerDisplayService[];
-  toggleService: (serviceId: string) => void;
-}) {
-  const selectedSet = new Set(selectedServiceIds);
-  const firstName = checkIn.visit.firstName ?? "Guest";
-
-  return (
-    <section
-      className="grid h-full min-h-0 gap-3 rounded-lg border border-white/70 bg-stone-50/90 p-4 shadow-2xl backdrop-blur"
-      data-customer-display-service-select
-      style={{ gridTemplateRows: "auto minmax(0, 1fr) auto" }}
-    >
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold uppercase text-teal-700">
-            Check in
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold leading-tight text-zinc-950">
-            What are you here for?
-          </h2>
-          <p className="mt-1 text-sm font-medium leading-6 text-zinc-500">
-            Thanks, {firstName}. Select any services you&apos;d like today.
-          </p>
-        </div>
-        <button
-          className="min-h-10 shrink-0 rounded-lg border border-stone-200 bg-white/80 px-3 text-sm font-semibold text-zinc-700 shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
-          disabled={disabled}
-          onClick={onBack}
-          type="button"
-        >
-          Back
-        </button>
-      </div>
-
-      <div className="min-h-0 overflow-y-auto pr-1">
-        <div
-          className="grid gap-2 sm:grid-cols-2 md:grid-cols-3"
-          data-customer-display-service-grid
-        >
-          {services.map((service) => {
-            const selected = selectedSet.has(service.id);
-            const meta = [
-              service.category,
-              service.durationMinutes ? `${service.durationMinutes} min` : null,
-            ]
-              .filter(Boolean)
-              .join(" / ");
-
-            return (
-              <button
-                aria-pressed={selected}
-                className={[
-                  "relative grid min-h-[76px] content-between overflow-hidden rounded-lg border px-3 py-2.5 text-left shadow-[0_10px_22px_rgba(35,25,22,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(242,111,61,0.12)] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-orange/20",
-                  selected
-                    ? "border-brand-orange bg-gradient-to-br from-brand-orange-soft via-white to-amber-50 text-zinc-950 ring-2 ring-brand-orange/25"
-                    : "border-brand-orange/25 bg-gradient-to-br from-[#fffaf7] via-white/90 to-brand-orange-soft/55 text-zinc-950 hover:border-brand-orange/45",
-                ].join(" ")}
-                data-customer-display-service-card
-                disabled={disabled}
-                key={service.id}
-                onClick={() => toggleService(service.id)}
-                type="button"
-              >
-                {selected ? (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-y-2 left-1.5 w-1 rounded-full bg-brand-orange"
-                  />
-                ) : null}
-                <span className="block truncate pl-1.5 text-base font-semibold leading-tight">
-                  {service.name}
-                </span>
-                {meta ? (
-                  <span className="mt-1 block truncate pl-1.5 text-xs font-medium text-zinc-500">
-                    {meta}
-                  </span>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <button
-        className="min-h-[52px] rounded-lg bg-teal-700 px-4 py-3 text-lg font-semibold text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
-        disabled={disabled}
-        onClick={onSubmit}
-        type="button"
-      >
-        {disabled ? "Saving" : "Check in"}
-      </button>
     </section>
   );
 }
@@ -1763,13 +1488,31 @@ export function CustomerDisplayClient({
   serviceCatalog,
   settings:initialSettings,
   token,
+  initialSnapshot,
 }: {
   serviceCatalog: CustomerDisplayService[];
   settings: CustomerDisplaySettings;
   token: string;
+  /** Server-confirmed, scoped paired-device snapshot; ordinary web callers keep the existing live initialization. */
+  initialSnapshot?: PosLiveDraftView | null;
 }) {
-  const [liveDraft, setLiveDraft] = useState<PosLiveDraftView | null>(null);
+  const seededSnapshot = initialSnapshot?.token === token ? initialSnapshot : null;
+  const [liveDraft, setLiveDraft] = useState<PosLiveDraftView | null>(seededSnapshot);
   const [settings,setSettings]=useState(initialSettings);
+  useEffect(() => {
+    let alive = true;
+    const controller = new AbortController();
+    async function refresh() {
+      try {
+        const response = await fetch('/api/pos/customer-display/settings?token='+encodeURIComponent(token), {cache:'no-store', signal:AbortSignal.any([controller.signal,AbortSignal.timeout(8000)])});
+        if (response.ok) {const next = await response.json();if (alive && next.salonName) setSettings(next);}
+      } catch { /* Keep the last confirmed salon appearance. */ }
+    }
+    const storage = (event: StorageEvent) => {if(event.key===CUSTOMER_DISPLAY_APPEARANCE_CHANGED)void refresh();};
+    window.addEventListener(CUSTOMER_DISPLAY_APPEARANCE_CHANGED,refresh);
+    window.addEventListener('storage',storage);
+    return () => {alive=false;controller.abort();window.removeEventListener(CUSTOMER_DISPLAY_APPEARANCE_CHANGED,refresh);window.removeEventListener('storage',storage);};
+  }, [token]);
   usePosResourceRefresh(liveDraft?.salon_id,'settings',async()=>{
     const response=await fetch('/api/pos/customer-display/settings?token='+encodeURIComponent(token),{cache:'no-store',signal:AbortSignal.timeout(8000)});
     if(response.ok){const next=await response.json();if(next.salonName)setSettings(next);}
@@ -1783,7 +1526,9 @@ export function CustomerDisplayClient({
   const [isChangingCustomer, setIsChangingCustomer] = useState(false);
   const [createCustomerMode, setCreateCustomerMode] = useState(false);
   const [customerNameInput, setCustomerNameInput] = useState("");
+  const [identityCandidates, setIdentityCandidates] = useState<CustomerIdentityChoice[]>([]);
   const [newCustomerKey, setNewCustomerKey] = useState<string | null>(null);
+  const [receiptPrinting, setReceiptPrinting] = useState(false);
   const [checkInState, setCheckInState] = useState<CheckInState | null>(null);
   const [serviceSelectionState, setServiceSelectionState] =
     useState<CheckInState | null>(null);
@@ -1800,33 +1545,40 @@ export function CustomerDisplayClient({
   const [isTipPending, setIsTipPending] = useState(false);
   const [resetSeconds, setResetSeconds] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [slideIndex, setSlideIndex] = useState(0);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [serverOffsetMs, setServerOffsetMs] = useState(0);
   const [serverTipOptions, setServerTipOptions] = useState<TipOption[] | null>(
     null,
   );
   const lastSubmittedPhoneRef = useRef("");
+  const phoneRequestGuard = useRef(createKioskRequestGuard());
+  const serviceRequestGuard = useRef(createKioskRequestGuard());
+  const phoneEntryEditingRef = useRef(false);
   const [localPreviewMode, setLocalPreviewMode] = useState(false);
   const localPreview = useRef<{ value: LocalReceiptPreview; receivedAt: number } | null>(null);
-  const liveDraftRef = useRef<PosLiveDraftView | null>(null);
+  const liveDraftRef = useRef<PosLiveDraftView | null>(seededSnapshot);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const serverOffsetRef = useRef(0);
   const lastCustomerInteractionServerMsRef = useRef<number | null>(null);
-  const versionRef = useRef<number | null>(null);
+  const versionRef = useRef<number | null>(seededSnapshot?.version ?? null);
   const completedResetInFlightRef = useRef(false);
 
-  const attractImages = useMemo(
-    () => [
-      settings.customerLeftAdImageUrl ??
-        DEFAULT_CUSTOMER_DISPLAY_PROMO_SLIDE_URL,
-    ],
-    [settings.customerLeftAdImageUrl],
-  );
+  const attractImages = useMemo(() => [settings.customerLeftAdImageUrl ?? DEFAULT_CUSTOMER_DISPLAY_PROMO_SLIDE_URL, settings.customerRightAdImageUrl].filter((value): value is string => Boolean(value)), [settings.customerLeftAdImageUrl, settings.customerRightAdImageUrl]);
   const backgroundImageUrl =
     settings.customerBackgroundImageUrl ??
     DEFAULT_CUSTOMER_DISPLAY_RECEIPT_BACKGROUND_URL;
   const liveDraftCustomer = liveDraft?.customer;
+  const checkoutIdentity = `${token}:${liveDraft?.id ?? ""}:${liveDraftCustomer?.id ?? "guest"}:${liveDraft?.customer_version ?? 0}`;
+  const [rewardSnapshot, setRewardSnapshot] = useState<{ identity: string; view: RewardView | null } | null>(null);
+  const [giftSnapshot, setGiftSnapshot] = useState<{ identity: string; session: GiftSession | null } | null>(null);
+  const [rewardsAvailable, setRewardsAvailable] = useState(false);
+  const checkoutReward = rewardSnapshot?.identity === checkoutIdentity ? rewardSnapshot.view : null;
+  const checkoutGift = giftSnapshot?.identity === checkoutIdentity ? giftSnapshot.session : null;
+  const receiveCheckoutReward = useCallback((view: RewardView | null) => setRewardSnapshot({ identity: checkoutIdentity, view }), [checkoutIdentity]);
+  const receiveCheckoutGift = useCallback((session: GiftSession | null) => setGiftSnapshot(previous=>!session&&previous?.identity===checkoutIdentity&&previous.session?.status==="completed"?previous:{ identity: checkoutIdentity, session }), [checkoutIdentity]);
+  const tipIdentity = useRef(checkoutIdentity);
+  useEffect(() => { tipIdentity.current = checkoutIdentity; }, [checkoutIdentity]);
+  const tipLock = useRef(false);
   const liveDraftResetAt = liveDraft?.reset_at;
   const liveDraftStatus = liveDraft?.status;
   const checkInFirstName = checkInState?.visit.firstName ?? null;
@@ -1906,7 +1658,7 @@ export function CustomerDisplayClient({
       return "attract";
     }
 
-    if (createCustomerMode && !liveDraftCustomer && !guestConfirmed) {
+    if (createCustomerMode && (!liveDraftCustomer || isChangingCustomer) && !guestConfirmed) {
       return "profile";
     }
 
@@ -1924,7 +1676,7 @@ export function CustomerDisplayClient({
     () => getTipOptions(settings, liveDraft),
     [liveDraft, settings],
   );
-  const tipOptions = localPreviewMode ? fallbackTipOptions : serverTipOptions ?? fallbackTipOptions;
+  const tipOptions = localPreviewMode || !serverTipOptions?.length ? fallbackTipOptions : serverTipOptions;
   const rootClass = [
     "customer-display-kiosk-surface relative h-dvh w-dvw touch-manipulation overflow-hidden overscroll-none text-zinc-950",
     "",
@@ -1952,6 +1704,10 @@ export function CustomerDisplayClient({
     serverOffsetRef.current = nextServerOffsetMs;
     setServerOffsetMs(nextServerOffsetMs);
     const previousSnapshot = liveDraftRef.current;
+    if (previousSnapshot && (previousSnapshot.id !== snapshot.id || previousSnapshot.customer?.id !== snapshot.customer?.id || previousSnapshot.customer_version !== snapshot.customer_version)) {
+      setCustomTipInput(""); setCustomTipMode(false);
+      tipIdentity.current = `${snapshot.token}:${snapshot.id}:${snapshot.customer?.id ?? "guest"}:${snapshot.customer_version ?? 0}`;
+    }
     liveDraftRef.current = snapshot;
     setLiveDraft(snapshot);
     setConnectionState("connected");
@@ -1960,12 +1716,16 @@ export function CustomerDisplayClient({
       snapshot.status === "closed" ||
       (snapshot.status === "draft" && !snapshot.customer && !hasMeaningfulReceipt(snapshot) && hasMeaningfulReceipt(previousSnapshot))
     ) {
+      phoneEntryEditingRef.current = false;
+      phoneRequestGuard.current.reset();
+      serviceRequestGuard.current.reset();
       setPhoneInput("");
       setConfirmedPhone(null);
       setGuestConfirmed(false);
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setNewCustomerKey(null);
       setCustomerResults([]);
       setCustomerStatus(null);
@@ -1974,11 +1734,12 @@ export function CustomerDisplayClient({
       lastSubmittedPhoneRef.current = "";
     }
 
-    if (snapshot.customer) {
+    if (snapshot.customer && !phoneEntryEditingRef.current) {
       setGuestConfirmed(false);
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setCheckInState(null);
       setServiceSelectionState(null);
       setSelectedServiceIds([]);
@@ -1993,6 +1754,8 @@ export function CustomerDisplayClient({
       setConnectionState("connected");
       return;
     }
+
+    if (initialSnapshot && !navigator.onLine) return;
 
     const result = await getPosLiveDraft(token);
     if (localPreview.current && Date.now() - localPreview.current.receivedAt < 2000) return;
@@ -2012,7 +1775,13 @@ export function CustomerDisplayClient({
     }
 
     setError(null);
-  }, [applySnapshot, token]);
+  }, [applySnapshot, initialSnapshot, token]);
+
+  useEffect(() => {
+    if (initialSnapshot?.token !== token) return;
+    const timer = window.setTimeout(() => applySnapshot(initialSnapshot), 0);
+    return () => window.clearTimeout(timer);
+  }, [applySnapshot, initialSnapshot, token]);
 
   useEffect(() => subscribeLocalDisplay(token, applySnapshot), [token, applySnapshot]);
   useEffect(() => {
@@ -2030,9 +1799,13 @@ export function CustomerDisplayClient({
       setLiveDraft(snapshot);
       setServerTipOptions(null);
       if (value.completedAt || (previous && previous.value.cartId !== value.cartId)) {
+        phoneEntryEditingRef.current = false;
+        phoneRequestGuard.current.reset();
+        serviceRequestGuard.current.reset();
         setGuestConfirmed(false); setCustomTipInput(""); setCustomTipMode(false);
         setPhoneInput(""); setConfirmedPhone(null); setIsChangingCustomer(false);
-        setCreateCustomerMode(false); setCustomerNameInput(""); setCustomerResults([]);
+        setCreateCustomerMode(false); setCustomerNameInput("");
+      setIdentityCandidates([]); setCustomerResults([]);
         setCheckInState(null); setServiceSelectionState(null); setSelectedServiceIds([]);
         setCustomerStatus(null); lastSubmittedPhoneRef.current = "";
       }
@@ -2052,11 +1825,18 @@ export function CustomerDisplayClient({
       const nextDigits = digitsOnly(value).slice(0, 11);
 
       markCustomerInteraction();
+      phoneEntryEditingRef.current = true;
+      phoneRequestGuard.current.invalidate();
+      serviceRequestGuard.current.invalidate();
+      setIsCustomerPending(false);
+      setIsServicePending(false);
+      setConfirmedPhone(null);
       setPhoneInput(nextDigits);
       setGuestConfirmed(false);
       setCreateCustomerMode(false);
       setCheckInState(null);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setNewCustomerKey(null);
       setCustomerStatus(null);
       setServiceSelectionState(null);
@@ -2075,11 +1855,13 @@ export function CustomerDisplayClient({
       phone: string,
       options?: { newCustomer?: boolean },
     ) => {
+      phoneEntryEditingRef.current = false;
       setConfirmedPhone(phone);
       setGuestConfirmed(false);
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setCustomerResults([]);
       setCustomTipInput("");
       setCustomTipMode(false);
@@ -2130,20 +1912,33 @@ export function CustomerDisplayClient({
     [applySnapshot, selectableServiceIds, serviceCatalog.length, token],
   );
 
-  const submitDisplayPhone = useCallback(async (input: { phone: string; name?: string }): Promise<Awaited<ReturnType<typeof submitCustomerDisplayPhone>>> => {
+  const submitDisplayPhone = useCallback(async (input: { phone: string; name?: string; identityChoice?: string; newCustomer?: boolean }): Promise<Awaited<ReturnType<typeof submitCustomerDisplayPhone>>> => {
     const preview = localPreview.current;
     const baseline = liveDraftRef.current;
-    if (preview && baseline && !preview.value.completedAt && Date.now() - preview.receivedAt < 2000 && hasMeaningfulReceipt(baseline)) {
-      const result = input.name
-        ? await createLiveDraftCustomer({ ...input, name: input.name, token })
-        : await findLiveDraftCustomerByPhone({ phone: input.phone, token });
-      if (!result.ok) return result;
-      if (!result.data) return { ok: false, code: "profile_required", error: "Enter your name to continue." };
-      return { ok: true, data: { mode: "checkout", visit: null,
-        snapshot: { ...baseline, customer: result.data } } };
+    const localCheckout = !!preview && !!baseline && !preview.value.completedAt && Date.now() - preview.receivedAt < 2000 && hasMeaningfulReceipt(baseline);
+    const checkInOnly = !!preview && Date.now() - preview.receivedAt < 2000 && !hasMeaningfulReceipt(baseline);
+    const key = JSON.stringify([token, localPhoneKey(input.phone), input.name?.trim() ?? "", input.identityChoice ?? null, !!input.newCustomer, localCheckout, checkInOnly, localCheckout ? preview?.value.cartId : null]);
+    const ticket = phoneRequestGuard.current.begin(key, getRequestId);
+    const superseded = { ok: false as const, code: "request_superseded", error: "" };
+    if (!ticket) return superseded;
+    try {
+      let result: Awaited<ReturnType<typeof submitCustomerDisplayPhone>>;
+      if (localCheckout && baseline) {
+        const found = input.name
+          ? await createLiveDraftCustomer({ ...input, name: input.name, token })
+          : await findLiveDraftCustomerByPhone({ phone: input.phone, token });
+        result = !found.ok ? found : !found.data
+          ? { ok: false, code: "profile_required", error: "Enter your name to continue." }
+          : { ok: true, data: { mode: "checkout", visit: null, snapshot: { ...baseline, customer: found.data } } };
+      } else {
+        result = await submitCustomerDisplayPhone({ ...input, phone: localPhoneKey(input.phone), name: input.name?.trim(), requestId: ticket.requestId, token, checkInOnly });
+      }
+      return phoneRequestGuard.current.finish(ticket) ? result : superseded;
+    } catch {
+      return phoneRequestGuard.current.finish(ticket)
+        ? { ok: false, code: "lookup_failed", error: "Unable to connect. Please try again." }
+        : superseded;
     }
-    return submitCustomerDisplayPhone({ ...input, requestId: getRequestId(), token,
-      checkInOnly: !!preview && Date.now() - preview.receivedAt < 2000 && !hasMeaningfulReceipt(baseline) });
   }, [token]);
 
   const submitPhoneLookup = useCallback(
@@ -2168,15 +1963,17 @@ export function CustomerDisplayClient({
       const result = await submitDisplayPhone({
         phone: nextDigits,
       });
+      if (!result.ok && result.code === "request_superseded") return;
       setIsCustomerPending(false);
 
       if (!result.ok) {
-        if (result.code === "profile_required") {
+        if (result.code === "profile_required" || result.code === "identity_choice_required") {
           setConfirmedPhone(nextDigits);
           setGuestConfirmed(false);
-          setIsChangingCustomer(false);
+          setIsChangingCustomer(true);
           setCreateCustomerMode(true);
           setCustomerNameInput("");
+          setIdentityCandidates(result.candidates ?? []);
           setCustomerResults([]);
           setCustomerStatus(result.error);
           return;
@@ -2211,19 +2008,7 @@ export function CustomerDisplayClient({
   }, []);
 
   useEffect(() => {
-    if (attractImages.length <= 1 || displayMode !== "attract") {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      setSlideIndex((current) => (current + 1) % attractImages.length);
-    }, SLIDESHOW_INTERVAL_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, [attractImages.length, displayMode]);
-
-  useEffect(() => {
-    const nextImage = attractImages[(slideIndex + 1) % attractImages.length];
+    const nextImage = attractImages[1] ?? attractImages[0];
 
     if (!nextImage || typeof window === "undefined") {
       return;
@@ -2231,7 +2016,7 @@ export function CustomerDisplayClient({
 
     const image = new window.Image();
     image.src = nextImage;
-  }, [attractImages, slideIndex]);
+  }, [attractImages]);
 
   useEffect(() => {
     function handleFullscreenChange() {
@@ -2329,6 +2114,7 @@ export function CustomerDisplayClient({
     let cancelled = false;
 
     async function loadTipOptions() {
+      if (initialSnapshot && !navigator.onLine) return;
       const result = await getCustomerDisplayLiveDraftTipOptions({ token });
 
       if (cancelled) {
@@ -2351,6 +2137,7 @@ export function CustomerDisplayClient({
     liveDraft?.total,
     liveDraft?.total_before_tip,
     liveDraftStatus,
+    initialSnapshot,
     token,
   ]);
 
@@ -2471,11 +2258,13 @@ export function CustomerDisplayClient({
   }, [displayMode, liveDraftStatus, phoneDigits, submitPhoneLookup]);
 
   useEffect(() => {
-    if (!checkInState) {
+    if (!checkInState || receiptPrinting) {
       return;
     }
 
     const timeoutId = window.setTimeout(() => {
+      phoneRequestGuard.current.reset();
+      serviceRequestGuard.current.reset();
       setCheckInState(null);
       setPhoneInput("");
       setConfirmedPhone(null);
@@ -2483,6 +2272,7 @@ export function CustomerDisplayClient({
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
+      setIdentityCandidates([]);
       setNewCustomerKey(null);
       setCustomerResults([]);
       setCustomerStatus(null);
@@ -2494,7 +2284,7 @@ export function CustomerDisplayClient({
     }, CHECKIN_SUCCESS_RESET_MS);
 
     return () => window.clearTimeout(timeoutId);
-  }, [checkInState]);
+  }, [checkInState, receiptPrinting]);
 
   async function confirmCustomer(customer: PosLiveDraftCustomer) {
     const phone = digitsOnly(customer.phone ?? phoneInput).slice(0, 11);
@@ -2507,8 +2297,9 @@ export function CustomerDisplayClient({
     setIsCustomerPending(true);
     setError(null);
 
-    const result = await submitDisplayPhone({ phone });
+    const result = await submitDisplayPhone({ phone, name: customer.name ?? undefined, identityChoice: customer.id });
 
+    if (!result.ok && result.code === "request_superseded") return;
     setIsCustomerPending(false);
 
     if (!result.ok) {
@@ -2519,7 +2310,8 @@ export function CustomerDisplayClient({
     applyCustomerPhoneResult(result.data, phone);
   }
 
-  async function createCustomerProfile() {
+  async function createCustomerProfile(identityChoice?: string | null) {
+    if (isCustomerPending) return;
     const name = customerNameInput.trim();
     const phone = digitsOnly(confirmedPhone ?? phoneInput).slice(0, 11);
 
@@ -2527,7 +2319,7 @@ export function CustomerDisplayClient({
       return;
     }
 
-    if (!name) {
+    if (!name && !identityChoice) {
       setCustomerStatus("Customer name is required.");
       return;
     }
@@ -2541,30 +2333,41 @@ export function CustomerDisplayClient({
     setIsCustomerPending(true);
     setError(null);
 
-    const result = await submitDisplayPhone({ name, phone });
+    const result = await submitDisplayPhone({ name, phone, identityChoice: identityChoice ?? undefined, newCustomer: identityChoice === null });
 
+    if (!result.ok && result.code === "request_superseded") return;
     setIsCustomerPending(false);
 
     if (!result.ok) {
+      setIdentityCandidates(result.candidates ?? []);
       setCustomerStatus(result.error);
       return;
     }
 
+    setIdentityCandidates([]);
     setConfirmedPhone(phone);
-    applyCustomerPhoneResult(result.data, phone, { newCustomer: true });
+    applyCustomerPhoneResult(result.data, phone, { newCustomer: !identityChoice });
     setCustomerStatus(
       result.data.mode === "checkout"
-        ? "Customer profile created."
-        : "Profile created.",
+        ? "Customer profile selected."
+        : "Profile selected.",
     );
   }
 
-  async function confirmTip(tipAmount: number) {
+  async function confirmTip(tipAmount: number, closeCustom = true, scope?: TipReceiptScope) {
     if (!Number.isFinite(tipAmount) || tipAmount < 0) {
       setError("Tip must be zero or greater.");
-      return;
+      return false;
     }
 
+    if (scope && (!liveDraft || scope.draftId !== liveDraft.id || scope.customerVersion !== liveDraft.customer_version || scope.receiptVersion !== liveDraft.receipt_version)) {
+      setError("The receipt changed. Please select your tip again.");
+      return false;
+    }
+
+    if (tipLock.current) return false;
+    tipLock.current = true;
+    const identity = checkoutIdentity;
     markCustomerInteraction();
     setIsTipPending(true);
     setError(null);
@@ -2573,23 +2376,28 @@ export function CustomerDisplayClient({
       const preview = localPreview.current;
       if (preview && Date.now() - preview.receivedAt < 2000) {
         const accepted = await requestLocalReceiptTip(token, preview.value, tipAmount);
-        if (!accepted) { setError("The receipt changed. Please select your tip again."); return; }
-        setCustomTipInput(""); setCustomTipMode(false);
-        return;
+        if (!accepted) { setError("The receipt changed. Please select your tip again."); return false; }
+        if (tipIdentity.current !== identity) return false;
+        if (closeCustom) { setCustomTipInput(""); setCustomTipMode(false); }
+        return true;
       }
-      if (!navigator.onLine) { setError("Connect to the POS to confirm your tip."); return; }
+      if (!navigator.onLine) { setError("Reconnect to the POS to save your tip."); return false; }
       const result = await confirmCustomerDisplayLiveDraftTip({
         requestId: getRequestId(), tipAmount, token,
+        ...(scope ?? (liveDraft ? { draftId: liveDraft.id, customerVersion: liveDraft.customer_version, receiptVersion: liveDraft.receipt_version } : {})),
       });
-      if (!result.ok) { setError(result.error); return; }
-      setCustomTipInput("");
-      setCustomTipMode(false);
+      if (tipIdentity.current !== identity) return false;
+      if (!result.ok) { setError(result.error); return false; }
+      if (closeCustom) { setCustomTipInput(""); setCustomTipMode(false); }
       applySnapshot(result.data);
       publishLocalDisplaySnapshot(result.data);
+      return true;
     } catch {
       setError("Tip confirmation could not be verified. Reconnect and check the displayed amount.");
+      return false;
     } finally {
       setIsTipPending(false);
+      tipLock.current = false;
     }
   }
 
@@ -2603,6 +2411,11 @@ export function CustomerDisplayClient({
 
   function changeCustomer() {
     markCustomerInteraction();
+    phoneEntryEditingRef.current = true;
+    phoneRequestGuard.current.invalidate();
+    serviceRequestGuard.current.reset();
+    setIsCustomerPending(false);
+    setIsServicePending(false);
     setCheckInState(null);
     setServiceSelectionState(null);
     setSelectedServiceIds([]);
@@ -2610,6 +2423,7 @@ export function CustomerDisplayClient({
     setGuestConfirmed(false);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
+      setIdentityCandidates([]);
     setNewCustomerKey(null);
     setConfirmedPhone(null);
     setPhoneInput("");
@@ -2631,6 +2445,7 @@ export function CustomerDisplayClient({
     setIsChangingCustomer(false);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
+      setIdentityCandidates([]);
     setNewCustomerKey(null);
     setConfirmedPhone(null);
     setPhoneInput("");
@@ -2641,13 +2456,24 @@ export function CustomerDisplayClient({
 
   function returnToPhoneEntry() {
     markCustomerInteraction();
+    phoneEntryEditingRef.current = true;
+    phoneRequestGuard.current.invalidate();
+    serviceRequestGuard.current.reset();
+    setIsCustomerPending(false);
+    setIsServicePending(false);
+    const editablePhone = confirmedPhone ?? phoneInput;
+    setPhoneInput(editablePhone);
+    setConfirmedPhone(null);
+    setGuestConfirmed(false);
+    setIsChangingCustomer(true);
     setCheckInState(null);
     setServiceSelectionState(null);
     setSelectedServiceIds([]);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
+      setIdentityCandidates([]);
     setCustomerStatus(null);
-    lastSubmittedPhoneRef.current = "";
+    lastSubmittedPhoneRef.current = digitsOnly(editablePhone);
   }
 
   function toggleRequestedService(serviceId: string) {
@@ -2666,20 +2492,29 @@ export function CustomerDisplayClient({
   }
 
   async function submitRequestedServices() {
-    if (!serviceSelectionState || !token || liveDraftStatus !== "draft") {
+    if (!serviceSelectionState || !selectedServiceIds.length || !token || liveDraftStatus !== "draft") {
       return;
     }
 
     markCustomerInteraction();
+    const ticket = serviceRequestGuard.current.begin(JSON.stringify([token, serviceSelectionState.visit.id, [...selectedServiceIds].sort()]), getRequestId);
+    if (!ticket) return;
     setIsServicePending(true);
     setError(null);
-
-    const result = await saveCustomerDisplayRequestedServices({
+    let result: Awaited<ReturnType<typeof saveCustomerDisplayRequestedServices>>;
+    try {
+      result = await saveCustomerDisplayRequestedServices({
       serviceIds: selectedServiceIds,
       token,
       visitId: serviceSelectionState.visit.id,
-    });
-
+      });
+    } catch {
+      if (!serviceRequestGuard.current.finish(ticket)) return;
+      setIsServicePending(false);
+      setError("Unable to connect. Please try again.");
+      return;
+    }
+    if (!serviceRequestGuard.current.finish(ticket, result.ok && result.data.mode === "check_in")) return;
     setIsServicePending(false);
 
     if (!result.ok) {
@@ -2713,6 +2548,8 @@ export function CustomerDisplayClient({
       return;
     }
 
+    phoneRequestGuard.current.reset();
+    serviceRequestGuard.current.reset();
     completedResetInFlightRef.current = true;
     setError(null);
 
@@ -2738,6 +2575,7 @@ export function CustomerDisplayClient({
     setIsChangingCustomer(false);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
+      setIdentityCandidates([]);
     setNewCustomerKey(null);
     setCustomerResults([]);
     setCustomerStatus(null);
@@ -2750,23 +2588,25 @@ export function CustomerDisplayClient({
   }
 
   return (
-    <div className={rootClass} ref={rootRef}>
+    <SalonIdentityContext reference={{kind:"display",value:token}}><div className={rootClass} ref={rootRef}>
+      {displayMode !== "tip" && displayMode !== "attract" && !(displayMode === "phone" && !hasCheckoutHandoff) && <div className="customer-gift-toolbar"><GiftCustomerControl key={token} token={token} onSession={receiveCheckoutGift} /></div>}
       {displayMode === "tip" ? (
         <FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />
       ) : null}
       <div className="customer-display-auto-scale h-full w-full">
-        {displayMode === "attract" ? (
-          <AttractScreen
-            currentSlide={slideIndex}
-            error={error}
-            images={attractImages}
-            isFullscreen={isFullscreen}
-            onBegin={beginFromAttract}
-            onFullscreen={enterFullscreen}
-            settings={settings}
-          />
+        {(liveDraftCustomer?.id || checkInState?.visit.id) && displayMode !== "tip" && displayMode !== "completed" && displayMode !== "attract" && <VisitRewards key={liveDraftCustomer?.id ?? checkInState?.visit.id} scope="display" token={token} visitId={checkInState?.visit.id} />}
+        {displayMode === "attract" || (displayMode === "phone" && !hasCheckoutHandoff) ? (
+          <CustomerIdleScreen showSalonName={settings.customerShowSalonName} salonLogoUrl={settings.salonLogoUrl} activeEntry={displayMode === "phone"} giftControl={<GiftCustomerControl key={token} token={token} />} token={token} images={attractImages} salonName={settings.salonName ?? "Welcome"} backgroundImageUrl={settings.customerBackgroundImageUrl ?? undefined}
+            title={settings.customerLeftAdText} body={settings.customerRightAdText} onBegin={beginFromAttract} fullscreenControl={<FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />}>
+            <PhoneEntryPanel customerResults={customerResults} customerStatus={customerStatus}
+              disabled={!token || liveDraftStatus !== "draft"} isCustomerPending={isCustomerPending} isSearching={isSearching}
+              onConfirmCustomer={confirmCustomer} onPhoneInput={handlePhoneInput} onSkipToTip={continueToTipAsGuest}
+              onSubmitPhone={() => void submitPhoneLookup(phoneInput)} phoneInput={phoneInput} showTipShortcut={false} />
+            {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800"><WorkspaceText text={error}/></p>}
+          </CustomerIdleScreen>
         ) : displayMode === "completed" ? (
           <CompletedScreen
+            gift={checkoutGift}
             backgroundImageUrl={backgroundImageUrl}
             isFullscreen={isFullscreen}
             liveDraft={liveDraft}
@@ -2785,25 +2625,32 @@ export function CustomerDisplayClient({
             identityLabel={identityLabel}
             liveDraft={liveDraft}
             settings={settings}
+            reward={checkoutReward}
+            gift={checkoutGift}
+            rewardsAvailable={rewardsAvailable && connectionState === "connected"}
           >
             {displayMode === "tip" ? (
               <TipPanel
-                confirmedPhone={
-                  confirmedPhone ?? liveDraftCustomer?.phone ?? phoneInput ?? null
-                }
+                key={checkoutIdentity}
+                phone={settings.customerShowCustomerName ? maskPhone(confirmedPhone ?? liveDraftCustomer?.phone ?? phoneInput ?? "") : null}
                 customTipInput={customTipInput}
                 customTipMode={customTipMode}
                 identityLabel={identityLabel}
                 isTipPending={isTipPending}
+                tipError={error}
+                showReceiptStatus={settings.customerShowReceiptStatus}
                 liveDraft={liveDraft}
                 onChangeCustomer={changeCustomer}
                 onConfirmTip={confirmTip}
                 onCustomTipInput={setCustomTipInput}
                 onSetCustomTipMode={setCustomTipMode}
                 tipOptions={tipOptions}
+                Keypad={MoneyKeypad}
+                benefits={liveDraftCustomer?.id ? <VisitRewards key={checkoutIdentity} scope="display" presentation="checkout" token={token} onChange={receiveCheckoutReward} onAvailabilityChange={setRewardsAvailable} /> : undefined}
+                giftControl={<GiftCustomerControl key={checkoutIdentity} checkout token={token} onSession={receiveCheckoutGift} />}
               />
             ) : displayMode === "profile" ? (
-              <ProfileCreationPanel
+              <><CustomerIdentityChoices candidates={identityCandidates} onBack={returnToPhoneEntry} disabled={isCustomerPending} onChoose={id => void createCustomerProfile(id)} /><ProfileCreationPanel hidden={identityCandidates.length > 0}
                 customerStatus={customerStatus}
                 disabled={!token || liveDraftStatus !== "draft"}
                 isPending={isCustomerPending}
@@ -2812,11 +2659,12 @@ export function CustomerDisplayClient({
                 onNameInput={(value) => {
                   markCustomerInteraction();
                   setCustomerNameInput(value);
+                  setIdentityCandidates([]);
                   setCustomerStatus(null);
                 }}
                 onSubmit={() => void createCustomerProfile()}
                 phone={confirmedPhone ?? phoneInput}
-              />
+              /></>
             ) : (
               <PhoneEntryPanel
                 customerResults={customerResults}
@@ -2842,7 +2690,7 @@ export function CustomerDisplayClient({
             settings={settings}
           >
             {displayMode === "checkin" && checkInState ? (
-              <CheckInConfirmationPanel checkIn={checkInState} />
+              <div className="grid h-full min-h-0" style={{ gridTemplateRows: "minmax(0,1fr) auto" }}><CheckInConfirmationPanel checkIn={checkInState} /><CheckinReceiptPanel compact key={checkInState.visit.id} token={token} visitId={checkInState.visit.id} onPrintingChange={setReceiptPrinting} /></div>
             ) : displayMode === "service_select" && serviceSelectionState ? (
               <ServiceSelectionPanel
                 checkIn={serviceSelectionState}
@@ -2854,7 +2702,7 @@ export function CustomerDisplayClient({
                 toggleService={toggleRequestedService}
               />
             ) : displayMode === "profile" ? (
-              <ProfileCreationPanel
+              <><CustomerIdentityChoices candidates={identityCandidates} onBack={returnToPhoneEntry} disabled={isCustomerPending} onChoose={id => void createCustomerProfile(id)} /><ProfileCreationPanel hidden={identityCandidates.length > 0}
                 customerStatus={customerStatus}
                 disabled={!token || liveDraftStatus !== "draft"}
                 isPending={isCustomerPending}
@@ -2863,12 +2711,14 @@ export function CustomerDisplayClient({
                 onNameInput={(value) => {
                   markCustomerInteraction();
                   setCustomerNameInput(value);
+                  setIdentityCandidates([]);
                   setCustomerStatus(null);
                 }}
                 onSubmit={() => void createCustomerProfile()}
                 phone={confirmedPhone ?? phoneInput}
-              />
+              /></>
             ) : (
+              <div className="customer-phone-with-qr">
               <PhoneEntryPanel
                 customerResults={customerResults}
                 customerStatus={customerStatus}
@@ -2882,10 +2732,12 @@ export function CustomerDisplayClient({
                 phoneInput={phoneInput}
                 showTipShortcut={hasCheckoutHandoff}
               />
+              {!hasCheckoutHandoff && <CustomerRelayEntry token={token} />}
+              </div>
             )}
           </CheckInShell>
         )}
       </div>
-    </div>
+    </div></SalonIdentityContext>
   );
 }

@@ -32,6 +32,7 @@ export function AccountRecoveryForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement=event.currentTarget;
     setError(null);
     setMessage(null);
     setIsSubmitting(true);
@@ -46,7 +47,8 @@ export function AccountRecoveryForm({
       }
 
       setMessage(result.message ?? "Recovery request submitted.");
-      event.currentTarget.reset();
+      // Capture the form before the asynchronous action; React clears currentTarget.
+      formElement.reset();
     } catch {
       setError("Recovery request could not be submitted. Try again.");
     } finally {
@@ -136,6 +138,7 @@ export function AccountRecoveryForm({
               className={fieldClassName(Boolean(error))}
               id="contact_email"
               name="contact_email"
+              required
               type="email"
             />
           </div>
@@ -189,6 +192,7 @@ export function AccountRecoveryForm({
         </button>
       </form>
 
+      <p className="mt-5 text-sm leading-6">No saved recovery code? <Link className="font-semibold underline" href="/contact-support?topic=account-recovery">Contact support without signing in</Link>. Use an email you can access now; support will verify ownership before restoring access.</p>
       <div className="mt-5 grid gap-3 text-center text-sm font-extrabold sm:grid-cols-2">
         <Link
           className="text-brand-orange underline-offset-4 transition hover:text-brand-orange-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"

@@ -1,0 +1,113 @@
+{
+  "summary": "Fix physical iPhone booking/POS, closing transport/history, Today failure handling, retained navigation/Help/scroll and reduce repeated Settings/auth reads; measured about 59-60 percent faster first Settings forms; first fetch and workspace switch still above target",
+  "kind": "change",
+  "validation": [
+    {
+      "name": "26 regression tests including request-bound auth revocation/scope and latest retained navigation",
+      "evidence": "artifacts/iphone-performance-fixes-20261027/regression-navigation-final.log",
+      "result": "passed"
+    },
+    {
+      "name": "Isolated SQL migration and 30/3000/30000 indexed-data test",
+      "evidence": "artifacts/iphone-performance-fixes-20261027/booking-sql-scale-tests.log",
+      "result": "passed"
+    },
+    {
+      "name": "Approved migration applied once, post-commit guard/column and protected facts verified",
+      "evidence": "artifacts/iphone-performance-fixes-20261027/db-applied-receipt.json",
+      "result": "passed"
+    },
+    {
+      "name": "TypeScript and scoped lint",
+      "evidence": "artifacts/iphone-performance-fixes-20261027/typecheck-navigation-final.log",
+      "result": "passed"
+    },
+    {
+      "name": "Fresh final production build 247 pages and offline assets",
+      "evidence": "artifacts/iphone-performance-fixes-20261027/production-build-frozen.log",
+      "result": "passed"
+    },
+    {
+      "name": "Physical iPhone QA63 signed build and JS hash, Settings A/B plus scoped functional regressions",
+      "evidence": "artifacts/iphone-performance-fixes-20261027/verified-results.json",
+      "result": "passed"
+    }
+  ],
+  "status": "ready",
+  "source": {
+    "snapshot": "C:\\Reylumi\\kingpos-iphone-performance-20261027\\artifacts\\iphone-performance-fixes-20261027\\ready-source",
+    "baseCommit": "262dc463935bcc2454502f035fb199c07c66a84c"
+  },
+  "changeId": "iphone-real-performance-fixes-20261027",
+  "dependencies": [],
+  "notes": [
+    "Draft DB migration 20261028003000 applied with explicit owner approval.",
+    "No public web promotion or TestFlight upload; QA previews and USB installs only.",
+    "Observed first fetch about 2.5 sec and role switch several seconds remain performance limitations; no concurrency capacity claim.",
+    "Final native navigation/booking fixes postdate measured preview web client; server/API and web Settings read branch source hashes verified.",
+    "Raw UI/diagnostics and private QA configs excluded from Git; aggregate analysis in docs/iphone-performance-20261027.md."
+  ],
+  "files": [
+    "app/api/pos/closing/history/route.ts",
+    "app/bookings/booking-workspace-client.tsx",
+    "app/local-app/entry.tsx",
+    "app/reports/daily-report-history.tsx",
+    "app/settings/direct-settings-actions.ts",
+    "app/settings/direct-settings-panel.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "docs/iphone-performance-20261027.md",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "lib/app-local-command-trace-names.generated.json",
+    "lib/app-local-page-key.ts",
+    "lib/app-local-platform-resources-server.ts",
+    "lib/app-local-platform-types.ts",
+    "lib/app-local-role-http-server.ts",
+    "lib/daily-pos-report.ts",
+    "lib/read-context-scope.ts",
+    "lib/supabase/server.ts",
+    "lib/today-dashboard-sections.ts",
+    "lib/today-dashboard.ts",
+    "supabase/migrations/20261028003000_booking_pos_description_snapshot.sql",
+    "tests/app-local-prefetch-runtime.test.mjs",
+    "tests/booking-pos-description.integration.test.mjs",
+    "tests/iphone-performance-recovery.test.mjs"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "id": "c9cd3897-34eb-417b-81a7-9865c2e94121",
+  "recordedAt": "2026-10-28T01:54:44.261Z",
+  "worktree": "C:\\Reylumi\\kingpos-iphone-performance-20261027",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/api/pos/closing/history/route.ts": "f0dfb0e92d02ca4359406f5ef5768d6465b98b5419f37f6715ff6e10ec26efa3",
+    "app/bookings/booking-workspace-client.tsx": "4514a87797a5ca350ed5ac133309249e977b56bde3cf1b6f2e76cb65cf0ca669",
+    "app/local-app/entry.tsx": "668c556e92867f8da2fec3460c438fadbb79f2719d50532172a382e108ad4824",
+    "app/reports/daily-report-history.tsx": "7a4e7e2f1af6a2e1e2ce5113455485f59d0e3b5cccdd6b2021813eb9563d791e",
+    "app/settings/direct-settings-actions.ts": "ae72eb874b0e561d3576920b2c0e053c9b51a2cc049f32d5e70b6e395e745534",
+    "app/settings/direct-settings-panel.tsx": "b7dead63acafef9ff9782d7a7a44b93c7b8acf95ad249df20074b7f590780207",
+    "app/staff/today/today-progressive-client.tsx": "025b66fb2024821e9bf448037dd65220ae67d412d6db9c56c505b04813368046",
+    "docs/iphone-performance-20261027.md": "9947ed9427104b9967ed13601b3ae5dc48325c83391f24d2c2bfbf7a59726e99",
+    "ios/Reylumi/LocalAppBundle/app.css": "1681c5ee8111c3d20d22f28a11d3c6785ceb32d5a2e4274d674ad14c4321b097",
+    "ios/Reylumi/LocalAppBundle/app.js": "b27543bf5a9c9d065d6b8845012965a09ee164dc1b7f1a41e19373f97706287f",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "db7584b9be80d9316cdba55448aa73df406b16bc4cce276cab042a6cc772cd8f",
+    "lib/app-local-command-trace-names.generated.json": "a21fa03edf004a227ec26070401b6117f74bf95e0760c93bd695cc1bf6e55ca7",
+    "lib/app-local-page-key.ts": "2c59800468df5be4e880872a111ef41476ac12fedf3fb03f8cb79add3458972a",
+    "lib/app-local-platform-resources-server.ts": "b22fdde203d9ec945fac303e6497c32a4d20f7d0f33cb12b4378ecd63192963d",
+    "lib/app-local-platform-types.ts": "5d41bddaf6895990a89cd9d53469f188c28c923e8013cd313ca777dac6bccf27",
+    "lib/app-local-role-http-server.ts": "baa4a9fdce84c2153a01633da4d4acb06921ba5c552e797c3094debf2580ab8d",
+    "lib/daily-pos-report.ts": "863b05f41b7320f97f130c3c64efc12adffc315c9d18619979cf1e3e8936b66a",
+    "lib/read-context-scope.ts": "7e7f81ce91e366c858d483167ecf730647bbe9ffeae0e341e77417c2a9e4de77",
+    "lib/supabase/server.ts": "03349bd77b56ea10255a1619b856d7eb1849a705291097011a1cfde84dbe7b6a",
+    "lib/today-dashboard-sections.ts": "82b281b2bd060e87c51023cdb7a48446b55139fe47648d1ece51fefacfe67982",
+    "lib/today-dashboard.ts": "0f7f64352632797c4c45d2a196803d0a04afa42a27d67c553e0632040ef45763",
+    "supabase/migrations/20261028003000_booking_pos_description_snapshot.sql": "9b0332c6b444fcf65ad4cb2a09a347a98c4f53ce9e208587d35c81b6dceda782",
+    "tests/app-local-prefetch-runtime.test.mjs": "92bfe09fd3615bc1027c90e4fc5ec59ddd6342654c8ac697b04f1c004b8052fb",
+    "tests/booking-pos-description.integration.test.mjs": "383c247b0c468308b7d6636b0af0332cab2b4fb7244e382eb08e22d41f5221dc",
+    "tests/iphone-performance-recovery.test.mjs": "0b4a2fed8c3d1883f3776cd7696d80aa39ca73137ba0b2d919c1add09cd334d3"
+  }
+}

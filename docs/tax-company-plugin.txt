@@ -1,0 +1,22 @@
+Tax Company plugin
+Price: USD 7.90/month per salon. Bank purchase uses the existing Market quote, reconciliation, entitlement and refund workflow. Existing card subscriptions are supported by the signed Market webhook.
+
+Owner: Market > Tax Company > activate > Tax Plugin settings. Create the first password (12–72 bytes); a unique salon ID is generated automatically. Share the ID and password with the tax professional. Password changes revoke all old connections. Sign out all disables new connections until a new password is saved. Uploaded paystubs remain in the salon payroll records.
+
+Tax professional: /tax-company/install installs the online PWA on compatible browsers, or gives Safari Add to Home Screen instructions. This is an installable web app, not an App Store or Windows executable package. /tax-company uses the existing personal Reylumi sign-in/account. Each salon connection is saved to that personal user identity, independently of the current owner/staff workspace selection. /account links to the Tax Company app.
+
+Reports: /tax-company/[salonId] lists printed/paid payroll statements and reuses existing Tax Company reportability rules and table. Draft payroll is not exposed to the professional. Paystub uploads use the same payroll_paystubs table and private payroll-paystubs bucket, existing replacement conflict protection and staff/owner visibility. Signed file links expire in 60 seconds. Professionals can disconnect each salon separately. Subscription expiry, owner password rotation, disabled credentials and inactive salon/user status deny further access.
+
+Database: supabase/migrations/20261009210001_tax_company_plugin.sql follows the Market bank billing migrations. It adds hashed salon passwords, identity-bound connections, rate limits and scoped payroll/storage policies, and extends the existing bank RPC entitlement branches. The Payroll mobile release applied this migration and deployed the plugin to reylumi.com; see artifacts/payroll-mobile-release-receipt.json for the source baseline, migration hashes and validation evidence.
+
+Validation: node scripts/test.mjs tests/tax-company.integration.test.mjs tests/market-bank-billing.integration.test.mjs tests/paystub-upload.test.mjs tests/staff-paystub-history.test.mjs
+Production release must follow AGENTS.md and capture/revalidate the current reylumi.com deployment baseline before promotion.
+
+Workspace refinements (October 10, 2026):
+- Tax periods follow salon_payroll_settings: monthly or two halves (1–15, 16–month end), including existing biweekly anchors. Select a month/period; latest printed/paid version opens. Historical statements remain available when schedules change; periods with no published statement show an empty state.
+- Salon list includes address, phone, schedule and connection status. Paystub upload/replacement and download stay inside each employee row.
+- Private salon notes are stored by salon and personal user account, with Save/Edit and optimistic version checks against accidental overwrites. Notes persist through reconnects but are inaccessible after revocation/expiry.
+- Owner settings group salon credentials, named tax accounts (name + email or phone), install guidance and payroll access. Price remains in Market, not the settings header.
+- Apply supabase/migrations/20261011110001_tax_company_workspace.sql after the base Tax Company migration. It adds scoped notes and enriched owner/salon RPCs. The Payroll mobile release applied both migrations together with 20261011120001_tax_company_card_bridge.sql. See artifacts/payroll-mobile-release-receipt.json for release evidence.
+- Additional validation: node scripts/test.mjs tests/tax-company-periods.test.mjs tests/tax-company-ui.test.mjs
+- Screenshots: artifacts/tax-company-refinement-qa. They render the actual page/components locally with clearly labeled sample data and inert server actions; they are not live salon records.

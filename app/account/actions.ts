@@ -24,6 +24,7 @@ import {
   recordCustomerPhoneOtpVerificationFailure,
   recordCustomerVerifiedPhoneFromAuth,
 } from "@/lib/customer-phone-verification";
+import { phoneChangeAuthorized } from "@/lib/account-phone-change";
 import { normalizePhoneForIdentity } from "@/lib/phone-normalization";
 import {
   sendPhoneVerificationOtp,
@@ -69,6 +70,7 @@ export type AccountProfileActionResult = {
     message: string;
     normalizedPhone: string;
     status: "connected";
+    selectionRequired?: boolean;
   } | null;
 };
 
@@ -86,6 +88,7 @@ export type AccountPhoneOtpActionResult = {
     | "too_many_attempts";
   error: string | null;
   linkedCount?: number;
+  selectionRequired?: boolean;
   message?: string;
   normalizedPhone?: string;
   resendAfterSeconds?: number;
@@ -101,12 +104,14 @@ export type AccountDeletionBackupActionResult =
   | {
       error: null;
       expiresAt: string;
+      downloadExpiresAt: string;
       filename: string;
       signedUrl: string;
     }
   | {
       error: string;
       expiresAt?: never;
+      downloadExpiresAt?: never;
       filename?: never;
       signedUrl?: never;
     };
@@ -207,6 +212,7 @@ export async function updateAccountProfileAction(
 
   const currentProfilePhone = normalizePhoneForIdentity(user.phone);
   const phoneChanged = normalizedPhone !== currentProfilePhone;
+  if(!await phoneChangeAuthorized(user,normalizedPhone))return {error:"Verify your account email before changing your phone."};
   let phoneClaim:
     | AccountProfileActionResult["phoneClaim"]
     | undefined;
@@ -258,7 +264,7 @@ export async function updateAccountProfileAction(
       } else if (phoneChanged) {
         return {
           error: null,
-          phoneClaim: getPhoneVerificationRequirement(
+          phoneClaim: await getPhoneVerificationRequirement(
             inspection.data.normalizedPhone,
           ),
         };
@@ -270,8 +276,9 @@ export async function updateAccountProfileAction(
         return { error: claimResult.message };
       }
 
-      if (claimResult.data.linkedCount > 0) {
+      if (claimResult.data.linkedCount > 0 || claimResult.data.selectionRequired) {
         phoneClaim = {
+          selectionRequired: claimResult.data.selectionRequired,
           linkedCount: claimResult.data.linkedCount,
           message: verifiedPhoneConnectedMessage(claimResult.data.linkedCount),
           normalizedPhone: inspection.data.normalizedPhone,
@@ -285,7 +292,6 @@ export async function updateAccountProfileAction(
     display_name: readActionOptionalString(input, "display_name"),
     first_name: readActionOptionalString(input, "first_name"),
     last_name: readActionOptionalString(input, "last_name"),
-    language: readActionOptionalString(input, "language") ?? "en",
     phone: normalizedPhone,
     timezone: readActionOptionalString(input, "timezone") ?? "America/Chicago",
   };
@@ -320,7 +326,7 @@ export async function updateAccountProfileAction(
   }
 
   revalidatePath("/account");
-  revalidatePath("/beauty");
+  revalidatePath("/beauty"); revalidatePath("/beauty/library");
   revalidatePath("/", "layout");
 
   return { error: null, phoneClaim: phoneClaim ?? null };
@@ -438,6 +444,7 @@ async function connectCurrentConfirmedAuthPhone(input: {
       message: verifiedPhoneConnectedMessage(claimResult.data.linkedCount),
       normalizedPhone: verifiedPhone.data.normalizedPhone,
       status: "connected" as const,
+        selectionRequired: claimResult.data.selectionRequired,
     },
     ok: true as const,
   };
@@ -483,13 +490,14 @@ async function alreadyConfirmedPhoneOtpResult(
 
   revalidatePath("/account");
   revalidatePath("/activity");
-  revalidatePath("/beauty");
+  revalidatePath("/beauty"); revalidatePath("/beauty/library");
   revalidatePath("/", "layout");
 
   return {
     code: "already_verified",
     error: null,
     linkedCount: connectionResult.data.linkedCount,
+    selectionRequired: connectionResult.data.selectionRequired,
     message: connectionResult.data.message,
     normalizedPhone: connectionResult.data.normalizedPhone,
     status: "already_verified",
@@ -506,6 +514,8 @@ export async function sendAccountPhoneVerificationOtpAction(
     return { error: "Enter a valid phone number." };
   }
 
+  const profileUser=await getCurrentKingUser();
+  if(!profileUser||!await phoneChangeAuthorized(profileUser,normalizedPhone))return {error:"Verify your account email before changing your phone."};
   const supabase = await createAuthenticatedSupabaseAuthSessionServerClient();
 
   if (!supabase) {
@@ -631,6 +641,7 @@ export async function verifyAccountPhoneOtpAction(
     return sessionExpiredOtpResult(normalizedPhone);
   }
 
+  if(!await phoneChangeAuthorized(user,normalizedPhone))return {error:"Verify your account email before changing your phone."};
   const challenge = await beginCustomerPhoneOtpVerification(normalizedPhone);
 
   if (!challenge.ok) {
@@ -732,12 +743,13 @@ export async function verifyAccountPhoneOtpAction(
 
   revalidatePath("/account");
   revalidatePath("/activity");
-  revalidatePath("/beauty");
+  revalidatePath("/beauty"); revalidatePath("/beauty/library");
   revalidatePath("/", "layout");
 
   return {
     error: null,
     linkedCount: claimResult.data.linkedCount,
+    selectionRequired: claimResult.data.selectionRequired,
     message:
       claimResult.data.linkedCount > 0
         ? "Phone verified and eligible visit history was connected."
@@ -815,6 +827,7 @@ export async function generateAccountDeletionBackupAction(): Promise<AccountDele
     return {
       error: null,
       expiresAt: accountExport.expiresAt,
+      downloadExpiresAt: accountExport.downloadExpiresAt,
       filename: accountExport.filename,
       signedUrl: accountExport.signedUrl,
     };

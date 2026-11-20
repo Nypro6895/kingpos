@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const input = JSON.parse(raw) as {salonId:string; contentIds:string[]};
     if (!input || !uuid.test(input.salonId ?? "") || !Array.isArray(input.contentIds) || input.contentIds.length > 12 || input.contentIds.some(id => typeof id !== "string" || !uuid.test(id))) return Response.json([], { status: 400, headers });
     const wanted = new Set(input.contentIds);
-    const options = await loadPublicContentBookingOptions([input.salonId]);
+    const options = await loadPublicContentBookingOptions([input.salonId], null, input.contentIds);
     const scopes: PublicBookingAvailabilityScope[] = options.filter(option => wanted.has(option.contentId) && option.bookingEnabled && option.bookingCtaEnabled && option.readinessState === "quick_ready" && option.primaryServiceId && option.creditedStaffId && option.additionalServices.every(service => service.eligible) && option.addOns.every(service => service.eligible && service.parentServiceId)).map(option => ({
       key: option.contentId,
       serviceIds: [option.primaryServiceId!, ...option.additionalServices.filter(service => service.eligible).map(service => service.serviceId)],

@@ -1,7 +1,8 @@
+import { isSameOriginMutation } from "@/lib/request-origin";
 import { confirmStaffBookingWithReviewAction } from "@/app/staff/appointments/actions";
 
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin) {
+  if (!isSameOriginMutation(request)) {
     return Response.json({ ok: false, message: "Invalid request origin." }, { status: 403 });
   }
   const started = performance.now();

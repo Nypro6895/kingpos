@@ -1,0 +1,36 @@
+{
+  "kind": "change",
+  "changeId": "installed-global-search-navigation-20261119",
+  "status": "working",
+  "summary": "Repair installed-only global Explore GET search navigation blocked by retained bundle CSP, preserving all document handoffs, original submit guards and exact per-form pending lifecycle",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-link-navigation.ts",
+    "lib/app-local-search-navigation.ts",
+    "components/navigation-form.tsx",
+    "tests/app-local-global-search-navigation.test.mjs"
+  ],
+  "source": {
+    "commit": "cffd219ee5cd12d7c0945035b7356e96dd88e723"
+  },
+  "validation": [
+    {
+      "name": "Actual-source CSP diagnosis and four bounded loopback controls",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261119-next/guest-search-diagnostic-r1/fixture-result-r3.json"
+    },
+    {
+      "name": "Scoped implementation, stale-attempt and repeated-navigation acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "id": "7f044acc-5576-4542-9590-410749aa2ba1",
+  "recordedAt": "2026-11-19T15:45:23.662Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-store-release-20261119",
+  "deletedFiles": []
+}

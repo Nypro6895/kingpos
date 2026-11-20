@@ -1,0 +1,44 @@
+{
+  "files": [
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/owner-notebook-menu.tsx",
+    "app/pos/owner-notebook-menu.css"
+  ],
+  "changeId": "pos-ios-tablet-layout-20261028",
+  "validation": [
+    {
+      "result": "passed",
+      "evidence": "artifacts/pos-ios-tablet/verification.json",
+      "name": "8 emulated responsive layouts and actual checkout/check-in browser checks"
+    },
+    {
+      "name": "Focused TypeScript, ESLint, canonical patch apply check",
+      "result": "passed"
+    },
+    {
+      "result": "pending",
+      "evidence": "artifacts/pos-ios-tablet/HANDOFF.txt",
+      "name": "Owner visual review, assembled release build, authenticated pages and physical iOS"
+    }
+  ],
+  "kind": "change",
+  "source": {
+    "snapshot": "artifacts/pos-ios-tablet/frozen"
+  },
+  "summary": "Owner review candidate: iPhone bottom navigation, iPad notebook gutter and POS viewport/scroll fixes; Windows unchanged in fixture; no deploy",
+  "supersedes": [
+    "mobile-notebook-menu-20261028"
+  ],
+  "dependencies": [],
+  "status": "needs-integration",
+  "channels": [
+    "web"
+  ],
+  "id": "6ef0ead8-caaf-40a6-aba4-1fd53ff82773",
+  "recordedAt": "2026-10-29T04:21:16.803Z",
+  "worktree": "C:\\Reylumi-worktrees\\pos-ios-tablet-layout-20261028",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

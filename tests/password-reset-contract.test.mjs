@@ -61,7 +61,8 @@ test("reset password page consumes recovery tokens and updates the user password
   assert.match(resetForm, /params\.get\("access_token"\)/);
   assert.match(resetForm, /params\.get\("refresh_token"\)/);
   assert.match(resetForm, /supabase\.auth\.setSession\(\{/);
-  assert.match(resetForm, /supabase\.auth\.updateUser\(\{\s*password: newPassword,\s*\}\)/);
+  assert.match(resetForm, /fetch\("\/api\/auth\/recovery-password"/);
+  assert.match(read("app/api/auth/recovery-password/route.ts"), /auth\.getUser\(token\)/);
   assert.match(resetForm, /Password updated\. Please log in with your new password\./);
 });
 

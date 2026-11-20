@@ -1,0 +1,12 @@
+.banner { background: #f0fdfa; border-bottom: 1px solid #cce8e2; color: #173f3a; font-family: var(--font-geist-sans), Arial, sans-serif; }
+.inner { display: flex; align-items: flex-start; gap: 10px; max-width: 700px; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 8px 10px 14px; }
+.icon { width: 44px; height: 44px; border-radius: 11px; flex: 0 0 44px; }
+.content { flex: 1; min-width: 0; }
+.title { display: block; font-size: 14px; line-height: 20px; font-weight: 650; }
+.description { margin: 3px 0 5px; font-size: 12px; line-height: 18px; color: #43655f; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; }
+.primary { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; border-radius: 9px; padding: 0 12px; background: #0f766e; color: white; text-decoration: none; font-size: 12px; font-weight: 650; }
+.textAction { display: inline-flex; min-height: 44px; align-items: center; padding: 0; border: 0; background: transparent; color: #185b53; text-decoration: none; font-size: 12px; cursor: pointer; }
+.close { display: inline-flex; flex: 0 0 44px; width: 44px; min-height: 44px; align-items: center; justify-content: center; margin: -5px 0 0 -8px; border: 0; background: transparent; color: #43655f; font-size: 25px; line-height: 1; cursor: pointer; }
+.primary:focus-visible, .textAction:focus-visible, .close:focus-visible { outline: 2px solid #0f766e; outline-offset: 3px; }
+@media print { .banner { display: none; } }

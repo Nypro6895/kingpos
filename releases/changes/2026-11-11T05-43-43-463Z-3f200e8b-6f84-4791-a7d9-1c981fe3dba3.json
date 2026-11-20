@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "checkin-approved-final-20261111",
+  "status": "needs-integration",
+  "summary": "Approved check-in states 01–10 implemented with shared artwork, settings and gift-session safeguards; local checks/build passed; unapproved POS layout excluded",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/customer-idle-screen.tsx",
+    "app/pos/customer-display/customer-idle-screen.css",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/gift-card/customer-gift-dialog.tsx",
+    "components/gift-card/gift-approved-dialog.css",
+    "components/gift-card/gift-artwork.tsx",
+    "components/gift-card/gift-modal-layer.tsx",
+    "lib/gift-display-appearance.ts",
+    "lib/pos-display-default-assets.ts",
+    "lib/checkin-presentation.ts",
+    "types/gift-card.ts",
+    "tests/checkin-design-ui.test.mjs",
+    "tests/gift-display-appearance.test.mjs",
+    "public/pos/checkin-shared-default.webp",
+    "public/gift-cards/shared-default.webp"
+  ],
+  "source": {
+    "commit": "ffd93c77af260edc7f5c50aa1ba0acdf82e46356",
+    "snapshot": "C:\\Reylumi-worktrees\\checkin-approved-final-20261111\\artifacts\\checkin-approved-final\\snapshot"
+  },
+  "dependencies": [
+    "checkin-design-settings-20261110"
+  ],
+  "validation": [
+    {
+      "name": "Actual UI states 01–10, edge cases, settings/QR, saved design/token binding and Gift public links",
+      "result": "passed",
+      "evidence": "artifacts/checkin-approved-final/tests.txt"
+    },
+    {
+      "name": "Final actual UI screenshot and failure-case suite",
+      "result": "passed",
+      "evidence": "artifacts/checkin-approved-final/final-ui-test.txt"
+    },
+    {
+      "name": "TypeScript and changed-source lint",
+      "result": "passed",
+      "evidence": "artifacts/checkin-approved-final/typecheck.txt"
+    },
+    {
+      "name": "Final production build and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/checkin-approved-final/build.txt"
+    },
+    {
+      "name": "Actual Next route, browser errors and source asset hash",
+      "result": "passed",
+      "evidence": "artifacts/checkin-approved-final/next-local-result.json"
+    },
+    {
+      "name": "Live paired backend, settlement and physical device acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "3f200e8b-6f84-4791-a7d9-1c981fe3dba3",
+  "recordedAt": "2026-11-11T05:43:43.463Z",
+  "worktree": "C:\\Reylumi-worktrees\\checkin-approved-final-20261111",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

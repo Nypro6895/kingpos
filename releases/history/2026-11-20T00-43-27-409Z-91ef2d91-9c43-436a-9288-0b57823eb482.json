@@ -1,0 +1,27 @@
+{
+  "kind": "release",
+  "summary": "QA-only iOS 1.0.1 (102) verified in existing internal TestFlight group; no product event or backend activation resolved",
+  "targets": {
+    "ios": {
+      "version": "1.0.1",
+      "evidence": {
+        "existingGroupReceipt": "apple102-internal-availability.json",
+        "productEventResolutionCount": 0,
+        "ci": "https://github.com/Nypro6895/kingpos/actions/runs/44641652693",
+        "physical": "Both actual installed102; iPad publicHelp-to-Privacy partial; iPhone Help not established; no full MFA/backend acceptance",
+        "backendActivated": false,
+        "appStoreSubmitted": false,
+        "ciFreshTests": "276/276;16hosts;0fail/skip",
+        "ciReceipt": "../native-r1/ci102-verified-r1/FINAL-HANDOFF.json"
+      },
+      "commit": "4b80a040f9257ff46512cc17d4916230b8fc7038",
+      "verified": true,
+      "status": "testflight-available",
+      "build": "102"
+    }
+  },
+  "changes": [],
+  "id": "91ef2d91-9c43-436a-9288-0b57823eb482",
+  "recordedAt": "2026-11-20T00:43:27.409Z",
+  "worktree": "C:\\Reylumi-worktrees\\mfa-access-enforcement-20261119-r1"
+}

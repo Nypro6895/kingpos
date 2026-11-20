@@ -1,0 +1,61 @@
+{
+  "kind": "change",
+  "changeId": "staff-hours-style-20261102",
+  "status": "ready",
+  "summary": "Combined release integration on exact live source; preserve newer shipped Settings behavior and freeze validated scoped changes",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/booking-setup/booking-setup-editors.tsx",
+    "app/booking-setup/booking-setup.css",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/staff-hours-booking.tsx",
+    "app/settings/staff-hours-booking-actions.ts",
+    "tests/staff-hours-settings-runtime.test.mjs",
+    "tests/staff-hours-booking-runtime.test.mjs",
+    "tests/staff-hours-booking-action.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\settings-combined-release-20261102\\artifacts\\settings-release\\frozen",
+    "commit": "6c898b8f3cf6918364adb675ec56192f91e0c335"
+  },
+  "validation": [
+    {
+      "name": "Fresh assembled production build and full TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/build-final.log"
+    },
+    {
+      "name": "Actual Settings panels, permissions, draft/save/closure, retention, staff hours and profile browser tests",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/regression-final.log"
+    },
+    {
+      "name": "Scoped ESLint: zero errors, one inherited hook warning",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/lint.log"
+    },
+    {
+      "name": "Unmodified live source retained",
+      "result": "passed",
+      "evidence": "artifacts/settings-release/baseline-source-manifest.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "id": "5d6b8e1b-5cfa-4a69-ab05-94388b8d36af",
+  "recordedAt": "2026-11-02T15:50:29.830Z",
+  "worktree": "C:\\Reylumi-worktrees\\settings-combined-release-20261102",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/booking-setup/booking-setup-editors.tsx": "96ae6ca24c5c0f0a2dadb04396ad31cb950c445e1c461cb2a3f60ffe9b5aa67b",
+    "app/booking-setup/booking-setup.css": "efd5af106cf820505180b7caefc5c6906c61f061032d472d2cadced1c852d276",
+    "app/settings/salon-settings-panels.tsx": "886cf0b891801505a527cde5d05ab33ae5b7a75afcdc344405be189d5f50bb93",
+    "app/settings/staff-hours-booking.tsx": "e0a873cfd980c34bc2ae35dda384009ff4d68de526014b51b493c5756381b406",
+    "app/settings/staff-hours-booking-actions.ts": "6d6614bc763d0909d6f3fc6f092465bc72a75f64f1d54a90f813f4c0efcb760f",
+    "tests/staff-hours-settings-runtime.test.mjs": "fc7add46b848e7181ad275e1b684855918bde30787e4a52587a438ccdb6369db",
+    "tests/staff-hours-booking-runtime.test.mjs": "dce1b70b613943e6ee9c32d6b344945366e05ba15da9b3f59ec91b95f91baaba",
+    "tests/staff-hours-booking-action.test.mjs": "9ecef5808140d386c46431b24e5676273e95769d445948d01575c4690314f7c0"
+  }
+}

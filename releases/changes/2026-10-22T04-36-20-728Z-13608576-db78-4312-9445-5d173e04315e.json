@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "changeId": "r10-native-bundle-provenance-20261022",
+  "status": "ready",
+  "summary": "Corrected LF-byte frozen revision of completed R10 packaging-only delta. Six executable/config/test inputs are unchanged from13 passed tests; documentation CRLF normalized to already committed Git blob; fresh real R10 prepare/verify passed again. Supersedes first ready snapshot to ensure frozen hashes exactly match Git/patch bytes. No product behavior change or publication.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "scripts/ios/local-bundle-release.mjs",
+    "scripts/ios/local-bundle-release.test.mjs",
+    "ios/scripts/check-build.sh",
+    "ios/scripts/testflight.sh",
+    ".github/workflows/reylumi-ios-testflight.yml",
+    ".github/workflows/reylumi-ios-check.yml",
+    "ios/TESTFLIGHT-SETUP.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\frozen-source-lf",
+    "commit": "57bd13bed0f37f99c2057d4d968e532208e65938",
+    "baselineCommit": "7e284b8749d79a990abedf8dade33c6909949903"
+  },
+  "dependencies": [
+    "reylumi-final-r10-services-invariants-integration-20261022"
+  ],
+  "validation": [
+    {
+      "name": "13 targeted prepare/verify/clean/symlink/gate tests",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\final-targeted-tests.log"
+    },
+    {
+      "name": "targeted ESLint, Node syntax, both bash syntax and workflow YAML parsing",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\final-verification.json"
+    },
+    {
+      "name": "real R10 production-mode clean bundle prepare and verify with allowlisted existing public config",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\final-real-r10-bundle-provenance.json"
+    },
+    {
+      "name": "real CLI rejects changed tracked source, changed generated mapping and altered packaged-copy bytes; exact original source restored",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\final-verification.json"
+    },
+    {
+      "name": "selected source hashes unchanged across final verification and frozen snapshot",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\final-verification-inputs.json"
+    },
+    {
+      "name": "LF frozen source matches all7 committed Git blobs exactly; only documentation EOL differed, six executable/config/test inputs unchanged; fresh exact-LF prepare/verify pass",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\r10-runtime\\packaging-implementation\\lf-freeze-alignment.json"
+    }
+  ],
+  "releasePrerequisites": [
+    "Integrate selected7-file delta plus journals into coordinator exact current production/native baseline; this implementation checkout is not a deployment baseline.",
+    "Use clean/frozen release checkout, Node24 and locked npm ci; all4 existing public config values must match intended baseline. Missing required CI Supabase configuration fails closed, never falls back to inherited bundle.",
+    "Run prepare then verify after final source commit and before any packaging. Hash/retain generated bundle, mappings and receipt, then use existing validation/archive/upload process.",
+    "Tailwind auto-discovers repository classes; excluded journal/artifact/build outputs remain a CSS reproducibility limitation. Keep clean/frozen checkout; this delta does not refactor style discovery.",
+    "Ready means this bounded packaging implementation passed source/local checks. No Mac, archive/sign/upload, integrated authenticated Simulator or TestFlight/physical-device acceptance performed by this task."
+  ],
+  "occurredAt": "2026-10-22T04:36:20.481Z",
+  "supersedesEvents": [
+    "1622f8cc-f99b-4e57-ba7c-6ea3b99b7657"
+  ],
+  "id": "13608576-db78-4312-9445-5d173e04315e",
+  "recordedAt": "2026-10-22T04:36:20.728Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-r10-packaging-20261022",
+  "deletedFiles": [],
+  "fileHashes": {
+    "scripts/ios/local-bundle-release.mjs": "ddaa5b7f54d5d6913ed34ea2575d38aa379d924f93a3e86617de5d6e7cf62c9f",
+    "scripts/ios/local-bundle-release.test.mjs": "3de5bf1816110155bfc3b6f02d1b786e1a72c4212ddf7c470e7fb0431b7998d0",
+    "ios/scripts/check-build.sh": "8404550c141306a2b3bf5c78618e54ae4f9d1d2e80adb13405cd4160c622297f",
+    "ios/scripts/testflight.sh": "8f7ba266e6e184e9619882a7cafc8b89ae4ac94e7c598d6ef5656d6b3d8a46b0",
+    ".github/workflows/reylumi-ios-testflight.yml": "8af1f452b8580f302abf3a8f160fd8c5c4502d2509db54914cb5de41937e3d7a",
+    ".github/workflows/reylumi-ios-check.yml": "d5c2dd9ed902b5b8c4837be693c008cbaa996d001f58ae3f735b68c42de900df",
+    "ios/TESTFLIGHT-SETUP.md": "7905740c964336cf31e0e064abdbe4fa3ec456a3d24293ebb79537d96b424936"
+  }
+}

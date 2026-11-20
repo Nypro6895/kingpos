@@ -1,0 +1,50 @@
+{
+  "kind": "release",
+  "summary": "Publish verified current-source web revision including readable wide Portable salon QR card; Windows0.7.3 receives hosted update; Market/Gift/Reward excluded",
+  "changes": [
+    "43cf5a35-e8b6-48e1-a77d-266730a41876",
+    "d22ed873-ac17-44ac-89dc-47e6da28c6d8",
+    "b5912f54-9380-4c2b-ae99-2e3f03715a02",
+    "d5a0348e-d93b-4ce5-9ea4-a95505871cad",
+    "3fa27627-e468-4d69-96c5-b369038fb1cf"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_AFsaE3G65kP9w5mHLJHnAVQUvKw9",
+      "baselineDeploymentId": "dpl_82omCD98ajxqjLMWRPtjyv2qRZV7",
+      "sourceSha256": "16bb818133303b96b5b11aa37a18c3cc81dd4d89c19f9d40f10b797aba12b6a3",
+      "overlaySha256": "e0e5e2c9d308278e5a22bfa5a4e96b3ca8d6200f8bda4db2a072489c78769c81",
+      "evidence": "artifacts/release-20261030/web-live-source-verified.json; artifacts/release-20261030/http-live-repair.json; artifacts/release-20261030/portable-live-qa.json"
+    }
+  },
+  "sourceCommit": "2365d977785b0bb442e645ad990c011c6ba608f3",
+  "windows": {
+    "version": "0.7.3",
+    "delivery": "hosted-web-update",
+    "newInstaller": false,
+    "downloadEvidence": "artifacts/release-20261030/portable-download-verified.json",
+    "liveEvidence": "artifacts/release-20261030/portable-live-qa.json"
+  },
+  "migration": {
+    "at": "2026-10-30T07:27:59.605Z",
+    "version": "20261030041000",
+    "name": "basic_personal_camera_checkin",
+    "entryRpc": "personal_checkin_entry(text)",
+    "remainingGateParts": 1,
+    "applied": true,
+    "transaction": true,
+    "evidence": "artifacts/release-20261030/hosted-qr-migration.png"
+  },
+  "held": [
+    "Market excluded by owner",
+    "Gift Card/Rewardlumi financial contract reconciliation",
+    "Universal Link signing/profile capability",
+    "Physical Camera and signed new native acceptance"
+  ],
+  "rollback": "Restore prior web alias only with current-alias guard; additive QR migration retained compatible and no data deleted",
+  "id": "ec69561f-8a8f-48ed-9978-3ba37af8895b",
+  "recordedAt": "2026-10-30T07:27:59.750Z",
+  "worktree": "C:\\Reylumi-worktrees\\full-release-excluding-market-20261030"
+}

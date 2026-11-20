@@ -1,0 +1,38 @@
+{
+  "kind": "change",
+  "changeId": "app-local-final-integration-fixtures-20261016",
+  "status": "ready",
+  "summary": "Refresh generated route-source inventory for actual extracted original UI modules and adapt binding-authority command fixture to current compile-pinned broker imports, preserving real original binding handler.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-route-inventory.generated.json",
+    "tests/app-local-staff-binding-command.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "seven route-inventory and original-binding-broker regressions",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/integration-fixture-tests.json"
+    },
+    {
+      "name": "inventory check and fixture lint",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/integration-fixture-tests.json"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\frozen-integration-fixture-2026-10-16T17-51-20-441Z"
+  },
+  "id": "3886822f-d0d7-4757-84a3-142cc6dc0d24",
+  "recordedAt": "2026-10-16T17:51:20.758Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-route-inventory.generated.json": "954b2cb4aee4efb1551d817ce89ed9bc69351b15ea5f79e2f7781074e2908e03",
+    "tests/app-local-staff-binding-command.test.mjs": "826315dd6b1e2925ea91ecbacb131b29d38a95e2674e252edaf490a606afdce0"
+  }
+}

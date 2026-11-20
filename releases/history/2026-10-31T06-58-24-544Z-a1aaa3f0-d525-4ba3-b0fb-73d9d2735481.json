@@ -1,0 +1,146 @@
+{
+  "kind": "release",
+  "summary": "Published agreed compact inline financial history and completed Portable settings. Saved edits show captured old/new, note and actor on their ticket/day/settings object; creation/draft/no-op are not edits. Preserves raw service/tip and calculated pay rules, actual payment records, strict salon/staff visibility and dated legacy notification navigation. Three validated forward migrations; source-bound existing-channel iPhone update.",
+  "changes": [
+    "6af3d793-8f8e-4e28-84e0-095e4dda33e2",
+    "db0ce53b-a945-4330-a486-46836a673702",
+    "88ebc68b-ac25-4089-b33d-1ce90cae5d85"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_9jHcgTRjA17bKmdhAzRLVruKS1zi",
+      "baselineDeploymentId": "dpl_8eVwGxHt425fkxYd9CwiSCiAnfHr",
+      "sourceCommit": "aba717a6d3072887fc18d263e50bb3749cf858ec",
+      "sourceSha256": "5a51c9523ae902bcb9b1f09a9ba97c5ea29d691fb5e57fe50eb074dafc3d8d88",
+      "overlaySha256": "c50e08cdd95167daf57ab37f8adbeb5799f19a0fc51bc3fa51522d9aa38f5425",
+      "sourceFiles": 3735,
+      "evidence": "artifacts/history-inline-release-20261031-v3/web-live-source-verified.json",
+      "httpEvidence": "artifacts/history-inline-release-20261031-v3/http-live.json",
+      "checks": 33,
+      "uiEvidence": "artifacts/history-inline-release-20261031-v3/authenticated-live-ui.json",
+      "portable": {
+        "version": "0.7.4",
+        "installerRebuilt": false,
+        "delivery": "hosted-web-update",
+        "evidence": "artifacts/history-inline-release-20261031-v3/windows-installer-live-smoke.json"
+      }
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "78",
+      "commit": "aba717a6d3072887fc18d263e50bb3749cf858ec",
+      "run": 41177201906,
+      "runAttempt": 1,
+      "sourceSha256": "513fbe3f56b6ff550d2f060a34f43bcb4ccf4416e280d0939921c81f805b84d3",
+      "bundleSha256": "9368300aa0e5a223cfd722bd8ffc6db99690da243fafea5979d17a948477b0fd",
+      "tests": 238,
+      "hostInvocations": 14,
+      "upload": "accepted",
+      "appleProcessing": "VALID",
+      "distribution": "Existing Reylumi Internal and Reylumi support groups",
+      "evidence": "artifacts/history-inline-release-20261031-v3/native-source-upload-verified.json",
+      "availabilityEvidence": "artifacts/history-inline-release-20261031-v3/availability-verified.json",
+      "appStoreSubmitted": false,
+      "appStorePublished": false,
+      "physicalAcceptance": false
+    }
+  },
+  "database": {
+    "project": "bowkoiprvqwjilwaxhda",
+    "versions": [
+      {
+        "file": "20261030100000_history_notification_semantics.sql",
+        "version": "20261030100000",
+        "sha256": "44d04227a8d9ac5dd5906ceca3996adb57e5f909fe5a77800dce16bc665335dc"
+      },
+      {
+        "file": "20261031050000_inline_financial_history_context.sql",
+        "version": "20261031050000",
+        "sha256": "317b7a97059f788b5f3095d7f48df3f92e317c3a3fdf1f1f3c1cf7d6cd77c4a7"
+      },
+      {
+        "file": "20261031051000_portable_daily_input_history.sql",
+        "version": "20261031051000",
+        "sha256": "834f84bc594ba7c90d7c42c7bf2c1807db1a9e3a94c005a923c7f06025060b24"
+      }
+    ],
+    "verified": true,
+    "evidence": "artifacts/history-inline-release-20261031-v3/production-migrations-verified.json",
+    "singleTransaction": true,
+    "financialAmountsRecalculated": false,
+    "paymentMutations": false,
+    "auditFactsAndNotificationReadStatePreserved": true
+  },
+  "validation": {
+    "productionBuild": "passed",
+    "typeScript": "passed",
+    "lint": "0 errors; existing warnings documented",
+    "financialFocusedChecks": 93,
+    "realMigrations": 355,
+    "fullStackChecks": 12,
+    "browserWidths": [
+      320,
+      390,
+      768,
+      1280
+    ],
+    "authenticatedLive": {
+      "role": "Owner",
+      "widths": [
+        390,
+        1280
+      ],
+      "staffSession": false,
+      "portableSession": false
+    },
+    "originalCombinedBaseline": "dpl_Dkz9sFDas79W7zYD1H6S6UyLQop6",
+    "newLegacyNavigation": "21 web/native Owner/Staff browser cases, 15 existing cases, 10 regression tests",
+    "notificationVisibility": "4 strict-scope/suppression +4 destination regression tests",
+    "physicalDeviceAcceptance": false
+  },
+  "superseded": {
+    "candidate": "dpl_82yccL1vhYfRokUphYkwPMVMQz9b",
+    "commit": "1bdba52b987060d7a81eebfc5ac809af34d37bd3",
+    "customDomainPromoted": false,
+    "nativeRun": 41174528544,
+    "conclusion": "cancelled",
+    "signUpload": "skipped; no accepted upload receipt",
+    "evidence": "artifacts/history-inline-release-20261031/native-cancellation-verified.json"
+  },
+  "excluded": [
+    "Developer Market incomplete owner/provider/security acceptance",
+    "Check Writer paid sales activation and printer/provider acceptance",
+    "Universal Links provisioning/capability changes",
+    "Unfinished bootstrap/comment-count investigations",
+    "Real financial test transactions",
+    "App Store submission or physical-device acceptance"
+  ],
+  "evidenceHashes": {
+    "web-live-source-verified.json": "e6914fea6c32212e6a348e127a3275bb36ca49c11b045559f7edf22ad2d8281d",
+    "http-live.json": "c80851bd46255ae26f6a591a08b2336fbdbc57d9d7e18a9adddb19060075bf9c",
+    "native-source-upload-verified.json": "d17b808d1f1c367dc5ffe3ba86db7616219ec6f8b6c71ef1e543e6f66a41109b",
+    "availability-verified.json": "5d9081032d3b2a34f517d2532612b9eefec4eca88ca0049aeba48c444bc864a7",
+    "production-migrations-verified.json": "73783a1acefed760837a9b2e9d5bc90e45fccedf009502e4dd7f156365b9b92b",
+    "authenticated-live-ui.json": "311959b80a0d5832e672db5421841229ac5aac786769b8e4f95445dff157177a"
+  },
+  "presentationCorrection": {
+    "baselineDeployment": "dpl_8eVwGxHt425fkxYd9CwiSCiAnfHr",
+    "baselineSource": "52236a328acf36a3c0742ca9d409d6ab4952466a",
+    "baselineNativeBuild": "77",
+    "interimEvent": "3da914f8-6664-4ade-8187-0814de895596",
+    "changes": [
+      "Unlinked legacy records never imply a known number of edits; mixed-source secondary evidence remains collapsed and labeled",
+      "Legacy-only evidence opens directly on its ticket; exact event links retain reliable counts",
+      "Owner Today finalized sales-ticket list matches finalized count; open/cancelled focus stays a reference context"
+    ],
+    "financialFormulaDataOrPermissionChanges": false,
+    "evidence": "artifacts/history-inline-combined/legacy-ticket-records/verification.json"
+  },
+  "id": "a1aaa3f0-d525-4ba3-b0fb-73d9d2735481",
+  "recordedAt": "2026-10-31T06:58:24.544Z",
+  "worktree": "C:\\Reylumi-worktrees\\history-inline-combined-20261031"
+}

@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "ticket-staff-turns-20261031",
+  "status": "needs-integration",
+  "summary": "Show staff name followed by existing big | small turn values in shared owner/portable ticket summary; big bold, small muted, keep turn pair together",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos-tickets/closed-ticket-correction-form.tsx"
+  ],
+  "source": {
+    "snapshot": "artifacts/ticket-staff-turns-20261031/source"
+  },
+  "validation": [
+    {
+      "name": "Scoped TypeScript and ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Six existing ticket edit contracts",
+      "result": "passed"
+    },
+    {
+      "name": "Source: owner and portable share DailyPosTicketCard, portable passes running_turns; existing renderTurnDisplay reused without recalculation",
+      "result": "passed"
+    },
+    {
+      "name": "Current baseline integration and authenticated physical iPhone visual acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "cb590573-c3d2-4870-8470-edbb3f23eb28",
+  "recordedAt": "2026-11-01T00:58:32.879Z",
+  "worktree": "C:\\Reylumi-worktrees\\ticket-calendar-history-20261031",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

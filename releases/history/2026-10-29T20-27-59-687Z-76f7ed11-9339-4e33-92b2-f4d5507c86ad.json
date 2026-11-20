@@ -1,0 +1,39 @@
+{
+  "kind": "release",
+  "summary": "Additive source-snapshot receipt correction for already verified first-wave web8Bi/TestFlight69; original receipts retained; no runtime difference or redeploy",
+  "changes": [
+    "6bf33927-242e-4211-aefa-04452e7147ca"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_8BiU47gGHzC16dZR7tpKXtupmWMY",
+      "baselineDeploymentId": "dpl_DQAyjLPjF7yApXvJaKhLxwdVzxi9",
+      "sourceSha256": "b67eff284f8159153cf11ac0b90b33ccee1d38c7e1e0585f4a2e7c2e8f1b7cdc",
+      "overlaySha256": "c97728e19171bf594cd4b5539007cbc277b6141470d2a422469db3049928a1ea",
+      "evidence": "artifacts/release-20261029/web-live-source-verified.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "69",
+      "commit": "de99b2fede4745a784a7a8383c70ab496436ed86",
+      "evidence": "artifacts/release-20261029/availability-verified.json"
+    }
+  },
+  "correctsRelease": "cf7b3391-cb83-4468-a120-5cb7b4c4ece6",
+  "correctsChange": "866ea130-d9ed-4ed4-82b5-6f7ff850de0f",
+  "sourceCorrection": {
+    "files": [
+      "app/pos/owner-local-panels.tsx",
+      "tests/settings-grouped-editors.test.mjs"
+    ],
+    "reason": "Git normalized CRLF in an extra integrated file; corrected snapshot uses exact committed/deployed bytes",
+    "semanticChange": false
+  },
+  "id": "76f7ed11-9339-4e33-92b2-f4d5507c86ad",
+  "recordedAt": "2026-10-29T20:27:59.687Z",
+  "worktree": "C:\\Reylumi-worktrees\\remaining-chats-release-20261029"
+}

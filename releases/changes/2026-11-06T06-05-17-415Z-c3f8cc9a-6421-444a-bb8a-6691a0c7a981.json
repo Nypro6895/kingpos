@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "hosted-back-controls-20261106",
+  "status": "needs-integration",
+  "summary": "Remove unwanted native Back to app bar from authentication and public support; full source route inventory and transition regression tests",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/ReylumiTests/NavigationPolicyTests.swift",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift",
+    "artifacts/hosted-back-controls-20261106/report.md",
+    "artifacts/hosted-back-controls-20261106/route-audit.json",
+    "artifacts/hosted-back-controls-20261106/baseline-shell-test.txt"
+  ],
+  "source": {
+    "commit": "4a42e7de6a919f777d3a49030bfa1639f354929c",
+    "snapshot": "C:\\Reylumi-worktrees\\hosted-back-controls-20261106"
+  },
+  "validation": [
+    {
+      "name": "Full route source audit: 162 reference and 138 canonical pages; 30 auth variants",
+      "result": "passed",
+      "evidence": "artifacts/hosted-back-controls-20261106/route-audit.json"
+    },
+    {
+      "name": "NativeBridge runtime 7/7 and diff check",
+      "result": "passed"
+    },
+    {
+      "name": "Existing web shell suite: 2 baseline failures reproduced unchanged",
+      "result": "failed",
+      "evidence": "artifacts/hosted-back-controls-20261106/baseline-shell-test.txt"
+    },
+    {
+      "name": "Xcode XCTest, build and physical iPhone acceptance; latest native source integration",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "c3f8cc9a-6421-444a-bb8a-6691a0c7a981",
+  "recordedAt": "2026-11-06T06:05:17.415Z",
+  "worktree": "C:\\Reylumi-worktrees\\hosted-back-controls-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

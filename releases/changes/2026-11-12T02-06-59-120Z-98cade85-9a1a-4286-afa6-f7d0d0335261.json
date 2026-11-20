@@ -1,0 +1,67 @@
+{
+  "kind": "change",
+  "changeId": "explore-filters-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Implemented transactional service/price/style filter sheet, area-preserving clear and app-local filter forwarding; public-address audit recorded; existing booking ranking timeout remains unresolved Original handoff 4b82665a-1ed7-48db-ac2d-035cf65b448b. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/explore/explore-client.tsx",
+    "app/explore/explore-search-filters.tsx",
+    "lib/explore-filter-state.ts",
+    "lib/app-local-explore-server.ts",
+    "lib/app-local-explore-metadata.ts",
+    "tests/explore-filters.test.mjs",
+    "tests/explore-home-scope.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "explore-zip-scope-20261111"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "98cade85-9a1a-4286-afa6-f7d0d0335261",
+  "recordedAt": "2026-11-12T02:06:59.120Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/explore/explore-client.tsx": "50d6e0afa32ea05622e7ad88a86ba01ac82c30680d1ecfec6a903e37ed7a4845",
+    "app/explore/explore-search-filters.tsx": "6e3ff10a6dae1c0c98115a3a9b9ea520c975e4c319015be67958521cc3b2e8f8",
+    "lib/explore-filter-state.ts": "170517094c036757fe791e132017d244067918e322e416eb2770974d28f5b0f4",
+    "lib/app-local-explore-server.ts": "4fd2842abfacd51120bf6f01f91f3a5a8b954a39771c54f322eb86f8c448959a",
+    "lib/app-local-explore-metadata.ts": "454ec7830b34fc48ea4811bf1561987ae90ff2b4b1eafb9f60513745ff9a3c8c",
+    "tests/explore-filters.test.mjs": "8d1083c215dbe3b4b0ba9d50c2d63a5035d700582ed5f52bc28727773c2ea225",
+    "tests/explore-home-scope.test.mjs": "c7ee7fc95a1671efe6a422e34dbf6f405a67554d140adfb9264b22e7a227b96a"
+  }
+}

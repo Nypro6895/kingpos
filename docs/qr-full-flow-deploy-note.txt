@@ -1,0 +1,82 @@
+QR FULL-FLOW INTEGRATION — 2026-10-25
+Change ID: qr-full-flow-20261025
+Status: locally validated; queued for ONE combined release. NOT DEPLOYED.
+
+Combined release scope and order
+1. staff-scan-20261025 — Staff Scan, Working/Holding, amounts, Done and POS takeover.
+2. personal-qr-20261025 — Personal identity, account check-in, POS Ready and History.
+3. qr-full-flow-20261025 — integrated-schema fixes and full-flow regression evidence.
+Do not deploy these items independently. Keep each earlier immutable snapshot;
+apply this follow-up delta after its dependencies when assembling the live baseline.
+
+Migration order (after their existing installed dependencies)
+- 20261025170000_staff_scan_workspace.sql
+- 20261025190000_personal_qr.sql
+- 20261025200000_qr_flow_integration.sql
+All 290 current migration files were applied to a disposable Supabase database.
+Its SHA256 list is in artifacts/qr-full-flow-20261025/qr-full-flow-fixture.json.
+That list is test provenance, not authorization to deploy unrelated pending work.
+
+Fixes established by this follow-up
+- Personal check-in now issues the canonical Check-in Receipt number from the
+  salon's daily counter. Previously it fell back to the relay's global identity
+  and did not create the daily receipt row. Customer QR, Staff and POS now agree.
+- One private receipt issuance core supports both the existing paired display
+  and authenticated Personal check-in. Reusing an account-owned visit created
+  earlier at the front desk preserves that visit's original metadata. Anonymous
+  display callers retain their origin/pairing checks; the helper is not callable
+  through client RPC roles. Existing counters/receipts are reused, not reset.
+- Ready is consumed when a visit leaves Waiting. Cancelling an empty Holding
+  cannot revive the old Ready banner. Retrying the old request remains harmless;
+  an intentional new Ready request after cancellation can notify the customer.
+- Personal service selection now reflects the existing check-in maximum of
+  eight services. UI blocks excess choices and the RPC returns a specific error.
+  Staff service/amount lines keep their existing separate limits.
+
+Integrated validation
+- tests/personal-qr-full-schema.integration.test.mjs uses actual Supabase
+  PostgreSQL 17, Auth, PostgREST, RLS, all migrations and the installed financial
+  writer. No stand-in financial, permission or identity functions are installed.
+- Owner scan is read-only; Send retries reuse the existing invitation. The
+  existing public Accept request RPC binds the intended account and preserves
+  a verified existing Staff profile and its work history. Other users are denied.
+- Personal check-in validates paired catalog/services, preserves one visit,
+  requested services, History visibility and receipt numbering.
+- Ready permissions, notification deduplication and customer privacy are checked.
+- Staff Working/Holding, saved prices, empty cancellation and Done retries are
+  exercised against the real schema. Holding does not count completed turns.
+- POS settles before Staff Done; repeated Submit returns the same ticket. The
+  actual receipt/earnings rows are created once and are visible through Staff
+  listing RLS. Customer History reads the same final receipt; outsiders cannot.
+- Portable POS checks real signed capabilities, edits/settles work and rejects
+  invalid/revoked access. Stale Staff revisions cannot overwrite or reopen work.
+- Today booking check-in preserves its status event and appointment linkage;
+  final POS ticket and History evidence refer to that original booking/visit.
+- Concurrent check-in/scan/Submit requests are tested through parallel real
+  PostgREST calls; visit, Holding, receipt and financial rows must remain unique.
+- Extra regressions cover the actual Personal/Owner/Staff/POS UI components,
+  offline/reconnect cleanup, account reset, service limits, History UI, exact QR
+  formats, navigation/auth and existing Check-in Receipt/Service Relay behavior.
+- Fresh isolated Next production build includes TypeScript. Scoped ESLint passes.
+- Exact counts and results: artifacts/qr-full-flow-20261025/validation.json;
+  full-schema.log, regressions.log, lint.log and build.log contain test evidence.
+
+Isolation and practical limits
+- Containers run without external network, published host ports, bind mounts,
+  persistent credentials or notification workers. Database storage is ephemeral.
+  Cleanup verifies ownership, removes only these containers and preserves prior
+  containers. No production credentials, customer records or payments were used.
+- Cashier acknowledgement keeps the existing POS payment behavior. This test
+  writes synthetic receipts; it does not charge a card or test external delivery.
+- This is integrated-schema verification, not a production migration or live
+  deployment. Merge into the exact current production baseline, rerun relevant
+  checks/build, and preserve all unrelated shipped features before publication.
+- Physical iPhone Safari/WKWebView camera, keyboard, background/resume and two
+  device behavior remain release QA. No native source, new permission or bridge
+  contract changed; assess native build from the assembled release if needed.
+
+Release handoff
+- Frozen before/source, scoped patch and source hashes are under
+  artifacts/qr-full-flow-20261025. Merge this delta, not the dirty checkout.
+- The completion journal event retains needs-integration until current live
+  source assembly and outstanding device QA are resolved by the release task.

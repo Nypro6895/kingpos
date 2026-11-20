@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, Menu, dialog, ipcMain, session, safeStorage, screen } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, session, safeStorage, screen, shell } = require('electron');
 const { join } = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { createHash } = require('node:crypto');
@@ -7,6 +7,9 @@ const { validConfig, allowedPage } = require('./policy.cjs');
 const { Vault } = require('./vault.cjs');
 const { OfflineShell } = require('./offline-shell.cjs');
 const { UpdatePlan } = require('./update-plan.cjs');
+const { prepareUpdateInstaller, launchUpdateInstaller } = require('./update-installer.cjs');
+const { receiptHtml } = require('./checkin-receipt.cjs');
+const { createReceiptPrinter } = require('./receipt-print.cjs');
 const config = validConfig({ ...require('./config.json'), ...(!app.isPackaged && process.env.KINGPOS_DESKTOP_TEST_ORIGIN ? { origin: process.env.KINGPOS_DESKTOP_TEST_ORIGIN, channel: 'test', updates: false } : {}) });
 // Stable across upgrades; never inside the installation directory. Test and
 // production have separate profiles and cannot accidentally share credentials.
@@ -17,6 +20,8 @@ const originId = createHash('sha256').update(config.origin).digest('hex').slice(
 let offlineShell, recoveryTimer, openingPos = false;
 let win, customerWindow, displayToken, vault, updater, updateReady = false, installing = false;
 let updatePlan, updateVersion = '', updatePhase = 'unavailable', updateMessage = '', checkingUpdate = false;
+let updateCheckPromise, updateDownloadPromise, installRequest, updateProgress = 0;
+let receiptPrinter;
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } });
@@ -58,6 +63,26 @@ async function openDisplay() {
   catch { closeDisplay(); throw Error('Connect once to prepare the customer screen, then try again.'); }
 }
 async function start() {
+  let printingReceipt = false;
+  const printedCheckins = new Set();
+  ipcMain.handle('kingpos:print-checkin', async (event, receipt) => {
+    if (!trustedDisplay(event)) throw Error('Access denied');
+    const printKey = `${displayToken}:${receipt?.visitId}`;
+    if (printedCheckins.has(printKey) && receipt?.reprint !== true) return;
+    if (printingReceipt) throw Error('Printer is busy. Please retry.');
+    const html = receiptHtml(receipt);
+    printingReceipt = true;
+    const printWindow = new BrowserWindow({ show: false, webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false, webSecurity: true } });
+    printWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    try {
+      await printWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
+      const printers = await printWindow.webContents.getPrintersAsync();
+      if (!printers.some(printer => printer.isDefault)) throw Error('Set your receipt printer as the Windows default printer, then retry.');
+      await new Promise((resolve, reject) => printWindow.webContents.print({ silent: true, printBackground: true, color: false, margins: { marginType: 'none' }, pageSize: { width: 80000, height: 160000 } }, (ok, reason) => ok ? resolve() : reject(Error(reason || 'Receipt printing failed. Please retry.'))));
+      printedCheckins.add(printKey);
+      if (printedCheckins.size > 1000) printedCheckins.delete(printedCheckins.values().next().value);
+    } finally { printWindow.destroy(); printingReceipt = false; }
+  });
   app.setAppUserModelId(config.channel === 'test' ? 'com.kingpos.portable.test' : 'com.kingpos.portable');
   if (!safeStorage.isEncryptionAvailable()) throw Error('Windows secure storage is unavailable.');
   vault = new Vault(join(app.getPath('userData'), 'data', originId), safeStorage);
@@ -70,6 +95,13 @@ async function start() {
       if (sameOrigin && !['GET','HEAD'].includes(request.method) && request.initiatorOrigin === config.origin) headers.set('Origin', config.origin);
       return partition.fetch(sameOrigin ? new Request(request, {credentials:'include', headers}) : request, { bypassCustomProtocolHandlers: true });
     });
+  receiptPrinter=createReceiptPrinter({BrowserWindow,session,offlineShell,vault});
+  ipcMain.handle('kingpos:receipt-print',async(event,request)=>{
+    if(!trusted(event))throw Error('Access denied');
+    if(request?.method==='readiness')return offlineShell.printReadiness(request.scope);
+    if(request?.method==='print')return receiptPrinter.print(request.job);
+    throw Error('Invalid receipt action');
+  });
   // Restore only the app's own session cookies, encrypted under this Windows user.
   // Explicit sign-out removes them through the same cookie change listener.
   const names = ['kingpos-portable-pos-key-id', 'kingpos-portable-pos-session', 'kingpos-workspace-device'];
@@ -93,7 +125,7 @@ async function start() {
   });
   ipcMain.on('kingpos:offline-lock', event => {
     if (!trusted(event)) { event.returnValue = false; return; }
-    offlineShell.lock(); event.returnValue = true;
+    receiptPrinter?.cancel(); offlineShell.lock(); event.returnValue = true;
   });
 
   if (!app.isPackaged && process.env.KINGPOS_DESKTOP_TEST_OFFLINE === '1') {
@@ -145,7 +177,8 @@ async function start() {
     if (!trusted(event)) throw Error('Access denied');
     if (request?.method === 'state') return updateState();
     if (request?.method === 'later') { updatePlan.set('', null); return updateState(); }
-    if (request?.method === 'now') { await installUpdate(true); return updateState(); }
+    if (request?.method === 'download') { await downloadUpdate(); return updateState(); }
+    if (request?.method === 'now') { await requestUpdateInstall(true); return updateState(); }
     throw Error('Invalid action');
   });
   ipcMain.handle('kingpos:retry-open', event => {
@@ -153,6 +186,19 @@ async function start() {
         new URL(event.senderFrame.url).pathname !== new URL(pathToFileURL(join(__dirname, 'unavailable.html')).href).pathname ||
         !event.senderFrame.url.startsWith('file:')) throw Error('Access denied');
     return loadPos();
+  });
+  ipcMain.handle('kingpos:application-action', async (event, action) => {
+    if (!trusted(event)) throw Error('Access denied');
+    if (action === 'minimize') { win.minimize(); return; }
+    if (['zoomIn', 'zoomOut', 'resetZoom'].includes(action)) {
+      const zoom = win.webContents.getZoomLevel();
+      win.webContents.setZoomLevel(action === 'resetZoom' ? 0 : Math.max(-3, Math.min(3, zoom + (action === 'zoomIn' ? 0.5 : -0.5))));
+      return;
+    }
+    if (!['help', 'reopen', 'offline', 'updates', 'about'].includes(action)) throw Error('Invalid action');
+    const item = Menu.getApplicationMenu()?.getMenuItemById('portable-' + action);
+    if (!item?.click) throw Error('Application action unavailable');
+    await item.click(item, win);
   });
   ipcMain.on('kingpos:menu' , event => { if (trusted(event)) Menu.getApplicationMenu()?.popup({ window: win }); });
   win = new BrowserWindow({ width: 1440, height: 960, minWidth: 900, minHeight: 650,
@@ -208,32 +254,43 @@ async function showUnavailable(message) {
 function setupMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'KingPOS', submenu: [
-      { label: 'Open POS again', click: async () => {
+      { id: 'portable-help', label: 'Help / Hướng dẫn sử dụng', click: async () => {
+        try { await shell.openExternal('https://reylumi.com/help/windows-portable'); }
+        catch { await dialog.showMessageBox(win, { message: 'Help could not open / Không mở được hướng dẫn', detail: 'Connect to the internet and open https://reylumi.com/help/windows-portable in your browser. / Kết nối internet và mở địa chỉ này trong trình duyệt.' }); }
+      } },
+      { id: 'portable-reopen', label: 'Open POS again', click: async () => {
         const { response } = await dialog.showMessageBox(win, { buttons: ['Cancel', 'Open'], defaultId: 0, cancelId: 0, message: 'Open POS again?', detail: 'Saved tickets will remain on this device.' });
         if (response === 1) await loadPos();
       } },
-      { label: 'Offline readiness', click: () => dialog.showMessageBox(win, { message: offlineShell.cached('/pos/portable') ? 'Ready for offline use' : 'Offline setup is not finished', detail: offlineShell.cached('/pos/portable') ? 'You can close and reopen this app without internet. Saved tickets will upload when the POS server is available.' : 'Connect to your POS server, sign in and keep the POS open while its files are saved.' }) },
-      { label: 'Check for updates', click: () => checkUpdate(true) },
-      { label: 'Install downloaded update', click: () => installUpdate() },
-      { label: 'About KingPOS', click: () => dialog.showMessageBox(win, { message: `${profile} ${app.getVersion()}`, detail: config.channel === 'test' ? 'Test version. Connects to the test server; not a production release.' : 'Windows · one checkout. Saved tickets stay on this Windows account.' }) },
+      { id: 'portable-offline', label: 'Offline readiness', click: () => dialog.showMessageBox(win, { message: offlineShell.cached('/pos/portable') ? 'Ready for offline use' : 'Offline setup is not finished', detail: offlineShell.cached('/pos/portable') ? 'You can close and reopen this app without internet. Saved tickets will upload when the POS server is available.' : 'Connect to your POS server, sign in and keep the POS open while its files are saved.' }) },
+      { id: 'portable-updates', label: 'Check for updates', click: () => checkUpdate(true) },
+      { label: 'Download and install update', click: async () => {
+        await requestUpdateInstall();
+        if (updateMessage && win && !win.isDestroyed()) await dialog.showMessageBox(win, { message: updateMessage });
+      } },
+      { id: 'portable-about', label: 'About KingPOS', click: () => dialog.showMessageBox(win, { message: `${profile} ${app.getVersion()}`, detail: config.channel === 'test' ? 'Test version. Connects to the test server; not a production release.' : 'Windows · one checkout. Saved tickets stay on this Windows account.' }) },
       { type: 'separator' }, { role: 'quit', label: 'Close app' },
     ] }, { label: 'View', submenu: [{ role: 'togglefullscreen' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }] },
   ]));
 }
 function updateState() {
-  return { phase: updatePhase, version: updateVersion, scheduledAt: null, message: updateMessage };
+  return { phase: updatePhase, version: updateVersion, currentVersion: app.getVersion(), progress: updateProgress, scheduledAt: null, message: updateMessage };
 }
 function setupUpdater() {
-  if (!app.isPackaged || !config.updates || (config.channel === 'release' && !config.publisher)) return;
+  if (!app.isPackaged || (!config.updates && config.channel !== 'online') || (config.channel === 'release' && !config.publisher)) return;
   updater = require('electron-updater').autoUpdater;
   updater.autoDownload = false;
   updater.autoInstallOnAppQuit = false;
   updater.allowDowngrade = false;
   updater.disableWebInstaller = true;
-  if (config.channel === 'test') updater.disableDifferentialDownload = true;
+  if (config.channel === 'test' || config.channel === 'online') updater.disableDifferentialDownload = true;
+  // The existing unsigned Online channel uses a checksum-verified installer
+  // from Reylumi, initiated by the user. Signed release policy stays enforced.
+  if (config.channel === 'online') updater.setFeedURL({ provider: 'generic', url: config.origin + '/api/pos/windows-update/' });
   updatePhase = 'idle';
-  updater.on('error', () => { updateMessage = 'Unable to download the update. We will try again when connected.'; });
-  updater.on('update-downloaded', () => { updateReady = true; updatePhase = 'ready'; updateMessage = ''; });
+  updater.on('error', () => { updateMessage = 'Unable to update. Check your internet connection and try again. Your current version has been kept.'; });
+  updater.on('download-progress', value => { updateProgress = Math.max(0, Math.min(100, Math.round(value.percent || 0))); });
+  updater.on('update-downloaded', () => { updateReady = true; updateProgress = 100; updatePhase = 'ready'; updateMessage = ''; });
   void checkUpdate(false);
   setInterval(() => void checkUpdate(false), 30 * 60 * 1000).unref();
 }
@@ -242,47 +299,117 @@ async function checkUpdate(manual) {
     if (manual) await dialog.showMessageBox(win, { message: 'Automatic updates are unavailable for this edition.', detail: 'Download the latest Windows installer from ' + config.origin + '/download/windows. Your saved tickets will be kept.' });
     return;
   }
-  if (checkingUpdate || updateReady || installing) return;
-  checkingUpdate = true;
-  try {
-    const result = await updater.checkForUpdates();
-    if (!result?.isUpdateAvailable) { updatePhase = 'idle'; if (manual) await dialog.showMessageBox(win, { message: 'KingPOS is up to date.' }); return; }
-    updateVersion = result.updateInfo.version; updatePhase = 'downloading'; updateMessage = '';
-    await updater.downloadUpdate();
-  } catch { updatePhase = updateVersion ? 'available' : 'idle'; updateMessage = 'Unable to download the update. We will try again when connected.'; }
-  finally { checkingUpdate = false; }
+  if (installing) return;
+  if (!updateReady && !updateDownloadPromise) {
+    if (!checkingUpdate) {
+      checkingUpdate = true;
+      updateCheckPromise = (async () => {
+        try {
+          updatePhase = 'checking'; updateMessage = '';
+          const result = await updater.checkForUpdates();
+          if (!result?.isUpdateAvailable) { updateVersion = ''; updatePhase = 'idle'; return; }
+          updateVersion = result.updateInfo.version; updatePhase = 'available'; updateProgress = 0;
+        } catch { updatePhase = 'error'; updateMessage = 'Could not check for updates. Check your internet connection and try again.'; }
+        finally { checkingUpdate = false; }
+      })();
+    }
+    await updateCheckPromise;
+  }
+  if (!manual) return;
+  if (updateDownloadPromise) { await dialog.showMessageBox(win, { message: 'Downloading the update.', detail: `${updateProgress}% complete. You can keep working.` }); return; }
+  if (updatePhase === 'error') { await dialog.showMessageBox(win, { message: updateMessage }); return; }
+  if (!updateVersion) { await dialog.showMessageBox(win, { message: 'KingPOS is up to date.', detail: `Installed version: ${app.getVersion()}.` }); return; }
+  const { response } = await dialog.showMessageBox(win, { buttons: ['Keep current version', 'Update and restart'], defaultId: 0, cancelId: 0,
+    message: `KingPOS ${updateVersion} is available.`, detail: 'KingPOS will download the update, save your work, install and reopen. Windows may ask you to approve the installer.' });
+  if (response === 1) {
+    await requestUpdateInstall(true);
+    if (updatePhase !== 'installing' && updateMessage && win && !win.isDestroyed()) await dialog.showMessageBox(win, { message: updateMessage });
+  }
+}
+async function downloadUpdate() {
+  if (!updater || updateReady) return;
+  if (updateDownloadPromise) return updateDownloadPromise;
+  // Check once if this is the first user action. Failed discovery never starts
+  // a download with stale metadata.
+  if (!updateVersion || updatePhase === 'error' || checkingUpdate) await checkUpdate(false);
+  if (!updateVersion || updatePhase === 'error') return;
+  if (updateReady) return;
+  if (updateDownloadPromise) return updateDownloadPromise;
+  updatePhase = 'downloading'; updateProgress = 0; updateMessage = '';
+  updateDownloadPromise = (async () => {
+    try { await updater.downloadUpdate(); updateMessage = 'Download complete. Choose Update and restart to install.'; }
+    catch { updatePhase = 'error'; updateMessage = 'Download failed. Your current version has been kept. Try again when connected.'; }
+  })();
+  try { await updateDownloadPromise; }
+  finally { updateDownloadPromise = null; }
+}
+function requestUpdateInstall(confirmed = false) {
+  if (!installRequest) installRequest = installUpdate(confirmed).finally(() => { installRequest = null; });
+  return installRequest;
 }
 async function installUpdate(confirmed = false, scheduled = false) {
   if (installing) return;
-  if (!updater || !updateReady) { updateMessage = 'The update is still downloading. You can keep working.'; return; }
-  if (vault.pending()) { updateMessage = 'Waiting for saved tickets to finish uploading.'; return; }
+  if (!updater) { updateMessage = 'Updates are unavailable for this edition. Download the Windows app from ' + config.origin + '/download/windows.'; return; }
+  if (updateDownloadPromise) await updateDownloadPromise;
+  if (!updateReady) {
+    await checkUpdate(false);
+    if (!updateVersion || updatePhase === 'error') { if (!updateMessage) updateMessage = 'KingPOS is up to date.'; return; }
+    if (!confirmed) {
+      const { response } = await dialog.showMessageBox(win, { buttons: ['Keep current version', 'Download and install'], defaultId: 0, cancelId: 0,
+        message: `Download and install KingPOS ${updateVersion}?`, detail: 'KingPOS will save your work, back up saved tickets and reopen after installation. Windows may ask you to approve the installer.' });
+      if (response !== 1) return;
+      confirmed = true;
+    }
+    await downloadUpdate();
+    if (!updateReady) return;
+  }
+  if (vault.pending()) { updatePhase = 'blocked'; updateMessage = 'Saved tickets are still uploading. Keep KingPOS open, then choose Retry update.'; return; }
   if (!confirmed) {
     const { response } = await dialog.showMessageBox(win, { buttons: ['Later', 'Update now'], defaultId: 0, cancelId: 0, message: 'Update and reopen KingPOS?', detail: 'Your saved tickets will be kept.' });
     if (response !== 1) return;
   }
   installing = true;
+  let handedOff = false;
   try {
+    updatePhase = 'preparing'; updateMessage = 'Saving your work before updating…';
     // Freeze input before flushing/backup, with a fail-closed readiness check.
     const ready = await win.webContents.executeJavaScript(`(() => {
       if (${scheduled} && Date.now() - (window.__kingposLastInput || Date.now()) < 60000) return false;
-      if (document.querySelector('[role="dialog"]')) return false;
+      if ([...document.querySelectorAll('dialog[open], [role="dialog"]')].some(element => !element.matches('dialog.portable-device-settings') && element.getClientRects().length)) return 'dialog';
       const request = new CustomEvent('kingpos:desktop-flush', { detail: { saved: false } });
       window.dispatchEvent(request);
-      if (!request.detail.saved || (${scheduled} && request.detail.busy)) return false;
+      if (request.detail.operationBusy || (request.detail.operationBusy === undefined && request.detail.busy)) return 'busy';
+      if (!request.detail.saved) return 'unsaved';
       document.body.inert = true;
       return true;
     })()`);
-    if (!ready) { updateMessage = 'Waiting until you finish working. Your update reminder will stay here.'; return; }
-    if (vault.pending()) { updateMessage = 'Waiting for saved tickets to finish uploading.'; return; }
+    if (ready !== true) {
+      updatePhase = 'blocked';
+      updateMessage = ready === 'dialog' ? 'Finish or close the open dialog, then choose Retry update.' : ready === 'busy' ? 'Finish the current operation or save the open ticket for later, then choose Retry update.' : 'Open the POS tab and let your draft finish saving, then choose Retry update.';
+      return;
+    }
+    if (vault.pending()) { updatePhase = 'blocked'; updateMessage = 'Saved tickets are still uploading. Keep KingPOS open, then choose Retry update.'; return; }
     await vault.backup();
     await win.webContents.session.cookies.flushStore();
     win.webContents.session.flushStorageData();
-    if (vault.pending()) return;
+    if (vault.pending()) { updatePhase = 'blocked'; updateMessage = 'Saved tickets are still uploading. Keep KingPOS open, then choose Retry update.'; return; }
+    try { await prepareUpdateInstaller(updater); }
+    catch (error) {
+      updateReady = false;
+      await updater.downloadedUpdateHelper?.clear().catch(() => {});
+      throw error;
+    }
+    if (vault.pending()) { updatePhase = 'blocked'; updateMessage = 'Saved tickets are still uploading. Keep KingPOS open, then choose Retry update.'; return; }
     updatePlan.set('', null);
-    updater.quitAndInstall(true, true);
-  } catch { updateMessage = 'Unable to prepare the update. Your app and tickets have been kept. Try again later.'; }
+    await launchUpdateInstaller(updater);
+    updatePhase = 'installing'; updateMessage = 'Installing the update. KingPOS will reopen automatically.';
+    handedOff = true;
+    app.quit();
+  } catch { updatePhase = 'error'; updateMessage = 'The update could not start. Your app and saved tickets have been kept. Choose Retry update; approve the Windows installer if asked.'; }
   finally {
-    installing = false;
-    if (win && !win.isDestroyed()) await win.webContents.executeJavaScript('document.body.inert = false').catch(() => {});
+    if (!handedOff) {
+      installing = false;
+      if (win && !win.isDestroyed()) await win.webContents.executeJavaScript('document.body.inert = false').catch(() => {});
+    }
   }
 }

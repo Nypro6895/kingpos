@@ -1,0 +1,425 @@
+import XCTest
+import UIKit
+import WebKit
+import CryptoKit
+@testable import Reylumi
+
+/// The installed application, its entry, React views, bridge, encrypted store
+/// and native transport remain real. Only HTTP is replaced, with synthetic
+/// read-only DTOs. Neither this client nor the WebView can contact a server.
+private actor OwnerTodayMeasurementHTTP: ReylumiLocalHTTPClient {
+    private let fixture: [String: Any]
+    private var failures: Int
+    private var contextCount = 0
+    private var requestedContextPaths: [String] = []
+    private var commandCount = 0
+    private var reads: [String: Int] = [:]
+    private var payrollTabs: [String] = []
+    init(fixture: [String: Any], failures: Int = 0) { self.fixture = fixture; self.failures = failures }
+    func counts() -> [String: Any] { ["context": contextCount, "commands": commandCount, "reads": reads, "payrollTabs": payrollTabs] }
+    func contextPaths() -> [String] { requestedContextPaths }
+    func clearCounts() { contextCount = 0; commandCount = 0; reads = [:]; requestedContextPaths = [] }
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let url = try XCTUnwrap(request.url)
+        let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        var status = 200, object: [String: Any]
+        var headers = ["Content-Type": "application/json", "Server-Timing": "auth;dur=1,load;dur=2,total;dur=3"]
+        if let id = request.value(forHTTPHeaderField: "X-Reylumi-Request-Id") { headers["X-Reylumi-Request-Id"] = id }
+        if url.path == "/api/app-local/context" {
+            contextCount += 1
+            requestedContextPaths.append(query.first { $0.name == "path" }?.value ?? "/")
+            if failures > 0 {
+                failures -= 1; status = 503; object = ["error": "Synthetic temporary context failure"]
+            } else {
+                let generation = try XCTUnwrap(query.first { $0.name == "generation" }?.value)
+                object = AppLocalTestFixture.context(generation: generation, kind: "owner")
+                var grant = object["grant"] as! [String: Any]
+                grant["path"] = fixture["payroll"] == nil ? "/staff/today" : "/payroll"; grant["workspaceId"] = "fixture-workspace"; object["grant"] = grant
+                object["home"] = fixture["payroll"] == nil ? "/staff/today" : "/payroll"
+                object["display"] = ["name": "Synthetic owner", "language": "en", "role": "owner"]
+                object["access"] = ["ownerWorkspace": true, "staffWorkspace": false]
+            }
+        } else if url.path == "/api/app-local/read" {
+            let body = (try? JSONSerialization.jsonObject(with: request.httpBody ?? Data())) as? [String: Any]
+            let name = (body?["name"] as? String) ?? query.first { $0.name == "name" }?.value ?? ""
+            let argsText = query.first { $0.name == "args" }?.value ?? "{}"
+            let args = (body?["args"] as? [String: Any]) ?? ((try? JSONSerialization.jsonObject(with: Data(argsText.utf8))) as? [String: Any]) ?? [:]
+            let phase = (args["phase"] as? String) ?? "full"
+            let label = Self.readLabel(name, phase: phase)
+            reads[label, default: 0] += 1
+            let value: [String: Any]
+            switch name {
+            case "page.owner-payroll":
+                payrollTabs.append(args["tab"] as? String ?? "missing")
+                if let ms = fixture["payrollReadDelayMs"] as? UInt64 { try await Task.sleep(nanoseconds: ms * 1_000_000) }
+                value = fixture["payroll"] as! [String: Any]
+            case "page.owner-today": value = ["dashboard": (fixture["phases"] as! [String: Any])[phase]!, "isOwner": true]
+            case "shell.navigation": value = ["scope": AppLocalTestFixture.scope, "authenticated": true, "navigation": fixture["navigation"]!, "ownerQueueScope": NSNull(), "audience": "owner"]
+            case "shell.configuration": value = ["scope": AppLocalTestFixture.scope, "language": ["enabled": false, "portableEnabled": false, "expiresAt": NSNull()], "campaign": ["installed": false, "runtime": NSNull()]]
+            case "shell.summary": value = ["scope": AppLocalTestFixture.scope, "notificationScope": "00000000-0000-4000-8000-000000000001:synthetic-owner-workspace", "summary": fixture["summary"]!]
+            case "shell.notice": value = ["scope": AppLocalTestFixture.scope, "mode": NSNull()]
+            case "http.notifications.feed": value = Self.wire(["items": [], "unreadCount": 0])
+            case "http.shell.advertising": value = Self.wire(["campaigns": []])
+            case "http.shell.session": value = Self.wire(["authenticated": true])
+            default: status = 503; value = ["error": "Optional synthetic read unavailable"]
+            }
+            let etag = "\"" + SHA256.hash(data: Data(label.utf8)).map { String(format: "%02x", $0) }.joined() + "\""
+            headers["ETag"] = etag; headers["x-reylumi-scope"] = AppLocalTestFixture.scope
+            if status == 200, request.value(forHTTPHeaderField: "If-None-Match") == etag {
+                return (Data(), HTTPURLResponse(url: url, statusCode: 304, httpVersion: nil, headerFields: headers)!)
+            }
+            object = ["schemaVersion": 1, "status": 200, "scope": AppLocalTestFixture.scope, "etag": etag, "updatedAt": Date().timeIntervalSince1970 * 1000, "data": value]
+        } else {
+            if url.path == "/api/app-local/command" { commandCount += 1 }
+            status = 503; object = ["error": "Commands and external traffic forbidden in measurement"]
+        }
+        return (try JSONSerialization.data(withJSONObject: object), HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: headers)!)
+    }
+    private static func wire(_ body: [String: Any]) -> [String: Any] {
+        ["status": 200, "headers": ["content-type": "application/json"], "body": String(decoding: try! JSONSerialization.data(withJSONObject: body), as: UTF8.self)]
+    }
+    private static func readLabel(_ name: String, phase: String) -> String {
+        if name == "page.owner-today", ["shell", "staff", "bookings", "waiting", "financials", "extras", "full"].contains(phase) { return "today_" + phase }
+        switch name {
+        case "page.owner-payroll": return "payroll"
+        case "http.owner.shop-money": return "shop_money"
+        case "shell.navigation": return "shell_navigation"
+        case "shell.configuration": return "shell_configuration"
+        case "shell.summary": return "shell_summary"
+        case "shell.notice": return "shell_notice"
+        case "http.notifications.feed": return "notifications"
+        case "http.shell.advertising": return "advertising"
+        case "http.shell.session": return "session"
+        default: return "other"
+        }
+    }
+}
+
+@MainActor
+final class OwnerTodayDiagnosticsTests: XCTestCase {
+    private let fullReady = "Boolean(document.querySelector('[data-today-dashboard=\"owner-manager\"]')) && Boolean(document.querySelector('nav[aria-label=\"Owner\"]')) && (window.__reylumiDiagnostics?.snapshot().some(x=>x.event==='data.visible'&&x.area==='today'&&x.phase==='full') || ['staff','bookings','waiting','financials','extras'].every(p=>window.__reylumiDiagnostics?.snapshot().some(x=>x.event==='data.visible'&&x.area==='today'&&x.phase===p)))"
+
+    func testInstalledOwnerTodayColdWithoutCacheAndWarmRevisit() async throws {
+        try await scenario("cold_empty_warm_revisit") { run in
+            try await self.wait(self.fullReady, in: run.web)
+            _ = try await run.web.evaluateJavaScript("window.__diagnosticOriginalToday=document.querySelector('[data-today-dashboard]');true")
+            let delivered = run.trace.snapshot().filter { $0.event == .readDelivered || $0.event == .contextDelivered }
+            XCTAssertFalse(delivered.isEmpty)
+            XCTAssertTrue(delivered.allSatisfy { $0.requestId != nil && $0.readKind != nil })
+            let js = try await run.web.evaluateJavaScript("window.__reylumiDiagnostics.snapshot().filter(e=>e.event==='cache.accept'||e.event==='context.accept')") as? [[String: Any]] ?? []
+            let nativeIDs = Set(delivered.compactMap(\.requestId).map { $0.lowercased() })
+            XCTAssertTrue(js.contains { ($0["requestId"] as? String).map(nativeIDs.contains) == true }, "Only matching echoed responses reach JS correlation")
+            let first = await run.http.counts()
+            run.controller.navigate("/help")
+            try await self.wait("location.pathname==='/help'", in: run.web)
+            run.controller.navigate("/staff/today")
+            try await self.wait("location.pathname==='/staff/today' && Boolean(document.querySelector('[data-today-dashboard]'))", in: run.web)
+            try await Task.sleep(nanoseconds: 500_000_000)
+            let same = try await run.web.evaluateJavaScript("window.__diagnosticOriginalToday===document.querySelector('[data-today-dashboard]')") as? Bool
+            XCTAssertEqual(same, true, "A warm return retains the rendered Today view")
+            let after = await run.http.counts()
+            XCTAssertEqual((first["reads"] as? [String: Int])?.filter { $0.key.hasPrefix("today_") }, (after["reads"] as? [String: Int])?.filter { $0.key.hasPrefix("today_") }, "A fresh warm return must not refetch all Today phases")
+            return ["coldReady": first, "warmReady": after, "retainedTodayDOM": same ?? false]
+        }
+    }
+
+    func testInstalledOwnerTodayColdFromEncryptedCache() async throws {
+        try await scenario("cold_encrypted_cache", prewarm: true) { run in
+            try await self.wait(self.fullReady, in: run.web)
+            XCTAssertTrue(run.trace.snapshot().contains { $0.event == .contextCacheHit })
+            XCTAssertTrue(run.trace.snapshot().contains { $0.event == .readCacheHit && $0.category == .today })
+            let hits = run.trace.snapshot().filter { $0.event == .readCacheHit && $0.category == .today }.count
+            return ["todayDiskCacheHits": hits, "ready": await run.http.counts()]
+        }
+    }
+
+    func testInstalledOwnerTodayStatisticsPieAndHourlySelection() async throws {
+        try await scenario("statistics_pie_and_hour_selection") { run in
+            try await self.wait(self.fullReady, in: run.web)
+            try await self.wait("!!document.querySelector('[data-today-statistics]')", in: run.web)
+            // Statistics starts collapsed in the compact Today layout. Exercise
+            // the same disclosure a user opens before inspecting the charts.
+            let initiallyCollapsed = try await run.web.evaluateJavaScript("document.querySelector('[data-today-statistics]')?.closest('details')?.open===false") as? Bool
+            XCTAssertEqual(initiallyCollapsed, true)
+            _ = try await run.web.evaluateJavaScript("document.querySelector('[data-today-statistics]').closest('details').querySelector('summary').click();true")
+            try await self.wait("document.querySelector('[data-today-statistics]')?.innerText.includes('Service mix') && document.querySelectorAll('[data-today-statistics] svg').length===2", in: run.web)
+            // The chart becomes visible before deferred shell initialization
+            // finishes. Establish its quiet baseline before measuring clicks;
+            // keep the all-reads equality below strict throughout interaction.
+            let settleDeadline = ProcessInfo.processInfo.systemUptime + 10
+            var settledReads: [String: Int] = [:]
+            var quietSince = ProcessInfo.processInfo.systemUptime
+            while true {
+                let reads = (await run.http.counts())["reads"] as? [String: Int] ?? [:]
+                let now = ProcessInfo.processInfo.systemUptime
+                if reads != settledReads { settledReads = reads; quietSince = now }
+                if reads["shell_configuration"] == 1 && reads["shell_summary"] == 1 && now - quietSince >= 1 { break }
+                guard now < settleDeadline else { throw NSError(domain: "StatisticsTestShellDidNotSettle", code: 1) }
+                try await Task.sleep(nanoseconds: 100_000_000)
+            }
+            let before = await run.http.counts()
+            _ = try await run.web.evaluateJavaScript("(()=>{const p=document.querySelector('[data-today-statistics]');[...p.querySelectorAll('button')].find(b=>b.textContent==='Sales').click();return true})()")
+            try await self.wait("document.querySelector('[data-today-statistics]').innerText.includes('$120.00 before discounts')", in: run.web)
+            _ = try await run.web.evaluateJavaScript("(()=>{const p=document.querySelector('[data-today-statistics]');[...p.querySelectorAll('button')].find(b=>b.textContent==='Count').click();[...p.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')?.startsWith('9a:')).click();return true})()")
+            try await self.wait("document.querySelector('[data-today-statistics]').innerText.includes('2 service items') && document.querySelector('[data-today-statistics]').innerText.includes('9a–10a · 2 Check-ins · $120.00')", in: run.web)
+            let after = await run.http.counts()
+            XCTAssertEqual(after["commands"] as? Int, 0)
+            XCTAssertEqual(before["reads"] as? [String: Int], after["reads"] as? [String: Int], "Chart interaction stays local and must not issue a new server read")
+            return ["statisticsInteractions": true, "before": before, "after": after]
+        }
+    }
+
+    func testInstalledOwnerTodaySixtySecondsVisibleThenTouchAndForeground() async throws {
+        try await scenario("idle_visible_60s_touch_foreground") { run in
+            try await self.wait(self.fullReady, in: run.web)
+            _ = try await run.web.evaluateJavaScript("window.__diagnosticOriginalToday=document.querySelector('[data-today-dashboard]');true")
+            let before = await run.http.counts(), began = ProcessInfo.processInfo.systemUptime
+            // Real elapsed time: exercises actual 30/60-second timers without
+            // rewriting Date, visibility, freshness or scheduler semantics.
+            try await Task.sleep(nanoseconds: 60_200_000_000)
+            let visible = try await run.web.evaluateJavaScript("document.visibilityState==='visible'") as? Bool
+            XCTAssertEqual(visible, true)
+            let idle = await run.http.counts()
+            let beforeTouchDocuments = run.trace.snapshot().filter { $0.event == .bundleLoad }.count
+            _ = try await run.web.evaluateJavaScript("(()=>{const e=document.querySelector('[data-today-dashboard]');e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));e.dispatchEvent(new Event('touchstart',{bubbles:true}));return true})()")
+            try await Task.sleep(nanoseconds: 500_000_000)
+            let touch = await run.http.counts()
+            XCTAssertEqual(run.trace.snapshot().filter { $0.event == .bundleLoad }.count, beforeTouchDocuments, "Synthetic touch must not reload the local document")
+            run.controller.foreground()
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            let retained = try await run.web.evaluateJavaScript("window.__diagnosticOriginalToday===document.querySelector('[data-today-dashboard]') && !document.querySelector('[data-context-failure]')") as? Bool
+            XCTAssertEqual(retained, true, "Visible data survives ordinary lifecycle revalidation")
+            return ["visibleIdleMs": (ProcessInfo.processInfo.systemUptime - began) * 1000, "visible": visible ?? false, "syntheticTouch": true, "nativeForegroundHandlerInvoked": true, "actualOSSuspendResume": false, "beforeIdle": before, "afterIdle": idle, "afterTouch": touch, "afterForeground": await run.http.counts(), "retainedTodayDOM": retained ?? false]
+        }
+    }
+
+    func testInstalledOwnerTodayTransient503RecoversOnceWithoutCommands() async throws {
+        try await scenario("cold_transient_503", failures: 1, startPath: "/staff/today") { run in
+            try await self.wait(self.fullReady, in: run.web)
+            let counts = await run.http.counts()
+            XCTAssertEqual(counts["context"] as? Int, 2, "One failed cold read gets one safe automatic recovery")
+            XCTAssertTrue(run.trace.snapshot().contains { $0.event == .httpEnd && $0.category == .context && $0.status == 503 })
+            XCTAssertFalse(run.trace.snapshot().contains { $0.event == .scopeReset })
+            return ["ready": counts]
+        }
+    }
+
+    func testInstalledOwnerTodaySameRouteHandoffAcceptsNativeEventAndRequestedReply() async throws {
+        try await scenario("same_route_owner_handoff", startPath: "/staff/today") { run in
+            try await self.wait(self.fullReady, in: run.web)
+            let before = await run.http.contextPaths()
+            let delivered = run.trace.snapshot().filter { $0.event == .contextDelivered }.count
+            // Observe the real installed bridge without replacing its handler,
+            // transport, context events, request promises or admission rules.
+            // Diagnostics is a capped ring: its length is not a cursor after
+            // prefetch has filled it. Preserve real rows by sequence, including
+            // at the native event boundary before later resource work can evict
+            // the early handoff rejection from the production ring.
+            _ = try await run.web.evaluateJavaScript("""
+            window.__handoffContextEvents=[];
+            window.__handoffTraceStart=window.__reylumiDiagnostics.snapshot().reduce((last,e)=>Math.max(last,e.sequence),0);
+            window.__handoffTraceRows=new Map();
+            window.__captureHandoffTrace=()=>{
+              for(const row of window.__reylumiDiagnostics.snapshot())if(row.sequence>window.__handoffTraceStart)window.__handoffTraceRows.set(row.sequence,row);
+              return [...window.__handoffTraceRows.values()].sort((a,b)=>a.sequence-b.sequence);
+            };
+            window.addEventListener('reylumi:app-local-context',e=>{
+              window.__handoffContextEvents.push(e.detail.contextPath);
+              window.__captureHandoffTrace();
+            });
+            window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-handoff',{detail:{path:'/staff/today'}}));true
+            """)
+            try await self.wait("window.__captureHandoffTrace().some(e=>e.event==='context.accept') && " + self.fullReady + " && !document.querySelector('[data-context-failure]')", in: run.web)
+            _ = try await run.web.evaluateJavaScript("window.__captureHandoffTrace();true")
+            try await Task.sleep(nanoseconds: 250_000_000)
+            let after = await run.http.contextPaths()
+            XCTAssertEqual(Array(after.dropFirst(before.count)), ["/staff/today"], "The requested valid Today context must not be aborted for a neutral home lookup")
+            let events = try await run.web.evaluateJavaScript("window.__handoffContextEvents") as? [String]
+            XCTAssertEqual(events, ["/staff/today"], "The installed native emitter must deliver the requested context")
+            let handoffTrace = try await run.web.evaluateJavaScript("window.__captureHandoffTrace()") as? [[String: Any]] ?? []
+            let anchorValue = try await run.web.evaluateJavaScript("window.__handoffTraceStart") as? Int
+            let anchor = try XCTUnwrap(anchorValue)
+            let sequences = handoffTrace.compactMap { $0["sequence"] as? Int }
+            XCTAssertEqual(sequences, sequences.indices.map { anchor + $0 + 1 }, "The passive observer must retain the complete handoff trace despite production ring rollover")
+            let earlyEvent = handoffTrace.firstIndex { $0["event"] as? String == "context.reject" && $0["contextReason"] as? String == "handoff" }
+            let requestedReply = handoffTrace.firstIndex { $0["event"] as? String == "context.accept" }
+            XCTAssertNotNil(earlyEvent, "Exercise an actual native event arriving while the requested handoff is pending")
+            XCTAssertNotNil(requestedReply)
+            if let earlyEvent, let requestedReply { XCTAssertLessThan(earlyEvent, requestedReply, "The event precedes the requested bridge reply admission") }
+            XCTAssertFalse(handoffTrace.contains { $0["event"] as? String == "auth.reject" }, "An available same-workspace handoff must not become workspace-home or an access error")
+            XCTAssertEqual(run.trace.snapshot().filter { $0.event == .contextDelivered }.count, delivered + 1)
+            let counts = await run.http.counts()
+            XCTAssertEqual(counts["commands"] as? Int, 0, "Login/page handoff cannot replay a workspace command")
+            let eventBeforeAdmission = earlyEvent.flatMap { event in requestedReply.map { event < $0 } } ?? false
+            return ["requestedContextPaths": Array(after.dropFirst(before.count)), "nativeContextEvents": events ?? [], "nativeEventBeforeRequestedAdmission": eventBeforeAdmission, "ready": counts]
+        }
+    }
+
+
+    func testInstalledPayrollColdAndWarmWithControlledReadDelay() async throws {
+        for delay in [UInt64(100), UInt64(700)] {
+            try await scenario("payroll_cold_warm_\(delay)ms", startPath: "/payroll?tab=shop", payrollReadDelayMs: delay) { run in
+                try await self.wait("Boolean(document.querySelector('[data-payroll-page] [data-shop-money]')) && document.body.innerText.includes('$10,000.00')", in: run.web)
+                let coldMs = (ProcessInfo.processInfo.systemUptime - run.startedAt) * 1000
+                let before = await run.http.counts()
+                XCTAssertEqual((before["reads"] as? [String: Int])?["payroll"], 1)
+                XCTAssertEqual(before["payrollTabs"] as? [String], ["shop"], "Actual native request must preserve Shop for server preloading")
+                XCTAssertNil((before["reads"] as? [String: Int])?["shop_money"], "Seeded Shop must not make a second initial read")
+                _ = try await run.web.evaluateJavaScript("window.__payrollMeasurementDOM=document.querySelector('[data-payroll-page]');true")
+                run.controller.navigate("/help")
+                try await self.wait("location.pathname==='/help'", in: run.web)
+                let warmStart = ProcessInfo.processInfo.systemUptime
+                run.controller.navigate("/payroll?tab=shop")
+                try await self.wait("location.pathname==='/payroll' && Boolean(document.querySelector('[data-payroll-page] [data-shop-money]'))", in: run.web)
+                let warmMs = (ProcessInfo.processInfo.systemUptime - warmStart) * 1000
+                let retained = try await run.web.evaluateJavaScript("window.__payrollMeasurementDOM===document.querySelector('[data-payroll-page]')") as? Bool
+                XCTAssertEqual(retained, true)
+                let after = await run.http.counts()
+                XCTAssertEqual((after["reads"] as? [String: Int])?["payroll"], 1, "Warm return must retain the loaded page")
+                let metrics: [String: Any] = ["coldReadyMs": coldMs, "warmReadyMs": warmMs, "syntheticReadDelayMs": delay, "counts": after, "retainedDOM": retained ?? false, "physicalDevice": false]
+                print("REYLUMI_PAYROLL_MEASUREMENT " + String(decoding: try JSONSerialization.data(withJSONObject: metrics, options: [.sortedKeys]), as: UTF8.self))
+                return metrics
+            }
+        }
+    }
+
+    func testInstalledTodayAndPayrollPageRootsKeepVerticalAndNestedScroll() async throws {
+        for path in ["/staff/today", "/payroll?tab=shop"] {
+            try await scenario(path.hasPrefix("/payroll") ? "payroll_scroll_containment" : "today_scroll_containment", startPath: path) { run in
+                let selector = path.hasPrefix("/payroll") ? "[data-payroll-page]" : "[data-today-dashboard]"
+                try await self.wait("Boolean(document.querySelector('\(selector)'))", in: run.web)
+                XCTAssertFalse(run.web.scrollView.bounces)
+                XCTAssertTrue(run.web.scrollView.isScrollEnabled)
+                let result = try await run.web.evaluateJavaScript("""
+                (()=>{
+                  const page=document.querySelector('\(selector)').closest('.app-local-page');
+                  if(!page)return {missingPageRoot:true};
+                  const x=getComputedStyle(page).overflowX;
+                  const original=page.getAttribute('style');
+                  const probe=document.createElement('div');
+                  probe.innerHTML='<div style="width:2400px;height:32px">Wide row</div><div data-scroll-rail style="width:100%;overflow-x:auto"><div style="width:2400px;height:32px">Periods</div></div><div style="height:2400px"></div>';
+                  page.prepend(probe);page.style.height='240px';page.style.maxHeight='240px';
+                  const rail=probe.querySelector('[data-scroll-rail]');page.scrollTop=120;rail.scrollLeft=120;
+                  const result={overflowX:x,vertical:page.scrollTop,nested:rail.scrollLeft,documentX:scrollX};
+                  page.scrollTop=0;probe.remove();
+                  if(original===null)page.removeAttribute('style');else page.setAttribute('style',original);
+                  return result;
+                })()
+                """) as? [String: Any] ?? [:]
+                XCTAssertEqual(result["overflowX"] as? String, "hidden", "The installed retained page cannot be a horizontal user-scroll region")
+                XCTAssertEqual(result["vertical"] as? Int, 120)
+                XCTAssertEqual(result["nested"] as? Int, 120)
+                XCTAssertEqual(result["documentX"] as? Int, 0)
+                return ["path": path, "scrollProbe": result]
+            }
+        }
+    }
+
+    private struct Run {
+        let controller: ReylumiLocalAppViewController
+        let web: WKWebView
+        let http: OwnerTodayMeasurementHTTP
+        let trace: ReylumiLocalDiagnostics
+        let startedAt: Double
+    }
+    private func scenario(_ name: String, prewarm: Bool = false, failures: Int = 0, startPath: String = "/", payrollReadDelayMs: UInt64 = 100, body: (Run) async throws -> [String: Any]) async throws {
+        let bundle = try ReylumiLocalBundle.installed()
+        XCTAssertEqual(bundle.manifest.productionReady, true); XCTAssertTrue(bundle.routeExists("/staff/today"))
+        let resource = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "OwnerTodayMeasurementFixture", withExtension: "json"))
+        var fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: resource)) as? [String: Any])
+        XCTAssertEqual(fixture["synthetic"] as? Bool, true)
+        if startPath.hasPrefix("/payroll") {
+            let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "OwnerPayrollMeasurementFixture", withExtension: "json"))
+            fixture["payroll"] = try JSONSerialization.jsonObject(with: Data(contentsOf: url))
+            fixture["payrollReadDelayMs"] = payrollReadDelayMs
+        }
+        let http = OwnerTodayMeasurementHTTP(fixture: fixture, failures: failures), origin = URL(string: "https://reylumi.com")!
+        let id = "reylumi.tests.owner-today-measurement." + UUID().uuidString
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(id, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let defaults = UserDefaults(suiteName: id)!
+        defer { defaults.removePersistentDomain(forName: id) }
+        if prewarm {
+            let seedStore = ReylumiLocalReadStore(origin: origin, directory: directory, service: id)
+            let seed = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: seedStore, client: http, defaults: defaults, cookies: { [] })
+            _ = try await seed.freshContext(path: "/staff/today")
+            for name in ["shell.navigation", "shell.configuration", "shell.summary", "shell.notice"] { _ = try await seed.read(name: name, args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope) }
+            _ = try await seed.read(name: "page.owner-today", args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope)
+            _ = try await seed.read(name: "page.owner-today", args: ["phase": "shell"], etag: nil, requestedScope: AppLocalTestFixture.scope)
+            for phase in ["staff", "bookings", "waiting", "financials", "extras"] {
+                _ = try await seed.read(name: "page.owner-today", args: ["date": "2026-10-18", "phase": phase], etag: nil, requestedScope: AppLocalTestFixture.scope)
+            }
+            await http.clearCounts()
+        }
+        // A new actor reopens the persisted encrypted store; no in-memory row
+        // or React instance from prewarming is passed to this cold WebView.
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: id)
+        let trace = ReylumiLocalDiagnostics(enabled: true)
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: defaults, cookies: { [] }, diagnostics: trace)
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: startPath, transport: transport)
+        let rules = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<WKContentRuleList, Error>) in
+            WKContentRuleListStore.default().compileContentRuleList(forIdentifier: id, encodedContentRuleList: """
+            [{"trigger":{"url-filter":"^https?://"},"action":{"type":"block"}}]
+            """) { list, error in
+                if let list { continuation.resume(returning: list) } else { continuation.resume(throwing: error ?? URLError(.cannotLoadFromNetwork)) }
+            }
+        }
+        defer { WKContentRuleListStore.default().removeContentRuleList(forIdentifier: id) { _ in } }
+        controller.configureWebViewForTesting = { configuration in
+            configuration.userContentController.add(rules)
+            configuration.userContentController.addUserScript(WKUserScript(source: """
+            window.fetch=()=>Promise.reject(new TypeError('External fixture network blocked'));
+            window.WebSocket=class extends EventTarget{static CONNECTING=0;static OPEN=1;static CLOSING=2;static CLOSED=3;readyState=3;send(){}close(){}};
+            navigator.sendBeacon=()=>false;
+            """, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
+        window.rootViewController = controller; window.makeKeyAndVisible()
+        XCTAssertTrue(window.isKeyWindow, "Installed frame measurements require the foreground fixture")
+        defer { controller.webView?.stopLoading(); window.isHidden = true; window.rootViewController = nil }
+        let startedAt = ProcessInfo.processInfo.systemUptime
+        controller.initializeWebContentIfNeeded()
+        let run = Run(controller: controller, web: try XCTUnwrap(controller.webView), http: http, trace: trace, startedAt: startedAt)
+        do {
+            let checkpoints = try await body(run)
+            let counts = await http.counts()
+            XCTAssertEqual(counts["commands"] as? Int, 0, "Measurements cannot replay business commands")
+            let external = try await run.web.evaluateJavaScript("performance.getEntriesByType('resource').filter(x=>/^https?:/.test(x.name)).length") as? Int
+            XCTAssertEqual(external, 0)
+            XCTAssertEqual(trace.snapshot().filter { $0.event == .bundleLoad }.count, 1)
+            try await attach(name, run: run, checkpoints: checkpoints, passed: (testRun?.totalFailureCount ?? 0) == 0)
+        } catch {
+            try? await attach(name, run: run, checkpoints: [:], passed: false)
+            await transport.reset(); throw error
+        }
+        await transport.reset()
+    }
+    private func wait(_ expression: String, in web: WKWebView) async throws {
+        for _ in 0..<600 {
+            if (try? await web.evaluateJavaScript(expression)) as? Bool == true { return }
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+        XCTFail("The actual installed Owner Today fixture did not reach its expected rendered state")
+        throw URLError(.timedOut)
+    }
+    private func attach(_ name: String, run: Run, checkpoints: [String: Any], passed: Bool) async throws {
+        let js = (try? await run.web.evaluateJavaScript("window.__reylumiDiagnostics?.snapshot() ?? []")) as? [[String: Any]] ?? []
+        let native = try JSONSerialization.jsonObject(with: JSONEncoder().encode(run.trace.snapshot()))
+        if !passed {
+            let state = try? await run.web.evaluateJavaScript("JSON.stringify({visibility:document.visibilityState,path:location.pathname,text:document.body.innerText.slice(0,1200),today:!!document.querySelector('[data-today-dashboard]'),ownerNav:!!document.querySelector('nav[aria-label=Owner]')})")
+            print("REYLUMI_OWNER_DIAGNOSTIC \(String(describing: state))")
+        }
+        let firstVisible = js.first { $0["event"] as? String == "data.visible" && $0["area"] as? String == "today" }
+        let bootStart = js.first { $0["event"] as? String == "boot.start" }
+        let report: [String: Any] = ["schemaVersion": 1, "scenario": name, "candidateBaseCommit": "2ef993bb88d368d7e318b0965f5193db2a9f6ec0", "bundleBuildId": run.controller.bundle.manifest.buildId, "passed": passed, "actualInstalledBundle": true, "newColdWebView": true, "nativeProcessColdStart": false, "syntheticTransport": true, "syntheticServerTiming": true, "physicalDeviceEvidence": false, "nativeTrace": native, "javascriptTrace": js, "checkpoints": checkpoints, "counts": await run.http.counts()]
+        let data = try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
+        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        attachment.name = "owner-today-" + name + ".json"; attachment.lifetime = .keepAlways; add(attachment)
+        // The bridge mark precedes app.js resource loading and evaluation;
+        // this interval deliberately does not claim pure parser CPU time.
+        let metrics: [String: Any] = ["scenario": name, "passed": passed, "candidateBase": "2ef993b", "syntheticTransport": true, "firstVisibleAtMs": firstVisible?["atMs"] ?? NSNull(), "bridgeToEntryStartMs": bootStart?["durationMs"] ?? NSNull(), "nativeDocuments": run.trace.snapshot().filter { $0.event == .bundleLoad }.count]
+        print("REYLUMI_STARTUP_MEASUREMENT " + String(decoding: try JSONSerialization.data(withJSONObject: metrics, options: [.sortedKeys]), as: UTF8.self))
+    }
+}

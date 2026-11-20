@@ -1,0 +1,77 @@
+{
+  "kind": "change",
+  "changeId": "navigation-icons-benefits-step3-20261111",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Use Profile in owner navigation; share canonical navigation icons across web/native More and POS variants; promote personal QR/rewards into Visits & benefits with Vietnamese copy Original handoff ce40bc4f-3cae-484b-871b-0c7e784ce546. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/more/page.tsx",
+    "app/pos/owner-pos-icon.tsx",
+    "app/pos/portable/portable-floating-nav.tsx",
+    "app/pos/portable/portable-workspace-tabs.tsx",
+    "app/role-more-groups.ts",
+    "app/role-navigation.ts",
+    "components/app-local-more.tsx",
+    "components/workspace-navigation-icon.tsx",
+    "lib/pos-portable-routes.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/vietnamese-terminology-copy.json",
+    "tests/terminology-regression.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "booking-terminology-step2-20261111"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "7b53fd53-9403-4bfe-ab65-6868fe4fcd1b",
+  "recordedAt": "2026-11-12T02:06:57.218Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/(app)/more/page.tsx": "25345b7ff56b8c43e5286fe9a4ab4398bb1f17ee072070eaee5a40f26a6b0f8f",
+    "app/pos/owner-pos-icon.tsx": "6c773118f2898febae659803161ed7c2fa4f96a4817003f078384f904a7fa790",
+    "app/pos/portable/portable-floating-nav.tsx": "20babcda71fa5067afb315a601b47486344c078182bfd7d599c852878661397f",
+    "app/pos/portable/portable-workspace-tabs.tsx": "9c71922ddecce76eb06b1093c85b02e5db76181e356a0c2ed41ae2b67c872394",
+    "app/role-more-groups.ts": "54992e5d56c83c4961265fada9ce07d27c37bd13f75431a1de097aae6cfc2122",
+    "app/role-navigation.ts": "62c4738f763c42b1cbfd58d4a5ca97849263024e2cfcfa30b96e723c0d0a6c5a",
+    "components/app-local-more.tsx": "b8fc356c1e3842864c82ae3b5ddda5c3a0998ccaf9bf86a59c7877ef90b74690",
+    "components/workspace-navigation-icon.tsx": "0d576fc3fbddebcbb2f9488ebe2100666f949e937e690d49cd3b58e579b3315b",
+    "lib/pos-portable-routes.ts": "4abf888820e08f80a04f9fe666468fd4a73c46d8c96bcd38ed85d3f63e07f804",
+    "lib/vietnamese-dictionary.ts": "5e80dcca2251f596feabdf786989ca111d3dd468624f7001e3ae620c0e4a22a6",
+    "lib/vietnamese-terminology-copy.json": "aae8c2509d46d3817b65cc9f0e94a9b7183b8d34a1bf0f55f697298b5f5a7d6e",
+    "tests/terminology-regression.test.mjs": "f2f0d3840f3bc05b16bbc2df88d224843402bde0d57cf48209e542c1c8c4e3ed"
+  }
+}

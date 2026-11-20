@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "pos-menu-recovery-core-20261016",
+  "status": "needs-integration",
+  "summary": "Implemented shared owner navigation integration, one bounded fresh-authority recovery, unchanged-read freshness, scope-safe active invalidation and late-response fencing. Component checks pass; exact latest-source integration, native CI and owner physical-iPhone acceptance remain required before publication.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "lib/app-local-resource.ts",
+    "lib/app-local-resource-invalidation.ts",
+    "lib/app-local-command-client.ts",
+    "scripts/build-app-local-bundle.mjs",
+    "tests/app-local-authority-navigation.test.mjs",
+    "tests/app-local-resource-refresh.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-20261016\\root-frozen-source",
+    "commit": "c3fd44aa19731f90ac2ecf52c5a358e88d18a834"
+  },
+  "dependencies": [
+    "owner-pos-menu-startup-recovery-20261016",
+    "app-local-public-repair-20261016",
+    "ios-21-1-runtime-repairs-20261016"
+  ],
+  "validation": [
+    {
+      "name": "10 actual-entry authority and retained draft tests",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/authority-tests-r2.log"
+    },
+    {
+      "name": "5 freshness/invalidation/held-read race tests",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/resource-tests-r2.log"
+    },
+    {
+      "name": "Offline outbox reload, stable retry identity, PIN and scope isolation",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/offline-operations-tests.log"
+    },
+    {
+      "name": "Targeted lint",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/root-lint-r2.log"
+    },
+    {
+      "name": "Exact release integration and physical iPhone",
+      "result": "pending"
+    }
+  ],
+  "id": "7171af6a-60db-4971-8018-3a90372df2eb",
+  "recordedAt": "2026-10-16T20:53:46.119Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

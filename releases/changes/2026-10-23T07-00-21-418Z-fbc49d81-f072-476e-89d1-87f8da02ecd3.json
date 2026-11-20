@@ -1,0 +1,41 @@
+{
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\explore-search-dismiss-20261023\\source"
+  },
+  "status": "ready",
+  "changeId": "explore-search-dismiss-20261023",
+  "channels": [
+    "web"
+  ],
+  "dependencies": [],
+  "summary": "Blur Explore search input synchronously on explicit submit after IME guard; web-compatible iOS keyboard dismissal, no native changes. Integrate only the two-line delta against before snapshot.",
+  "validation": [
+    {
+      "result": "passed",
+      "name": "Desktop Chromium and iPhone WebKit runtime",
+      "evidence": "node --test artifacts/explore-search-dismiss-20261023/verify.test.mjs: typing, caret, resize, Enter and requestSubmit blur with correct query, IME focus preserved. Physical iPhone not tested."
+    },
+    {
+      "result": "passed",
+      "name": "Scoped ESLint",
+      "evidence": "npx eslint app/explore/explore-search-input.tsx; exit 0"
+    },
+    {
+      "result": "passed",
+      "name": "Delta review",
+      "evidence": "Only comment and inputRef.current?.blur() added against frozen before source."
+    }
+  ],
+  "files": [
+    "app/explore/explore-search-input.tsx"
+  ],
+  "kind": "change",
+  "id": "fbc49d81-f072-476e-89d1-87f8da02ecd3",
+  "recordedAt": "2026-10-23T07:00:21.418Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/explore/explore-search-input.tsx": "df82557291ff0929be4d11882221240a3c4dfc786e927c12800ad2bced813865"
+  }
+}

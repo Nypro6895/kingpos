@@ -1,0 +1,107 @@
+{
+  "kind": "change",
+  "changeId": "tax-flow-completion-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Owner in-context Tax renewal, scoped return after verified payment, resumable personal Tax invitations; agreed requirements audited; local only, not deployed Original handoff 2473643c-39f0-443f-897f-352bd655dd76. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied. Final installed-root parity and dedicated paired-ticket admission integrated; snapshot reconciled to final source.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/payroll/tax-company/settings/page.tsx",
+    "app/(app)/payroll/tax-company/workspace/page.tsx",
+    "app/(tax)/tax/login/page.tsx",
+    "app/(tax)/tax/qa/page.tsx",
+    "app/(tax)/tax/signup/page.tsx",
+    "app/market/card-checkout-panel.tsx",
+    "app/market/card-payment-actions.ts",
+    "app/market/tax-payment-return-links.tsx",
+    "app/settings/plugin-market-settings.tsx",
+    "app/tax/owner-connection-panel.tsx",
+    "app/tax/tax-access-link.tsx",
+    "app/tax/tax-activation-followup.tsx",
+    "app/tax/tax-entry.tsx",
+    "app/tax/tax-workspace.css",
+    "app/tax/tax-workspace.tsx",
+    "lib/tax-company-subscription.ts",
+    "tests/market-card-tax-checkout.test.mjs",
+    "tests/plugin-settings-ui.test.mjs",
+    "tests/tax-activation-settings.test.mjs",
+    "tests/tax-activation-ui.test.mjs",
+    "tests/tax-personal-workspace.integration.test.mjs",
+    "app/(tax)/tax/invite/[token]/page.tsx",
+    "app/tax/flow-actions.ts",
+    "app/tax/tax-invitation.tsx",
+    "app/tax/tax-renewal.tsx",
+    "docs/tax-flow-completion-20261110.md",
+    "lib/tax-flow.ts",
+    "supabase/migrations/20261111020000_tax_invites_and_renewal.sql",
+    "tests/tax-invitation-auth.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\complete-snapshot",
+    "commit": "4db7477d5b446bdf3cd113f61335df46a9123fb4"
+  },
+  "dependencies": [
+    "tax-activation-fix-20261110"
+  ],
+  "supersedesEvents": [
+    "c68a631a-82c6-4cdc-8376-433bea54a909"
+  ],
+  "validation": [
+    {
+      "name": "Final production build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-complete.txt"
+    },
+    {
+      "name": "26 final language, auxiliary, paired device and schema regression tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-regression.txt"
+    },
+    {
+      "name": "Actual generated installed root numeric and Help bundle tests",
+      "result": "passed",
+      "evidence": "artifacts/after97/installed-complete-final.txt"
+    },
+    {
+      "name": "Exact 4257 deployed source files and seven public routes verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/complete-release/live-source-verified.json"
+    }
+  ],
+  "id": "dfcc595f-f140-4f3c-a8b7-2696c80bdd2b",
+  "recordedAt": "2026-11-12T02:40:22.356Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/(app)/payroll/tax-company/settings/page.tsx": "d7a1041986290530f8a42a458441919aeaccfcb690f725766e0335483ce1ffe7",
+    "app/(app)/payroll/tax-company/workspace/page.tsx": "193afc735f66cffe96734c5b6cd300582cceebca7d1a131a0abb49f3e896723b",
+    "app/(tax)/tax/login/page.tsx": "076b22ed94901a7edae759f5cc06cccede9616657157ee9c9db269a105a9b8ee",
+    "app/(tax)/tax/qa/page.tsx": "f923f9abf13aedab24e8984d68adc049b7e3213037370b1aaeb279dd06f2288a",
+    "app/(tax)/tax/signup/page.tsx": "68c40dcd01b95dcb5a51759cd52fa554cd32335e62c71f56681ec93941a4d715",
+    "app/market/card-checkout-panel.tsx": "e983d24a904a6c8578bd3a5e145d8ea6f492b16919680c8d8b12a3bbca9f5bfc",
+    "app/market/card-payment-actions.ts": "d8bed7f80e54c5e3d4b8879762367fd690ae2803f68e22cfd081a0aa6027844a",
+    "app/market/tax-payment-return-links.tsx": "d0179b7b5569ac1b52a6add7c696e0f3583855fd47fd3b85efdf79e36d9c102a",
+    "app/settings/plugin-market-settings.tsx": "092f8f7f6ae4dd50f868a50260b24627850d1bc88df8b8f9a8fb4a97dd929a76",
+    "app/tax/owner-connection-panel.tsx": "8bcb5634908d0174f922b32f70f6ce4b924297a60cfd4a5930293454fed4fcaf",
+    "app/tax/tax-access-link.tsx": "0a7bffcca45f20e1a24e10326a50bb7addc7b878871a28d889aa8393cd0a8bde",
+    "app/tax/tax-activation-followup.tsx": "f995687c7f2929a0354c2d042de6961a15a7e93bdef9895a62506880492423ac",
+    "app/tax/tax-entry.tsx": "499fd31253504128f0a8f5ccfef59e41feb13460e68b431e3ea972a8d005a06d",
+    "app/tax/tax-workspace.css": "a07a32caf87da022ae5e4848eb18a65b2036b12d7834b3285b14d872feb84d30",
+    "app/tax/tax-workspace.tsx": "b3c56ccae57b6fa717a28de967837449a0dc6a356be5257fc18a4d8eed42e0bd",
+    "lib/tax-company-subscription.ts": "f3fdc9db754bf4d59738ba70e86e710f57bb5ad6778296bd766dcdeb03d84f42",
+    "tests/market-card-tax-checkout.test.mjs": "28fdd3d2bede1ee65cc43ae9f9cd56a93e6ce891b89933df6fa9252562d11df3",
+    "tests/plugin-settings-ui.test.mjs": "17b32f9b22e586ba103eb7132dd01f3e06e25b1c37925b180442f3a80bbe349f",
+    "tests/tax-activation-settings.test.mjs": "d766600e3fd4c7fd6852889c5b5f9e7afe60ad69b2749b7af0645621d0c2d4e6",
+    "tests/tax-activation-ui.test.mjs": "b226e109a1aed47345ad14f9301aeb752bb7b36607b6b830c8fba95c4b48457e",
+    "tests/tax-personal-workspace.integration.test.mjs": "2b5664de37af312444cf7df9879c6f49deb3a57284bbb2e160f7a4b634ad0dbe",
+    "app/(tax)/tax/invite/[token]/page.tsx": "d316fe37429839d068eb4e34cc10d0f59a6849b5fe83a9b1ce0d137daffa187f",
+    "app/tax/flow-actions.ts": "6ff76186e37fc0851b84aa98f4c4f7e2e5b387f681269dccbd69afc435f56e91",
+    "app/tax/tax-invitation.tsx": "f6b4107b5417ea7b3c2a4f7947c16f4c8262c661e0d27f96aeeab061253eda9f",
+    "app/tax/tax-renewal.tsx": "906bfa290ca555b472678bade1cac2fbf70bc445270114d25465704b6fd94a6a",
+    "docs/tax-flow-completion-20261110.md": "dd50b959bc747450d26743a3c5f1656fa17dbd557d58beaf020aa1cdcffdc0f3",
+    "lib/tax-flow.ts": "977d2821bf06fb46d7fc3063447fac1fbd598b4d08027dcc659f7a6e46cc82e0",
+    "supabase/migrations/20261111020000_tax_invites_and_renewal.sql": "22a080e76e9f4fb61ab29419be194af0d772a88fd105336fbdf379212b7eb427",
+    "tests/tax-invitation-auth.test.mjs": "86d82b9e2604746d79858dbabd71e69b4b56f77aa5667c245dd9208bd3aea1c4"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "pc-campaign-common-candidate-20261021",
+  "status": "working",
+  "summary": "Integrate fixed UI7e6038 continuation into tested Campaign/iOS common candidate; release held.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/(app)/payroll/tax-company/page.tsx",
+    "app/payroll/data-download-panel.tsx",
+    "app/payroll/payroll-ledger-panel.tsx",
+    "app/payroll/payroll-mobile.module.css",
+    "app/payroll/shop-income-daily-table.tsx",
+    "app/payroll/tax-company-table.tsx",
+    "components/app-local-payroll-tax.tsx",
+    "lib/app-local-owner-payroll-view.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\candidate-ui-r2-preimage",
+    "commit": "e338b59187e09585eec536aae3b857cd2213ed03"
+  },
+  "dependencies": [
+    "combined-ui-payroll-daily-local-20261021"
+  ],
+  "validation": [
+    {
+      "name": "frozen-input-preimage-and-apply-check",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\integration-prep\\payroll-analytics-candidate-preimages.json"
+    }
+  ],
+  "id": "1c3e7ce4-152f-4235-ba81-86bb302e6f71",
+  "recordedAt": "2026-10-21T15:50:47.786Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-2\\candidate",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,0 +1,78 @@
+{
+  "kind": "change",
+  "changeId": "booking-bootstrap-optional-helper-20261015",
+  "status": "needs-integration",
+  "summary": "Replace one eager regprocedure cast for an optional later receipt helper with to_regprocedure. Fresh replay of all 260 repository migrations now passes without fixture overrides; upgraded public/private receipt definitions and permissions remain unchanged. Earlier booking files are unchanged. Browser executor cannot initialize, so Next.js/UI E2E remains pending. No release.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "supabase/migrations/202609230009_portable_custom_service_snapshot.sql",
+    "tests/portable-custom-service-migration.integration.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-bootstrap-source",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968",
+    "patch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-bootstrap.patch",
+    "hashManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-bootstrap-manifest.json"
+  },
+  "validation": [
+    {
+      "name": "Regression reproduced before fix",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-bootstrap-before-test.json; two tests fail with SQLSTATE 42883 on missing optional helper."
+    },
+    {
+      "name": "Fresh/upgrade/fail-closed SQL regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-bootstrap-after.log; 3/3, zero skips; snapshot values, policy, function metadata and ACL verified."
+    },
+    {
+      "name": "Complete fresh repository migration replay and upgrade",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-bootstrap-verification.json; 260/260, no overlays. Optional helper absent at original failure point. On upgraded schema, original/corrected migration equivalence and two reapplications preserve both function definitions, owner, ACL, SECURITY DEFINER and search_path."
+    },
+    {
+      "name": "Timezone/DST policy",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-timezone-verification.json; four pure tests in each of Chicago and Vietnam process timezones."
+    },
+    {
+      "name": "Prior authenticated backend evidence remains applicable",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-final-v2-verification.json; all 260 migration hashes exactly match the previous 21-step Auth/PostgREST/RLS E2E plus four concurrent HTTP checks. These were not rerun this phase and do not constitute browser E2E."
+    },
+    {
+      "name": "Lint, frozen patches and preservation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-bootstrap-patch-verification.json; zero lint errors, reverse-apply/whitespace checks pass, earlier nine files retain exact hashes. Combined patch has 11 files."
+    },
+    {
+      "name": "Isolated cleanup",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-bootstrap-verification.json; three owned containers removed, zero persistent fixture credentials/accounts, existing containers retained; Docker remains running."
+    },
+    {
+      "name": "Browser and Next.js session E2E",
+      "result": "pending",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-browser-executor-blocker.json; two supported CUA initialization attempts, including session reset, fail with MXC required Windows platform directory HRESULT 0x80070003. Zero browser actions completed."
+    }
+  ],
+  "combinedBookingPatch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-final-v2.patch",
+  "combinedBookingSnapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-final-v2-source",
+  "combinedBookingManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-final-v2-manifest.json",
+  "limitations": [
+    "Combined 11-file patch extends the prior final nine-file booking patch; do not apply both combined patches. Frozen older records remain immutable. Apply intended deltas to the captured release baseline, not whole files from this dirty checkout.",
+    "Actual browser create-salon/service/staff/book/reschedule/cancel flow and Next.js cookie/server-action integration remain untested because the supported browser executor cannot start. Earlier UI fixtures are mocked and do not prove this integration.",
+    "This historical migration correction repairs fresh installs/replays. Existing fully upgraded schema is a no-op; no new business rule, production schema mutation or permission change was made.",
+    "Local Supabase image creates test functions under supabase_admin. Preservation assertions compare before/after in that isolated schema; they do not claim that production ownership was changed or reproduced byte-for-byte.",
+    "Production salon creation error remains unconfirmed; sanitized local diagnostic log still contains startup only. No production write, customer contact, payment, commit, push or deploy occurred.",
+    "A release coordinator still needs exact production baseline integration/build and UI E2E before launch confidence. Status remains needs-integration."
+  ],
+  "id": "e04e7e17-e32d-472a-bab9-db7395c3774b",
+  "recordedAt": "2026-10-15T02:42:37.372Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

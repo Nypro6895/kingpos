@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { RecoveryBackOfficePanel } from "@/app/settings/recovery-back-office/recovery-back-office-panel";
 import {
   AdminPageHeader,
@@ -8,14 +9,17 @@ import { loginHrefForReturnPath } from "@/lib/auth-routing";
 import { loadRecoveryBackOfficeOverview } from "@/lib/account-security-backoffice";
 import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
-export default async function AdminRecoveryPage() {
+async function AdminRecoveryPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.recoveryRead, {
     loginNextPath: "/admin/recovery",
   });
 
-  const overview = await loadRecoveryBackOfficeOverview();
+  const params = await searchParams;
+  const requestId = typeof params.case === "string" ? params.case : undefined;
+  if (requestId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) notFound();
+  const overview = await loadRecoveryBackOfficeOverview(requestId);
 
   if (!overview) {
     redirect(loginHrefForReturnPath("/admin/recovery"));
@@ -23,7 +27,7 @@ export default async function AdminRecoveryPage() {
 
   if (!overview.authorized) {
     return (
-      <>
+      <div className="settings-style settings-style-page"><>
         <AdminPageHeader eyebrow="Recovery" title="Recovery Back Office">
           Account recovery queue and emergency account security review.
         </AdminPageHeader>
@@ -32,17 +36,15 @@ export default async function AdminRecoveryPage() {
             {overview.reason}
           </div>
         </AdminSection>
-      </>
+      </></div>
     );
   }
 
   return (
-    <>
+    <div className="settings-style settings-style-page"><>
       <AdminPageHeader
         actions={
-          <SecondaryLink href="/settings/recovery-back-office">
-            Settings view
-          </SecondaryLink>
+          requestId ? <SecondaryLink href="/admin/recovery">View all recovery cases</SecondaryLink> : <SecondaryLink href="/settings/recovery-back-office">Settings view</SecondaryLink>
         }
         eyebrow="Recovery"
         title="Recovery Back Office"
@@ -53,6 +55,8 @@ export default async function AdminRecoveryPage() {
       <div className="mt-6">
         <RecoveryBackOfficePanel overview={overview} />
       </div>
-    </>
+    </></div>
   );
 }
+
+export default withExperiencePage(AdminRecoveryPage, { admin: true });

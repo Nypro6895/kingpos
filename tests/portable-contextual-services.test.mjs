@@ -1,0 +1,143 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {readFile, mkdir} from 'node:fs/promises';
+import {resolve, dirname, join} from 'node:path';
+import {build} from 'esbuild';
+import {chromium} from 'playwright-core';
+import postcss from 'postcss';
+import tailwind from '@tailwindcss/postcss';
+
+test('add-on targets stay within the selected parent occurrence and staff',async()=>{
+  const built=await build({entryPoints:['lib/pos-service-catalog.ts'],bundle:true,write:false,format:'esm'});
+  const {findPosAddOnTarget,serviceCatalogParent}=await import('data:text/javascript;base64,'+Buffer.from(built.outputFiles[0].text).toString('base64'));
+  const services=[{id:'main',name:'Full Set'},{id:'ped',name:'Pedicure'},{id:'tip',name:'French Tip',booking_parent_service_id:'main'},{id:'spa',name:'Scrub',booking_parent_service_id:'ped'}];
+  const line=(id,service_id,staff_id='alice')=>({id,service_id,staff_id});
+  const lines=[line('p1','main'),line('e1','tip'),line('p2','ped'),line('e2','spa'),line('p3','main'),line('bob','main','bob')];
+  assert.equal(serviceCatalogParent(services,'tip').id,'main');
+  assert.equal(serviceCatalogParent(services,'missing'),null);
+  assert.equal(findPosAddOnTarget(services,lines,'p1','tip').existing.id,'e1');
+  assert.equal(findPosAddOnTarget(services,lines,'e1','tip').parentLine.id,'p1');
+  assert.equal(findPosAddOnTarget(services,lines,'p3','tip').existing,null);
+  assert.equal(findPosAddOnTarget(services,lines,'bob','tip').parentLine.staff_id,'bob');
+  assert.equal(findPosAddOnTarget(services,lines,'p1','spa'),null);
+  assert.equal(findPosAddOnTarget(services,[line('orphan','tip')],'orphan','tip'),null);
+  assert.equal(findPosAddOnTarget(services,[...lines.slice(0,3),line('orphan','tip')],'orphan','tip'),null);
+  assert.equal(findPosAddOnTarget(services,lines,null,'tip'),null);
+});
+
+test('Portable catalog, gear persistence and bill amounts work together', {timeout:120000,skip:!process.env.TEST_BROWSER_PATH},async()=>{
+  const built=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`
+    import React from 'react';import{createRoot}from'react-dom/client';
+    import{PosDeskClient}from'./app/pos/pos-desk-client';
+    import{DeviceInputSettingsButton}from'./app/pos/portable/device-settings-panel';import{PosRapidMobileBridge}from'./app/pos/pos-rapid-mobile-bridge';import rapidStyles from'./app/pos/pos-rapid-mobile.module.css';
+    const services=[{id:'main',name:'Full Set',category:'Nails',base_price:40},{id:'tip',name:'French Tip',base_price:10,booking_parent_service_id:'main'},{id:'chrome',name:'Chrome',base_price:15,booking_parent_service_id:'main'},{id:'ped',name:'Pedicure',category:'Feet',base_price:25},{id:'scrub',name:'Scrub',base_price:5,booking_parent_service_id:'ped'},{id:'plain',name:'Manicure',category:'Nails',base_price:20}];
+    const staff=[{id:'staff',display_name:'Alice',job_title:'Professional',is_active:true,avatar_url:null,today_status:'checked_in',turns:{largeTurns:0,queueTurns:0,receiptLargeTurns:0,smallTurns:0,totalTurns:0}}];
+    const root=createRoot(document.getElementById('root'));window.locked=false;
+    window.render=()=>root.render(<div data-portable-pos-shell style={{height:"100dvh",display:"flex",flexDirection:"column"}}><header style={{height:40,flexShrink:0}}><DeviceInputSettingsButton/></header><main style={{flex:1,minHeight:0}}><div className={rapidStyles.rapidHost} data-pos-rapid-host><PosRapidMobileBridge services={services} staff={staff} staffCheckInEnabled={false}/><div className={rapidStyles.engine} data-pos-rapid-engine><PosDeskClient key={window.showMany?"dense":"normal"} surface="portable" activeSession={null} liveDraft={null} defaults={{adsFooter:'',largeTurnThreshold:25,showServiceName:true,showStaffName:true,staffCheckInEnabled:false,taxEnabled:false,tipSuggestions:[5,10,15,20]}} salonName="Local test salon" services={window.showMany ? [...services,...Array.from({length:180},(_,i)=>({id:"extra"+i,name:"Extended service "+i,category:"Nails",base_price:30}))] : services} staff={staff} actions={{submitPosDeskReceipt:async input=>{window.receipt=input;return{ok:true,ticketId:'test-ticket',ticketNumber:'TEST'};}}}/></div></div></main></div>);window.render();
+  `},bundle:true,write:false,jsx:'automatic',outdir:'fixture',define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'safe-boundaries',setup(b){
+    b.onResolve({filter:/^next\/navigation$/},()=>({path:'navigation',namespace:'fixture'}));
+    b.onResolve({filter:/supabase\/browser$/},()=>({path:'supabase',namespace:'fixture'}));
+    b.onLoad({filter:/.*/,namespace:'fixture'},args=>({contents:args.path==='navigation'?'const router={refresh(){},push(){},replace(){}};export const useRouter=()=>router;export const usePathname=()=>"/pos/portable";export const useSearchParams=()=>new URLSearchParams();':'export const createSupabaseBrowserClient=()=>null;'}));
+    b.onResolve({filter:/\/actions$/},({path,importer})=>({path:resolve(path.startsWith('@/')?path.slice(2):join(dirname(importer),path))+'.ts',namespace:'actions'}));
+    b.onLoad({filter:/.*/,namespace:'actions'},async({path})=>({contents:[...(await readFile(path,'utf8')).matchAll(/export\s+(?:async\s+)?function\s+(\w+)/g)].map(match=>`export async function ${match[1]}(){throw Error('Unexpected action: ${match[1]}');}`).join('\n')}));
+  }}]});
+  const js=built.outputFiles.find(file=>file.path.endsWith('.js')).text;
+  const sourceCss=built.outputFiles.find(file=>file.path.endsWith('.css'))?.text??'';
+  const utilityCss=(await postcss([tailwind()]).process(await readFile('app/globals.css','utf8'),{from:resolve('app/globals.css')})).css;
+  const server=createServer((req,res)=>{
+    res.setHeader('Content-Type',req.url==='/app.js'?'text/javascript':req.url==='/app.css'?'text/css':'text/html');
+    res.end(req.url==='/app.js'?js:req.url==='/app.css'?utilityCss+'\n'+sourceCss:'<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/app.css"><div id="root"></div><script src="/app.js"></script>');
+  });
+  await new Promise(r=>server.listen(0,'127.0.0.1',r));
+  const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH,headless:true});
+  try {
+    const page=await browser.newPage({viewport:{width:1397,height:921}}),errors=[];
+    page.setDefaultTimeout(10000);
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.abort());
+    await page.goto('http://127.0.0.1:'+server.address().port);
+    const catalog=page.locator('[data-pos-compact-catalog]');await catalog.waitFor();
+    assert.equal(await catalog.locator('.pos-catalog-addons').count(),0);
+    assert.equal(await catalog.getByRole('searchbox').count(),0);
+    const search=catalog.getByRole('button',{name:'Search services',exact:true});await search.click();
+    const field=catalog.getByRole('searchbox');await field.fill('pedicure');
+    assert.equal(await field.evaluate(el=>document.activeElement===el),true);
+    assert.equal(await catalog.locator('[data-pos-service-tile]').count(),1);
+    await field.press('Escape');await search.waitFor();
+    assert.equal(await catalog.getByRole('searchbox').count(),0);
+    assert.equal(await catalog.locator('[data-pos-service-tile]').count(),3);
+    await catalog.getByRole('button',{name:'Feet',exact:true}).click();
+    assert.equal(await catalog.locator('[data-pos-service-tile]').count(),1);
+    await catalog.getByRole('button',{name:'All',exact:true}).click();
+    assert.equal(await catalog.locator('[data-pos-service-tiles]').first().locator('button').last().getAttribute('data-pos-custom-service'),'true');
+    await catalog.locator('[data-pos-custom-service]').click();
+    const custom=page.getByRole('dialog',{name:'Custom service',exact:true});await custom.waitFor();
+    await custom.getByRole('button',{name:'Cancel',exact:true}).click();
+    await catalog.getByRole('button',{name:/Manicure/}).click();
+    assert.equal(await catalog.locator('.pos-catalog-addons').count(),0);
+    await catalog.getByRole('button',{name:/Full Set/}).click();
+    let addons=catalog.getByRole('region',{name:'Add-ons for Full Set',exact:true});await addons.waitFor();
+    assert.equal(await addons.locator('[data-pos-service-tile]').count(),2);
+    assert.equal(await addons.getByRole('button',{name:/Scrub/}).count(),0);
+    await page.evaluate(()=>{window.showMany=true;window.render();});
+    await page.waitForFunction(()=>document.querySelectorAll('[data-pos-compact-catalog] [data-pos-service-tile]').length>180);
+    await catalog.getByRole('button',{name:/Full Set/}).click();await addons.waitFor();
+    assert.equal(await catalog.locator('.pos-catalog-scroll').evaluate(el=>el.scrollHeight>el.clientHeight),true);
+    for(const viewport of [{width:1397,height:921},{width:1024,height:768}]) {
+      await page.setViewportSize(viewport);
+      await mkdir('artifacts/portable-contextual-services',{recursive:true});
+      await page.screenshot({path:`artifacts/portable-contextual-services/dense-${viewport.width}.png`,fullPage:true});
+      const panel=await addons.boundingBox();assert.ok(panel.y+panel.height<=viewport.height+1,JSON.stringify({viewport,panel}));
+      assert.equal(await catalog.evaluate(el=>el.scrollWidth<=el.clientWidth),true);
+    }
+    await page.setViewportSize({width:1397,height:921});
+    await page.evaluate(()=>{window.showMany=false;window.render();});
+    await page.waitForFunction(()=>document.querySelectorAll('[data-pos-compact-catalog] [data-pos-service-tile]').length===3);
+    await catalog.getByRole('button',{name:/Full Set/}).click();
+    await page.waitForFunction(()=>document.querySelectorAll('[data-pos-compact-catalog] [data-pos-service-tile]').length===5);
+    const mainBounds=await catalog.locator('.pos-catalog-scroll').boundingBox(),addOnBounds=await addons.boundingBox();
+    assert.ok(addOnBounds.y-mainBounds.y-mainBounds.height<=12);
+    // Before staff selection, preserve the selected main instead of replacing it.
+    await addons.getByRole('button',{name:/French Tip/}).click();
+    assert.equal(await catalog.getByRole('button',{name:/Full Set/}).getAttribute('aria-pressed'),'true');
+    await page.getByText('Alice',{exact:true}).first().click();
+    await addons.getByRole('button',{name:/French Tip/}).click();
+    await addons.getByRole('button',{name:/French Tip/}).click();
+    await addons.getByRole('button',{name:/Chrome/}).click();
+    await page.getByRole('button',{name:'Device settings',exact:true}).click();
+    const settings=page.getByRole('dialog',{name:'Device settings'}),toggle=settings.getByRole('checkbox',{name:'Show service add-ons'});
+    await toggle.uncheck();assert.equal(await catalog.locator('.pos-catalog-addons').count(),0);
+    await settings.getByRole('button',{name:'Close settings'}).click();
+    await page.reload();await catalog.waitFor();
+    await page.getByRole('button',{name:'Device settings',exact:true}).click();
+    assert.equal(await toggle.isChecked(),false);await toggle.check();
+    await settings.getByRole('button',{name:'Close settings'}).click();
+    // Reload starts a clean in-memory test receipt; verify the complete submit payload.
+    await page.getByText('Alice',{exact:true}).first().click();
+    await catalog.getByRole('button',{name:/Full Set/}).click();
+    addons=catalog.getByRole('region',{name:'Add-ons for Full Set',exact:true});
+    await addons.getByRole('button',{name:/French Tip/}).click();await addons.getByRole('button',{name:/French Tip/}).click();
+    await addons.getByRole('button',{name:/Chrome/}).click();
+    await catalog.getByRole('button',{name:/Pedicure/}).click();
+    const pedAddons=catalog.getByRole('region',{name:'Add-ons for Pedicure',exact:true});await pedAddons.waitFor();
+    assert.equal(await addons.count(),0);await pedAddons.getByRole('button',{name:/Scrub/}).click();
+    await mkdir('artifacts/portable-contextual-services',{recursive:true});
+    await page.screenshot({path:'artifacts/portable-contextual-services/pos-desktop.png',fullPage:true});
+    await page.getByRole('button',{name:'Submit',exact:true}).click();await page.waitForFunction(()=>!!window.receipt);
+    assert.deepEqual(await page.evaluate(()=>window.receipt.lines.map(line=>[line.serviceId,line.total,line.staffId])),[['main',40,'staff'],['tip',10,'staff'],['chrome',15,'staff'],['ped',25,'staff'],['scrub',5,'staff']]);
+    await page.setViewportSize({width:390,height:844});await page.reload();await catalog.waitFor();
+    await catalog.getByRole('button',{name:/Full Set/}).click();
+    const mobileDialog=page.getByRole('dialog');await mobileDialog.getByRole('button',{name:/Alice/}).click();
+    await mobileDialog.getByText('Amount',{exact:true}).first().waitFor();
+    await mobileDialog.locator('header button').click();
+    await catalog.getByRole('region',{name:'Add-ons for Full Set',exact:true}).getByRole('button',{name:/French Tip/}).click();
+    assert.equal(await page.getByRole('dialog').count(),0);
+    assert.equal(await page.locator('[data-pos-receipt-line]').count(),2);
+    await page.waitForFunction(()=>document.querySelector('[data-pos-rapid-total]')?.textContent.includes('2 services'));
+    assert.match(await page.locator('[data-pos-rapid-total]').textContent(),/\$50\.00/);
+    assert.equal(await catalog.evaluate(el=>el.scrollWidth<=el.clientWidth),true);
+    await page.screenshot({path:'artifacts/portable-contextual-services/mobile-390.png',fullPage:true});
+    assert.deepEqual(errors,[]);
+  } finally {await browser.close();await new Promise(r=>server.close(r));}
+});

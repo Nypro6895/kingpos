@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "video2-native-authority-boundaries-20261019",
+  "status": "working",
+  "summary": "Investigate Build38 video regressions with actual handler reproductions; repair proven native cookie authority, page admission, workspace command and Today recovery boundaries without release",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "app/staff/today/today-progressive-client.tsx",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-context-recovery.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiBackgroundSync.swift"
+  ],
+  "source": {
+    "baseCommit": "48b56d29a819a519c636253ba9e2ca2ddaf895bc",
+    "shippedProductCommit": "1c2628c4df2069de0722874ce8972231945e7146",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/video2-root-cause-20261019"
+  },
+  "validation": [
+    {
+      "name": "Actual handler explicit403 admission reproduces on Build38 source",
+      "result": "passed",
+      "evidence": "artifacts/video2-root-cause-20261019/workspace-admission-repro.json"
+    },
+    {
+      "name": "Real advertising and shell handlers reproduce nonauthority cookie reset predicate",
+      "result": "passed",
+      "evidence": "artifacts/video2-root-cause-20261019/native-cookie-handler-repro.json"
+    },
+    {
+      "name": "Fix regression, integration and physical iPhone outcome",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "release": {
+    "authorized": false,
+    "notes": "Implementation and test-only CI; no new production/TestFlight deployment"
+  },
+  "privacy": "User video, frames, real cookies and private provider data remain local; never commit",
+  "id": "32ae804a-c34e-4ac7-997d-daa082b1bb6f",
+  "recordedAt": "2026-10-19T05:56:48.381Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\video2-root-cause-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

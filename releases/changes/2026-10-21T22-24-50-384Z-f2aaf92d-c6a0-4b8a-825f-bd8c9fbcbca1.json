@@ -1,0 +1,37 @@
+{
+  "kind": "change",
+  "changeId": "staff-my-work-verified-read-identity-20261021",
+  "status": "working",
+  "summary": "Reuse strictly verified Staff read identity only within its exact request/context, then perform uncached fresh final auth and unique Staff validation before returning a complete My Work DTO. Preserve legacy helpers, revocation, request isolation and all mutations.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/read-context-scope.ts",
+    "lib/staff-portal-identity.ts",
+    "lib/staff-workdays.ts",
+    "lib/staff-my-work-resource-server.ts",
+    "tests/staff-my-work-verified-read-identity.test.mjs"
+  ],
+  "source": {
+    "commit": "c7016e00d12b39a9cdbeb4bb67fdb380870acdf9",
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\implementation-start-20261021T222446381343Z\\before"
+  },
+  "validation": [
+    {
+      "name": "actual Next AppRoute React-cache boundary and composed26-read baseline characterization",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\pc-ios-reliability-20261021\\staff-my-work-request-scope-audit\\composed-baseline-real-react-result.json"
+    },
+    {
+      "name": "baseline RED reuse contracts and corrected security/legacy controls",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "f2aaf92d-c6a0-4b8a-825f-bd8c9fbcbca1",
+  "recordedAt": "2026-10-21T22:24:50.384Z",
+  "worktree": "C:\\Users\\giuse\\kingpos-staff-identity-reuse-20261021",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

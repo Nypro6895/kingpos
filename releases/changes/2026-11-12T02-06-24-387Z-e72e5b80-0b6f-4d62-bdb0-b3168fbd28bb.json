@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "signup-phone-unique-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Unique phone admission for normal/Staff signup, duplicate-phone guest support, and server/database OTP posting gates. Original handoff 215b787f-c4c5-493b-a456-4ee9fdb0d8ff. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/signup-phone-policy.ts",
+    "lib/signup-phone-availability.ts",
+    "lib/abuse-server.ts",
+    "app/(app)/api/auth/signup/route.ts",
+    "app/(app)/api/staff/invite/signup/route.ts",
+    "app/(app)/signup/page.tsx",
+    "app/signup/signup-form.tsx",
+    "app/staff/invite/[token]/staff-invite-signup-form.tsx",
+    "supabase/migrations/20261110193000_signup_phone_uniqueness.sql",
+    "tests/signup-phone-routing-runtime.test.mjs",
+    "tests/signup-phone-uniqueness.integration.test.mjs",
+    "tests/signup-phone-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "e72e5b80-0b6f-4d62-bdb0-b3168fbd28bb",
+  "recordedAt": "2026-11-12T02:06:24.387Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "lib/signup-phone-policy.ts": "dea1b97a4a79f83db0c00e0bcd319911417ba4cd291fd94ffdd5180f862800eb",
+    "lib/signup-phone-availability.ts": "c8ab7c1f676474a4278430b4452716786974363746fa5a6ccfae53c46b8fc857",
+    "lib/abuse-server.ts": "16a32b5052c3ba3e713124a47c98b7c051c0314c559aefa523565449a4047671",
+    "app/(app)/api/auth/signup/route.ts": "d52c6e243289b6c92e3493ba6071b161b90ec400c4de93a3e9c27e7507c60e49",
+    "app/(app)/api/staff/invite/signup/route.ts": "480c5fda3132b1cd51d512f7c8d8530310ac65b2b58e7e87f6f1f40c0a4bd4e5",
+    "app/(app)/signup/page.tsx": "57d583170ded2731db73ccda9e32e66f6f0a09e633e63576abb453bc3604c690",
+    "app/signup/signup-form.tsx": "68bb9ba7d2765cb042d462e8059c39aa9976b7f3cf6e6b52b8ba1a99a3d0b30e",
+    "app/staff/invite/[token]/staff-invite-signup-form.tsx": "30d77f9a7c5ca4de808070f291e5f65a5c10b55e2eaf65654e131de9ccdebba5",
+    "supabase/migrations/20261110193000_signup_phone_uniqueness.sql": "f470394e3281f4f89760ad1f702cf09d9b1302a9f169965acc6a01f1c502124e",
+    "tests/signup-phone-routing-runtime.test.mjs": "a0c7b37c73155cf3d65dc48951fc51819b597932e72d6a5c6556d3c7232827ee",
+    "tests/signup-phone-uniqueness.integration.test.mjs": "f760470fc22a4dcb7995d41c86b055b89c19d56579c530687afa23e2d437d617",
+    "tests/signup-phone-ui.test.mjs": "225b8f53b23281ccbcfe4213af663783ec926070408ec1b343679384e653ee65"
+  }
+}

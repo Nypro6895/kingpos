@@ -1,0 +1,277 @@
+LƯU Ý: Đề xuất gộp/retire accounts trong tài liệu này đã được thay thế bởi docs/entity-role-audit-vi.txt. Kiểm toán sâu xác nhận accounts và hai membership scopes có mục đích riêng. Không dùng tài liệu này làm kế hoạch migration đã được chấp thuận.
+
+STORE / BUSINESS / SALON MODEL AUDIT
+Date: 2026-10-07
+Scope: linked production database schema, aggregate data, live permission functions, compatibility views, and source code for administration, workspace selection, creation, settings, ownership, lifecycle, booking, POS, staff, billing and public discovery.
+This is a read-only audit. No data, ownership, roles or production application behavior changed. It is not an exhaustive end-to-end test of every feature.
+
+DECISION RECOMMENDED
+A person is a user/profile. A shop is one store record. Business, salon and store are labels for that same place; organization/account should not be an additional selectable place in the product. Use the existing locations.id (currently salon_id) as the canonical shop identity to preserve operational history and URLs. Keep accounts as an internal implementation detail initially, then retire it after all dependencies are migrated.
+The earlier suggestion to show a personal account as a separate Access entry was incorrect for this product model.
+
+LIVE FINDINGS
+- 4 users; 610 accounts; 607 stores.
+- 607 accounts have one store; 3 accounts have no stores; no accounts have multiple stores.
+- 606 of the 607 store/account pairs have the same name.
+- Six account memberships and three salon memberships; three active same-role overlaps.
+- No active overlapping role conflicts and no salon-membership parent mismatches in the checked live data.
+- No store/account status differences in the checked live data.
+- Three account-only records are named Admin-Truong's Account, Ny Truong's Account and Quỳnh Trâm's Account; each has one active member and zero stores. Names and counts alone do not prove a durable personal-account classification.
+- 605 stores have no active owner through either membership source. The directory import intentionally creates ownerless stores, so ownership must not be fabricated during migration.
+- 12 foreign-key constraints reference accounts; 87 reference locations. Ninety public tables have one of the inspected scope columns.
+- 43 live RPCs match the account/salon-membership or personal-bootstrap dependency search. This is a matching set, not a complete list of indirectly dependent RPCs.
+
+ROOT CAUSES
+1. Admin compatibility view platform_admin_businesses_compat exposes every accounts row as a business, without a shop association/type filter. platform_admin_business_memberships_compat renames account_id to organization_id. This includes account-only personal/bootstrap records.
+2. Admin Users Access concatenates organization_memberships and salon_memberships into separate rows. There is no canonical shop grouping or effective-access calculation in that list.
+3. Normal application type Business is already Location plus required account_id. /businesses redirects to /salons. currentBusiness.businessId is a salon ID in settings context. The normal app and Admin use Business to mean different IDs.
+4. ensure_personal_account_for_current_user is called while loading current memberships. It reuses any active owned account, or creates an accounts record and OWNER membership. It does not identify a distinct personal profile type. That account is a technical/bootstrap container; users is the person/profile.
+5. Shop creation selects an existing owned account and passes p_account_id to create_account_salon_with_owner_staff. Although current data is one-to-one, the creation logic still permits multiple shops within a container. An eventual one-store model must fix creation, not just hide the list.
+6. user_can_manage_salon and user_has_salon_permission accept either account-derived access or direct salon access. Revoking one membership may leave the other granting access. current-context.ts prefers direct salon membership when selecting the workspace role, whereas SQL permission checks allow either source; conflicting grants could cause the UI role to differ from effective permissions. No such active role conflict was found in current data.
+7. Ownership, role definitions, subscriptions, notifications, reports, admin notes and lifecycle exports still reference account IDs. Removing accounts now would cascade-delete or detach dependent data.
+
+WHERE IT SHOWS UP / WHAT TO CHANGE
+Admin /users: Access list, business filter, business/role column, owner/staff filtering, CSV, membership add/edit/remove and transfer scope. Show one row per accessible store; keep personal information in Profile. Grant/revoke must update all relevant legacy sources until migration is complete.
+Admin /users/[userId]: fallback detail also exposes separate business/salon membership paths; update with the drawer.
+Admin /businesses and /locations: two lists and detail pages for backing container versus actual shop. Keep one Stores listing based on locations; hide backing account table from navigation. Preserve old route/ID resolution for links to historical records.
+Admin overview, attention and search: currently use business and location kinds separately; unify shop counts, queue subjects and search results to avoid double counts. Account-only containers must not appear in store statistics.
+Admin support cases / notes / lookups: business versus location subject selectors and organization/location target columns. Provide User or Store subjects; migrate account-targeted records using explicit ID mapping while preserving history.
+My Place / workspace selector: account workspace options and 'Salons in this account' / business-account member management. Replace with Personal profile plus one card per store and store-specific roles. Internal account containers should not be navigable places.
+Settings / salon list / create: account selection and 'Choose a business account' errors. Create a store directly; until migration completes, create backing data internally rather than ask for an organization/account.
+Staff / permissions / ownership: centralize effective access, invitations and ownership on store ID. Preserve staff operational links and separate platform-admin roles from store roles. Ownership transfer must remove the prior owner's corresponding access through BOTH legacy paths without affecting other stores.
+Public Explore / Wisconsin directory / salon profiles / booking: already centered on salon_id/locations. Keep canonical IDs, addresses, profiles, posts, reviews and booking URLs; preserve unclaimed status and ownerless import records.
+POS / bookings / customers / services / payroll: already mostly salon-scoped. Keep all existing operational foreign keys; customers.location_id also refers to the same shop.
+Subscriptions / entitlements / usage / notifications: currently contain both account_id and salon_id in some tables. Decide store scope and separate billing payer identity explicitly; do not reinterpret a person as a store.
+Deletion / closure / recovery / exports: account-wide and salon-specific permission/owner checks coexist. Unify store lifecycle and last-owner rules without deleting personal identity or retained financial/audit records.
+
+TARGET MODEL
+users (person/profile)
+  -> store access grants / effective permissions
+  -> locations (canonical store; business/salon/store display label)
+     -> staff, bookings, POS, services, customers, payroll, public profile, subscriptions
+A user can own or work at multiple stores; each store is one place. There is no extra organization place in the user-facing model. Platform-admin access remains a separate system permission.
+For Nene: Profile contains the person; Access has one 'King Nails Spa LLC - Owner - active' entry. Ny Truong's Account is not an Access place. The business/salon ownership records should resolve to that one store entry.
+
+IMPLEMENTATION ORDER
+1. Presentation and read model: build a canonical accessible-store projection, expand legacy account grants to their linked stores, combine direct grants, and omit containers with no store. Replace Admin split business/location surfaces and user-side account cards. Do not simply read salon_memberships: that would omit account-only grants.
+2. Access and lifecycle: centralize effective permission checks across server/RPC/RLS/UI. During transition, revoke and transfer handle both legacy sources atomically. Test direct-only, account-only, overlapping, conflicting, suspended, deleted, ownerless, last-owner and cross-store cases. Resolve conflicts explicitly rather than arbitrarily selecting one role.
+3. Creation and migration: stop personal-container bootstrap for new profiles; create a canonical store with internal backing data only as needed. Map each existing account to its store(s); migrate grants and per-account role definitions without expanding access. Preserve all current store IDs and directory ownership states. For existing multi-store containers, if introduced before migration, preserve the exact previous scope during grant conversion and review it.
+4. Dependencies: migrate account-scoped billing, notes, reports, notifications, exports, transfer invitations and audit references. Keep an ID map and compatibility resolution for historical links; record migration evidence and retain backups/history.
+5. Retirement: remove account-facing routes and legacy writes, then retire account_memberships/accounts only after no RPC, policy, FK, creation path or job still depends on them. Do not start by dropping accounts or deleting zero-store records; cascading relationships must be audited individually.
+
+VALIDATION / LIMITATIONS
+The live snapshot is small for owned users and has no multi-store containers or active conflicting grants. That is not proof that legacy APIs cannot create those states. Full migration needs tests and a separate implementation/deployment; this request authorizes the audit and recommendations only. No customer data, account tokens or credentials were exported in this audit; evidence includes schema, aggregate counts, account names and function definitions.
+
+EVIDENCE FILES
+artifacts/store-model-database-audit.json: schema, aggregate counts, foreign keys, view definitions and matching RPC inventory.
+artifacts/store-model-authorization-audit.json: live authorization functions, scope policies and account-only dependency inventory.
+artifacts/store-model-code-references.txt: source files matching legacy account/salon scope patterns; a candidate inventory, not proof that every match requires changes.
+
+DATABASE SCOPE INVENTORY
+account_memberships: account_id
+app_notifications: account_id, salon_id
+beauty_post_attributions: salon_id
+beauty_post_salon_publications: salon_id
+beauty_reward_events: salon_id
+booking_customer_account_claims: salon_id
+booking_inspirations: salon_id
+booking_lines: salon_id
+booking_message_outbox: salon_id
+booking_settings: salon_id
+booking_staff_reservations: salon_id
+booking_status_events: salon_id
+bookings: salon_id
+business_claim_requests: salon_id
+business_claim_sends: salon_id
+customer_account_claims: salon_id
+customer_claim_tokens: salon_id
+customer_history_links: salon_id
+customer_visit_experiences: salon_id
+customer_visits: salon_id
+customers: location_id
+lifecycle_exports: account_id, salon_id
+locations: account_id
+payroll_paystubs: salon_id
+payroll_period_staff_input_history: salon_id
+payroll_period_staff_inputs: salon_id
+payroll_runs: salon_id
+payroll_staff_daily_totals: salon_id
+payroll_staff_lines: salon_id
+platform_admin_business_memberships_compat: organization_id
+platform_reports: subject_location_id, subject_organization_id
+pos_daily_closing_staff_snapshots: salon_id
+pos_daily_closings: salon_id
+pos_desk_session_lines: salon_id
+pos_desk_sessions: salon_id
+pos_display_channels: salon_id
+pos_financial_adjustments: salon_id
+pos_financial_correction_requests: salon_id
+pos_live_drafts: salon_id
+pos_owner_operations: salon_id
+pos_payments: salon_id
+pos_portable_access_keys: salon_id
+pos_settings: salon_id
+pos_ticket_adjustments: salon_id
+pos_ticket_audit_logs: salon_id
+pos_ticket_item_turn_parts: salon_id
+pos_ticket_items: salon_id
+pos_ticket_staff_earnings: salon_id
+pos_tickets: salon_id
+roles: account_id
+salon_directory_listings: salon_id
+salon_lifecycle_events: salon_id
+salon_memberships: account_id, salon_id
+salon_operating_hours: salon_id
+salon_owner_transfer_invites: account_id, salon_id
+salon_payroll_settings: salon_id
+salon_profile_booking_requests: salon_id
+salon_profile_comments: salon_id
+salon_profile_content_booking_configs: salon_id
+salon_profile_content_booking_services: salon_id
+salon_profile_entitlement_overrides: account_id, salon_id
+salon_profile_follows: salon_id
+salon_profile_look_hashtags: salon_id
+salon_profile_look_saves: salon_id
+salon_profile_looks: salon_id
+salon_profile_media_assets: salon_id
+salon_profile_preferences: salon_id
+salon_profile_review_replies: salon_id
+salon_profile_reviews: salon_id
+salon_profile_subscriptions: account_id, salon_id
+salon_profile_update_hashtags: salon_id
+salon_profile_updates: salon_id
+salon_profile_usage_events: account_id, salon_id
+salon_settings: salon_id
+salon_special_hours: salon_id
+salon_verification_requests: salon_id
+salon_verification_sends: salon_id
+salon_website_feature_selection: salon_id
+service_add_on_links: salon_id
+services: salon_id
+staff: salon_id
+staff_attendance_events: salon_id
+staff_availability_rules: salon_id
+staff_passcode_attempts: salon_id
+staff_payroll_settings: salon_id
+staff_salon_connection_requests: salon_id
+staff_service_assignments: salon_id
+staff_time_blocks: salon_id
+staff_workdays: salon_id
+today_quick_access_preferences: salon_id
+
+ACCOUNT FOREIGN KEYS
+account_memberships: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+app_notifications: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+lifecycle_exports: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE SET NULL
+locations: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+platform_admin_notes: FOREIGN KEY (target_organization_id) REFERENCES accounts(id) ON DELETE SET NULL
+platform_reports: FOREIGN KEY (subject_organization_id) REFERENCES accounts(id) ON DELETE SET NULL
+roles: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+salon_memberships: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+salon_owner_transfer_invites: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+salon_profile_entitlement_overrides: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+salon_profile_subscriptions: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+salon_profile_usage_events: FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+
+MATCHING MEMBERSHIP RPCS
+accept_salon_owner_transfer_invite(p_token_hash text)
+account_deletion_other_active_owner_exists(p_salon_id uuid, p_actor_user_id uuid)
+account_deletion_unresolved_owned_salon_count(p_user_id uuid)
+admin_user_export_selected(p_ids uuid[])
+admin_user_membership_save(p_user_id uuid, p_scope text, p_entity_id uuid, p_role text, p_status text, p_remove boolean, p_reason text)
+admin_user_transfer_owner(p_user_id uuid, p_recipient uuid, p_scope text, p_entity_id uuid, p_case_id uuid, p_reason text)
+begin_business_claim(p_salon uuid, p_user uuid, p_channel text)
+claim_windows_pos_download_prompt(p_session text, p_pos boolean)
+complete_business_claim(p_request uuid, p_actor uuid, p_reason text)
+create_account_salon(p_account_id uuid, p_create_request_key text, p_name text, p_phone text, p_address_line1 text, p_address_line2 text, p_city text, p_state text, p_postal_code text, p_country text)
+ensure_personal_account_for_current_user(p_account_name text)
+finalize_account_deletion(p_user_id uuid)
+get_platform_admin_deletion_impact(p_user_id uuid)
+get_platform_admin_user_detail(p_user_id uuid)
+get_public_lumi_trust_signals(target_salon_ids uuid[])
+get_salon_owner_roster(p_salon_id uuid)
+guard_staff_creation_permission()
+lifecycle_active_owner_count(p_salon_id uuid, p_excluding_user_id uuid)
+lifecycle_remove_owner_access_from_salon(p_salon_id uuid, p_owner_user_id uuid, p_actor_user_id uuid, p_reason text)
+lifecycle_user_is_salon_owner(p_salon_id uuid, p_user_id uuid, p_count_pending_deletion boolean)
+my_place_account_details(p_account_id uuid)
+my_place_account_invitations()
+my_place_respond_account_invitation(p_membership_id uuid, p_accept boolean)
+my_place_save_member(p_account_id uuid, p_role_id uuid, p_email text, p_membership_id uuid, p_operation text)
+notify_beauty_salon_publication_request(target_publication_id uuid)
+notify_post_comment_created(target_comment_id uuid)
+notify_public_booking_created(target_booking_id uuid)
+notify_salon_check_in()
+pos_staff_operator_has_permission(p_salon_id uuid, p_staff_id uuid, p_permission_codes text[])
+recover_permanently_closed_salon(p_salon_id uuid, p_claimant_user_id uuid, p_reason text)
+request_account_deletion(p_continue_without_transfer boolean, p_backup_acknowledged boolean, p_reason text)
+salon_has_active_owner(target_salon_id uuid)
+salon_staff_booking_creation(p_salon uuid, p_enabled boolean)
+salon_verification_is_owner(p_salon uuid, p_user uuid)
+schedule_platform_admin_user_deletion(p_user_id uuid, p_reason text, p_confirmation text, p_backup_acknowledged boolean)
+search_platform_admin_users_v2(p_page integer, p_page_size integer, p_query text, p_status text, p_role text, p_business_id uuid, p_sort text)
+set_owned_salon_featured_look(target_salon_id uuid, target_look_id uuid, pinned boolean)
+update_platform_admin_user_membership(p_user_id uuid, p_membership_id uuid, p_scope text, p_role text, p_status text, p_reason text)
+user_belongs_to_account(target_account_id uuid)
+user_can_manage_salon(target_salon_id uuid)
+user_has_account_permission(target_account_id uuid, permission_codes text[])
+user_has_salon_permission(target_salon_id uuid, permission_codes text[])
+user_is_salon_member(target_salon_id uuid)
+BỔ SUNG: MÔ HÌNH USER / BUSINESS / STAFF VÀ DANH SÁCH CHUYỂN ĐỔI
+
+1. LOGIC CHỐT
+User là người thật. Business là một cửa hàng/salon/store. Một User có thể sở hữu nhiều Business và làm nhân viên ở Business của người khác. Owner/Manager/Staff là vai trò theo Business, không phải loại User toàn cục. A sở hữu A1/A2 không có quyền mặc định vào B1/B2. Khi B mời A làm ở B1, A chỉ nhận các quyền được cấp tại B1, không nhận quyền vào B2, hồ sơ riêng của B hoặc toàn bộ dữ liệu B1. Quyền được xác thực trên máy chủ và cơ sở dữ liệu cho từng thao tác, không chỉ ẩn menu.
+
+2. CẤU TRÚC ĐÍCH
+- auth.users: danh tính đăng nhập do hệ thống Auth quản lý; giữ riêng với public.users.
+- public.users: hồ sơ người dùng; users.auth_user_id liên kết danh tính Auth.
+- businesses: thực thể cửa hàng; ưu tiên chuyển từ locations, giữ nguyên ID hiện tại. Có thể giữ tên vật lý locations trong giai đoạn đầu nhưng chỉ có một ý nghĩa Business trong app/API.
+- business_memberships: User + Business + role + status; ràng buộc một quan hệ chuẩn cho mỗi User/Business. Ownership được biểu diễn bằng vai trò OWNER để không tạo hai nguồn chủ sở hữu độc lập.
+- roles, permissions, role_permissions: quyền áp dụng cho Business; chuyển scope roles.account_id về business_id. Giữ template quyền dùng chung nếu có, nhưng mỗi grant phải xác định Business.
+- staff: hồ sơ công việc tại Business, liên kết User/membership khi đã nhận lời mời; giữ staff ID cho lịch làm, booking, POS, payroll. Không dùng staff row một mình để mặc định cấp toàn bộ quyền vào cửa hàng.
+- customer: dữ liệu khách tại cửa hàng, có thể liên kết User khi đã xác minh; không gộp hồ sơ CRM vào User cá nhân.
+
+3. BẢNG VÀ CỘT CẦN XỬ LÝ
+Gộp/loại tầng dư:
+- locations + accounts: dùng locations làm cửa hàng chính; chuyển phần dữ liệu và phụ thuộc còn cần từ accounts, sau đó ngừng viết/đọc tầng account trung gian. Chưa DROP accounts khi còn FK và chính sách phụ thuộc.
+- account_memberships + salon_memberships: quy về business_memberships; chuyển account grants sang đúng cửa hàng liên quan. Trùng cùng role/status có thể gộp sau đối chiếu; khác quyền/trạng thái phải duyệt, không cộng quyền một cách tự động.
+- platform_admin_businesses_compat + platform_admin_business_memberships_compat: bỏ hoặc thay bằng lớp tương thích trỏ về cửa hàng, không trình bày account nội bộ như doanh nghiệp.
+- staff.account_user_id và staff.user_id: chuẩn hóa liên kết hồ sơ User. Code hiện dùng user_id làm auth_user_id cũ, vì vậy phải ánh xạ qua users.auth_user_id; không copy hoặc so sánh hai UUID như cùng loại ID.
+Chuẩn hóa scope:
+- salon_id/location_id/business_id: cùng chỉ một cửa hàng; chọn business_id trong hợp đồng ứng dụng, giữ mapping/cột cũ đến khi mọi consumer chuyển xong.
+- account_id trong roles, subscriptions, entitlements, usage, notifications, exports, transfer invitations: chuyển scope cửa hàng hoặc tách payer/user nếu đúng là người trả tiền; không thay thế mù quáng bằng business_id.
+- organization/location subject trong reports, notes, audit: chuyển về User/Business, giữ mapping để đọc lịch sử.
+Giữ riêng vì khác ý nghĩa:
+- users và auth.users; users và staff; users và customers; role và role_permissions; membership và invitation/connection request; lịch sử payroll/booking/POS và hồ sơ hiện tại; permission của platform admin và permission của cửa hàng.
+- locations và salon_settings có trường tên/liên hệ/địa chỉ trùng: xác định nguồn chính, loại việc nhập/sửa độc lập; chỉ giữ bản nháp/bản công khai riêng nếu đó là yêu cầu xuất bản rõ ràng.
+- Các bảng bắt đầu bằng account_ nhưng thực tế dùng user_id (sessions, security preferences, recovery...) là bảo mật cá nhân, không được gộp hoặc xóa theo tên bảng.
+
+4. NHÂN VIÊN VÀ NGOẠI LỆ DỮ LIỆU
+Live hiện có hai staff rows, một row có account_user_id và một row chưa có account_user_id. Chưa liên kết User không đồng nghĩa chắc chắn không có ID legacy; phải kiểm tra trước chuyển đổi. Giữ hồ sơ nhân viên chưa đăng nhập dưới trạng thái chưa liên kết/chờ mời; không tạo danh tính giả hoặc tự cấp quyền. Khi nghỉ việc: ngừng access và POS operator session của cửa hàng, giữ lịch làm/lương/booking cũ; không xóa User hoặc quyền ở cửa hàng khác. Owner có thể đồng thời có staff profile nếu trực tiếp làm dịch vụ; hồ sơ công việc đó không tạo thêm người hay chủ mới.
+
+5. PHẠM VI RÀ SOÁT TOÀN APP
+- Auth/signup/profile/reset password/MFA: User identity độc lập, bỏ tạo account container như một business cá nhân.
+- Chọn workspace/My Place/navigation: Personal + các Business được cấp quyền; đổi Business phải tải lại scope và quyền, không sử dụng cache/quyền của cửa hàng trước.
+- Tạo/claim/invite/chuyển chủ: liên kết đúng User/Business; nhận lời mời xác minh danh tính, không nhận bằng cách chỉ trùng email/số điện thoại; giữ trạng thái chờ và chống gửi/nhận lặp.
+- Admin Users/Businesses/detail/search/dashboard/export/cases/notes: một danh sách người và một danh sách cửa hàng; Access đọc quyền cửa hàng thực tế; công cụ admin có quyền hệ thống riêng và audit.
+- Staff/permissions/services/attendance/workdays: giới hạn Business; mặc định nhân viên đọc phần công việc của mình, các quyền xem nhóm hoặc quản lý phải được cấp rõ.
+- Booking/customers/POS/payments/refunds/closing/payroll/reports: kiểm tra cả Business và quyền hành động; quyền xem không tự suy ra quyền sửa hoặc xuất dữ liệu. Nhân viên A ở B1 không đọc lương/đơn của người khác nếu chưa được cấp.
+- POS PIN/portable/offline/shared device: PIN là xác thực người thao tác tại cửa hàng, không thay thế toàn bộ login User; thu hồi quyền phải xử lý khóa, phiên operator và bản quyền offline theo chính sách hết hạn/đồng bộ, không tuyên bố thu hồi ngay một máy đang hoàn toàn offline.
+- Public Explore/profile/booking: giữ dữ liệu được xuất bản công khai, tách khỏi dữ liệu nội bộ. Không áp dụng chặn cross-business cho thông tin công khai mà app cho phép xem.
+- Billing/subscriptions/files/storage/background jobs/notifications: scope Business/User rõ; kiểm tra signed URL, private bucket, cron/job/service-role vì chúng có thể bỏ qua RLS.
+- Lifecycle/deletion/closure/recovery/ownership: quyền và last-owner theo Business; ngừng tài khoản User không xóa hồ sơ lịch sử hoặc tự chuyển chủ. Ngừng staff tại B1 không ảnh hưởng A1/A2 hay B2.
+- API/RPC/RLS/server actions/realtime/cache/export: cùng một cách xác định User/Business/quyền, không dựa vào business_id từ client mà bỏ kiểm tra membership.
+
+6. TRÌNH TỰ THỰC HIỆN
+P0: lập bản đồ ID và tất cả phụ thuộc; chốt bộ quyền/ràng buộc; snapshot và báo cáo mâu thuẫn trước gộp.
+P1: lớp đọc Access/cửa hàng thống nhất; ẩn account nội bộ trên UI, không đổi dữ liệu owner ngay.
+P2: business_memberships và liên kết staff chuẩn; migration có kiểm tra/rollback; cơ chế chuyển tiếp không để thu hồi ở bảng mới mà bảng cũ tiếp tục cấp quyền.
+P3: chuyển API/RPC/RLS/Auth-context/POS/operator/storage/jobs và các bảng phụ thuộc; sửa tạo mới để không sinh bản ghi dư; giữ API tương thích chỉ qua adapter có kiểm soát.
+P4: toàn bộ UI/admin/filter/count/search/export/settings dùng User/Business; các đường dẫn cũ chuyển đúng ID.
+P5: kiểm tra dữ liệu và E2E sau chuyển đổi; ngừng write cũ, theo dõi dependency, chỉ retire tầng account khi không còn consumer. Giữ audit/ID map và chính sách giữ dữ liệu.
+
+7. TIÊU CHÍ KIỂM TRA BẮT BUỘC
+A own A1/A2 và staff ở B1: owner đầy đủ tại A1/A2, chỉ quyền staff cấp tại B1, không access nội bộ B2; B không access A1/A2. Thử bằng API trực tiếp, thay ID và signed URL, không chỉ qua UI. Kiểm tra owner+staff, nhiều cửa hàng, người chưa có cửa hàng, nhân viên chưa đăng nhập, lời mời pending/expired, role đổi, quyền bị thu hồi, login session cũ, POS PIN, cross-user payroll, last owner, export, job nền và store ownerless. So sánh quyền trước/sau cho mọi quan hệ; không tự mở rộng quyền. Giữ nguyên ID, số lượng và tổng tiền booking/POS/payroll; kiểm tra FK/orphan, lịch sử, redirect và cách đọc audit cũ.
+
+KẾT LUẬN PHẠM VI
+Đã rà soát cấu trúc/quan hệ và các đường xử lý chính; chưa kiểm thử chạy từng chức năng toàn app. Đây là kế hoạch kiểm toán và chuyển đổi, chưa thực hiện migration gộp hoặc deploy thay đổi.

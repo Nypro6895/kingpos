@@ -1,0 +1,74 @@
+{
+  "kind": "change",
+  "changeId": "portable-contextual-services-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Completed compact Portable catalog with selected-service add-ons, collapsed search, final custom tile and device gear toggle; requires release integration Original handoff 5397a05b-f580-406c-9812-eab5c3382fed. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/adaptive-pos-workspace.css",
+    "app/pos/portable/device-settings-panel.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/pos/pos-rapid-mobile-bridge.tsx",
+    "app/pos/pos-rapid-mobile.module.css",
+    "app/pos/service-catalog-legacy.tsx",
+    "app/pos/service-catalog.tsx",
+    "lib/portable-service-preference.ts",
+    "lib/pos-service-catalog.ts",
+    "lib/vietnamese-workspace-copy.json",
+    "tests/portable-contextual-services.test.mjs",
+    "tests/pos-service-catalog-ui.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "01b3a077-9780-4b68-b7ea-32f18a7e396c",
+  "recordedAt": "2026-11-12T02:06:55.922Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/pos/adaptive-pos-workspace.css": "ce9d7696e84f99bd31fd7aef9dbda3ff3f972620133d0a5824916f1dede54696",
+    "app/pos/portable/device-settings-panel.tsx": "73cfaee0ca530d5f79db501ce7e2deada168c8eeb47c6c347e483975006c446b",
+    "app/pos/pos-desk-client.tsx": "d7eb3878dae2fb9384e31aa48fc076a02c34e6acb45f726cb9200a70b7507112",
+    "app/pos/pos-rapid-mobile-bridge.tsx": "975006e6b27ff45043f2e597aec7bc2cbcd257333147b7de49d2687d39c6b470",
+    "app/pos/pos-rapid-mobile.module.css": "a477c9d03a851ff50d1cb73c03bb913ba1f039ca97813bb0e824f966f488e725",
+    "app/pos/service-catalog-legacy.tsx": "009d3d177935d399ccab5d98ff6984c84afac3fc5b62aa5a9853268f26bfab34",
+    "app/pos/service-catalog.tsx": "675a42e1804a1b6a071dc6baa099ab3a50b49f5a718b61b30ffaebcefcd0cd4c",
+    "lib/portable-service-preference.ts": "f2e75145924347486bf9fce0387411dd08f3f96de443fa2ca0eb9bb1ab2ff927",
+    "lib/pos-service-catalog.ts": "04dca63d67312ea85d095f2b592554741a8c0d020fb7cf61df969e6ed3af6e94",
+    "lib/vietnamese-workspace-copy.json": "4d2e9e425085bc2839e49ec8c138fda6d8fb8af9e75acd8be4dce8c865cd018d",
+    "tests/portable-contextual-services.test.mjs": "4b410b91f53e8a4b8d811473a820ce26653acdf21bc36e98efa93699df2bd84d",
+    "tests/pos-service-catalog-ui.test.mjs": "fd3880ee62f44d39c23daedfb0197ae5cdbb0e069604fe9344d0501e254411b9"
+  }
+}

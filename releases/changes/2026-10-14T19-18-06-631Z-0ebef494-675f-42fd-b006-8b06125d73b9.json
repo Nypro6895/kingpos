@@ -1,0 +1,23 @@
+{
+  "kind": "change",
+  "changeId": "project-release-coordination",
+  "status": "working",
+  "summary": "Lưu quyền deploy thường trực, quy tắc tích hợp web/native, nhật ký ngày/source và khóa coordinator dùng chung.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "AGENTS.md",
+    "docs/release-policy.txt",
+    "releases/README.md",
+    "scripts/release-journal.mjs",
+    "tests/release-journal.test.mjs"
+  ],
+  "notes": [
+    "Thay đổi chỉ là quy tắc và công cụ project; không phát hành sản phẩm trong task này và không yêu cầu build native."
+  ],
+  "id": "0ebef494-675f-42fd-b006-8b06125d73b9",
+  "recordedAt": "2026-10-14T19:18:06.631Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": []
+}

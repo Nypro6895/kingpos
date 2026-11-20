@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "startup-prefetch-budget-20261029",
+  "status": "working",
+  "summary": "Bound hidden route DTO prefetch to two reads per accepted identity; preserve active route reads, authority, invalidation and visited offline caches. Native67 measured broad hidden Payroll/Reports work; regression reproduced before patch.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-prefetch.ts",
+    "tests/app-local-prefetch-runtime.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "startup hidden route budget regression",
+      "result": "failed",
+      "evidence": "prepatch runtime fixture drains twelve hidden resources instead of bounded two"
+    }
+  ],
+  "id": "f8216a26-a114-4fbd-9dca-e19254a5ca5b",
+  "recordedAt": "2026-10-29T11:01:06.262Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-settings-checkwriter-20261029",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

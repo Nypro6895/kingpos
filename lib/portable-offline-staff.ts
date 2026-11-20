@@ -1,7 +1,7 @@
 "use client";
 
-import { desktopDevice, portableDeviceStorage } from "./portable-device-storage";
-const storage = () => desktopDevice()?.offline ? portableDeviceStorage : localStorage;
+import { desktopDevice, portableDevice, portableDeviceStorage } from "./portable-device-storage";
+const storage = () => portableDevice() ? portableDeviceStorage : localStorage;
 
 type Bundle = { scope: string; salonId: string; expiresAt: number; publicKey: string;
   staff: { id: string; salt: string; verifierSalt: string; verifier: string }[] };

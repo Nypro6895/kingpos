@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "forum-quick-compose-20261106",
+  "status": "needs-integration",
+  "summary": "Forum menu first, compose last, random section quick compose rows preserving draft text",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/forum/forum.tsx",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/quick-compose.tsx",
+    "tests/forum-quick-compose.browser.cjs"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/forum-quick-compose-20261106/artifacts/quick-compose-frozen",
+    "commit": "2812b29025d62d2c53e8c2ec581dd9c33e724158"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Browser fixture: 320/390/428/768 navigation order, menu bounds, section selection and draft preservation",
+      "result": "passed"
+    },
+    {
+      "name": "Existing forum UI browser regression",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint scoped",
+      "result": "passed",
+      "evidence": "Zero errors; one pre-existing detail effect dependency warning"
+    },
+    {
+      "name": "git diff --check and fixture bundle",
+      "result": "passed"
+    },
+    {
+      "name": "Production and physical iPhone acceptance",
+      "result": "pending"
+    }
+  ],
+  "id": "58363b41-03d6-4e54-919c-e5911660a6af",
+  "recordedAt": "2026-11-06T07:06:38.541Z",
+  "worktree": "C:\\Reylumi-worktrees\\forum-quick-compose-20261106",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

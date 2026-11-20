@@ -1,0 +1,35 @@
+{
+  "kind": "change",
+  "changeId": "app-local-role-policy-20261016",
+  "status": "working",
+  "summary": "Add complete standalone EN/VI Help and public Support instructions renderer alongside actual route inventory and authorized named customer/staff read adapters.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-route-policy.ts",
+    "lib/app-local-route-inventory.generated.json",
+    "scripts/generate-app-local-routes.mjs",
+    "lib/app-local-reference-content.ts",
+    "components/app-local-help.tsx",
+    "lib/app-local-role-resources.ts",
+    "lib/app-local-role-resources-server.ts",
+    "tests/app-local-route-policy.test.mjs",
+    "tests/app-local-role-resources.test.mjs",
+    "tests/app-local-help-ui.test.mjs"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Whole actual route inventory, server read authority, full offline Help UI",
+      "result": "pending"
+    }
+  ],
+  "id": "0bc4b2e5-0681-40f6-b846-85f2261ccdec",
+  "recordedAt": "2026-10-16T15:52:01.020Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

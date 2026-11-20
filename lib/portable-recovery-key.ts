@@ -1,0 +1,55 @@
+import { nativePortableDevice, portableDevice } from "./portable-device-storage";
+
+const PREFIX = "kingpos:portable-draft:v1:";
+
+export function isNativePortableDevice(): boolean {
+  if (nativePortableDevice()) return true;
+  const device = window as unknown as { __reylumiNativePayments?: number; webkit?: { messageHandlers?: { reylumi?: unknown } } };
+  return device.__reylumiNativePayments === 1 && Boolean(device.webkit?.messageHandlers?.reylumi);
+}
+
+/** Browser tabs stay independent; an installed app must survive a new WebView. */
+export function portableRecoveryStorageKey({ scope, operationScope, tabId, desktop, native, durableNative = false, storage }: {
+  scope: string; operationScope?: string; tabId: string; desktop: boolean; native: boolean; durableNative?: boolean;
+  storage: Pick<Storage, "getItem" | "setItem">;
+}) {
+  if (desktop && operationScope) return PREFIX + operationScope + ":desktop";
+  if (durableNative && operationScope) return PREFIX + operationScope + ":native-device";
+  const legacy = PREFIX + scope + ":" + tabId;
+  if (!native) return legacy;
+  const slot = "kingpos:portable-native-recovery:v1:" + scope;
+  const previous = storage.getItem(slot);
+  if (previous?.startsWith(PREFIX + scope + ":") && previous.length <= 2048) return previous;
+  // Keep the original key/checkpoint when upgrading an already open ticket.
+  // Never guess among another window's old drafts or delete unsubmitted work.
+  const key = storage.getItem(legacy) ? legacy : PREFIX + scope + ":native";
+  storage.setItem(slot, key);
+  return key;
+}
+
+/** Native windows sharing a recovery slot must not overwrite each other's work. */
+export async function acquirePortableRecoveryWriter(key: string): Promise<(() => void) | null> {
+  const native = nativePortableDevice();
+  if (native && portableDevice()) {
+    const scope = key.slice(PREFIX.length).split(":").slice(0, 2).join(":");
+    const reply = await native.request<{ acquired: boolean; token?: string }>({ action: "writer.acquire", scope, key });
+    if (!reply.acquired) return null;
+    if (!reply.token) throw new Error("Unable to confirm this POS window's draft storage.");
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      void native.request({ action: "writer.release", key, token: reply.token }).catch(() => {});
+    };
+  }
+  if (!navigator.locks) return null;
+  return new Promise(resolve => {
+    void navigator.locks.request("kingpos:native-draft:" + key, { ifAvailable: true }, async lock => {
+      if (!lock) { resolve(null); return; }
+      let release!: () => void;
+      const released = new Promise<void>(done => { release = done; });
+      resolve(release);
+      await released;
+    }).catch(() => resolve(null));
+  });
+}

@@ -1,3 +1,6 @@
+
+import { SalonName } from "@/components/salon-member-badge";
+import { withExperiencePage } from "@/components/experience-page";
 import {ExploreReferenceLove} from "@/components/explore-account-actions";
 import { ShowcaseBookIntent } from "@/app/explore/showcase-book-intent";
 import { ReylumiIcon } from "@/components/reylumi-icons";
@@ -83,7 +86,7 @@ function LookStat({
   value: string;
 }) {
   return (
-    <div className="grid min-w-0 justify-items-center gap-1 rounded-[0.8rem] bg-white px-3 py-2 text-center ring-1 ring-divider-subtle/70">
+    <div className="grid min-w-0 justify-items-center gap-1 bg-white px-3 py-2 text-center rounded-none border-0 shadow-none">
       <ReylumiIcon className="h-4 w-4 text-text-secondary" name={icon} />
       <p className="text-sm font-bold text-text-primary">{value}</p>
       <p className="text-[11px] font-semibold text-text-muted">{label}</p>
@@ -125,7 +128,7 @@ function RelatedLookCard({ item }: { item: ExploreShowcaseRelatedLook }) {
       <span className="grid gap-1.5 p-3">
         <span className="flex items-center justify-between gap-2">
           <span className="truncate text-sm font-bold text-text-primary">
-            {item.salonName}
+            <SalonName name={item.salonName} href={item.href}/>
           </span>
           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-text-secondary">
             Preview
@@ -201,7 +204,7 @@ function LookMediaStage({ look }: { look: ExploreShowcaseLookPage }) {
   );
 }
 
-export default async function ShowcaseLookPage({
+async function ShowcaseLookPage({
   params,
 }: ShowcaseLookRouteProps) {
   const { lookId } = await params;
@@ -217,21 +220,21 @@ export default async function ShowcaseLookPage({
 
   return (
     <main className="min-w-0 bg-[linear-gradient(180deg,#fffaf7_0%,#ffffff_56%)] px-4 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-[92rem] flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(21rem,28rem)] lg:items-start">
+      <div className="mx-auto flex w-full max-w-none flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(21rem,28rem)] lg:items-start">
         <div className="order-1 lg:col-start-1 lg:row-start-1">
           <LookMediaStage look={look} />
         </div>
 
         <aside className="order-2 grid gap-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
           <section
-            className="grid gap-4 rounded-[1rem] bg-white p-4 shadow-[0_16px_42px_rgba(35,25,22,0.06)] ring-1 ring-divider-subtle/75"
+            className="grid gap-4 bg-white p-4 rounded-none border-0 shadow-none"
             id="shop"
           >
             <div className="flex min-w-0 items-center gap-3">
               <ShowcaseAvatar name={look.salonName} />
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 text-base font-bold text-text-primary">
-                  <span className="truncate">{look.salonName}</span>
+                  <span className="truncate"><SalonName name={look.salonName} href={look.bookingHref}/></span>
                 </p>
                 <p className="mt-0.5 text-xs font-semibold text-text-secondary">
                   Preview · Milwaukee, WI ·{" "}
@@ -292,7 +295,7 @@ export default async function ShowcaseLookPage({
             />
           </section>
 
-          <section className="rounded-[1rem] bg-white p-4 ring-1 ring-divider-subtle/70">
+          <section className="bg-white p-4 rounded-none border-0 shadow-none">
             <h2 className="text-sm font-bold text-text-primary">
               Share this look
             </h2>
@@ -334,7 +337,7 @@ export default async function ShowcaseLookPage({
               value={look.stats.videos.toLocaleString("en-US")}
             />
           </section>
-          <section className="rounded-[1rem] bg-white p-4 ring-1 ring-divider-subtle/70">
+          <section className="bg-white p-4 rounded-none border-0 shadow-none">
             <h2 className="text-sm font-bold text-text-primary">
               About this look
             </h2>
@@ -345,7 +348,7 @@ export default async function ShowcaseLookPage({
         </div>
       </div>
 
-      <section className="mx-auto mt-5 grid w-full max-w-[92rem] gap-3 pb-8">
+      <section className="mx-auto mt-5 grid w-full max-w-none gap-3 pb-8">
         <div className="flex items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold text-text-primary">
@@ -371,3 +374,5 @@ export default async function ShowcaseLookPage({
     </main>
   );
 }
+
+export default withExperiencePage(ShowcaseLookPage);

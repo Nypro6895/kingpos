@@ -1,0 +1,115 @@
+{
+  "kind": "change",
+  "changeId": "ios-session-role-stability-20261019",
+  "status": "ready",
+  "summary": "Repair session/guest transitions and iOS role switching with scoped conflict recovery and stale-callback fencing; preserve permissions and business commands; implementation only, no deployment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "dependencies": [],
+  "files": [
+    "app/local-app/entry.tsx",
+    "components/app-local-session-expiry-prompt.tsx",
+    "components/app-local-shell.tsx",
+    "docs/ios-session-role-stability-20261019.txt",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/ScopeConflictTransportTests.swift",
+    "lib/app-local-resource.ts",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-workspace-navigation.ts",
+    "lib/vietnamese-dictionary.ts",
+    "supabase/migrations/20261019220000_hidden_posts_actor_reads.sql",
+    "tests/app-local-device-diagnostics.test.mjs",
+    "tests/app-local-entry-recovery-ui.test.mjs",
+    "tests/app-local-read-cancellation.test.mjs",
+    "tests/app-local-session-guest-ui.test.mjs",
+    "tests/app-local-workspace-recovery-ui.test.mjs",
+    "tests/hidden-posts-actor-reads.test.mjs",
+    "vercel.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\ios-session-role-stability-20261019\\frozen-eeed696-raw",
+    "commit": "eeed696c1c2e2a8f75bab1647ff958b57e859464",
+    "baselineCommit": "1647461cd8e820f07da2dcc3048c665fbad32842",
+    "sourceSha256": "7eccd96d031a3a0a3ea22a98d21160a2fccfb59351d5b682024676c157636909",
+    "overlaySha256": "2dd29744bdf8eb2b01436c9f747ce03401c354e3cefe951af0eaffadce6dc438"
+  },
+  "validation": [
+    {
+      "name": "97 contracts including actual SQL compatibility/authority checks",
+      "result": "passed",
+      "evidence": "releases/evidence/ios-session-role-stability-20261019-eeed696.json"
+    },
+    {
+      "name": "61 Chromium and 61 WebKit behavioral cases, zero skipped",
+      "result": "passed",
+      "evidence": "releases/evidence/ios-session-role-stability-20261019-eeed696.json"
+    },
+    {
+      "name": "Production build, TypeScript, changed-source lint and exact regenerated bundle",
+      "result": "passed",
+      "evidence": "releases/evidence/ios-session-role-stability-20261019-eeed696.json"
+    },
+    {
+      "name": "158 simulator tests and unsigned archive at exact final iOS source",
+      "result": "passed",
+      "evidence": "https://github.com/Nypro6895/kingpos/actions/runs/39333221021"
+    },
+    {
+      "name": "3082 frozen raw Git blobs, 345 bundle resources, preserved authority sources and independent reviews",
+      "result": "passed",
+      "evidence": "releases/evidence/ios-session-role-stability-20261019-eeed696.json"
+    }
+  ],
+  "limitations": [
+    "No physical iPhone validation with real account cookies/tokens yet; simulator/WebKit are not device proof.",
+    "Actual expired/revoked sessions and Staff unconfirmed binding remain denied; diagnostics did not prove the account-specific cause of these denials.",
+    "Cold-start performance optimization deferred.",
+    "The prepared SQL migration was tested locally only and has not been applied to production.",
+    "The unsigned native archive is not installable on a physical iPhone and has not been uploaded to Apple."
+  ],
+  "publication": {
+    "webPublished": false,
+    "nativeUploaded": false,
+    "databaseMigrationApplied": false,
+    "branchAutoDeploymentDisabled": true
+  },
+  "id": "300f6a72-2292-4acd-817a-87cbfc233fbe",
+  "recordedAt": "2026-10-19T22:22:19.529Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\ios-session-role-stability-20261019",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "9cfd0b56a7549ca3f09a68077509832cbb0c035034647072c84356d5a765c740",
+    "components/app-local-session-expiry-prompt.tsx": "72504aecc4f3c838f437658f501a589c01921c11efeefe53cb230f087a83ae46",
+    "components/app-local-shell.tsx": "0ec747e5d8f1d97a3a768f04eeb4a205644f1cc87324d79f128b17ac47a1e421",
+    "docs/ios-session-role-stability-20261019.txt": "cf5ede759bcf5c468d19b278278ff85b9fbb6878e0e2370690c34154c5a2a1b2",
+    "ios/Reylumi/AppLocalBridge.js": "bd456ba031e0e46e472bc8cf4baa4d968c625a0ef2a13d52ba6cdb876a032459",
+    "ios/Reylumi/LocalAppBundle/app.js": "369809f13c5e02f4821563c3f5c99ec4c3638db680b72e08cd2f7b0cbb93e645",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "bd7f79c2f6f440f89753707a3b1b1fd23e67af42811c40335f2c1d788baa05fc",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "dd3673f673b718e664d553f4e7d65fdbcee1e1c78919592b568c43b7261d45fc",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "166b20d1a7316a2ff1652bc5c2121a1cc0c733c18a86b209eb9323e2e07acf4c",
+    "ios/Reylumi/ReylumiLocalDiagnostics.swift": "125c7d4ee4f7194d5b82375fdf89fe078bad142b94f2ce10f252a8b7c2d6495e",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "b5203e210d93b6371ccb69b47a0a1258a17bb8879a5ba380e1fa224cf73c829b",
+    "ios/ReylumiTests/ScopeConflictTransportTests.swift": "bfdf1784f4cad608531fd8e37aeddaf3545c70940e2b7e273c50ad62f80e1b88",
+    "lib/app-local-resource.ts": "47325643118a19df506686a352faa23c8d4f99550eadaf6952a856404a3ba610",
+    "lib/app-local-shell-http-client.ts": "3217e4b8b2fb86e3b3ea8dc709be141fa5c0f395eb91a96509b0e9d68b133fc1",
+    "lib/app-local-shell-workspace-navigation.ts": "55c36ac610d60b7d8c5fed37d919717a9dda4fae4ecd5cee67ed236f5ad19fd7",
+    "lib/vietnamese-dictionary.ts": "da2b974a5800f5710cc6ffe2007de6f794bb449d48f385607f8b7dcac1bdb9d8",
+    "supabase/migrations/20261019220000_hidden_posts_actor_reads.sql": "3dd1e4a03ba1c46104ad447819995ca01f4aa6501e379c43076268a635cd857f",
+    "tests/app-local-device-diagnostics.test.mjs": "f369d16a1faa3d8bc217eb9f24d1ee40473a940b32f529f5ea2abe05295b34bc",
+    "tests/app-local-entry-recovery-ui.test.mjs": "05bcc0ce490c2ed697bb4c2319784a787b67c3fadc50cf0d4689eb21e0a4def0",
+    "tests/app-local-read-cancellation.test.mjs": "ef0cbfed4d9dbaa22f4243287cd375dd8d34576011fa451c33d8358f8a238051",
+    "tests/app-local-session-guest-ui.test.mjs": "f8435baa040e85c302b71403482205138da8ba794167df9e0dd888af513ed068",
+    "tests/app-local-workspace-recovery-ui.test.mjs": "b0662ba8263a6292cb5a0e82e939002c6a3c9fbcb3ac54ffe670086bcab49494",
+    "tests/hidden-posts-actor-reads.test.mjs": "fd755c57b955790393586728976b0339a809cd948cd973724533fe5e28cd9b5d",
+    "vercel.json": "82b7e17a88841695f552b8555a0d17fc741427369031f2f8b879f471818062c5"
+  }
+}

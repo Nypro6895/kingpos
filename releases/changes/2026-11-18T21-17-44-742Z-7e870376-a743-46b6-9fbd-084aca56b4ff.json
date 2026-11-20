@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "openai-public-photo-verifier-20261118",
+  "status": "working",
+  "summary": "Implement dedicated server-only OpenAI public post photo moderation adapter with strict fail-closed response validation; mock transports only; secure key workflow stopped.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/public-image-verifier-openai.ts",
+    "tests/public-image-verifier-openai.test.mjs",
+    "docs/openai-public-photo-verifier-20261118.md"
+  ],
+  "source": {
+    "commit": "04128e40de1a2ce22170c0fc95ea053668c29e26"
+  },
+  "validation": [
+    {
+      "name": "Official API contract, isolated mock-transport tests and security review",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-store-privacy-remediation-20261116"
+  ],
+  "scopeBoundary": "User selected OpenAI/new dedicated key. Local destination not-approved twice; no key creation/write, env-file reads/changes, live OpenAI calls, caller/core wiring, UI, commit/push/deploy.",
+  "id": "7e870376-a743-46b6-9fbd-084aca56b4ff",
+  "recordedAt": "2026-11-18T21:17:44.742Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

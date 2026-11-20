@@ -1,0 +1,58 @@
+{
+  "kind": "change",
+  "changeId": "ios-store-steps234-coordination-20261118",
+  "status": "needs-integration",
+  "summary": "Authorized steps3/4/2 local source, immutable handoffs and combined build/render validation complete; key/UI/runtime/private-evidence and final release gates remain, no push/deploy/store writes.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "docs/ios-steps-2-3-4-implementation-20261118.md",
+    "docs/ios-steps-2-3-4-readiness-20261118.json",
+    "releases/changes/2026-11-18T21-01-57-261Z-f34df90e-7437-4c31-92f7-f8e3e51f3eb7.json"
+  ],
+  "fileHashes": {
+    "docs/ios-steps-2-3-4-implementation-20261118.md": "72a4b69edfd44bdd66f11bdada531c26b8630ccdb8bc673dc51e1e8ddb9a20b1",
+    "docs/ios-steps-2-3-4-readiness-20261118.json": "3f7d324a784935c0de4725a81594b1e6cbc9e2fce1d5891b4f441012b4c2d6df",
+    "releases/changes/2026-11-18T21-01-57-261Z-f34df90e-7437-4c31-92f7-f8e3e51f3eb7.json": "7a0261e56f2633ed6b1c7d65bf60434ef4928bda8c86be15f27971d9938e0051"
+  },
+  "source": {
+    "snapshot": "artifacts/ios-steps-234-20261118/frozen/coordination-r1",
+    "commit": "8d953b12e7539e5e382f07524f6faba31e2d4633",
+    "sha256": "4df709a87c209b0e3ec152061987f64965dd8c5597a51d8e6ced352b20fb7a23"
+  },
+  "validation": [
+    {
+      "name": "Actual scoped source tests and CRLF-aware whitespace/lint",
+      "result": "passed",
+      "evidence": "docs/ios-steps-2-3-4-implementation-20261118.md"
+    },
+    {
+      "name": "Combined production Next/TypeScript/offline-assets build",
+      "result": "passed",
+      "evidence": "artifacts/ios-steps-234-20261118/combined-build-result-r2.json"
+    },
+    {
+      "name": "Source parity5443inputs and actual12policy viewport routes",
+      "result": "passed",
+      "evidence": "artifacts/ios-steps-234-20261118/legal-r2-acceptance.json"
+    },
+    {
+      "name": "Secure key destination, approved consent/moderation UI, actual provider/runtime and final integration",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "ios-privacy-terms-implementation-20261118",
+    "ios-commerce-return-acceptance-20261118",
+    "ios-moderation-operations-20261118",
+    "openai-photo-consented-wiring-20261118",
+    "public-post-media-deletion-cron-20261118"
+  ],
+  "supersedesEvents": [],
+  "id": "3efb6a8e-e8fd-44d5-9677-673180b4936f",
+  "recordedAt": "2026-11-18T21:57:12.215Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116",
+  "deletedFiles": []
+}

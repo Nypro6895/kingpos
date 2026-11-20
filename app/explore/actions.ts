@@ -12,6 +12,13 @@ import type {
   ExploreSearchInput,
 } from "@/types/explore";
 import { revalidatePath } from "next/cache";
+import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+
+export async function rememberExplorePreferenceAction(input: { location?: string; category?: string }) {
+  const client = await createAuthenticatedSupabaseServerClient();
+  if (!client) return;
+  await client.rpc("remember_my_explore_preference", { p_location: input.location ?? null, p_category: input.category ?? null });
+}
 
 type ToggleFollowResult = {
   active: boolean;
@@ -27,7 +34,12 @@ export async function searchExploreWithGpsAction(input: ExploreSearchInput) {
     page: input.page,
     pageSize: input.pageSize,
     query: input.query,
+    cursor: input.cursor,
   });
+}
+
+export async function loadExploreSearchPageAction(input: ExploreSearchInput) {
+  return searchExploreSalons(input);
 }
 
 export async function loadExploreNearYouAction(input: ExploreSearchInput) {

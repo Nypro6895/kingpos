@@ -1,0 +1,68 @@
+{
+  "kind": "change",
+  "changeId": "pos-instant-tab-navigation-20261015",
+  "status": "ready",
+  "summary": "POS phản hồi tab trước dữ liệu live; giữ checkout/tiền/draft, khung đầu tiên và streaming riêng panel; Portable giữ kết quả tải ẩn đúng phiên, bootstrap owner đọc song song.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/pos/(workspace)/layout.tsx",
+    "app/(app)/pos/(workspace)/loading.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-workspace-frame.tsx",
+    "app/pos/pos-tab-placeholder.tsx",
+    "app/pos/portable/portable-panels.tsx",
+    "app/pos/portable/portable-workspace-tabs.tsx",
+    "tests/owner-pos-instant-tabs-ui.test.mjs",
+    "tests/portable-pending-panels-ui.test.mjs",
+    "docs/pos-navigation-performance.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\pos-instant-tabs-2026-10-15T23-31-34-156Z",
+    "baseCommit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f",
+    "baselineDeploymentId": "dpl_9ZKEwHw43kFAeqx1kyNUDcGkJNNW",
+    "sourceSetSha256": "73b242b5651b5f41bcf1a7b5c74d2c885d633ef2ccb07fd8bea6b726df85c55d",
+    "overlaySha256": "3f9bd876be93949b8625c12fc8b8a148aaccb52481704b74953a6959b16ab66d"
+  },
+  "validation": [
+    {
+      "name": "Production build / TypeScript / 220 routes",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos\\artifacts\\pos-instant-tabs-20261015\\implementation-receipt.json"
+    },
+    {
+      "name": "10 POS runtime/UI regressions, no skips",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos\\artifacts\\pos-instant-tabs-20261015\\implementation-receipt.json"
+    },
+    {
+      "name": "ESLint and independent correctness review",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos\\artifacts\\pos-instant-tabs-20261015\\implementation-receipt.json"
+    }
+  ],
+  "notes": [
+    "No physical iPhone/POS latency measured; 100ms is an acceptance target.",
+    "Portable initial panel read still uses the existing shared Server Action queue.",
+    "Cold app startup and server/database latency remain separate work.",
+    "Next-generated tsconfig/next-env changes restored; formatting cleanup after the build changes no code semantics."
+  ],
+  "id": "09c07fb2-a3e3-4256-8b86-104e835f77bc",
+  "recordedAt": "2026-10-15T23:31:38.605Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/pos/(workspace)/layout.tsx": "b3d02053f8721d3ebc795b4a547e09bbd4db4f5fbc011a42e58d51c395b83571",
+    "app/(app)/pos/(workspace)/loading.tsx": "f1f01c1f7b126e65870b7a4114913f775c0cbc5e3a7492613f46685aa9deab64",
+    "app/pos/owner-pos-tabs.tsx": "00338ac818f78a64d7208ecd244af6f2cb821e8d3283dd21b8af2cd9586bb08f",
+    "app/pos/owner-workspace-frame.tsx": "a00ca6e22782dd58c49ad8c911dcb633ade95b8909c21b96d66d1d2b3d6948a5",
+    "app/pos/pos-tab-placeholder.tsx": "2e09d44538f0552157ab0b48890847b62169637668f5c2ee16486ad87820ab2c",
+    "app/pos/portable/portable-panels.tsx": "6d28b36757f5be127260831cbd51c02969c23e5cf7b7df771950f159931ebcf4",
+    "app/pos/portable/portable-workspace-tabs.tsx": "4bdab523d136704389541549480d81b89829d53e927a12ad42481ecd09ac835c",
+    "tests/owner-pos-instant-tabs-ui.test.mjs": "db70197a8ec8d8579436bfbdd99171b665e9822aaceab9c95a0ecdcf7dc0743a",
+    "tests/portable-pending-panels-ui.test.mjs": "e56981d9576f1c4a31af5a40562727f45f5e349493c12dba17254b33da8348ba",
+    "docs/pos-navigation-performance.txt": "958be4f0f419c064a102c33dc2b46ea0164631c007934e74c2a48c3588986ab0"
+  }
+}

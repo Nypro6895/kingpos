@@ -1,0 +1,64 @@
+REYLUMI: INSTALLED APPLICATION AND RETAINED WEB EXPERIENCE
+Implementation date: 2026-10-16. Publication requires a separate verified receipt.
+
+The iOS application installs the actual application views, styles, fonts,
+public reference catalog, complete bilingual Help text/images and local map
+library. Navigation uses one React document. Previously visited ordinary views
+retain their own DOM, input and scroll; POS checkout stays mounted while its
+Check-in/Book/Ticket/Report siblings are shown. Unvisited operational panels
+are loaded lazily. Explore core, optional extras and discovery feed load
+independently so a slow optional service cannot block the initial content.
+
+Read models and business actions are separate. Named readers reuse original
+identity, permission and ownership checks and return scoped DTOs with ETags.
+Reference and last-known operational DTOs restore immediately from the native
+encrypted store. Unchanged reads return body-free 304 responses. Timeouts retain
+last-known authorized content; confirmed deletion removes it. Account, salon,
+staff-binding, permission, device lock and lease changes retain their original
+security boundaries. A delayed disk/network reply cannot overwrite a newer
+mutation, confirmed deletion or account reset.
+
+The native store has a device-Keychain encryption key, bounded storage and
+expiring verified leases. JavaScript cannot write arbitrary native snapshots.
+Public Help/legal content requires no account or network request. Ordinary
+staff, owner and customer pages use the original full views and controls.
+POS/Check-in share their roster/read model; money inputs use the existing
+idempotent offline outbox and conflict checks. Merely reconnecting never
+submits a staff editor's unsent money. Commands are not automatically retried.
+iOS background work remains best-effort under the existing operating-system
+scheduler; this does not promise continuous background execution or zero latency.
+
+Customer Display reuses the original device/owner authority. Only a verified
+paired workspace may seed its cached draft. Owner draft initialization and
+payment instructions remain fresh operations. Credential, payment, recovery,
+invitation and secret-capability links use the original HTTPS flows. The exact
+reviewed exceptions and bounded More sections are recorded in
+lib/app-local-online-routes.json; exceptions are not counted as bundled pages.
+
+Original forms/actions remain the business authority, with a compile-pinned
+transport allowlist. Large attachments use bounded private staging and one
+original final handler: Support evidence, owner/tax paystubs, Campaign images
+and up to three POS display images. Finalization rechecks access and original
+CAS/PIN/ownership; uncertain results require status/readback rather than an
+automatic duplicate write. The compatible staging migration is not proof of
+production application; deployment receipts must record actual migration state.
+
+Web keeps the existing server-rendered pages, search indexing and public Next
+navigation. The owner five-tab workspace now retains the checkout and visited
+operational panels. Existing scoped resource pages reconcile their small DTOs;
+no iframe or second POS application is mounted. Generic Next retention remains
+bounded by its supported version. Web and installed iOS do not claim identical
+cold-start or offline capability. No technical cache banners are added.
+
+Build scripts accept only approved public client configuration. Bundle files
+have exact byte hashes; Git text normalization is disabled for those assets.
+The bundle is inactive by default. --activate requires complete ordinary-route
+coverage and public connection configuration, and must only be used after the
+assembled application checks pass. A successful build or simulator archive is
+not a web deployment, TestFlight upload or App Store publication.
+
+Evidence and immutable component snapshots are in the change journal and
+artifacts/app-local-platform-20261016. Native checkpoint r6 (4fa7f10) passed 72
+XCTests and an unsigned archive in GitHub run38940393313; later native/source
+revisions require their own validation before publication. Physical iPhone
+timing and current live publication must be reported separately.

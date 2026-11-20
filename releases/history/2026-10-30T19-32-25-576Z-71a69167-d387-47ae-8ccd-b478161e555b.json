@@ -1,0 +1,134 @@
+{
+  "kind": "release",
+  "summary": "Published final first-party Gift/Reward guest delivery and native-safe public QR links to web; Windows Portable0.7.4 remains current. Market excluded. Native run41115270700 has separate pending acceptance.",
+  "changes": [
+    "3498772a-49b0-433e-bb42-0a7a5023ef77",
+    "2d036b68-5cc4-4ae5-a357-e2c67263b2f4",
+    "b50a6c5a-17de-4ab9-9449-b35a8d3505a9",
+    "ce9a106d-6218-46c3-81f5-ec3cd00098b3",
+    "d27c627e-c996-4593-84df-20c09909b332",
+    "72cba52c-bdec-46a8-8831-f9a44e21afcb",
+    "2a99cba5-0cce-40ae-a23b-ac6d4e459367"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_Gcf9uNi3oWwpS2CL6rq8E6dwwwRZ",
+      "baselineDeploymentId": "dpl_7t28Vm7CwNvZEffPYBQLGDpy17Hb",
+      "sourceCommit": "9fd66c891410a308fb5fbff2947efe508044030e",
+      "sourceSha256": "61f39a48c5f95f13776fba7b73e7cb47b334e6f80073b87902edfcf841acc531",
+      "overlaySha256": "48accff009a0488fb2b5fcc2686f83deface2a8509de402f823225a176c8e7a2",
+      "evidence": "artifacts/gift-sale-integration-20261030/web-final/web-live-source-verified.json",
+      "http": "artifacts/gift-sale-integration-20261030/web-final/http-live.json",
+      "migration": "artifacts/gift-sale-integration-20261030/production-forward-710.json",
+      "windows": {
+        "version": "0.7.4",
+        "bytes": 111708701,
+        "sha256": "703a307fa153f59155e29c9e0cb5af8d4b1903f62f46f932bed8e7ac075d6b37",
+        "evidence": "artifacts/gift-sale-integration-20261030/web-final/portable-download-live-verified.json"
+      },
+      "uploadExcluded": [
+        {
+          "file": "desktop/main.cjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "desktop/package-lock.json",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "desktop/package.json",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "desktop/preload.cjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "desktop/RELEASE-NOTES-0.7.4.md",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/app-local-benefits-transport.test.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/gift-card-stripe.test.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/gift-counter-sale.actual-ui.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/gift-counter-sale.integration.test.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/gift-portable-delivery-ui.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/gift-public-link.test.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/helpers/isolated-supabase-fixture.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/helpers/reward-parallel-rpc.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/helpers/rewardlumi-ui-entry.tsx",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/portable-presentation-ui.test.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/rewardlumi-actual-app-ui.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/rewardlumi-app-proxy.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/rewardlumi-browser-server.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/rewardlumi-browser-ui.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/rewardlumi-full-schema.integration.test.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/rewardlumi-portable-redemption.integration.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/rewardlumi-report-ui.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/rewardlumi-security.integration.test.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        },
+        {
+          "file": "tests/rewardlumi-wallet-ui.mjs",
+          "reason": "Existing .vercelignore excludes test fixtures and separately packaged desktop source"
+        }
+      ]
+    }
+  },
+  "id": "71a69167-d387-47ae-8ccd-b478161e555b",
+  "recordedAt": "2026-10-30T19:32:25.576Z",
+  "worktree": "C:\\Reylumi-worktrees\\gift-reward-sale-integration-20261030"
+}

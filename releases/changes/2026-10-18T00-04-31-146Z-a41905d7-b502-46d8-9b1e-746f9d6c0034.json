@@ -1,0 +1,52 @@
+{
+  "kind": "change",
+  "changeId": "staff-inline-compact-20261017",
+  "status": "needs-integration",
+  "summary": "Completed approved compact single-open staff editor: per-staff Save, Cancel restores/collapses, Role input removed with old data retained; frozen patch pending production baseline integration",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/staff/staff-directory-editor.tsx",
+    "app/staff/actions.ts",
+    "app/(app)/staff/page.tsx",
+    "tests/staff-local-search-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "artifacts/staff-inline-20261017/source",
+    "hashesFile": "artifacts/staff-inline-20261017/source-hashes.json",
+    "patch": "artifacts/staff-inline-20261017/implementation.patch"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Browser behavior and responsive UI fixture",
+      "result": "passed",
+      "evidence": "tests/staff-local-search-ui.test.mjs; artifacts/staff-inline-20261017/*-edit.png"
+    },
+    {
+      "name": "Full-project TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/staff-inline-20261017/typecheck-final.txt; exit 0"
+    },
+    {
+      "name": "ESLint editor/actions/test",
+      "result": "passed"
+    },
+    {
+      "name": "Additional staff contracts",
+      "result": "failed",
+      "evidence": "19/20; unrelated current-context hydration assertion; artifacts/staff-inline-20261017/staff-contracts.txt"
+    },
+    {
+      "name": "Production baseline assembly/build and authenticated live verification",
+      "result": "pending",
+      "evidence": "No deployment requested; integrate task-only patch with current production baseline before release"
+    }
+  ],
+  "id": "a41905d7-b502-46d8-9b1e-746f9d6c0034",
+  "recordedAt": "2026-10-18T00:04:31.146Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

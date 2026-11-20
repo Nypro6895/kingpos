@@ -1,0 +1,87 @@
+{
+  "kind": "change",
+  "changeId": "phone-checkin-unified-pos-20261110",
+  "status": "ready",
+  "summary": "Post-97 integrated revision: Implemented approved sequential-staff service selection and unified Owner/Portable POS editor for shared held tickets, with safe switching and atomic revision-checked Save/Submit. Original handoff 0f556250-9b81-4829-af61-899694d5f339. Distribution evidence is recorded per target; no physical-device or new store/legal acceptance implied.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/staff/scan/scan-ticket-editor.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "app/(app)/pos/portable/page.tsx",
+    "app/service-relay/desk-relay.tsx",
+    "app/service-relay/actions.ts",
+    "app/pos/portable/actions.ts",
+    "types/service-relay.ts",
+    "types/staff-scan.ts",
+    "lib/vietnamese-staff-scan.json",
+    "tests/staff-scan-ui.test.mjs",
+    "tests/staff-scan.integration.test.mjs",
+    "lib/held-pos-ticket.ts",
+    "supabase/migrations/20261111070000_phone_checkin_unified_pos.sql",
+    "tests/phone-checkin-unified-pos-ui.test.mjs",
+    "tests/phone-checkin-full-schema.integration.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\after97-release-20261111\\artifacts\\after97\\release-snapshot",
+    "commit": "ca96947eb7c4c71deeef5e361d2eb54c41bc5315"
+  },
+  "dependencies": [
+    "phone-checkin-drafts-20261110"
+  ],
+  "supersedesEvents": [],
+  "validation": [
+    {
+      "name": "Production build and TypeScript on assembled source",
+      "result": "passed",
+      "evidence": "artifacts/after97/build-adapters.txt"
+    },
+    {
+      "name": "77 selected regression suites: 286 passed, zero failed; conditional skips explicit",
+      "result": "passed",
+      "evidence": "artifacts/after97/focused-tests.txt"
+    },
+    {
+      "name": "Full isolated schema and real Auth/PostgREST shared-ticket lifecycle",
+      "result": "passed",
+      "evidence": "artifacts/after97/full-schema-final.txt"
+    },
+    {
+      "name": "16 production migrations source verified",
+      "result": "passed",
+      "evidence": "artifacts/after97/migration-verified.json"
+    },
+    {
+      "name": "Uploaded candidate exact source hashes",
+      "result": "passed",
+      "evidence": "artifacts/after97/upload-source-verified.json"
+    }
+  ],
+  "id": "d3cbb15f-fedf-40f1-967f-3b6afda84bb8",
+  "recordedAt": "2026-11-12T02:06:56.200Z",
+  "worktree": "C:\\Reylumi-worktrees\\after97-release-20261111",
+  "fileHashes": {
+    "app/staff/scan/scan-ticket-editor.tsx": "fe562c2ada81894277ecc751b48ac03e4d460faa6c4ed72b766501a0c23ed9d9",
+    "app/pos/owner-pos-client.tsx": "795a403c77a0a9cef350f5005228c990a72482d59a3a8372ea8c22f0c3a04894",
+    "app/pos/pos-desk-client.tsx": "d7eb3878dae2fb9384e31aa48fc076a02c34e6acb45f726cb9200a70b7507112",
+    "app/pos/portable/portable-draft-controls.tsx": "ef3643aa631bd902d0a5e76f3f5bb2a0bbc8a68c19181bcacb97e7e34f29a6df",
+    "app/(app)/pos/portable/page.tsx": "95279c434335eb6cefbcd3849805e5d27e16fd1fa0eae1ea9e0c16b91900539e",
+    "app/service-relay/desk-relay.tsx": "772c8f7a590e2a1bb8237af0256bfa7b5c43260a62cf6d0b8e443d9d2c718f9b",
+    "app/service-relay/actions.ts": "77b565d50d0b9e51120f01eecf77826b4c47a02505098066c4f9a9bdb4c596a3",
+    "app/pos/portable/actions.ts": "385c3ac993992c9dd66e2cf9e70ab7968873b3f4ff36bd7c3ad3552cfd523674",
+    "types/service-relay.ts": "41a05593f0ccc499d013526e0dc81637db33c4d37c51906212d29a156d9b0b90",
+    "types/staff-scan.ts": "4324a0a785609611bcb29a60768cb4577328dcdaa687eb7e48007edf2de1fbc4",
+    "lib/vietnamese-staff-scan.json": "6194d664de823626f69fbfd4fd6e95e7a2d8f3287b7ac31472f36dcd1c9ad151",
+    "tests/staff-scan-ui.test.mjs": "635221f60abb31f0665949fa414d8438b8641ea5b6879f4dac9c0e0dc92431c7",
+    "tests/staff-scan.integration.test.mjs": "51bd10f40e3186a04b2d10c5ebe2362c4fb890b338c281b18914b69399e94235",
+    "lib/held-pos-ticket.ts": "bbf2efcece405d7fc68e6abbdb49ff2c87d2a2769d7d608b137e421f58d9e286",
+    "supabase/migrations/20261111070000_phone_checkin_unified_pos.sql": "7c8b79a5a8305f053359ff4af6f9c1fae790637567af926e045b3a6b6159d951",
+    "tests/phone-checkin-unified-pos-ui.test.mjs": "1533a2e1e7df9d1a0b1b1c94cb972151f35e2c3f08b70df21e5a4cd317b44e42",
+    "tests/phone-checkin-full-schema.integration.test.mjs": "fee854e36716b89bb7407768bf2070ddc9dfa005af92741d7e8cb3ef1c949ce0"
+  }
+}

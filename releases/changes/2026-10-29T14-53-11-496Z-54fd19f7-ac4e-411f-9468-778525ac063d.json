@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "manage-mobile-gutters-20261029",
+  "status": "needs-integration",
+  "summary": "Use one safe-area-aware 16px mobile gutter across salon manage pages, including Reports, Settings and Services",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/salon-manage-spacing.css"
+  ],
+  "source": {
+    "snapshot": "artifacts/manage-mobile-gutters-20261029/source"
+  },
+  "dependencies": [
+    "mobile-page-spacing-20261028",
+    "today-ticket-spacing-20261029"
+  ],
+  "validation": [
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Chromium isolated responsive CSS geometry, card/dialog/personal exclusions, actual Settings/Services CSS",
+      "result": "passed",
+      "evidence": "artifacts/manage-mobile-gutters-20261029/layout-check.json"
+    },
+    {
+      "name": "Authenticated mobile pages and physical iPhone visual QA",
+      "result": "pending"
+    }
+  ],
+  "id": "54fd19f7-ac4e-411f-9468-778525ac063d",
+  "recordedAt": "2026-10-29T14:53:11.496Z",
+  "worktree": "C:\\Reylumi\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

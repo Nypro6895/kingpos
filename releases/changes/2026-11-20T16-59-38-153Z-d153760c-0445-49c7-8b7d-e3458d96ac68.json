@@ -1,0 +1,31 @@
+{
+  "validation": [
+    {
+      "result": "pending",
+      "name": "archive/export mismatched identity guard and fixture"
+    }
+  ],
+  "summary": "Bind archive/export selected main bundle identity before privacy inventory upload",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/collect-archive-privacy.py",
+    "ios/scripts/test_collect_archive_privacy.py",
+    "ios/scripts/testflight.sh",
+    ".github/workflows/reylumi-ios-testflight.yml",
+    "docs/ios-archive-privacy-inventory.md"
+  ],
+  "kind": "change",
+  "dependencies": [],
+  "source": {
+    "commit": "9d3d04b02085374b6ec3e43aa315887564f5e32d"
+  },
+  "status": "working",
+  "changeId": "ios-archive-privacy-inventory-20261120",
+  "id": "d153760c-0445-49c7-8b7d-e3458d96ac68",
+  "recordedAt": "2026-11-20T16:59:38.153Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-archive-privacy-inventory-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

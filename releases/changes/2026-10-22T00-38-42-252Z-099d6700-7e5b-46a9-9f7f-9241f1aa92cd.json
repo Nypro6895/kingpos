@@ -1,0 +1,75 @@
+{
+  "kind": "change",
+  "changeId": "services-cache-invariants-r6",
+  "status": "needs-integration",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "summary": "Frozen Services invariant delta: bounded clocks/storage waits, scoped mutation and stale-writer invalidation; default-off; authenticated integration pending.",
+  "files": [
+    "app/(app)/services/page.tsx",
+    "app/services/services-catalog-pilot.tsx",
+    "app/services/services-manager.tsx",
+    "docs/services-catalog-invariants.txt",
+    "docs/services-catalog-measurement-protocol.txt",
+    "lib/app-local-page-registry.tsx",
+    "lib/services-catalog-cache.ts",
+    "lib/services-catalog-controller.ts",
+    "lib/services-catalog-runtime.ts",
+    "releases/changes/2026-10-22T00-18-24-850Z-39ee8deb-57af-4f75-8267-8d1703996528.json",
+    "tests/services-catalog-cache.test.mjs",
+    "tests/services-catalog-controller.test.mjs",
+    "tests/services-catalog-mutation.test.mjs",
+    "tests/services-catalog-native-registry.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-invariants-r6\\source",
+    "commit": "2d0b2619c7f83cea9001c6239631d06541e3a1ee",
+    "manifestSha256": "104700ab0d006c490716571ee50a0ba8dfd0f0b1caad9340263fc282c64abd1f"
+  },
+  "dependencies": [
+    "Frozen native Services metadata89d8e4e / functional00f3c909",
+    "Coordinator assembled auth+pilot candidate; preserve auth classification and existing notify:false exception isolation",
+    "Authenticated Simulator Swift/backend acceptance, measurement and operational rollback"
+  ],
+  "validation": [
+    {
+      "name": "218 pilot tests and94 selected regression including10admissionUI",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-invariants-r6\\validation-binding.json"
+    },
+    {
+      "name": "59 actual iOS Simulator WK assertions, synthetic transport",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-invariants-r6\\evidence\\native\\NATIVE-HANDOFF.json"
+    },
+    {
+      "name": "Production build239/typecheck and lint0errors1inheritedwarning",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-invariants-r6\\validation-binding.json"
+    },
+    {
+      "name": "Whole and separated patch exact-tree inverse",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\frozen-services-invariants-r6\\rollback-proof.json"
+    },
+    {
+      "name": "Authenticated integrated Simulator and live operational rollback",
+      "result": "pending"
+    }
+  ],
+  "knownLimits": [
+    "Delayed cross-realm observeAccount has no per-request admission token",
+    "Durable purge cannot be guaranteed if IDB cannot commit; immediate UI withdrawal is tested",
+    "Data TTL across restart relies on wall clock; admission never persists"
+  ],
+  "releaseHeld": true,
+  "productionFlagEnabled": false,
+  "physicalIPhoneReleaseBlocker": false,
+  "id": "099d6700-7e5b-46a9-9f7f-9241f1aa92cd",
+  "recordedAt": "2026-10-22T00:38:42.252Z",
+  "worktree": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-21\\task-8\\services-invariants-delta",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

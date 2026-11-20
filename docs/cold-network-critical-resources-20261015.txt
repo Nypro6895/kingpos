@@ -1,0 +1,9 @@
+REYLUMI COLD NETWORK RESOURCE RELEASE — 2026-10-15 America/Chicago
+
+Observed live weak-network Explore: FCP8.684–9.260s, shell17.7–18.5s. Unused194428byte local fonts and592019byte raw/159637byte transferred translation chunk competed with blocking CSS. These are measurements, not a universal percentage guarantee.
+
+Changes: disable eager preload of unchanged3fonts; load UI translation only when eligible with deterministic hydration and retained drafts; load sign-in form only after expiry while leaving session monitor/reset/portal/callback intact; retain separately cacheable route styles without unrelated CSS coalescing. No auth/privacy/financial logic or native bridge changes.
+
+Actual local production shell: initial CSS411087→294463raw bytes,8→2requests; initial JS1738971→1126981raw and507274→346111gzip; no eager dictionary.6mobile/desktop stable geometry/typography comparisons passed; screenshots inspected.98web/cache tests and assembled222route build/TypeScript passed. Local return Market keeps same input/query without document reload. Local weak sample FCP3772ms/shell9168ms; local and CDN timing are not interchangeable.
+
+Release baseline: dpl_7e8b3hzk36m7sS7CFa6io6svJsbF; exact source305a33e12bea0c0f5c787d0a44fbb8c1cf5d8834. Preserve the newly shipped Daily Closing and108Explore/location files. Native1.0.1(18.1) remains the uploaded compatible runtime,28XCTest/AppleVALID/TestFlight available already recorded; no new native binary needed for these web-only changes. Live source/performance verification is recorded separately after promotion.
