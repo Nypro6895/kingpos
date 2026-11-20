@@ -22,6 +22,7 @@ export function PublicSupportLanding({ children, language, navigate }: {
     <header className="mb-6">
       <h1 className="text-xl font-semibold">{t("Support")}</h1>
       <p className="mt-1 text-sm text-zinc-500">{t("Report an issue and continue conversations with our team.")}</p>
+      <p className="mt-2 text-sm text-zinc-600">Reylumi LLC · <a href="mailto:support@reylumi.com" className="underline">support@reylumi.com</a></p>
     </header>
     <div className="grid gap-3">
       <Link href="/contact-support" className="text-orange-700 underline" onClick={follow("/contact-support")}>{t("Contact support without signing in")}</Link>
