@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "ios-archive-privacy-inventory-20261120",
+  "status": "working",
+  "summary": "Collect measured archive/exported-app privacy manifests and public SDK bundle metadata after signed export without Apple privacy attestation",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/collect-archive-privacy.py",
+    "ios/scripts/test_collect_archive_privacy.py",
+    "ios/scripts/testflight.sh",
+    ".github/workflows/reylumi-ios-testflight.yml",
+    "docs/ios-archive-privacy-inventory.md"
+  ],
+  "source": {
+    "commit": "5b84d3d3236bbae4d682a69f1b5f6e75282d8b34"
+  },
+  "validation": [
+    {
+      "result": "pending",
+      "name": "source implementation and fixture validation"
+    }
+  ],
+  "dependencies": [],
+  "id": "b31bb76e-8cd1-44a1-bb4b-f5ab9eff2267",
+  "recordedAt": "2026-11-20T16:48:41.052Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-archive-privacy-inventory-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
