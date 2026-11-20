@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "native-ci-exact-branch-preview-suppression-20261120",
+  "status": "working",
+  "summary": "Prevent the existing native CI trigger branch from creating automatic Vercel deployments while retaining combined release sequencing",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "vercel.json"
+  ],
+  "source": {
+    "commit": "3c41100dd26ace91a8141f3ae312a4e8b5578e80"
+  },
+  "validation": [
+    {
+      "name": "Exact two-line JSON scope proposal reviewed against official Vercel branch semantics",
+      "result": "passed"
+    }
+  ],
+  "dependencies": [],
+  "id": "0888cc4e-8645-43e1-9674-726875e19675",
+  "recordedAt": "2026-11-20T16:54:33.273Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-followup-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

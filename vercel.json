@@ -1,7 +1,8 @@
 {
   "git": {
     "deploymentEnabled": {
-      "codex/ios-session-role-stability-20261019": false
+      "codex/ios-session-role-stability-20261019": false,
+      "codex/reylumi-ios-webview": false
     }
   },
   "$schema": "https://openapi.vercel.sh/vercel.json",
