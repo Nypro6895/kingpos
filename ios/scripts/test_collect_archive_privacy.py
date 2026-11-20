@@ -217,6 +217,26 @@ class InventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(collector.InventoryError, 'non-public-file-read-refused'):
             collector.read_public_plist(app / 'secret.key', app)
 
+    def test_unrelated_export_identity_refuses_upload_with_error_receipt(self):
+        archive = self.root / 'Measured.xcarchive'
+        app = self.app(archive / 'Products' / 'Applications')
+        self.manifest(app)
+        exported = self.app(self.root / 'unrelated-export')
+        self.manifest(exported)
+        self.plist(exported / 'Info.plist', {'CFBundleIdentifier': 'example.unrelated',
+                                           'CFBundleShortVersionString': '1.2.3', 'CFBundleVersion': '999'})
+        output, receipt = self.root / 'pair-inventory.json', self.root / 'pair-receipt.json'
+        args = ['--archive', str(archive), '--exported-app', str(exported), '--source-commit', COMMIT,
+                '--output', str(output), '--receipt', str(receipt)]
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(collector.main(args), 2)
+        report = json.loads(output.read_text())
+        self.assertEqual(report['status'], 'collected-with-errors')
+        self.assertEqual(report['archiveExportIdentityComparison']['status'], 'mismatch')
+        self.assertEqual(report['archiveExportIdentityComparison']['mismatchedFields'],
+                         ['CFBundleIdentifier', 'CFBundleVersion'])
+        self.assertEqual(json.loads(receipt.read_text())['exitCode'], 2)
+
     def test_cli_error_receipt_hash_and_no_overwrite(self):
         app = self.app()
         self.manifest(app, {'NSPrivacyTracking': 'not-a-boolean'})

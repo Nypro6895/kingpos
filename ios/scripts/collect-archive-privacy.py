@@ -307,10 +307,20 @@ def collect(archive=None, app=None, exported_app=None, source_commit=None, use_p
     items.append(bundle_inventory(primary, 'xcarchive-app' if archive is not None else 'app', source_commit, use_plutil))
     if exported_app is not None:
         items.append(bundle_inventory(Path(exported_app), 'exported-app', source_commit, use_plutil))
+    comparison = {'status': 'not-requested', 'scope': 'selected main identity only; not binary/source/signature equivalence'}
+    if exported_app is not None:
+        keys = PUBLIC_INFO_KEYS[:3]
+        first, second = items[0]['mainBundle']['info'] or {}, items[1]['mainBundle']['info'] or {}
+        missing = [key for key in keys if key not in first or key not in second]
+        different = [key for key in keys if first.get(key) != second.get(key)]
+        comparison.update(status='unavailable' if missing else 'mismatch' if different else 'matched',
+                          fieldsCompared=list(keys), mismatchedFields=different, missingFields=missing)
+    invalid = any(item['errors'] for item in items) or comparison['status'] in {'mismatch', 'unavailable'}
     return {'schemaVersion': 1, 'generatedUtc': dt.datetime.now(dt.timezone.utc).isoformat(),
             'reportKind': 'measured-bundle-manifest-inventory-NOT-Xcode-generated-Privacy-Report',
-            'status': 'collected-with-errors' if any(item['errors'] for item in items) else 'collected',
+            'status': 'collected-with-errors' if invalid else 'collected',
             'sourceCommit': source_commit, 'inputs': items,
+            'archiveExportIdentityComparison': comparison,
             'appWideClassification': {'dataCollection': 'pending-app-wide-review', 'tracking': 'pending-app-wide-review'},
             'limitations': ['SDK/app manifest declarations are not verified runtime behavior or Apple attestation.',
                             'Missing or empty manifests do not mean Data Not Collected or No Tracking.',
