@@ -1,0 +1,105 @@
+{
+  "kind": "change",
+  "changeId": "combined-followup-integration-20261120",
+  "status": "needs-integration",
+  "summary": "Integrated both completed account/layout revisions onto the preserved combined source; local checks pass, native/backend/combined publication gates remain pending.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/account/account-profile-editor.tsx",
+    "tests/account-verification-dialog-layer.test.mjs",
+    "releases/account-verification-viewport-20261119.txt",
+    "app/(app)/admin/_components/admin-conversation-chat.tsx",
+    "app/(app)/admin/_components/admin-support-hub.tsx",
+    "app/(app)/admin/admin.css",
+    "app/(app)/admin/users/users-workspace.tsx",
+    "app/(app)/admin/users/users.module.css",
+    "app/(app)/forum/forum.module.css",
+    "app/(app)/forum/forum.tsx",
+    "app/beauty/beauty-profile-client.tsx",
+    "app/beauty/beauty-profile.css",
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/campaigns/create-campaign.tsx",
+    "app/check-writer/check-writer.module.css",
+    "app/check-writer/check-writer.tsx",
+    "app/my-place/place-ui.tsx",
+    "app/pos/compact-checkout-adjustments.tsx",
+    "app/pos/custom-service-dialog.tsx",
+    "app/quick-workspace-panel.tsx",
+    "app/service-relay/desk-relay.tsx",
+    "app/settings/login-security/login-security-panel.tsx",
+    "app/settings/login-security/login-security-quick-editor.tsx",
+    "app/settings/personal-public-profile-panel.tsx",
+    "app/settings/settings-dialog-layer.tsx",
+    "app/staff/appointments/staff-create-appointment.tsx",
+    "app/staff/my-work/staff-profile-settings-drawer.tsx",
+    "app/tax/tax-workspace.tsx",
+    "components/gift-card/gift-card.css",
+    "components/gift-card/gift-modal-layer.tsx",
+    "components/post-safety.tsx",
+    "components/quick-booking.tsx",
+    "components/receipt-setup.tsx",
+    "components/salon-report-dialog.tsx",
+    "components/social-text-report-button.tsx",
+    "components/use-overlay-viewport.ts",
+    "releases/layout-interaction-keyboard-hardening-20261119.txt",
+    "tests/financial-overlay-viewport.test.mjs",
+    "tests/fixtures/financial-overlay-viewport-fixture.tsx",
+    "tests/fixtures/social-booking-layout.mjs",
+    "tests/overlay-viewport-runtime.test.mjs",
+    "tests/settings-admin-overlay-layout.test.mjs",
+    "tests/shared-overlay-keyboard.test.mjs",
+    "tests/social-booking-layout.test.mjs",
+    "tests/staff-create-appointment-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "ed0d7b269981fa002e0800a31b3b24ce60f0b673",
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\root\\frozen-integrated-ui-45"
+  },
+  "dependencies": [
+    "mfa-access-enforcement-20261119",
+    "account-verification-keyboard-layout-20261119",
+    "layout-interaction-keyboard-hardening-20261119"
+  ],
+  "validation": [
+    {
+      "name": "Frozen45-file integration remains byte-identical to its reviewed authored Git scope",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\root\\frozen-integrated-ui-45-manifest.json"
+    },
+    {
+      "name": "Exact code authority:101 mocked MFA and161 UI tests; zero failures/cancellations/skips; scoped lint zero errors",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\root\\checks-r2-tests-fixed\\checks-verified-summary.json"
+    },
+    {
+      "name": "Full Next312 pages, offline assets, TypeScript3135 files and client verify-only403 actions/1074 modules/zero unsupported",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\root\\checks-r2-build\\checks-verified-summary.json"
+    },
+    {
+      "name": "Actual local Next scroll regression14 cases and2 same-document history controls;925e runtime source projection to ed0d7b documented",
+      "result": "passed",
+      "evidence": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-followup-r1\\ios-scroll\\FINAL-HANDOFF.json"
+    },
+    {
+      "name": "Fresh native archive/TestFlight and exact new-source real-device acceptance",
+      "result": "pending"
+    },
+    {
+      "name": "Full real MFA integration and exact26-migration rehearsal remain unverified; automatic safety review hold not retried",
+      "result": "pending"
+    },
+    {
+      "name": "Combined Production, Windows real backup/upgrade and Store factual declarations remain held",
+      "result": "pending"
+    }
+  ],
+  "id": "e6859e3a-1019-46f1-93d1-e3b506ad417c",
+  "recordedAt": "2026-11-20T04:37:53.204Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-followup-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
