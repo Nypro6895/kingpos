@@ -3,7 +3,7 @@ import { useTransientOverlay } from "@/components/overlay-dismissal";
 import { marketTargetHref } from "@/lib/market-target-url";
 import { useMarketTargetSalon } from "@/app/market/scoped-market-client";
 import { useScopedMarketActions } from "@/app/market/scoped-market-client";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
 import {
   WorkspaceText,
@@ -20,9 +20,15 @@ import {
 } from "@/lib/campaign-credit-display";
 import { money } from "@/lib/owner-campaign-rules";
 import { openMarketPayment } from "@/lib/open-market-payment";
+import { isReylumiIOSClient } from "@/lib/ios-client";
 
 import { CampaignModal } from "./campaign-modal";
 import styles from "./campaign-ui.module.css";
+const subscribeIOSClient = () => () => {};
+const iosClientSnapshot = () => isReylumiIOSClient(navigator.userAgent);
+const serverIOSClientSnapshot = () => false;
+const iosAutoSetupNotice =
+  "New automatic purchases and changes to their setup are unavailable in this iOS app.";
 export type CreditView = "add" | "payment" | "auto" | "ledger";
 export function CreditPanel({
   wallet,
@@ -47,6 +53,11 @@ export function CreditPanel({
   } = useScopedMarketActions();
 
   const t = useWorkspaceTranslation();
+  const deferAutoSetup = useSyncExternalStore(
+    subscribeIOSClient,
+    iosClientSnapshot,
+    serverIOSClientSnapshot,
+  );
   const [view, setView] = useState<CreditView | null>(initialView ?? null),
     [message, setMessage] = useState(""),
     [busy, start] = useTransition();
@@ -181,7 +192,7 @@ export function CreditPanel({
                 type="checkbox"
                 role="switch"
                 checked={wallet.auto_topup_enabled}
-                disabled={busy}
+                disabled={busy || (deferAutoSetup && !wallet.auto_topup_enabled)}
                 onChange={() =>
                   wallet.auto_topup_enabled
                     ? run(() => campaignPaymentControlAction("stop"))
@@ -193,7 +204,9 @@ export function CreditPanel({
               {wallet.auto_topup_enabled
                 ? `${formatCredits(wallet.topup_credits)} ${t("credits each time")} · ${formatCredits(wallet.monthly_limit_cents)} ${t("credits maximum per month")}`
                 : t(
-                    "To keep future ads running, choose automatic purchases and a monthly limit.",
+                    deferAutoSetup
+                      ? iosAutoSetupNotice
+                      : "To keep future ads running, choose automatic purchases and a monthly limit.",
                   )}
             </p>
             <div className={styles.actions}>
@@ -315,10 +328,66 @@ export function CreditPanel({
               </button>
             </>
           ) : null}
-          {view === "auto" && !autoReview ? (
+          {view === "auto" && deferAutoSetup ? (
+            <>
+              <p className={styles.notice}>{text(iosAutoSetupNotice)}</p>
+              <p>
+                {text(
+                  "Manage automatic purchases on reylumi.com in your browser.",
+                )}
+              </p>
+              <p>
+                {text(
+                  wallet.auto_topup_enabled
+                    ? "Automatic purchases are on."
+                    : "Automatic purchases are off.",
+                )}
+              </p>
+              <div className={styles.detailRow}>
+                <span>{text("Buy each time")}</span>
+                <strong>
+                  {formatCredits(wallet.topup_credits)} {text("credits")} ·{" "}
+                  {money(wallet.topup_credits)}
+                </strong>
+              </div>
+              <div className={styles.detailRow}>
+                <span>{text("Monthly maximum")}</span>
+                <strong>
+                  {formatCredits(wallet.monthly_limit_cents)} {text("credits")} ·{" "}
+                  {money(wallet.monthly_limit_cents)}
+                </strong>
+              </div>
+              <p>
+                {text(
+                  "Existing authorizations and payments already processing are unchanged.",
+                )}
+              </p>
+              <button
+                className={styles.link}
+                disabled={busy}
+                onClick={() => run(() => campaignPaymentControlAction("stop"))}
+              >
+                {text("Stop automatic payments")}
+              </button>
+              <br />
+              <button
+                className={styles.link}
+                disabled={busy}
+                onClick={() => setView("payment")}
+              >
+                {text("Manage card & payments")}
+              </button>
+            </>
+          ) : null}
+          {view === "auto" && !deferAutoSetup && !autoReview ? (
             <form
               onSubmit={(event) => {
                 event.preventDefault();
+                // Recheck at the event boundary, including hydration/replayed events.
+                if (iosClientSnapshot()) {
+                  setMessage(iosAutoSetupNotice);
+                  return;
+                }
                 try {
                   const l = creditUnits(limit),
                     th = creditUnits(threshold);
@@ -406,7 +475,7 @@ export function CreditPanel({
               ) : null}
             </form>
           ) : null}
-          {view === "auto" && autoReview ? (
+          {view === "auto" && !deferAutoSetup && autoReview ? (
             <>
               <p>
                 {text(
@@ -432,7 +501,11 @@ export function CreditPanel({
               <button
                 className={`${styles.primary} ${styles.full}`}
                 disabled={!consent || busy}
-                onClick={() =>
+                onClick={() => {
+                  if (iosClientSnapshot()) {
+                    setAutoReview(false);
+                    return;
+                  }
                   run(
                     () =>
                       saveCampaignTopupAction({
@@ -442,8 +515,8 @@ export function CreditPanel({
                         limit: creditUnits(limit),
                       }),
                     true,
-                  )
-                }
+                  );
+                }}
               >
                 {text(busy ? "Saving…" : "Enable automatic purchases")}
               </button>
