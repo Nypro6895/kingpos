@@ -1,0 +1,46 @@
+{
+  "kind": "change",
+  "changeId": "market-owner-browser-fixture-env-20261120",
+  "status": "ready",
+  "summary": "Canonical Market owner-target browser fixture now defines empty process.env at build time; original assertions/timeouts and every product input remain unchanged.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "tests/market-owner-target-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\ios-store-privacy-20261116\\artifacts\\combined-release-20261120-ios-final-r1\\market-owner-fixture-r1\\frozen-source",
+    "baseCommit": "29c3c11bf10c3ed86bda4e8e44264c2c9f25472d",
+    "manifestSha256": "6b0e6f4c50a96c095bbada9c8d37988c7352449579792569356fac0378544b0f"
+  },
+  "validation": [
+    {
+      "name": "Canonical Market owner-target and retained CampaignWorkspace",
+      "result": "passed",
+      "evidence": "2/2, 0skip; exact canonical test files. Scoped artifact-only browser network observer allowed only canonical fulfilled target.test or this worker's own live loopback Server.listen origins; 0 external/denied requests and all owned servers stopped."
+    },
+    {
+      "name": "Exact minimal fixture delta",
+      "result": "passed",
+      "evidence": "Reversing the sole esbuild define insertion restores base29c source byte-for-byte, including all assertions/timeouts. Empty literal object only; no real environment values, product flags, transport or secrets changed."
+    },
+    {
+      "name": "Lint, syntax, whitespace and frozen snapshot",
+      "result": "passed",
+      "evidence": "ESLint1file/0errors/0warnings, Node syntax and git whitespace pass; test SHA25605cfb63a0fd4b314065618ec2cd7101f619d205b3657c630eca075761f95d136. Snapshot and receipt FROZEN-SOURCE.json are fixed."
+    }
+  ],
+  "dependencies": [
+    "ios-auto-credit-first-release-20261120"
+  ],
+  "id": "711d1bed-fd0d-4a07-a583-ecbdeaec5444",
+  "recordedAt": "2026-11-20T17:13:07.285Z",
+  "worktree": "C:\\Reylumi-worktrees\\ios-market-owner-fixture-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "tests/market-owner-target-ui.test.mjs": "05cfb63a0fd4b314065618ec2cd7101f619d205b3657c630eca075761f95d136"
+  }
+}
