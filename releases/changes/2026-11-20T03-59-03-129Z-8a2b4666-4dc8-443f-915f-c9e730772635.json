@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "legal-entry-scroll-target-20261120",
+  "status": "working",
+  "summary": "Restore the framework's fresh-route scroll target for Experience pages while preserving Activity, hashes, history, drafts and access boundaries.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "components/experience-page-boundary.tsx",
+    "tests/experience-page-scroll-target.test.mjs"
+  ],
+  "source": {
+    "commit": "46d23d0af5e2092c27fed9acb0117b625e2e5b27"
+  },
+  "validation": [
+    {
+      "name": "Hydrated actual-source fresh Help footer to Privacy and Terms retains outgoing window offset",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/combined-release-20261120-followup-r1/ios-scroll/runtime-r3/A/server-run-DBI0AR/browser-public-f5gIZd/VALID-SCROLL-SUMMARY.json"
+    },
+    {
+      "name": "Independent shared source and framework scroll target review",
+      "result": "passed"
+    },
+    {
+      "name": "Marker geometry, preserved layout and navigation regression checks",
+      "result": "pending"
+    },
+    {
+      "name": "Fresh build and new native candidate acceptance",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "combined-followup-integration-20261120"
+  ],
+  "id": "8a2b4666-4dc8-443f-915f-c9e730772635",
+  "recordedAt": "2026-11-20T03:59:03.129Z",
+  "worktree": "C:\\Reylumi-worktrees\\combined-followup-20261120-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

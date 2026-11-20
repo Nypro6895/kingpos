@@ -124,11 +124,16 @@ export function ExperiencePageBoundary({ children, admin = false, renderRevision
   }, [lifecycleHref, pathname, admin, contextScope, authenticated, validate, checkedAt, getValidationRevision, router,
     lifecyclePolicy.family, lifecyclePolicy.resetOnHide, lifecyclePolicy.requiresAuth, lifecyclePolicy.revalidateOnShow, lifecyclePolicy.refreshAfterMs, refreshServerView, cancelRefresh]);
 
-  return <div ref={container} className="contents" data-experience-view="" data-experience-family={policy.family} key={contextScope ?? "public"}>
+  return <>
+    {/* Next's route Fragment needs a client rect; display:contents has none.
+        A zero-size static-position anchor leaves the page's layout untouched. */}
+    <span aria-hidden="true" className="pointer-events-none absolute h-0 w-0" data-experience-scroll-target="" />
+    <div ref={container} className="contents" data-experience-view="" data-experience-family={policy.family} key={contextScope ?? "public"}>
     {refreshFailed ? <div role="status" className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3 text-sm">
       <span>The page could not update. Check your connection and try again.</span>
       <button type="button" className="min-h-11 shrink-0 underline" onClick={refreshServerView}>Try again</button>
     </div> : checking ? (pendingFallback ?? <PageLoadingSkeleton />) : null}
     <Activity mode={checking ? "hidden" : "visible"}><div className="contents" key={activation}>{children}</div></Activity>
-  </div>;
+    </div>
+  </>;
 }
