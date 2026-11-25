@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
-import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes, randomInt, randomUUID, sign } from "node:crypto";
+import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes, randomInt, randomUUID, sign, timingSafeEqual } from "node:crypto";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { portableWorkstationSigningPayload, validWorkstationPreview } from "@/lib/portable-workstation-protocol";
 import type { PortableWorkstationDescriptor, PortableWorkstationEnvelope, PortableWorkstationEventKind, PortableWorkstationSession, PortableWorkstationSummary } from "@/types/portable-workstation";
@@ -10,6 +10,9 @@ import type { PosLiveDraftView } from "@/types/pos-desk";
 export const PORTABLE_WORKSTATION_STAFF_COOKIE = "reylumi-portable-workstation";
 export const PORTABLE_WORKSTATION_CUSTOMER_COOKIE = "reylumi-customer-workstation";
 const ATTEMPT_COOKIE = "reylumi-workstation-pair-attempt";
+const CHECK_IN_VISIT_COOKIE_PREFIX = "reylumi-check-in-visit-";
+const CHECK_IN_VISIT_SECONDS = 30 * 60;
+const MAX_CHECK_IN_VISIT_GRANTS = 12;
 const YEAR = 31_536_000;
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 type RecordValue = Record<string, unknown>;
@@ -104,6 +107,11 @@ async function draftToken(station: Station) {
   if (error || !data?.token) throw new PortableWorkstationError("The workstation receipt is unavailable.", 503);
   return String(data.token);
 }
+async function draftLifecycle(station: Station) {
+  const { data, error } = await serviceClient().from("pos_live_drafts").select("token,status,reset_at").eq("id", station.draft_id).eq("salon_id", station.salon_id).single();
+  if (error || !data?.token) throw new PortableWorkstationError("The workstation receipt is unavailable.", 503);
+  return { token: String(data.token), status: String(data.status), resetAt: data.reset_at ? String(data.reset_at) : null };
+}
 /** Never return the legacy bearer in a snapshot, nested result, URL or revision. */
 export function sanitizePairedCustomerResult<T>(value: T, token: string): T {
   if (typeof value === "string") return value.split(token).join("") as T;
@@ -193,10 +201,44 @@ async function notifyRetiredChannel(station: Station, reason: "replaced" | "revo
   finally { await client.removeChannel(channel); }
 }
 
-async function runCustomerAction(commandName: string, input: RecordValue) {
+function checkInVisitSignature(actor: CustomerActor, visitId: string, expiresAt: string) {
+  return keyedHash("check-in-visit", JSON.stringify([actor.workstationId, actor.credentialHash, visitId, expiresAt]));
+}
+async function allowCheckInVisit(actor: CustomerActor, visitId: string, request: Request, startedAt: number) {
+  if (!UUID.test(visitId)) throw new PortableWorkstationError("The check-in could not be confirmed. Please enter your phone again.", 409);
+  const expiresAt = String(startedAt + CHECK_IN_VISIT_SECONDS * 1000);
+  const store = await cookies();
+  const name = CHECK_IN_VISIT_COOKIE_PREFIX + visitId + "-" + randomBytes(6).toString("hex");
+  // Different phone requests may finish out of order. Each visit retains its
+  // own bounded grant; request-start order protects a newer screen's grant.
+  const grants = store.getAll().filter(cookie => cookie.name.startsWith(CHECK_IN_VISIT_COOKIE_PREFIX) && cookie.name !== name)
+    .map(cookie => ({ name: cookie.name, expiresAt: Number(cookie.value.split(".")[1]) }));
+  const retained = [...grants, { name, expiresAt: Number(expiresAt) }].filter(grant => Number.isFinite(grant.expiresAt) && grant.expiresAt > Date.now())
+    .sort((left, right) => right.expiresAt - left.expiresAt).slice(0, MAX_CHECK_IN_VISIT_GRANTS);
+  for (const grant of grants) if (!retained.some(keep => keep.name === grant.name)) store.delete(grant.name);
+  if (retained.some(keep => keep.name === name)) store.set(name, `${visitId}.${expiresAt}.${checkInVisitSignature(actor, visitId, expiresAt)}`, { ...cookieOptions(request), maxAge: Math.max(1, Math.floor((Number(expiresAt) - Date.now()) / 1000)) });
+}
+async function assertCheckInVisit(actor: CustomerActor, visitId: unknown) {
+  const grants = typeof visitId === "string" && UUID.test(visitId) ? (await cookies()).getAll().filter(cookie => cookie.name.startsWith(CHECK_IN_VISIT_COOKIE_PREFIX + visitId + "-")) : [];
+  const allowed = grants.some(grant => {
+    const [allowedVisit, expiresAt, signature, extra] = grant.value.split(".");
+    return allowedVisit === visitId && /^\d{13}$/.test(expiresAt ?? "") && Number(expiresAt) > Date.now() && /^[a-f0-9]{64}$/.test(signature ?? "") && !extra && timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(checkInVisitSignature(actor, allowedVisit, expiresAt), "hex"));
+  });
+  if (!allowed) {
+    throw new PortableWorkstationError("Confirm your phone number before changing this check-in.", 403);
+  }
+}
+async function runCustomerAction(commandName: string, input: RecordValue, request: Request) {
+  const startedAt = Date.now();
   const { station, actor } = await customerContext();
-  if (!summary(station).staffOnline) throw new PortableWorkstationError("The staff POS is disconnected. Please wait for staff to sign in.", 409);
-  const token = await draftToken(station);
+  const staffOnline = summary(station).staffOnline;
+  // Enrollment authorizes the standalone kiosk throughout the day. Only live
+  // checkout commands depend on the cashier's lease; signed intents retain the
+  // separate online/cart/revision checks in the workstation state machine.
+  const standalone = commandName === "phone" && input.localCheckout !== true || commandName === "services" || commandName.startsWith("checkin.receipt.");
+  if (!standalone && !staffOnline) throw new PortableWorkstationError("The staff POS is disconnected. Please wait for staff to sign in.", 409);
+  const lifecycle = await draftLifecycle(station);
+  const token = lifecycle.token;
   const actions = await import("@/app/pos/actions");
   const scoped = { ...input, token };
   let result: unknown;
@@ -215,27 +257,44 @@ async function runCustomerAction(commandName: string, input: RecordValue) {
         const baseline = await actions.getPosLiveDraft(token);
         if (!baseline.ok || !baseline.data) throw new PortableWorkstationError("The receipt is unavailable. Please try again.", 409);
         result = { ok: true, data: { mode: "checkout", visit: null, snapshot: { ...baseline.data, ...(isRecord(preview.payload) ? preview.payload : {}), customer: found.data } } };
-      } else result = await actions.submitCustomerDisplayPhone(scoped as Parameters<typeof actions.submitCustomerDisplayPhone>[0]);
+      } else {
+        // The established reader resets only an expired closed draft. It never
+        // clears an active checkout or a receipt still inside its reset window.
+        if (lifecycle.status !== "draft") {
+          if (lifecycle.status !== "closed" || !lifecycle.resetAt || Date.parse(lifecycle.resetAt) > Date.now()) throw new PortableWorkstationError("The previous receipt is still closing. Please try again shortly.", 409);
+          const ready = await actions.getPosLiveDraft(token);
+          if (!ready.ok) throw new PortableWorkstationError(sanitizePairedCustomerResult(ready.error, token), 503);
+          if (!ready.data || ready.data.status !== "draft") throw new PortableWorkstationError("The previous receipt is still closing. Please try again shortly.", 409);
+        }
+        result = await actions.submitCustomerDisplayPhone({ ...scoped, checkInOnly: true } as Parameters<typeof actions.submitCustomerDisplayPhone>[0]);
+      }
       break;
     }
     case "search": result = await actions.searchCustomerDisplayLiveDraftCustomers(scoped as Parameters<typeof actions.searchCustomerDisplayLiveDraftCustomers>[0]); break;
     case "find": result = await actions.findLiveDraftCustomerByPhone(scoped as Parameters<typeof actions.findLiveDraftCustomerByPhone>[0]); break;
     case "createCustomer": result = await actions.createLiveDraftCustomer(scoped as Parameters<typeof actions.createLiveDraftCustomer>[0]); break;
-    case "services": result = await actions.saveCustomerDisplayRequestedServices(scoped as Parameters<typeof actions.saveCustomerDisplayRequestedServices>[0]); break;
+    case "services":
+      await assertCheckInVisit(actor, input.visitId);
+      result = await actions.saveCustomerDisplayRequestedServices(scoped as Parameters<typeof actions.saveCustomerDisplayRequestedServices>[0]);
+      break;
     // A paired tip/reset must go through the owning cart's validated intent and
     // durable acknowledgment. The cloud draft may lag the live staff preview.
     case "tip": case "reset": throw new PortableWorkstationError("Use the connected receipt to complete this action.", 409);
     case "tipOptions": result = await actions.getCustomerDisplayLiveDraftTipOptions({ token }); break;
     case "activity": result = await actions.touchCustomerDisplayLiveDraftActivity(scoped); break;
     default: {
+      if (commandName.startsWith("checkin.receipt.")) await assertCheckInVisit(actor, input.visitId);
       const { runPairedCustomerExtension } = await import("@/lib/portable-workstation-customer-actions");
-      const extension = await runPairedCustomerExtension(commandName, input, token);
+      const extension = await runPairedCustomerExtension(commandName, input, token, request);
       if (!extension.handled) throw new PortableWorkstationError("Unknown customer action.", 400);
       result = extension.value;
     }
   }
   // A concurrent replacement may not receive even the response to an old request.
   await customerContext();
+  if (commandName === "phone" && isRecord(result) && result.ok === true && isRecord(result.data) && result.data.mode === "check_in" && isRecord(result.data.visit)) {
+    await allowCheckInVisit(actor, String(result.data.visit.id ?? ""), request, startedAt);
+  }
   return sanitizePairedCustomerResult(result, token);
 }
 
@@ -256,7 +315,7 @@ export async function handlePortableWorkstationRequest(request: Request, input: 
   }
   if (action === "customerAction") {
     if (!isRecord(input.input ?? {})) throw new PortableWorkstationError("Invalid customer action.", 400);
-    return runCustomerAction(String(input.command ?? ""), (input.input ?? {}) as RecordValue);
+    return runCustomerAction(String(input.command ?? ""), (input.input ?? {}) as RecordValue, request);
   }
   if (action === "intent") {
     const { actor } = await customerContext();

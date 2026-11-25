@@ -21,7 +21,7 @@ export async function workstationFixture({ beforeMigration } = {}) {
     create function auth.role() returns text language sql stable as $$select current_user::text$$;
     create table locations(id uuid primary key, name text);
     create table pos_portable_access_keys(id uuid primary key, salon_id uuid not null references locations(id), is_active boolean not null default true);
-    create table pos_live_drafts(id uuid primary key default gen_random_uuid(), salon_id uuid not null references locations(id), token text unique not null);
+    create table pos_live_drafts(id uuid primary key default gen_random_uuid(), salon_id uuid not null references locations(id), token text unique not null, status text not null default 'draft', reset_at timestamptz);
     create table pos_workspace_drafts(key_id uuid not null references pos_portable_access_keys(id), device_id uuid not null, draft_id uuid not null references pos_live_drafts(id), primary key(key_id, device_id));
     create table legacy_draft_calls(token text);
     insert into locations values('${fixtureId(1)}','Workstation fixture salon'),('${fixtureId(2)}','Other fixture salon');
@@ -40,11 +40,11 @@ export async function workstationFixture({ beforeMigration } = {}) {
   const pair = (value = randomUUID()) => ({ role: 'pair', attemptHash: credentialHash('device:' + value), networkHash: credentialHash('network:' + value) });
   async function command(action, actor, input = {}, role = 'service_role') {
     if (!['service_role', 'anon', 'authenticated'].includes(role)) throw Error('Invalid fixture SQL role.');
-    await db.exec(`set role ${role};select set_config('request.jwt.claim.role','${role}',false);`);
-    try {
-      const response = await db.query('select public.portable_workstation_command($1::text,$2::jsonb,$3::jsonb) as result', [action, JSON.stringify(actor), JSON.stringify(input)]);
+    return db.transaction(async transaction => {
+      await transaction.exec(`set local role ${role};select set_config('request.jwt.claim.role','${role}',true);`);
+      const response = await transaction.query('select public.portable_workstation_command($1::text,$2::jsonb,$3::jsonb) as result', [action, JSON.stringify(actor), JSON.stringify(input)]);
       return response.rows[0].result;
-    } finally { await db.exec('reset role'); }
+    });
   }
   return { db, staff, customer, pair, command, migrationFiles: migrations, close: () => db.close() };
 }

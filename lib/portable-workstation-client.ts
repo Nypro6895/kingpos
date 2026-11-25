@@ -14,7 +14,10 @@ export async function workstationRequest<T = PortableWorkstationSession>(input?:
   if (host.isNative) return host.command<T>("portable.workstation", { method: input ? "POST" : "GET", role, ...(input ? { input } : {}) });
   const response = await fetch("/api/pos/workstation" + (!input && role ? "?role=" + role : ""), { method: input ? "POST" : "GET", credentials: "same-origin", cache: "no-store", headers: input ? { "Content-Type": "application/json" } : undefined, ...(input ? { body: JSON.stringify(input) } : {}), signal: AbortSignal.timeout(15000) });
   const result = await response.json();
-  if (!response.ok || result.ok === false) throw Object.assign(new Error(result.error || "The POS connection could not be confirmed."), { status: response.status });
+  // HTTP failures describe transport/enrollment errors. Successful customer
+  // commands may return business steps such as profile_required or an account
+  // choice; preserve those results so the existing display flow can handle them.
+  if (!response.ok) throw Object.assign(new Error(result.error || "The POS connection could not be confirmed."), { status: response.status });
   return result as T;
 }
 export function workstationChanged() { window.dispatchEvent(new Event(PORTABLE_WORKSTATION_CHANGED)); }

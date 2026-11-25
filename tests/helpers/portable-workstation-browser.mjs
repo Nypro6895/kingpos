@@ -7,13 +7,46 @@ import fs from 'node:fs';
 import path from 'node:path';
 import postcss from 'postcss';
 import tailwindcss from '@tailwindcss/postcss';
+import ts from 'typescript';
+import { execFileSync } from 'node:child_process';
 import { fixtureId } from './portable-workstation-fixture.mjs';
 
 const require = createRequire(import.meta.url);
 
+/** Execute unchanged production check-in actions and routing; only RPC/dispatch are fixture boundaries. */
+function selectedCheckinActions() {
+  const source = ts.createSourceFile('app/pos/actions.ts', fs.readFileSync('app/pos/actions.ts', 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const names = new Set(['cleanOptional', 'normalizeRequestedService', 'normalizeRequestedServices', 'getCustomerDisplayServiceCatalog', 'submitCustomerDisplayPhone', 'saveCustomerDisplayRequestedServices']);
+  const selected = source.statements.filter(node => ts.isFunctionDeclaration(node) && names.has(node.name?.text)).map(node => node.getText(source));
+  assert.equal(selected.length, names.size);
+  return `import {resolveCustomerDisplaySubmission,updateCustomerVisitRequestedServices} from '@/lib/customer-visits';
+    const createSupabaseServerClient=()=>globalThis.__portableWorkstationFixture.client();
+    const revalidatePath=()=>{},after=()=>{};
+    const broadcastWaitingChangeByLiveDraftToken=()=>{},broadcastPosStaffChange=()=>{},broadcastPosLiveDraftSnapshot=()=>{};
+    const toLiveDraftView=()=>{throw Error('Unexpected checkout branch in isolated check-in acceptance')};
+    export const getPosLiveDraft=(token)=>globalThis.__portableWorkstationFixture.snapshot(token);
+    export const getCustomerDisplayLiveDraftTipOptions=async()=>[];
+    export const confirmCustomerDisplayLiveDraftTip=async()=>{throw Error('Unexpected cloud tip in check-in acceptance')};
+    export const touchCustomerDisplayLiveDraftActivity=async()=>({ok:true});
+    export const resetCustomerDisplayCompletedDraft=async()=>({ok:true,data:null});
+    export const findLiveDraftCustomerByPhone=async()=>({ok:true,data:null});
+    export const createLiveDraftCustomer=async()=>({ok:false,error:'Checkout identity outside check-in acceptance'});
+    export const searchCustomerDisplayLiveDraftCustomers=async()=>({ok:true,data:[]});
+    ${selected.join('\n')}`;
+}
+
 /** Actual API route and SQL with only existing Auth/catalog and delivery boundary adapters. */
-export async function workstationBrowserServer(f, { actualUI = false } = {}) {
+export async function workstationBrowserServer(f, { actualUI = false, customerJourney = false } = {}) {
   const scope = new AsyncLocalStorage(), streams = new Map(), trace = [], frames = [], allStreams = new Set();
+  const journey = { holdPhone: false, holdServices: false, waiters: [], serviceWaiters: [], calls: [], catalog: [
+    { id: fixtureId(801), name: 'Manicure', basePrice: 30, category: 'Hands', durationMinutes: 30, sortOrder: 1 },
+    { id: fixtureId(802), name: 'Pedicure', basePrice: 40, category: 'Feet', durationMinutes: 45, sortOrder: 2 },
+  ], releasePhone() { this.holdPhone = false; this.waiters.splice(0).forEach(resolve => resolve()); }, releaseServices() { this.holdServices = false; this.serviceWaiters.splice(0).forEach(resolve => resolve()); } };
+  if (customerJourney) await f.db.exec('create table fixture_customer_checkins(id uuid primary key default gen_random_uuid(),customer_id uuid not null default gen_random_uuid(),phone text unique not null,first_name text not null,requested_services jsonb not null default \'[]\',checked_in_at timestamptz not null default clock_timestamp());');
+  function visit(row) { return { id: row.id, customerId: row.customer_id, firstName: row.first_name, requestedServices: row.requested_services, checkedInAt: new Date(row.checked_in_at).toISOString(), status: 'waiting', source: 'customer_screen', appointmentId: null, ticketId: null }; }
+  const baseline = process.env.PORTABLE_CHECKIN_BASELINE;
+  if (baseline && !/^[a-f0-9]{7,40}$/.test(baseline)) throw Error('Use a Git commit hash for the check-in baseline.');
+  const baselinePlugin = { name: 'frozen-checkin-reproduction', setup(builder) { if (baseline) builder.onLoad({ filter: /(?:portable-workstation-server\.ts|portable-workstation-client\.ts|customer-display-client\.tsx)$/ }, ({ path: filename }) => ({ contents: execFileSync('git', ['show', baseline + ':' + path.relative(process.cwd(), filename).replaceAll('\\', '/')], { encoding: 'utf8', windowsHide: true }), loader: filename.endsWith('.tsx') ? 'tsx' : 'ts', resolveDir: path.dirname(filename) })); } };
   function deliver(topic, envelope) { for (const response of streams.get(topic) ?? []) response.write('data: ' + JSON.stringify(envelope) + '\n\n'); }
   const fixture = {
     cookies: () => scope.getStore().cookies,
@@ -23,6 +56,32 @@ export async function workstationBrowserServer(f, { actualUI = false } = {}) {
           const promise = (async () => {
             try {
               if (name === 'portable_workstation_command') return { data: await f.command(args.p_action, args.p_actor, args.p_input), error: null };
+              if (customerJourney && name === 'issue_checkin_receipt') {
+                const draft = await f.db.query('select id from pos_live_drafts where token=$1', [args.p_token]); assert.equal(draft.rows.length, 1);
+                const { rows } = await f.db.query('select * from fixture_customer_checkins where id=$1', [args.p_visit]);
+                journey.calls.push({ name, args: structuredClone(args) });
+                return { data: rows[0] ? { visitId: rows[0].id, salonName: 'Isolated fixture salon', businessDate: '2026-11-25', queueNumber: 17, customerName: rows[0].first_name } : null, error: null };
+              }
+              if (customerJourney && ['get_customer_display_service_catalog', 'resolve_customer_display_check_in_identity', 'resolve_customer_display_submission_identity', 'update_customer_visit_requested_services'].includes(name)) {
+                const draft = await f.db.query('select id from pos_live_drafts where token=$1', [args.p_token]);
+                assert.equal(draft.rows.length, 1, 'every legacy check-in RPC receives the active scoped draft token');
+                journey.calls.push({ name, args: structuredClone(args) });
+                if (name === 'get_customer_display_service_catalog') return { data: journey.catalog, error: null };
+                if (name === 'update_customer_visit_requested_services') {
+                  if (journey.holdServices) await new Promise(resolve => journey.serviceWaiters.push(resolve));
+                  const chosen = journey.catalog.filter(item => args.p_service_ids.includes(item.id));
+                  const { rows } = await f.db.query('update fixture_customer_checkins set requested_services=$1::jsonb where id=$2 returning *', [JSON.stringify(chosen), args.p_visit_id]);
+                  return { data: rows[0] ? { ok: true, mode: 'check_in', state: 'checked_in', visit: visit(rows[0]) } : { ok: false, message: 'Visit missing' }, error: null };
+                }
+                if (journey.holdPhone) await new Promise(resolve => journey.waiters.push(resolve));
+                assert.equal(name, 'resolve_customer_display_check_in_identity', 'idle paired phones choose the existing check-in-only resolver');
+                const phone = String(args.p_phone).replace(/\D/g, '');
+                let { rows } = await f.db.query('select * from fixture_customer_checkins where phone=$1', [phone]);
+                if (!rows.length && phone === '4145550103' && !args.p_identity_choice && !args.p_new_customer) return { data: { ok: false, code: 'identity_choice_required', mode: 'check_in', message: 'Choose your account.', candidates: [{ id: fixtureId(803), label: 'Maya Fixture', phoneHint: '•••0103' }] }, error: null };
+                if (!rows.length && phone !== '4145550101' && !args.p_customer_name && !args.p_identity_choice) return { data: { ok: false, code: 'profile_required', mode: 'check_in', message: 'Enter your name to continue.' }, error: null };
+                if (!rows.length) ({ rows } = await f.db.query('insert into fixture_customer_checkins(phone,first_name) values($1,$2) returning *', [phone, args.p_identity_choice ? 'Maya' : args.p_customer_name ? args.p_customer_name.trim().split(/\s+/)[0] : 'Linh']));
+                return { data: { ok: true, mode: 'check_in', state: 'checked_in', visit: visit(rows[0]) }, error: null };
+              }
               if (name === 'get_pos_portable_access_context') {
                 if (args.p_session_signature !== 'fixture-portable-signature') return { data: null, error: null };
                 const { rows } = await f.db.query('select id as key_id,salon_id from pos_portable_access_keys where id=$1 and is_active', [args.p_key_id]);
@@ -34,7 +93,7 @@ export async function workstationBrowserServer(f, { actualUI = false } = {}) {
                 return { data: rows[0] ?? { token: 'fixture-private-draft' }, error: null };
               }
               throw Error('Unapproved fixture RPC: ' + name);
-            } catch (error) { return { data: null, error }; }
+            } catch (error) { trace.push({ type: 'fixture-rpc-error', name, message: error.message }); return { data: null, error }; }
           })();
           promise.abortSignal = () => promise;
           return promise;
@@ -48,7 +107,7 @@ export async function workstationBrowserServer(f, { actualUI = false } = {}) {
             const { rows } = await f.db.query(`select ${projection} from ${table} where ${names.map((name, i) => `${name}=$${i + 1}`).join(' and ')}`, [...fields.values()]);
             return { data: rows[0] ?? null, error: required && !rows[0] ? Error('Missing fixture row') : null };
           }
-          return { select(value) { assert.ok(['*', 'id', 'token'].includes(value)); projection = value; return this; }, eq(name, value) { assert.ok(['id', 'salon_id', 'key_id', 'draft_id', 'token'].includes(name)); fields.set(name, value); return this; }, async single() {
+          return { select(value) { assert.ok(['*', 'id', 'token', 'token,status,reset_at'].includes(value)); projection = value; return this; }, eq(name, value) { assert.ok(['id', 'salon_id', 'key_id', 'draft_id', 'token'].includes(name)); fields.set(name, value); return this; }, async single() {
             return read(true);
           }, async maybeSingle() { return read(false);
           } };
@@ -64,16 +123,20 @@ export async function workstationBrowserServer(f, { actualUI = false } = {}) {
       };
     },
     async snapshot(token) {
-      const { rows } = await f.db.query('select d.id,d.salon_id,d.token,w.latest_envelope from pos_live_drafts d left join portable_workstations w on w.draft_id=d.id where d.token=$1', [token]);
+      if (customerJourney) {
+        const reset = await f.db.query("update pos_live_drafts set status='draft',reset_at=null where token=$1 and status='closed' and reset_at<=clock_timestamp() returning id", [token]);
+        if (reset.rows.length) journey.calls.push({ name: 'fixture-existing-reader-lazy-reset' });
+      }
+      const { rows } = await f.db.query('select d.id,d.salon_id,d.token,d.status,d.reset_at,w.latest_envelope from pos_live_drafts d left join portable_workstations w on w.draft_id=d.id where d.token=$1', [token]);
       const row = rows[0];
       if (!row) return { ok: false, data: null };
-      return { ok: true, data: { ...row, customer: null, staff_lines: [], status: 'draft', total: 0, version: 0 } };
+      return { ok: true, data: { ...row, customer: null, staff_lines: [], total: 0, version: 0 } };
     },
   };
   globalThis.__portableWorkstationFixture = fixture;
-  const serverBundle = await build({ entryPoints: ['app/api/pos/workstation/route.ts'], bundle: true, write: false, format: 'cjs', platform: 'node', plugins: [{ name: 'isolated-api-boundaries', setup(builder) {
-    builder.onResolve({ filter: /^(server-only|next\/headers|next\/server|@supabase\/supabase-js|@\/lib\/supabase\/server|@\/lib\/pos-settings|@\/app\/pos\/actions|@\/lib\/portable-workstation-customer-actions)$/ }, args => ({ path: args.path, namespace: 'workstation-server-fixture' }));
-    builder.onLoad({ filter: /.*/, namespace: 'workstation-server-fixture' }, args => ({ contents: {
+  const serverBundle = await build({ entryPoints: ['app/api/pos/workstation/route.ts'], bundle: true, write: false, format: 'cjs', platform: 'node', plugins: [baselinePlugin, { name: 'isolated-api-boundaries', setup(builder) {
+    builder.onResolve({ filter: /^(server-only|next\/headers|next\/server|@supabase\/supabase-js|@\/lib\/supabase\/server|@\/lib\/pos-settings|@\/app\/pos\/actions|@\/lib\/portable-workstation-customer-actions|@\/app\/service-relay\/actions|@\/lib\/gift-display-appearance)$/ }, args => customerJourney && args.path === '@/lib/portable-workstation-customer-actions' ? undefined : ({ path: args.path, namespace: 'workstation-server-fixture' }));
+    builder.onLoad({ filter: /.*/, namespace: 'workstation-server-fixture' }, args => ({ contents: customerJourney && args.path === '@/app/pos/actions' ? selectedCheckinActions() : {
       'server-only': '',
       'next/headers': 'export const cookies=async()=>globalThis.__portableWorkstationFixture.cookies();',
       'next/server': 'export const NextResponse={json:(body,init)=>Response.json(body,init)};',
@@ -82,11 +145,13 @@ export async function workstationBrowserServer(f, { actualUI = false } = {}) {
       '@/lib/pos-settings': 'export const getPublicPosDisplaySettingsByToken=async()=>({appDownloadUrl:"",customerBackgroundImageUrl:null,customerLeftAdImageUrl:null,customerLeftAdText:"",customerPromoBody:"",customerPromoTitle:"Welcome",customerRightAdImageUrl:null,customerRightAdText:"",customerShowBarcode:false,customerShowCustomerName:true,customerShowReceiptStatus:true,customerShowSalonName:true,customerShowServiceName:true,customerShowStaffName:true,salonLogoUrl:null,salonName:"Isolated fixture salon",tipSuggestions:[10,15,20]});',
       '@/app/pos/actions': 'export const getPosLiveDraft=(token)=>globalThis.__portableWorkstationFixture.snapshot(token);export const getCustomerDisplayServiceCatalog=async()=>[];export const submitCustomerDisplayPhone=async()=>{throw Error("Unapproved legacy phone action")};export const saveCustomerDisplayRequestedServices=async()=>{throw Error("Unapproved service action")};export const confirmCustomerDisplayLiveDraftTip=async()=>{throw Error("Unapproved legacy tip action")};export const getCustomerDisplayLiveDraftTipOptions=async()=>[];export const touchCustomerDisplayLiveDraftActivity=async()=>({ok:true});export const resetCustomerDisplayCompletedDraft=async()=>{throw Error("Unapproved legacy reset")};',
       '@/lib/portable-workstation-customer-actions': 'export const runPairedCustomerExtension=async()=>{throw Error("Unapproved customer extension")};',
-    }[args.path] }));
+      '@/app/service-relay/actions': 'export const issueServiceRelayPass=async()=>{throw Error("Unrelated relay pass unavailable")};',
+      '@/lib/gift-display-appearance': 'export const getGiftDisplayAppearance=async()=>({});',
+    }[args.path], loader: customerJourney && args.path === '@/app/pos/actions' ? 'ts' : 'js', resolveDir: process.cwd() }));
   } }] });
   const api = { exports: {} };
   new Function('module', 'exports', 'require', serverBundle.outputFiles[0].text)(api, api.exports, require);
-  const browserBundle = await build({ ...(actualUI ? { entryPoints: ['tests/helpers/portable-workstation-ui-entry.tsx'], outdir: 'fixture-ui', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"production"', 'process.env': '{}' } } : { stdin: { resolveDir: process.cwd(), loader: 'ts', contents: browserEntry } }), bundle: true, write: false, format: 'iife', platform: 'browser', plugins: [{ name: 'loopback-realtime-adapter', setup(builder) {
+  const browserBundle = await build({ ...(actualUI ? { entryPoints: ['tests/helpers/portable-workstation-ui-entry.tsx'], outdir: 'fixture-ui', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"production"', 'process.env': '{}' } } : { stdin: { resolveDir: process.cwd(), loader: 'ts', contents: browserEntry } }), bundle: true, write: false, format: 'iife', platform: 'browser', plugins: [baselinePlugin, { name: 'loopback-realtime-adapter', setup(builder) {
     builder.onResolve({ filter: /^(?:@\/lib\/supabase\/browser|@\/lib\/app-local-host)$/ }, args => ({ path: args.path, namespace: 'workstation-browser-fixture' }));
     builder.onLoad({ filter: /.*/, namespace: 'workstation-browser-fixture' }, args => ({ contents: args.path.endsWith('app-local-host') ? 'export const getAppLocalHost=()=>({isNative:false});export const appLocalRequestId=()=>crypto.randomUUID();' : browserRealtime }));
   } }, ...(actualUI ? [{ name: 'actual-ui-unrelated-server-boundaries', setup(builder) {
@@ -141,7 +206,7 @@ export async function workstationBrowserServer(f, { actualUI = false } = {}) {
         trace.push({ type: 'request', action, at: performance.now() });
         const values = new Map((request.headers.cookie ?? '').split(';').filter(Boolean).map(pair => { const i = pair.indexOf('='); return [pair.slice(0, i).trim(), decodeURIComponent(pair.slice(i + 1))]; }));
         const writes = [];
-        const cookies = { get(name) { return values.has(name) ? { name, value: values.get(name) } : undefined; }, set(name, value, options) { values.set(name, value); writes.push(`${name}=${encodeURIComponent(value)}; Path=/; SameSite=Lax${options?.httpOnly ? '; HttpOnly' : ''}; Max-Age=${options?.maxAge ?? 31536000}`); }, delete(name) { values.delete(name); writes.push(`${name}=; Path=/; SameSite=Lax; Max-Age=0`); } };
+        const cookies = { get(name) { return values.has(name) ? { name, value: values.get(name) } : undefined; }, getAll() { return [...values].map(([name, value]) => ({ name, value })); }, set(name, value, options) { values.set(name, value); writes.push(`${name}=${encodeURIComponent(value)}; Path=/; SameSite=Lax${options?.httpOnly ? '; HttpOnly' : ''}; Max-Age=${options?.maxAge ?? 31536000}`); }, delete(name) { values.delete(name); writes.push(`${name}=; Path=/; SameSite=Lax; Max-Age=0`); } };
         const headers = new Headers(); for (const [name, value] of Object.entries(request.headers)) if (value !== undefined) headers.set(name, Array.isArray(value) ? value.join(',') : value);
         const webRequest = new Request(origin + request.url, { method: request.method, headers, ...(raw ? { body: raw } : {}) });
         const result = await scope.run({ cookies }, () => api.exports[request.method](webRequest));
@@ -161,7 +226,7 @@ export async function workstationBrowserServer(f, { actualUI = false } = {}) {
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
   const origin = 'http://127.0.0.1:' + server.address().port;
   process.env.NEXT_PUBLIC_SUPABASE_URL = origin;
-  return { origin, trace, frames, streams, deliver, async close() {
+  return { origin, trace, frames, streams, deliver, journey, async close() {
     for (const response of allStreams) response.end();
     await new Promise(resolve => server.close(resolve));
     for (const name of envKeys) if (priorEnv[name] === undefined) delete process.env[name]; else process.env[name] = priorEnv[name];

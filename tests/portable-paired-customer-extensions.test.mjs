@@ -27,3 +27,14 @@ test('paired relay and extension origin checks cannot select another POS or Owne
  await assert.rejects(f.runPairedCustomerExtension('gift',{op:'read'},'server-display',new Request('https://pos.invalid/api/pos/workstation',{headers:{Origin:'https://outside.invalid'}})),/origin/);
  const unknown=await f.runPairedCustomerExtension('owner.delete',{},'server-display');assert.equal(unknown.handled,false);
 });
+
+test('paired check-in receipt uses the server-resolved bearer and exact confirmed visit',async()=>{
+ const f=fixture(),visitId='11223344-5566-7788-9900-aabbccddeeff';
+ const reply=await f.runPairedCustomerExtension('checkin.receipt.issue',{visitId,token:'forged-display'},'server-display');
+ assert.equal(reply.handled,true);
+ assert.equal(f.state.calls.at(-1).name,'issue_checkin_receipt');
+ assert.deepEqual(JSON.parse(JSON.stringify(f.state.calls.at(-1).args)),{p_token:'server-display',p_visit:visitId});
+ const count=f.state.calls.length;
+ await assert.rejects(f.runPairedCustomerExtension('checkin.receipt.issue',{visitId:'wrong'},'server-display'),/current visit/);
+ assert.equal(f.state.calls.length,count);
+});

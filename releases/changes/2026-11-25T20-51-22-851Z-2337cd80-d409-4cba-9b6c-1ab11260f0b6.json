@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "portable-customer-checkin-transition-20261125",
+  "status": "working",
+  "summary": "Repair paired customer phone/profile check-in transition to welcome and service selection while preserving checkout and receipt/tip streaming",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "lib/portable-workstation-server.ts"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/portable-paired-devices-20261125",
+    "commit": "85cd7f767e3a1f1acdf82740cc67bbf8228f39da"
+  },
+  "validation": [
+    {
+      "name": "Reproduce actual paired check-in UI and regression coverage",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "portable-paired-devices-20261125"
+  ],
+  "id": "2337cd80-d409-4cba-9b6c-1ab11260f0b6",
+  "recordedAt": "2026-11-25T20:51:22.851Z",
+  "worktree": "C:\\Reylumi-worktrees\\portable-paired-devices-20261125",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

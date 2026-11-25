@@ -1,0 +1,92 @@
+{
+  "kind": "change",
+  "changeId": "portable-customer-checkin-transition-20261125",
+  "status": "needs-integration",
+  "summary": "Repair paired web/iPad customer phone/profile to greeting, service selection and check-in confirmation; retain standalone entry across reconnects and keep receipt/tip validation",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos/customer-display/checkin-receipt-panel.tsx",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "docs/portable-paired-devices-20261125.md",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "lib/portable-workstation-client.ts",
+    "lib/portable-workstation-customer-actions.ts",
+    "lib/portable-workstation-server.ts",
+    "releases/changes/2026-11-25T20-51-22-851Z-2337cd80-d409-4cba-9b6c-1ab11260f0b6.json",
+    "tests/helpers/portable-workstation-browser.mjs",
+    "tests/helpers/portable-workstation-fixture.mjs",
+    "tests/portable-paired-checkin.ui.test.mjs",
+    "tests/portable-paired-completion-expiry.test.mjs",
+    "tests/portable-paired-customer-extensions.test.mjs",
+    "tests/portable-workstation-customer-results.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\portable-paired-devices-20261125\\artifacts\\portable-customer-checkin-transition-20261125\\frozen-source-r1",
+    "commit": "b7de63a9b381bf6d638b3f6afcf983ff3068943f",
+    "baseCommit": "85cd7f767e3a1f1acdf82740cc67bbf8228f39da",
+    "sourceSha256": "5b18712d10971a8cd51f91f2f4927e533d9e78a768cc28ad246630b09b713eb3"
+  },
+  "fileHashes": {
+    "app/pos/customer-display/checkin-receipt-panel.tsx": "dfa5e8b0e1d5f93580c709c3adb3b2e8f4e5c6e2e79e82b77d7aa8a993a2fd80",
+    "app/pos/customer-display/customer-display-client.tsx": "bb5c5cc41f39508416b23307e3ae71e689ec561903df97e12d3c3a944877470c",
+    "app/pos/pos-desk-client.tsx": "d53f1e1739a57ed85de064738f77a4d759b2e9857515e1a01f46c93f7f7cc302",
+    "docs/portable-paired-devices-20261125.md": "f262c5fc009cca7202b3c626f88a1d97ca342eef0674cbc15a93aad8d82c8cbc",
+    "ios/Reylumi/LocalAppBundle/app.js": "9a456d51ef49e8d1d7ec548ed45136928e5826ed8a308b686a807db545af7d24",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "52cf17bbca4d6fc657727f2e0aa7dadd4f6f87bf4986ad4589460d1450f31ced",
+    "lib/portable-workstation-client.ts": "c1f859687d4e5ad13924d1bf206e512fe491350e9219e00df9e165c3e5be7e66",
+    "lib/portable-workstation-customer-actions.ts": "3b37314c45333b62e30e52903f37f5cfc9a8bd661b0982b282f6faddf5dc1a01",
+    "lib/portable-workstation-server.ts": "639eccbce410161b0aa4eea91afa2ae64f18ab363a9c0b353506b3f7dd7f7eb2",
+    "releases/changes/2026-11-25T20-51-22-851Z-2337cd80-d409-4cba-9b6c-1ab11260f0b6.json": "b9f8f5e40698531fd3ee9789b9fbb950f403e47b76cc14eaeea710a4cd5a066b",
+    "tests/helpers/portable-workstation-browser.mjs": "9c11d89b921256f539c71d1ac04becbfe0b025e8b06e539e960accc9f036ba23",
+    "tests/helpers/portable-workstation-fixture.mjs": "a334c7af8455971b175be69b47dd514710b4a20001d733d24d398ab46526dc67",
+    "tests/portable-paired-checkin.ui.test.mjs": "d3240c154b0f64a96da21c81a47b9b69ce7ca1ff67d565677c8e4ebc8ccf34f5",
+    "tests/portable-paired-completion-expiry.test.mjs": "06a2d2f1980d35992dbd2ed58d159a29a6ace2396334378cb52e7ae934591f22",
+    "tests/portable-paired-customer-extensions.test.mjs": "ac478d84bf6b8f38742eb4f13be692473c867f038f70004a878ae28c92bfc529",
+    "tests/portable-workstation-customer-results.test.mjs": "0843327132a13fc9af273c8e23f1de05a5a7d57b9a1b46614472ce9b552b3423"
+  },
+  "validation": [
+    {
+      "name": "Frozen before-fix reproduction: existing-phone control passes; new profile, reconnect and offline failures reproduced",
+      "result": "passed",
+      "evidence": "artifacts/portable-paired-checkin-20261125/QA.md"
+    },
+    {
+      "name": "Actual paired check-in UI/API/SQL and phone/visit routing: nine new regression scenarios",
+      "result": "passed",
+      "evidence": "artifacts/portable-paired-checkin-20261125/QA.md"
+    },
+    {
+      "name": "76 distinct local checks including existing Portable/receipt/tip/recovery/enrollment/Owner/install regressions and four actual-effect expiry cases",
+      "result": "passed",
+      "evidence": "artifacts/portable-customer-checkin-transition-20261125/REPORT.md"
+    },
+    {
+      "name": "TypeScript, scoped ESLint, optimized Next build and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/portable-customer-checkin-transition-20261125/build.log"
+    },
+    {
+      "name": "Updated activated iOS bundle and all 370 asset hashes",
+      "result": "passed",
+      "evidence": "artifacts/portable-customer-checkin-transition-20261125/native-bundle-validation.json"
+    },
+    {
+      "name": "Production baseline integration/publication and physical iPad/provider acceptance",
+      "result": "pending",
+      "evidence": "docs/portable-paired-devices-20261125.md"
+    }
+  ],
+  "dependencies": [
+    "portable-paired-devices-20261125"
+  ],
+  "id": "424bfcc9-4a9f-443e-9392-5cda72f7f091",
+  "recordedAt": "2026-11-25T21:00:36.243Z",
+  "worktree": "C:\\Reylumi-worktrees\\portable-paired-devices-20261125",
+  "supersedesEvents": []
+}

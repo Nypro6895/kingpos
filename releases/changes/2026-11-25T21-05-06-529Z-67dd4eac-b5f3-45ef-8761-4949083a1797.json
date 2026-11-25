@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "portable-checkin-live-integration-20261125",
+  "status": "working",
+  "summary": "Integrate verified paired customer check-in repair on exact current POS production source, preserving Safari signature fallback and existing role/data fences",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/checkin-receipt-panel.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "lib/portable-workstation-client.ts",
+    "lib/portable-workstation-customer-actions.ts",
+    "lib/portable-workstation-server.ts"
+  ],
+  "source": {
+    "snapshot": "C:/Reylumi-worktrees/portable-release-20261125-r1",
+    "commit": "3c448564acb588695317579f10415ef1d0c371dc",
+    "baselineDeploymentId": "dpl_4rh4iFSpyAPNx4GWnmee9pN9CWTi"
+  },
+  "dependencies": [
+    "portable-customer-checkin-transition-20261125"
+  ],
+  "validation": [
+    {
+      "name": "Exact current production baseline: all4347content files match provider UIDs and source hashes",
+      "result": "passed",
+      "evidence": "artifacts/portable-release-20261125/baseline-verified.json"
+    },
+    {
+      "name": "Integrated all-surface regression/build",
+      "result": "pending"
+    }
+  ],
+  "id": "67dd4eac-b5f3-45ef-8761-4949083a1797",
+  "recordedAt": "2026-11-25T21:05:06.529Z",
+  "worktree": "C:\\Reylumi-worktrees\\portable-release-20261125-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

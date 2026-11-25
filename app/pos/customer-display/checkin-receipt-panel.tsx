@@ -8,7 +8,8 @@ import { issueCheckinReceipt } from "@/app/pos/checkin-receipt-actions";
 import type { CheckinReceipt } from "@/types/checkin-receipt";
 
 type PrintBridge = { printCheckinReceipt?: (receipt: CheckinReceipt & { cells: number[][]; reprint: boolean }) => Promise<void> };
-export function CheckinReceiptPanel({ token, visitId, onPrintingChange, compact = false }: { token: string; visitId: string; onPrintingChange: (busy: boolean) => void; compact?: boolean }) {
+export type CheckinReceiptIssuer = (visitId: string) => ReturnType<typeof issueCheckinReceipt>;
+export function CheckinReceiptPanel({ token, visitId, onPrintingChange, compact = false, issueReceipt }: { token: string; visitId: string; onPrintingChange: (busy: boolean) => void; compact?: boolean; issueReceipt?: CheckinReceiptIssuer }) {
   const __vt = useWorkspaceTranslation();
 
   const [receipt, setReceipt] = useState<CheckinReceipt | null>(null);
@@ -18,13 +19,15 @@ export function CheckinReceiptPanel({ token, visitId, onPrintingChange, compact 
   const attempted = useRef(false);
   useEffect(() => {
     let cancelled = false;
-    void issueCheckinReceipt(token, visitId).then(result => {
+    void (issueReceipt ? issueReceipt(visitId) : issueCheckinReceipt(token, visitId)).then(result => {
       if (cancelled) return;
       if (result.error) setMessage(result.error);
       else setReceipt(result.receipt ?? null);
+    }).catch(() => {
+      if (!cancelled) setMessage("Receipt could not be prepared. Ask the front desk to retry.");
     });
     return () => { cancelled = true; };
-  }, [token, visitId]);
+  }, [token, visitId, issueReceipt]);
   async function print(reprint = false) {
     if (!receipt || busy) return;
     setBusy(true);

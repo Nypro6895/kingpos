@@ -1603,10 +1603,16 @@ export function PosDeskClient({
     };
     const connection = connectLocalReceipt(liveDraftToken, callbacks);
     const paired = pairedWorkstation ? connectPairedStaffReceipt(callbacks) : null;
+    let pairedCompletionTimer: ReturnType<typeof setTimeout> | null = null;
     const pairedPublish = () => {
+      if (pairedCompletionTimer !== null) { clearTimeout(pairedCompletionTimer); pairedCompletionTimer = null; }
       if (!paired || submitLockedRef.current || resetInFlightRef.current || !localCartId.current) return;
       const completed = completedLocalReceipt.current;
-      paired.publish(completed && Date.parse(completed.resetAt!) > Date.now() ? completed : {
+      const remaining = completed ? Date.parse(completed.resetAt!) - Date.now() : 0;
+      // The paired stream is event driven; expiration itself must publish the
+      // next idle draft even when nobody types after submitting the receipt.
+      if (remaining > 0) pairedCompletionTimer = setTimeout(pairedPublish, remaining + 1);
+      paired.publish(completed && remaining > 0 ? completed : {
         cartId: localCartId.current,
         revision: currentPortablePayload.current,
         payload: JSON.parse(currentPortablePayload.current),
@@ -1643,6 +1649,7 @@ export function PosDeskClient({
     const timer = setInterval(publish, 100);
     return () => {
       clearInterval(timer);
+      if (pairedCompletionTimer !== null) clearTimeout(pairedCompletionTimer);
       connection.close();
       paired?.close();
       if (pairedReceiptPublisher.current === pairedPublish) pairedReceiptPublisher.current = null;
