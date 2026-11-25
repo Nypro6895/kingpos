@@ -1,0 +1,48 @@
+{
+  "kind": "release",
+  "summary": "Deliver scoped Portable native update 1.0.1(104) to the existing internal TestFlight groups",
+  "changes": [
+    "8e405126-3815-4401-bd94-392190a24fbb"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "104",
+      "commit": "074a4e33413b3aaa8253426ba1e306e800fde977",
+      "sourceSha256": "e8b720520d9b0788745934c7902227c6b9a0baf6315b39cb3eeb968adf36a335",
+      "bundleBuildId": "df387bd84c7747dcd76a53d91b6a73ebfd703d3ba6e40908b403d8b6bae99264",
+      "evidence": "C:/Reylumi-worktrees/portable-native-20261125-r2/artifacts/portable-release-20261125/apple"
+    }
+  },
+  "baseline": {
+    "version": "1.0.1",
+    "build": "103",
+    "commit": "81789f8e6c1709d21751a9a87bcad8b825844038"
+  },
+  "verificationScope": "99 local native/Owner/check-in/Print Check checks; current iPhone simulator280/280 and unsigned/signed archive; exact79 product-source pins and370 bundle hashes; upload accepted; Apple VALID+IN_BETA_TESTING; fresh GET-only build104 association with both pre-existing internal groups that had103. No tester/group/invitation/notification changes.",
+  "additionalValidation": {
+    "ipadRun": 45703662941,
+    "statusAtPublicationRecord": "in-progress; not yet reported as passed"
+  },
+  "testflightRun": 45703434149,
+  "availabilityRun": 109,
+  "appStorePublished": false,
+  "broaderSource23DeliveryClaimed": false,
+  "S03PolicyWebDeliveryClaimed": false,
+  "verificationEvidence": [
+    "root-native-verification.json",
+    "testflight-144-verification.json",
+    "availability-109/testflight-availability.json"
+  ],
+  "acceptanceLimitations": [
+    "Physical iPad/iPhone installation and behavior",
+    "Authenticated provider Realtime and printer acceptance",
+    "Separate full iPad simulator/archive run still in progress at this record"
+  ],
+  "preservedScope": "Complete uploaded103 source plus scoped Portable/followup, six prepared native fixes and the owner's deferred Print Check disable. Existing crypto export declaration retained on reviewed verifier-only technical basis; no new declaration or Store review submission.",
+  "id": "c6d50829-81eb-4825-93e8-0c6849d72dc4",
+  "recordedAt": "2026-11-25T22:04:53.753Z",
+  "worktree": "C:\\Reylumi-worktrees\\portable-native-20261125-r2"
+}
