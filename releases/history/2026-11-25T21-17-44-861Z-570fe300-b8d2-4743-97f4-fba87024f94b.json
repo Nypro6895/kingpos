@@ -1,0 +1,41 @@
+{
+  "kind": "release",
+  "summary": "Publish verified web/iPad Portable customer check-in repair on exact current production baseline",
+  "changes": [
+    "29c31660-ea99-4134-af4f-68ed589d602a"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_HMeF5o5FLLbNsWFTri8zBLtwMibc",
+      "baselineDeploymentId": "dpl_4rh4iFSpyAPNx4GWnmee9pN9CWTi",
+      "commit": "6828cd12ea38fc7b35131b7e584e0fa3ef5e6620",
+      "sourceSha256": "1d5c38d3df6d6d27fd8ebb9b1f4678af0695dce7bd19aab893b119d20d8ca235",
+      "overlaySha256": "725ca01f2a2aac761a315e485ac0b065456248dd46c9fb298dd60f747d8e5e1d",
+      "evidence": "C:/Reylumi-worktrees/portable-release-20261125-r1/artifacts/portable-release-20261125"
+    }
+  },
+  "derivedFromEvent": "424bfcc9-4a9f-443e-9392-5cda72f7f091",
+  "upstreamIosObligationRetained": true,
+  "verificationScope": "87 local regressions, production build/TypeScript/ESLint, exact4351provider source hashes, read-only production schema/denial checks, protected candidate HTTP and public live desktop/iPad entry runtime checks. No real staff login, pairing, payment or customer data mutation.",
+  "windows": {
+    "downloadVersion": "0.7.6",
+    "installerUnchanged": true,
+    "compatibilityEvidence": "C:/Reylumi-worktrees/portable-paired-devices-20261125/artifacts/portable-release-20261125/windows/REPORT.md"
+  },
+  "nativeAssessment": {
+    "existingUploadedBuild": "1.0.1 (103)",
+    "existingBridgeCompatibleWebDelivery": true,
+    "newNativeUpdateInPreparation": true,
+    "newUploadNotClaimed": true
+  },
+  "acceptanceLimitations": [
+    "Physical iPad/dual-monitor/printer acceptance",
+    "Authenticated provider Realtime pairing and financial operations"
+  ],
+  "rollback": "Retain workstation authorization fences and enrollment. Use a reviewed compatible forward repair; do not blindly roll back to a pre-enrollment proxy.",
+  "id": "570fe300-b8d2-4743-97f4-fba87024f94b",
+  "recordedAt": "2026-11-25T21:17:44.861Z",
+  "worktree": "C:\\Reylumi-worktrees\\portable-release-20261125-r1"
+}
