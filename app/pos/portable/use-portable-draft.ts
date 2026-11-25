@@ -28,8 +28,8 @@ export function clearPortableLocalDrafts(event?: { preventDefault: () => void })
   // available only when the same POS account signs in again on this device.
 }
 
-export function usePortableDraft<Recovery>({ scope, operationScope, version, recovery, emptyRecovery, restore, onVersion, busy = false, operationBusy = false }: {
-  busy?: boolean; operationBusy?: boolean; scope: string | null; operationScope?: string; version: number; recovery: Recovery; emptyRecovery?: Recovery;
+export function usePortableDraft<Recovery>({ scope, operationScope, version, recovery, emptyRecovery, restore, onVersion, busy = false, operationBusy = false, paired = false }: {
+  busy?: boolean; operationBusy?: boolean; paired?: boolean; scope: string | null; operationScope?: string; version: number; recovery: Recovery; emptyRecovery?: Recovery;
   restore: (value: Recovery) => void; onVersion: (version: number) => void;
 }) {
   const recoveryKey = useRef<string | null>(null);
@@ -107,8 +107,8 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
       let tabId = sessionStorage.getItem("kingpos:portable-tab");
       if (!tabId) { tabId = crypto.randomUUID(); sessionStorage.setItem("kingpos:portable-tab", tabId); }
       const native = isNativePortableDevice();
-      key = portableRecoveryStorageKey({ scope, operationScope, tabId, desktop: Boolean(desktopDevice()), native, durableNative, storage: portableDeviceStorage });
-      if (native || durableNative) {
+      key = portableRecoveryStorageKey({ scope, operationScope, tabId, desktop: Boolean(desktopDevice()), native, durableNative, paired, storage: portableDeviceStorage });
+      if (native || durableNative || paired) {
         releaseWriter = await acquirePortableRecoveryWriter(key);
         if (!active || locked || initializationEpoch !== writerEpoch) { releaseWriter?.(); releaseWriter = null; return; }
         if (!releaseWriter) { setReady(false); setStatus("POS is already open in another window. Continue there or close it first."); setNeedsReview(true); return; }
@@ -272,7 +272,7 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
     };
     void initialize();
     return () => { active = false; cleanup(); };
-  }, [scope, operationScope, initializationRevision]);
+  }, [scope, operationScope, initializationRevision, paired]);
 
   const enqueue = useCallback((payload: PortableDraftPayload) => { queue.current?.enqueue(payload); }, []);
   const flush = useCallback(async () => scope ? (await queue.current?.flush()) ?? false : true, [scope]);

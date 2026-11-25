@@ -112,6 +112,36 @@ final class NavigationPolicyTests: XCTestCase {
         }
     }
 
+    func testMarketReturnRetainsOnlyValidatedSalonAndCancellationIntent() throws {
+        let id = "a0000000-b000-4000-8000-000000000200"
+        let scoped = try XCTUnwrap(NavigationPolicy.marketReturn(URL(string: "reylumi://market?salon=\(id)")!))
+        XCTAssertEqual(scoped.salonID, id)
+        XCTAssertFalse(scoped.cancelled)
+        XCTAssertEqual(scoped.path, "/market?payment=received&salon=\(id)")
+        let cancelled = try XCTUnwrap(NavigationPolicy.marketReturn(URL(string: "reylumi://market?cancelled=1&salon=\(id.uppercased())")!))
+        XCTAssertEqual(cancelled.path, "/market?payment=cancelled&salon=\(id)")
+        XCTAssertEqual(NavigationPolicy.marketReturn(URL(string: "reylumi://market?cancelled=1")!)?.path, "/market?payment=cancelled")
+        XCTAssertEqual(NavigationPolicy.marketReturn(URL(string: "reylumi://market")!)?.path, "/market?payment=received")
+    }
+
+    func testMarketReturnRejectsUntrustedQueryValuesAndAmbiguousScopes() {
+        let id = "00000000-0000-4000-8000-000000000200"
+        for value in [
+            "reylumi://market?salon=", "reylumi://market?salon=not-a-uuid",
+            "reylumi://market?salon=\(id)&salon=\(id)",
+            "reylumi://market?salon=\(id)&%73alon=\(id)",
+            "reylumi://market?salon=\(id)&next=/admin",
+            "reylumi://market?salon=\(id)&paid=true",
+            "reylumi://market?payment=received", "reylumi://market?cancelled=0",
+            "reylumi://market?cancelled", "reylumi://market?cancelled=1&cancelled=1",
+            "reylumi://market?salon=\(id)#token", "reylumi://market:443?salon=\(id)",
+            "reylumi://user@market?salon=\(id)", "https://market?salon=\(id)",
+            "reylumi://market/?salon=\(id)", "reylumi://market?",
+        ] {
+            XCTAssertNil(NavigationPolicy.marketReturn(URL(string: value)!), value)
+        }
+    }
+
     private func challengeResponse(_ url: String = "https://reylumi.com/security-check", status: Int = 429, headers: [String: String] = [:]) -> HTTPURLResponse {
         var fields = ["Content-Type": "text/html; charset=utf-8", "x-vercel-mitigated": "challenge"]
         headers.forEach { fields[$0.key] = $0.value }

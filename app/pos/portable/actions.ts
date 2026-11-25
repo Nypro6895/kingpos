@@ -229,6 +229,7 @@ import {
 } from "@/lib/pos-settings";
 import { getStaffProfileAvatarUrl } from "@/lib/staff-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { assertPortableWorkstationWriter, resolvePortableWorkstationDraft, logoutPortableWorkstationWriter, portableWorkstationRpcClient } from "@/lib/portable-workstation-server";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { BookingTimePolicy } from "@/lib/booking-time-policy";
 import type {
@@ -1646,6 +1647,7 @@ export async function signInPortablePosAction(
 }
 
 export async function logoutPortablePosAction() {
+  await logoutPortableWorkstationWriter().catch(() => {});
   await recordPortableLogout();
   await clearPortableSessionCookies();
   redirect("/pos/portable");
@@ -1653,6 +1655,7 @@ export async function logoutPortablePosAction() {
 
 export async function forgetPortablePosAccessIdAction() {
   const cookieStore = await cookies();
+  await logoutPortableWorkstationWriter().catch(() => {});
   await recordPortableLogout();
   cookieStore.delete(PORTABLE_POS_REMEMBERED_ID_COOKIE);
   await clearPortableSessionCookies();
@@ -1702,9 +1705,10 @@ async function requirePortablePosSession() {
     );
   }
 
+  await assertPortableWorkstationWriter({ keyId: session.keyId });
   return {
     ...session,
-    supabase,
+    supabase: portableWorkstationRpcClient(supabase, {keyId:session.keyId}),
   };
 }
 
@@ -1737,10 +1741,12 @@ const requirePortablePosSessionContext = cache(
       throw new Error("Portable POS session expired. Log in again.");
     }
 
+    await assertPortableWorkstationWriter({ keyId: session.keyId });
+
     return {
       ...session,
       portableSession,
-      supabase,
+      supabase: portableWorkstationRpcClient(supabase, {keyId:session.keyId}),
     };
   },
 );
@@ -1783,6 +1789,7 @@ async function getPortableBusinessDate(input: {
 }
 
 async function loadPortablePosDeskData(): Promise<{
+  pairedWorkstation: boolean;
   salonId: string;
   defaults: typeof POS_DESK_DEFAULTS;
   liveDraft: PosLiveDraftView | null;
@@ -1826,15 +1833,14 @@ async function loadPortablePosDeskData(): Promise<{
     if (bound.error) throw new Error(bound.error.message);
     payload.liveDraft = bound.data;
   }
+  const pairedWorkstation = Boolean(await assertPortableWorkstationWriter({ keyId, deviceId }));
+  const workspaceDraft = await resolvePortableWorkstationDraft({ keyId, deviceId, liveDraft: normalizeLiveDraft((payload.liveDraft ?? payload.live_draft ?? null) as PosLiveDraftView | null) });
 
   return {
+    pairedWorkstation,
     defaults: getPosDeskDefaults(settings),
     salonId: portableSession.salon_id,
-    liveDraft: normalizeLiveDraft(
-      (payload.liveDraft ??
-        payload.live_draft ??
-        null) as PosLiveDraftView | null,
-    ),
+    liveDraft: workspaceDraft,
     salonLogoUrl: settings.salonLogoUrl,
     salonName:
       normalizePortableString(payload.salonName ?? payload.salon_name) ||
@@ -1883,6 +1889,7 @@ async function loadPortableReferenceData(input: {
 }
 
 export async function getPortablePosDeskData(): Promise<{
+  pairedWorkstation: boolean;
   canAdjustStaffTurn: boolean;
   salonId: string;
   defaults: typeof POS_DESK_DEFAULTS;

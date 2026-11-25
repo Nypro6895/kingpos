@@ -6,6 +6,7 @@ export const APP_LOCAL_PORTABLE_HTTP_READS = {
   "portable.http.connection": { path: "/api/pos/connection", argumentKeys: [] },
 } as const;
 export const APP_LOCAL_PORTABLE_HTTP_COMMANDS = {
+  "portable.workstation": { path: "/api/pos/workstation", argumentKeys: ["method", "input", "role"], replay: "never" },
   "portable.http.gift-cards": { path: "/api/gift-cards", argumentKeys: ["input"], replay: "never" },
   "portable.http.rewards": { path: "/api/rewards", argumentKeys: ["input"], replay: "never" },
   "portable.http.operations": { path: "/api/pos/portable/operations", argumentKeys: ["input"], replay: "original-idempotent-outbox-only" },

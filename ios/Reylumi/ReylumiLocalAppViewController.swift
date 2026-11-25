@@ -584,7 +584,7 @@ final class ReylumiAppContainer: UIViewController {
             } catch { /* Keep the working hosted flow visible when verification fails. */ }
         }
     }
-    func returnToMarket(sequence: Int) {
+    func returnToMarket(sequence: Int, destination: NavigationPolicy.MarketReturn? = nil) {
         guard sequence > marketReturnSequence else { return }; marketReturnSequence = sequence
         incomingLinkGeneration += 1
         initialCheckinPath = nil
@@ -592,8 +592,12 @@ final class ReylumiAppContainer: UIViewController {
         pendingHostedGiftCardPath = nil
         handoffTask?.cancel(); handoffID = nil
         loadViewIfNeeded()
-        if let local { if presentedViewController != nil { dismiss(animated: true) }; local.navigate("/market?marketReturn=\(sequence)") }
-        else { hosted?.returnToMarket(sequence: sequence) }
+        if let local {
+            if presentedViewController != nil { dismiss(animated: true) }
+            let path = (destination ?? .init(salonID: nil, cancelled: false)).path
+            local.navigate(path + "&marketReturn=\(sequence)")
+        }
+        else { hosted?.returnToMarket(sequence: sequence, destination: destination) }
     }
     func openPersonalCheckin(path: String?, sequence: Int) {
         guard sequence > checkinSequence, let path,

@@ -178,6 +178,8 @@ test('actual Next server initial HTML has exactly one context manifest before cl
   for (const [route, manifest, appleTitle] of [
     ['/pos/portable', '/pos/portable/manifest.webmanifest', 'Reylumi POS'],
     ['/pos/portable/ticket', '/pos/portable/manifest.webmanifest', 'Reylumi POS'],
+    ['/pos/portable/display', '/pos/portable/manifest.webmanifest', 'Reylumi POS'],
+    ['/pos/customer-display/setup', '/pos/portable/manifest.webmanifest', 'Reylumi POS'],
     ['/explore', '/manifest.webmanifest', 'Reylumi'],
   ]) {
     const response = await fetch(new URL(route, origin), { headers: { 'User-Agent': ipadUserAgent } });

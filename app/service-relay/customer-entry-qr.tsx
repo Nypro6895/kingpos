@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import { QrCodeTile } from "@/components/qr-code-tile";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { customerEntryLink } from "@/lib/customer-entry-link";
+import { usePairedCustomerActions } from "@/app/pos/customer-display/paired-customer-actions-context";
 
 export function CustomerRelayEntry({ token }: { token: string }) {
+  const paired = usePairedCustomerActions();
   const t = useWorkspaceTranslation();
   const [entry, setEntry] = useState<{ token: string; url: string; at: number } | null>(null);
   const [now, setNow] = useState(0);
@@ -18,9 +20,13 @@ export function CustomerRelayEntry({ token }: { token: string }) {
       const requestedAt = Date.now();
       setNow(requestedAt);
       try {
-        const response = await fetch(`/api/service-relay/entry?token=${encodeURIComponent(token)}`, { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]) });
-        if (!response.ok) return;
-        const result = await response.json();
+        let result;
+        if (paired) result = await paired.command<{entry:unknown}>("relay.entry",{});
+        else {
+          const response = await fetch(`/api/service-relay/entry?token=${encodeURIComponent(token)}`, { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(8000)]) });
+          if (!response.ok) return;
+          result = await response.json();
+        }
         const url = customerEntryLink(result?.entry);
         if (alive) setEntry(url ? { token, url, at: requestedAt } : null);
       } catch { /* Preserve only a recently refreshed entry during a brief disconnect. */ }
@@ -30,7 +36,7 @@ export function CustomerRelayEntry({ token }: { token: string }) {
     const timer = setInterval(() => { setNow(Date.now()); void refresh(); }, 30000);
     document.addEventListener("visibilitychange", refresh);
     return () => { alive = false; controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", refresh); };
-  }, [token]);
+  }, [token, paired]);
   const url = entry?.token === token && now - entry.at < 90000 ? entry.url : "";
   return <section className="customer-entry-card" aria-label={t("Check in with your app")}>
     <h2><WorkspaceText text="Check in with your app" /></h2>

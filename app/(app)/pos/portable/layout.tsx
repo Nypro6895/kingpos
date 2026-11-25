@@ -16,7 +16,7 @@ import {
   getCurrentPortablePosSession,
   getRememberedPortablePosAccessId,
 } from "@/app/pos/portable/actions";
-import { PortablePosLoginForm } from "@/app/pos/portable/portable-login-form";
+import { PortableEntry } from "@/app/pos/portable/portable-entry";
 import { PortableShellRefresh } from "@/app/pos/portable/portable-shell-refresh";
 import { PortableWorkspaceTabs } from "@/app/pos/portable/portable-workspace-tabs";
 import { PortableWorkspaceStateProvider } from "@/app/pos/portable/portable-workspace-state";
@@ -66,7 +66,7 @@ async function PortableLoginScreen() {
     <main className="grid h-dvh place-items-center overflow-hidden bg-zinc-100 px-4 py-8 text-zinc-950">
       <div className="grid w-full justify-items-center gap-6">
         <ReylumiLogo />
-        <PortablePosLoginForm rememberedAccessId={rememberedAccessId} />
+        <PortableEntry rememberedAccessId={rememberedAccessId} />
       </div>
     </main>
   );
@@ -79,6 +79,9 @@ export default async function PortablePosLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Customer enrollment has its own cookie and never requires a staff login.
+  // Keep this route inside the same installable Portable application scope.
+  if ((await headers()).get("x-reylumi-pos-path") === "/pos/portable/display") return <>{children}</>;
   const session = await getCurrentPortablePosSession();
   // This server response timestamp bounds replay against the cached HTML snapshot.
   // eslint-disable-next-line react-hooks/purity

@@ -17,6 +17,7 @@ struct ReylumiApp: App {
     @UIApplicationDelegateAdaptor(ReylumiAppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
     @State private var marketReturnSequence = 0
+    @State private var marketReturn: NavigationPolicy.MarketReturn?
     @State private var checkinPath: String?
     @State private var checkinSequence = 0
     @State private var giftCardPath: String?
@@ -28,14 +29,15 @@ struct ReylumiApp: App {
                 // host scene must not also boot the production app/analytics.
                 Color.white.ignoresSafeArea().accessibilityIdentifier("reylumi.xctest-idle")
             } else {
-                ReylumiView(marketReturnSequence: marketReturnSequence, checkinPath: checkinPath, checkinSequence: checkinSequence, giftCardPath: giftCardPath, giftCardSequence: giftCardSequence)
+                ReylumiView(marketReturnSequence: marketReturnSequence, marketReturn: marketReturn, checkinPath: checkinPath, checkinSequence: checkinSequence, giftCardPath: giftCardPath, giftCardSequence: giftCardSequence)
                     .ignoresSafeArea(.container, edges: .bottom)
                     .ignoresSafeArea(.keyboard)
                     .background(Color.white.ignoresSafeArea())
                     .preferredColorScheme(.light)
                     .onOpenURL { url in
-                        if NavigationPolicy.isMarketReturn(url) {
+                        if let destination = NavigationPolicy.marketReturn(url) {
                             checkinPath = nil; giftCardPath = nil
+                            marketReturn = destination
                             marketReturnSequence += 1
                         }
                         receiveCheckin(url)
@@ -64,18 +66,20 @@ struct ReylumiApp: App {
 
 struct ReylumiView: UIViewControllerRepresentable {
     var marketReturnSequence: Int
+    var marketReturn: NavigationPolicy.MarketReturn? = nil
     var checkinPath: String? = nil
     var checkinSequence: Int = 0
     var giftCardPath: String? = nil
     var giftCardSequence: Int = 0
     func makeUIViewController(context: Context) -> ReylumiAppContainer {
         let controller = ReylumiAppContainer()
+        controller.returnToMarket(sequence: marketReturnSequence, destination: marketReturn)
         controller.openPersonalCheckin(path: checkinPath, sequence: checkinSequence)
         controller.openGiftCard(path: giftCardPath, sequence: giftCardSequence)
         return controller
     }
     func updateUIViewController(_ controller: ReylumiAppContainer, context: Context) {
-        controller.returnToMarket(sequence: marketReturnSequence)
+        controller.returnToMarket(sequence: marketReturnSequence, destination: marketReturn)
         controller.openPersonalCheckin(path: checkinPath, sequence: checkinSequence)
         controller.openGiftCard(path: giftCardPath, sequence: giftCardSequence)
     }

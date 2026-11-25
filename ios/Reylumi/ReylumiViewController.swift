@@ -3,15 +3,17 @@ import WebKit
 import SafariServices
 
 final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, WKDownloadDelegate {
+    // Print Check is unavailable in this release until separately approved.
+    private static let checkWriterPrintingAvailable = false
     private var checkWriterPrintInFlight = false
     private var checkWriterPrintJobs = Set<String>()
     private let receiptPrinter = ReylumiReceiptPrinter()
     private var marketReturnSequence = 0
-    func returnToMarket(sequence: Int) {
+    func returnToMarket(sequence: Int, destination: NavigationPolicy.MarketReturn? = nil) {
         guard sequence > marketReturnSequence else { return }
         marketReturnSequence = sequence
         loadViewIfNeeded()
-        openPublicDestination("/market", query: [URLQueryItem(name: "payment", value: "received")])
+        openPublicDestination("/market", query: (destination ?? .init(salonID: nil, cancelled: false)).queryItems)
     }
     private var webView: WKWebView!
     func openPersonalCheckin(entry: String) {
@@ -535,6 +537,10 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
                 if !opened { self?.alert("Secure payment could not open. Please try again.") }
             }
         case "print-check-pdf":
+            guard Self.checkWriterPrintingAvailable else {
+                alert("Print Check is not available.")
+                return
+            }
             guard url.path == "/check-writer", !checkWriterPrintInFlight, !receiptPrinter.isBusy,
                   let jobID = body["jobId"] as? String, UUID(uuidString: jobID) != nil,
                   !checkWriterPrintJobs.contains(jobID),

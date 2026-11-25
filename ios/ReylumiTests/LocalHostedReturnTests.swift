@@ -293,6 +293,52 @@ final class LocalHostedReturnTests: XCTestCase {
     }
 
     @MainActor
+    func testScopedCancelledMarketReturnSurvivesColdHostedStartup() throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!
+        let container = ReylumiAppContainer(origin: origin, bundle: bundle)
+        let id = "a0000000-b000-4000-8000-000000000200"
+        let destination = try XCTUnwrap(NavigationPolicy.marketReturn(URL(string: "reylumi://market?salon=\(id)&cancelled=1")!))
+        container.returnToMarket(sequence: 1, destination: destination)
+        let hosted = try XCTUnwrap(container.children.compactMap { $0 as? ReylumiViewController }.first)
+        let url = try XCTUnwrap(hosted.queuedStartupURL)
+        XCTAssertEqual(url.path, "/market")
+        let query = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems)
+        XCTAssertEqual(query.first(where: { $0.name == "salon" })?.value, id)
+        XCTAssertEqual(query.first(where: { $0.name == "payment" })?.value, "cancelled")
+        container.returnToMarket(sequence: 1)
+        XCTAssertEqual(hosted.queuedStartupURL, url, "A repeated scene update cannot replace the scoped return with an unscoped one")
+    }
+
+    @MainActor
+    func testScopedMarketReturnPreservesInstalledPageAndDraft() async throws {
+        let (_, directory) = try readyBundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let manifestURL = directory.appendingPathComponent("manifest.json")
+        var manifest = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: manifestURL)) as? [String: Any])
+        var routes = try XCTUnwrap(manifest["routes"] as? [[String: Any]])
+        routes.append(["path": "/market", "adapter": "market", "access": "owner"]); manifest["routes"] = routes
+        try JSONSerialization.data(withJSONObject: manifest).write(to: manifestURL)
+        let bundle = try ReylumiLocalBundle(directory: directory)
+        let server = try HostedReturnServer(); try await server.start(); defer { server.stop() }
+        let container = ReylumiAppContainer(origin: try XCTUnwrap(server.origin), bundle: bundle)
+        let window = makeWindow(container); defer { window.isHidden = true; window.rootViewController = nil }
+        let local = try XCTUnwrap(container.local)
+        local.initializeWebContentIfNeeded()
+        try await wait("window.fixtureLocal === true", in: local.webView)
+        _ = try await local.webView.evaluateJavaScript("window.marketDraft = 'retained';window.addEventListener('reylumi:app-local-navigate',e=>history.pushState({},'',e.detail.path));true")
+        let id = "a0000000-b000-4000-8000-000000000200"
+        let destination = try XCTUnwrap(NavigationPolicy.marketReturn(URL(string: "reylumi://market?salon=\(id)&cancelled=1")!))
+        container.returnToMarket(sequence: 1, destination: destination)
+        try await wait("location.pathname === '/market' && new URLSearchParams(location.search).get('salon') === '" + id + "' && new URLSearchParams(location.search).get('payment') === 'cancelled'", in: local.webView)
+        XCTAssertTrue(container.local === local)
+        XCTAssertEqual(local.currentPath, "/market?payment=cancelled&salon=\(id)&marketReturn=1")
+        let retained = try await local.webView.evaluateJavaScript("window.marketDraft === 'retained'") as? Bool
+        XCTAssertEqual(retained, true)
+        container.returnToMarket(sequence: 1)
+        XCTAssertEqual(local.currentPath, "/market?payment=cancelled&salon=\(id)&marketReturn=1")
+    }
+
+    @MainActor
     private func hostedGiftCard(_ container: ReylumiAppContainer, token: String) async throws -> ReylumiViewController {
         try await hostedPublicTask(container, condition: "location.pathname === '/gift-cards' && location.search === '' && location.hash === '#card=" + token + "' && document.getElementById('route') != null")
     }

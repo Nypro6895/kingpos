@@ -84,10 +84,42 @@ struct NavigationPolicy {
         return false
     }
 
-    static func isMarketReturn(_ url: URL) -> Bool {
-        url.scheme == "reylumi" && url.host == "market" && url.path.isEmpty
-            && url.query == nil && url.fragment == nil && url.user == nil && url.password == nil && url.port == nil
+    struct MarketReturn: Equatable {
+        let salonID: String?
+        let cancelled: Bool
+
+        var queryItems: [URLQueryItem] {
+            var items = [URLQueryItem(name: "payment", value: cancelled ? "cancelled" : "received")]
+            if let salonID { items.append(URLQueryItem(name: "salon", value: salonID)) }
+            return items
+        }
+        var path: String {
+            var parts = URLComponents(); parts.path = "/market"; parts.queryItems = queryItems
+            return parts.string!
+        }
     }
+
+    /// Navigation intent only. Never accept payment proof, account identity or
+    /// arbitrary return destinations; Market still verifies its salon on server.
+    static func marketReturn(_ url: URL) -> MarketReturn? {
+        guard url.absoluteString.utf8.count <= 256,
+              let parts = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              parts.scheme == "reylumi", parts.host == "market", parts.percentEncodedPath.isEmpty,
+              parts.fragment == nil, parts.user == nil, parts.password == nil, parts.port == nil else { return nil }
+        let items = parts.queryItems ?? []
+        guard parts.query == nil || !items.isEmpty,
+              items.allSatisfy({ ["salon", "cancelled"].contains($0.name) }),
+              Set(items.map(\.name)).count == items.count else { return nil }
+        var salonID: String?
+        if let salon = items.first(where: { $0.name == "salon" }) {
+            guard let value = salon.value, value.utf8.count == 36, let id = UUID(uuidString: value) else { return nil }
+            salonID = id.uuidString.lowercased()
+        }
+        if let cancellation = items.first(where: { $0.name == "cancelled" }), cancellation.value != "1" { return nil }
+        return MarketReturn(salonID: salonID, cancelled: items.contains(where: { $0.name == "cancelled" }))
+    }
+
+    static func isMarketReturn(_ url: URL) -> Bool { marketReturn(url) != nil }
 
     /// Public entry identifiers identify a salon display, never an account or
     /// permission. Accept only the exact Camera link; writes remain in the UI.
