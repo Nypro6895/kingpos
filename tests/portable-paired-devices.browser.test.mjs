@@ -1,0 +1,135 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { chromium } from 'playwright-core';
+import { workstationFixture, fixtureId } from './helpers/portable-workstation-fixture.mjs';
+import { workstationBrowserServer } from './helpers/portable-workstation-browser.mjs';
+
+test('independent browsers exchange receipt edits and tips through the real authorized route and SQL', { timeout: 90000 }, async () => {
+  const f = await workstationFixture(), server = await workstationBrowserServer(f);
+  const browser = await chromium.launch({ executablePath: process.env.TEST_BROWSER_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+  const output = 'artifacts/portable-paired-devices-20261125/browser';
+  fs.mkdirSync(output, { recursive: true });
+  const errors = [], blocked = [], measurements = [];
+  const staffContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const guestContext = await browser.newContext({ viewport: { width: 1194, height: 834 }, hasTouch: true });
+  const replacementContext = await browser.newContext({ viewport: { width: 1194, height: 834 }, hasTouch: true });
+  const newStaffContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  for (const context of [staffContext, guestContext, replacementContext, newStaffContext]) await context.route('**/*', route => {
+    if (new URL(route.request().url()).origin === server.origin) return route.continue();
+    blocked.push(route.request().url()); return route.abort('blockedbyclient');
+  });
+  await staffContext.addCookies(server.staffCookies());
+  await newStaffContext.addCookies(server.staffCookies(fixtureId(101)));
+  const staff = await staffContext.newPage(), guest = await guestContext.newPage(), replacement = await replacementContext.newPage(), newStaff = await newStaffContext.newPage();
+  for (const page of [staff, guest, replacement, newStaff]) { page.setDefaultTimeout(12000); page.on('pageerror', error => errors.push(error.message)); }
+  try {
+    await Promise.all([staff.goto(server.origin), guest.goto(server.origin), replacement.goto(server.origin), newStaff.goto(server.origin)]);
+    const station = await staff.evaluate(() => window.fixture.request({ action: 'create', label: 'Fixture front desk' }));
+    assert.equal(station.role, 'staff'); assert.ok(station.current?.id);
+    const code = await staff.evaluate(() => window.fixture.request({ action: 'code' }));
+    assert.match(code.code, /^\d{8}$/);
+    const paired = await guest.evaluate(code => window.fixture.request({ action: 'pair', code }), code.code);
+    assert.equal(paired.role, 'customer'); assert.equal(paired.current.id, station.current.id);
+    assert.ok(!JSON.stringify(paired).includes('fixture-private-draft'), 'customer session never exposes the old draft bearer');
+    const guestCookies = await guestContext.cookies();
+    assert.ok(guestCookies.some(cookie => cookie.name === 'reylumi-customer-workstation' && cookie.httpOnly));
+    assert.ok(!guestCookies.some(cookie => cookie.name === 'kingpos-portable-pos-session'));
+    await staff.evaluate(() => window.fixture.startStaff());
+    await guest.evaluate(id => window.fixture.startCustomer(id), station.current.id);
+    await guest.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 30);
+    for (const command of ['tip', 'reset']) assert.equal(await guest.evaluate(async command => { try { await window.fixture.request({ action: 'customerAction', command, input: { tipAmount: 999 } }); return 200; } catch (error) { return error.status; } }, command), 409, 'paired customer cannot bypass the staff durable intent path');
+    const baselineGets = server.trace.filter(entry => entry.type === 'request' && entry.action === 'GET').length;
+    for (const amount of [31, 31.2, 31.25]) {
+      const start = performance.now();
+      await staff.getByLabel('Staff amount').fill(String(amount));
+      await guest.waitForFunction(amount => window.fixture.preview()?.payload.subtotal === amount, amount);
+      measurements.push({ direction: 'staff-to-customer', amount, milliseconds: performance.now() - start });
+    }
+    assert.equal(server.trace.filter(entry => entry.type === 'request' && entry.action === 'GET').length, baselineGets, 'typing delivers signed frames without per-edit snapshot reads');
+    const tipStart = performance.now();
+    assert.equal(await guest.evaluate(() => window.fixture.tip(5)), true);
+    await staff.waitForFunction(() => JSON.parse(localStorage.getItem('fixture-durable-cart')).payload.tip === 5);
+    await guest.waitForFunction(() => window.fixture.preview()?.payload.tip === 5);
+    measurements.push({ direction: 'customer-to-staff-and-acknowledged', milliseconds: performance.now() - tipStart });
+    const durable = await staff.evaluate(() => JSON.parse(localStorage.getItem('fixture-durable-cart')));
+    assert.equal(durable.payload.subtotal, 31.25); assert.equal(durable.payload.tip, 5); assert.equal(durable.payload.total, 36.25);
+    const acceptedIntent = server.frames.find(frame => frame.envelope.kind === 'intent').envelope.payload;
+    const acceptedCalls = await staff.evaluate(() => window.fixture.events.filter(event => event.kind === 'tip').length);
+    const duplicateStatus = await guest.evaluate(async payload => { try { await window.fixture.request({ action: 'intent', payload, messageId: payload.id }); return 200; } catch (error) { return error.status; } }, acceptedIntent);
+    assert.equal(duplicateStatus, 409);
+    assert.equal(await staff.evaluate(() => window.fixture.events.filter(event => event.kind === 'tip').length), acceptedCalls, 'an acknowledged customer request cannot apply a second time');
+    await staff.evaluate(() => { window.fixture.rejectPersistence = true; });
+    assert.equal(await guest.evaluate(() => window.fixture.tip(9)), false, 'a failed durable callback produces a negative acknowledgement');
+    assert.equal(await staff.evaluate(() => JSON.parse(localStorage.getItem('fixture-durable-cart')).payload.tip), 5);
+    await staff.evaluate(() => { window.fixture.rejectPersistence = false; });
+    const stale = await guest.evaluate(() => window.fixture.preview());
+    await staff.getByLabel('Staff amount').fill('45');
+    await guest.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 45);
+    assert.equal(await guest.evaluate(preview => window.fixture.tip(99, preview), stale), false);
+    assert.equal(await staff.evaluate(() => JSON.parse(localStorage.getItem('fixture-durable-cart')).payload.tip), 5);
+    const simultaneous = await guest.evaluate(() => window.fixture.preview());
+    const [, racedTip] = await Promise.all([
+      staff.evaluate(() => window.fixture.publish(46)),
+      guest.evaluate(preview => window.fixture.tip(7, preview), simultaneous),
+    ]);
+    await guest.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 46);
+    const afterRace = await staff.evaluate(() => JSON.parse(localStorage.getItem('fixture-durable-cart')));
+    assert.equal(afterRace.payload.subtotal, 46, 'customer tip never overwrites the newer service amount');
+    assert.equal(afterRace.payload.tip, racedTip ? 7 : 5, 'a stale customer tip is acknowledged or rejected consistently');
+    await guest.reload();
+    assert.equal((await guest.evaluate(() => window.fixture.request())).current.id, station.current.id);
+    await guest.evaluate(id => window.fixture.startCustomer(id), station.current.id);
+    await guest.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 46);
+    await guest.evaluate(() => window.fixtureDisconnectStreams());
+    await staff.getByLabel('Staff amount').fill('47');
+    await guest.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 47, undefined, { timeout: 10000 });
+    await staff.evaluate(() => window.fixture.request({ action: 'heartbeat', online: false, dirty: true, pending: false, cartId: 'fixture-cart', revision: 'logout-revision' }));
+    await guest.waitForFunction(() => window.fixture.preview() === null);
+    await staffContext.clearCookies({ name: /^kingpos-portable-pos-(key-id|session)$/ });
+    const afterLogout = await guest.evaluate(() => window.fixture.request());
+    assert.equal(afterLogout.current.id, station.current.id); assert.equal(afterLogout.current.staffOnline, false);
+    assert.equal(await guest.evaluate(async () => { try { await window.fixture.request({ action: 'customerAction', command: 'read', input: {} }); return 200; } catch (error) { return error.status; } }), 409);
+    await staffContext.addCookies(server.staffCookies());
+    await staff.evaluate(() => window.fixture.startStaff());
+    await guest.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 47);
+    const replacementCode = await staff.evaluate(() => window.fixture.request({ action: 'code', replace: true }));
+    const replaced = await replacement.evaluate(code => window.fixture.request({ action: 'pair', code }), replacementCode.code);
+    assert.equal(replaced.current.id, station.current.id);
+    await guest.waitForFunction(() => window.fixture.preview() === null, undefined, { timeout: 5000 });
+    const oldRead = await guest.evaluate(async () => { try { await window.fixture.request(); return 200; } catch (error) { return error.status; } });
+    assert.equal(oldRead, 401);
+    const oldWrite = await guest.evaluate(async () => { try { await window.fixture.request({ action: 'customerAction', command: 'read', input: {} }); return 200; } catch (error) { return error.status; } });
+    assert.equal(oldWrite, 401);
+    await staff.evaluate(() => { window.fixture.changed(); window.fixture.publish(49); });
+    await replacement.evaluate(id => window.fixture.startCustomer(id), station.current.id);
+    await replacement.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 49);
+    const latest = server.frames.filter(frame => frame.envelope.kind === 'preview').at(-1);
+    server.deliver(latest.topic, { ...latest.envelope, sequence: latest.envelope.sequence + 1000, messageId: '00000000-0000-4000-8000-999999999999', payload: { ...latest.envelope.payload, payload: { ...latest.envelope.payload.payload, subtotal: 999 } } });
+    await staff.evaluate(() => window.fixture.publish(50));
+    await replacement.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 50);
+    assert.equal(await replacement.evaluate(() => window.fixture.events.some(event => event.value?.payload.subtotal === 999)), false, 'forged high-sequence frame never reaches UI or poisons the signed sequence');
+    const dirtyClaim = await newStaff.evaluate(async id => { try { await window.fixture.request({ action: 'select', workstationId: id }); return 200; } catch (error) { return error.status; } }, station.current.id);
+    assert.equal(dirtyClaim, 409, 'another browser cannot take over the unsaved receipt');
+    assert.equal(await staff.evaluate(() => JSON.parse(localStorage.getItem('fixture-durable-cart')).payload.subtotal), 50);
+    await staff.evaluate(() => window.fixture.empty());
+    await replacement.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 0 && window.fixture.preview()?.payload.staffLines.length === 0);
+    const transfer = await newStaff.evaluate(id => window.fixture.request({ action: 'select', workstationId: id }), station.current.id);
+    assert.equal(transfer.current.id, station.current.id); assert.equal(transfer.current.customerPaired, true);
+    const oldWriterStatus = await staff.evaluate(async payload => { try { await window.fixture.request({ action: 'preview', payload }); return 200; } catch (error) { return error.status; } }, server.frames.filter(frame => frame.envelope.kind === 'preview').at(-1).envelope.payload);
+    assert.equal(oldWriterStatus, 409);
+    await newStaff.evaluate(() => window.fixture.startStaff());
+    await replacement.waitForFunction(() => window.fixture.preview()?.payload.subtotal === 30);
+    assert.equal((await replacement.evaluate(() => window.fixture.request())).current.id, station.current.id);
+    const staffTrace = server.trace.filter(entry => entry.type === 'broadcast');
+    assert.ok(staffTrace.some(entry => entry.kind === 'preview')); assert.ok(staffTrace.some(entry => entry.kind === 'intent')); assert.ok(staffTrace.some(entry => entry.kind === 'ack'));
+    assert.deepEqual(errors, []); assert.deepEqual(blocked, []);
+    await Promise.all([staff.screenshot({ path: output + '/staff-transport.png' }), replacement.screenshot({ path: output + '/customer-transport.png' })]);
+    fs.writeFileSync(output + '/result.json', JSON.stringify({ passed: true, actualMigration: f.migrationFiles, actualApiRoute: true, actualSigningAndVerification: true, actualClientReceiptTransport: true, independentBrowserContexts: 4, deliveryAdapter: 'Loopback HTTP SSE replacing Supabase delivery only', excludedAcceptance: ['physical devices', 'provider Realtime', 'full Next rendering', 'production network latency'], measurements, browserErrors: errors, externalRequests: blocked }, null, 2));
+    console.log(JSON.stringify({ localControlledTransportMeasurements: measurements }));
+  } catch (error) {
+    await Promise.all([staff.screenshot({ path: output + '/staff-failed.png' }), guest.screenshot({ path: output + '/customer-failed.png' })]);
+    fs.writeFileSync(output + '/failure.json', JSON.stringify({ error: error.message, trace: server.trace, staff: await staff.locator('body').innerText(), customer: await guest.locator('body').innerText(), browserErrors: errors }, null, 2));
+    throw error;
+  } finally { await browser.close(); await server.close(); await f.close(); }
+});

@@ -13,6 +13,8 @@ export async function proxy(request: NextRequest) {
     return new NextResponse("This feature is not available in Reylumi for iOS.", { status: 403 });
   }
   const headers = new Headers(request.headers);
+  // The route is set here, never trusted from an incoming browser header.
+  headers.set("x-reylumi-pos-path", request.nextUrl.pathname);
   stripAppLocalCommandTraceHeaders(headers);
   const traceCommand = request.method === "POST" && request.nextUrl.pathname === "/api/app-local/command";
   let traceRequestId: string | undefined;

@@ -41,6 +41,7 @@ import {
 } from "@/app/pos/actions";
 import { QrCodeTile } from "@/components/qr-code-tile";
 import { connectLocalReceipt, requestLocalReceiptTip, requestLocalReceiptCustomer, dismissLocalReceipt, localReceiptSnapshot, type LocalReceiptPreview, publishLocalDisplaySnapshot, subscribeLocalDisplay } from "@/lib/pos-local-display";
+import type { PairedDisplayTransport } from "@/lib/portable-workstation-client";
 import {
   getPosLiveDraftRealtimeChannel,
   POS_LIVE_DRAFT_BROADCAST_EVENT,
@@ -57,7 +58,7 @@ import type {
 } from "@/types/pos-desk";
 import type { CustomerVisitRequestedService } from "@/types/customer-visit";
 
-type CustomerDisplaySettings = {
+export type CustomerDisplaySettings = {
   appDownloadUrl: string;
   customerBackgroundImageUrl: string | null;
   customerLeftAdImageUrl: string | null;
@@ -1489,12 +1490,14 @@ export function CustomerDisplayClient({
   settings:initialSettings,
   token,
   initialSnapshot,
+  transport,
 }: {
   serviceCatalog: CustomerDisplayService[];
   settings: CustomerDisplaySettings;
   token: string;
   /** Server-confirmed, scoped paired-device snapshot; ordinary web callers keep the existing live initialization. */
   initialSnapshot?: PosLiveDraftView | null;
+  transport?: PairedDisplayTransport;
 }) {
   const seededSnapshot = initialSnapshot?.token === token ? initialSnapshot : null;
   const [liveDraft, setLiveDraft] = useState<PosLiveDraftView | null>(seededSnapshot);
@@ -1504,6 +1507,7 @@ export function CustomerDisplayClient({
     const controller = new AbortController();
     async function refresh() {
       try {
+        if (transport) { const next = await transport.command<CustomerDisplaySettings>("settings", {}); if (alive && next.salonName) setSettings(next); return; }
         const response = await fetch('/api/pos/customer-display/settings?token='+encodeURIComponent(token), {cache:'no-store', signal:AbortSignal.any([controller.signal,AbortSignal.timeout(8000)])});
         if (response.ok) {const next = await response.json();if (alive && next.salonName) setSettings(next);}
       } catch { /* Keep the last confirmed salon appearance. */ }
@@ -1512,8 +1516,9 @@ export function CustomerDisplayClient({
     window.addEventListener(CUSTOMER_DISPLAY_APPEARANCE_CHANGED,refresh);
     window.addEventListener('storage',storage);
     return () => {alive=false;controller.abort();window.removeEventListener(CUSTOMER_DISPLAY_APPEARANCE_CHANGED,refresh);window.removeEventListener('storage',storage);};
-  }, [token]);
+  }, [token, transport]);
   usePosResourceRefresh(liveDraft?.salon_id,'settings',async()=>{
+    if (transport) { const next = await transport.command<CustomerDisplaySettings>("settings", {}); if (next.salonName) setSettings(next); return; }
     const response=await fetch('/api/pos/customer-display/settings?token='+encodeURIComponent(token),{cache:'no-store',signal:AbortSignal.timeout(8000)});
     if(response.ok){const next=await response.json();if(next.salonName)setSettings(next);}
   });
@@ -1748,6 +1753,7 @@ export function CustomerDisplayClient({
   }, []);
 
   const loadLatestSnapshot = useCallback(async () => {
+    if (transport) return;
     if (!token) {
       setLiveDraft(null);
       liveDraftRef.current = null;
@@ -1775,7 +1781,7 @@ export function CustomerDisplayClient({
     }
 
     setError(null);
-  }, [applySnapshot, initialSnapshot, token]);
+  }, [applySnapshot, initialSnapshot, token, transport]);
 
   useEffect(() => {
     if (initialSnapshot?.token !== token) return;
@@ -1783,9 +1789,9 @@ export function CustomerDisplayClient({
     return () => window.clearTimeout(timer);
   }, [applySnapshot, initialSnapshot, token]);
 
-  useEffect(() => subscribeLocalDisplay(token, applySnapshot), [token, applySnapshot]);
+  useEffect(() => transport ? undefined : subscribeLocalDisplay(token, applySnapshot), [token, applySnapshot, transport]);
   useEffect(() => {
-    const connection = connectLocalReceipt(token, { preview: value => {
+    const receive = (value: LocalReceiptPreview) => {
       const baseline = liveDraftRef.current;
       const previous = localPreview.current;
       localPreview.current = { value, receivedAt: Date.now() };
@@ -1794,6 +1800,12 @@ export function CustomerDisplayClient({
       if (!previous) setError(null);
       if (previous?.value.cartId === value.cartId && previous.value.revision === value.revision && previous.value.completedAt === value.completedAt) return;
       const snapshot = localReceiptSnapshot(baseline, value);
+      if (transport) {
+        snapshot.id = value.cartId;
+        snapshot.token = token;
+        snapshot.receipt_version = (value as LocalReceiptPreview & { workstationSequence?: number }).workstationSequence ?? (baseline?.receipt_version ?? 0) + 1;
+        snapshot.customer_version = (baseline?.customer_version ?? 0) + (JSON.stringify(baseline?.customer) === JSON.stringify(snapshot.customer) ? 0 : 1);
+      }
       serverOffsetRef.current = 0; setServerOffsetMs(0);
       liveDraftRef.current = snapshot;
       setLiveDraft(snapshot);
@@ -1809,7 +1821,19 @@ export function CustomerDisplayClient({
         setCheckInState(null); setServiceSelectionState(null); setSelectedServiceIds([]);
         setCustomerStatus(null); lastSubmittedPhoneRef.current = "";
       }
-    } });
+    };
+    if (transport) return transport.subscribe(value => {
+      if (value) receive(value);
+      else {
+        localPreview.current = null; setLocalPreviewMode(true);
+        const empty = localReceiptSnapshot(null, { cartId: "welcome", revision: "welcome", payload: { token, selectedStaffId: null, staffLines: [], customer: null, discount: 0, subtotal: 0, tax: 0, tip: 0, total: 0, totalBeforeTip: 0 } });
+        liveDraftRef.current = empty; setLiveDraft(empty);
+        phoneRequestGuard.current.reset(); serviceRequestGuard.current.reset();
+        setPhoneInput(""); setConfirmedPhone(null); setIsChangingCustomer(false); setGuestConfirmed(false);
+        setCustomTipInput(""); setCustomTipMode(false);
+      }
+    }, status => setConnectionState(status === "waiting" ? "connected" : status));
+    const connection = connectLocalReceipt(token, { preview: receive });
     const timer = setInterval(() => {
       if (localPreview.current && Date.now() - localPreview.current.receivedAt >= 2000) {
         localPreview.current = null; setLocalPreviewMode(false);
@@ -1817,7 +1841,7 @@ export function CustomerDisplayClient({
       }
     }, 1000);
     return () => { clearInterval(timer); connection.close(); localPreview.current = null; };
-  }, [token, loadLatestSnapshot]);
+  }, [token, loadLatestSnapshot, transport]);
 
 
   const handlePhoneInput = useCallback(
@@ -1874,9 +1898,9 @@ export function CustomerDisplayClient({
           options?.newCustomer ? localPhoneKey(phone) : null,
         );
         const preview = localPreview.current;
-        if (preview && Date.now() - preview.receivedAt < 2000 && result.snapshot.customer) {
+        if (preview && (transport || Date.now() - preview.receivedAt < 2000) && result.snapshot.customer) {
           const customer = result.snapshot.customer;
-          void requestLocalReceiptCustomer(token, preview.value, customer).then(accepted => {
+          void (transport ? transport.customer(preview.value, customer) : requestLocalReceiptCustomer(token, preview.value, customer)).then(accepted => {
             if (!accepted) { setCustomerStatus("The ticket changed. Please enter your phone again."); return; }
             // Customer identity comes from the authorized lookup; receipt amounts remain local.
             if (localPreview.current?.value.cartId !== preview.value.cartId) return;
@@ -1909,21 +1933,23 @@ export function CustomerDisplayClient({
       setCustomerStatus(null);
       lastSubmittedPhoneRef.current = "";
     },
-    [applySnapshot, selectableServiceIds, serviceCatalog.length, token],
+    [applySnapshot, selectableServiceIds, serviceCatalog.length, token, transport],
   );
 
   const submitDisplayPhone = useCallback(async (input: { phone: string; name?: string; identityChoice?: string; newCustomer?: boolean }): Promise<Awaited<ReturnType<typeof submitCustomerDisplayPhone>>> => {
     const preview = localPreview.current;
     const baseline = liveDraftRef.current;
-    const localCheckout = !!preview && !!baseline && !preview.value.completedAt && Date.now() - preview.receivedAt < 2000 && hasMeaningfulReceipt(baseline);
-    const checkInOnly = !!preview && Date.now() - preview.receivedAt < 2000 && !hasMeaningfulReceipt(baseline);
+    const localCheckout = !!preview && !!baseline && !preview.value.completedAt && (transport || Date.now() - preview.receivedAt < 2000) && hasMeaningfulReceipt(baseline);
+    const checkInOnly = !!transport ? !localCheckout : !!preview && Date.now() - preview.receivedAt < 2000 && !hasMeaningfulReceipt(baseline);
     const key = JSON.stringify([token, localPhoneKey(input.phone), input.name?.trim() ?? "", input.identityChoice ?? null, !!input.newCustomer, localCheckout, checkInOnly, localCheckout ? preview?.value.cartId : null]);
     const ticket = phoneRequestGuard.current.begin(key, getRequestId);
     const superseded = { ok: false as const, code: "request_superseded", error: "" };
     if (!ticket) return superseded;
     try {
       let result: Awaited<ReturnType<typeof submitCustomerDisplayPhone>>;
-      if (localCheckout && baseline) {
+      if (transport) {
+        result = await transport.command<Awaited<ReturnType<typeof submitCustomerDisplayPhone>>>("phone", { ...input, phone: localPhoneKey(input.phone), name: input.name?.trim(), requestId: ticket.requestId, checkInOnly, localCheckout, cartId: preview?.value.cartId, revision: preview?.value.revision });
+      } else if (localCheckout && baseline) {
         const found = input.name
           ? await createLiveDraftCustomer({ ...input, name: input.name, token })
           : await findLiveDraftCustomerByPhone({ phone: input.phone, token });
@@ -1939,7 +1965,7 @@ export function CustomerDisplayClient({
         ? { ok: false, code: "lookup_failed", error: "Unable to connect. Please try again." }
         : superseded;
     }
-  }, [token]);
+  }, [token, transport]);
 
   const submitPhoneLookup = useCallback(
     async (value = phoneInput) => {
@@ -2036,6 +2062,7 @@ export function CustomerDisplayClient({
   }, []);
 
   useEffect(() => {
+    if (transport) return;
     if (!token) {
       const timeoutId = window.setTimeout(() => {
         setLiveDraft(null);
@@ -2103,9 +2130,10 @@ export function CustomerDisplayClient({
       window.clearTimeout(initialLoadId);
       void supabase.removeChannel(channel);
     };
-  }, [loadLatestSnapshot, token]);
+  }, [loadLatestSnapshot, token, transport]);
 
   useEffect(() => {
+    if (transport) return;
     if (!token || liveDraftStatus !== "draft") {
       const timeoutId = window.setTimeout(() => setServerTipOptions(null), 0);
       return () => window.clearTimeout(timeoutId);
@@ -2139,6 +2167,7 @@ export function CustomerDisplayClient({
     liveDraftStatus,
     initialSnapshot,
     token,
+    transport,
   ]);
 
   useEffect(() => {
@@ -2207,10 +2236,10 @@ export function CustomerDisplayClient({
     let cancelled = false;
     const timeoutId = window.setTimeout(async () => {
       setIsSearching(true);
-      const result = await searchCustomerDisplayLiveDraftCustomers({
+      const result = await (transport ? transport.command<Awaited<ReturnType<typeof searchCustomerDisplayLiveDraftCustomers>>>("search", { phone: phoneInput }) : searchCustomerDisplayLiveDraftCustomers({
         phone: phoneInput,
         token,
-      });
+      }));
 
       if (cancelled) {
         return;
@@ -2238,6 +2267,7 @@ export function CustomerDisplayClient({
     phoneDigits,
     phoneInput,
     token,
+    transport,
   ]);
 
   useEffect(() => {
@@ -2374,13 +2404,14 @@ export function CustomerDisplayClient({
 
     try {
       const preview = localPreview.current;
-      if (preview && Date.now() - preview.receivedAt < 2000) {
-        const accepted = await requestLocalReceiptTip(token, preview.value, tipAmount);
+      if (preview && (transport || Date.now() - preview.receivedAt < 2000)) {
+        const accepted = await (transport ? transport.tip(preview.value, tipAmount) : requestLocalReceiptTip(token, preview.value, tipAmount));
         if (!accepted) { setError("The receipt changed. Please select your tip again."); return false; }
         if (tipIdentity.current !== identity) return false;
         if (closeCustom) { setCustomTipInput(""); setCustomTipMode(false); }
         return true;
       }
+      if (transport) { setError("Wait for the POS to reconnect before saving a tip."); return false; }
       if (!navigator.onLine) { setError("Reconnect to the POS to save your tip."); return false; }
       const result = await confirmCustomerDisplayLiveDraftTip({
         requestId: getRequestId(), tipAmount, token,
@@ -2503,11 +2534,11 @@ export function CustomerDisplayClient({
     setError(null);
     let result: Awaited<ReturnType<typeof saveCustomerDisplayRequestedServices>>;
     try {
-      result = await saveCustomerDisplayRequestedServices({
+      result = await (transport ? transport.command<Awaited<ReturnType<typeof saveCustomerDisplayRequestedServices>>>("services", { serviceIds: selectedServiceIds, visitId: serviceSelectionState.visit.id }) : saveCustomerDisplayRequestedServices({
       serviceIds: selectedServiceIds,
       token,
       visitId: serviceSelectionState.visit.id,
-      });
+      }));
     } catch {
       if (!serviceRequestGuard.current.finish(ticket)) return;
       setIsServicePending(false);
@@ -2536,10 +2567,11 @@ export function CustomerDisplayClient({
 
   async function resetCompletedNow() {
     const preview = localPreview.current;
-    if (preview?.value.completedAt && Date.now() - preview.receivedAt < 2000) {
-      dismissLocalReceipt(token, preview.value.cartId);
+    if (preview?.value.completedAt && (transport || Date.now() - preview.receivedAt < 2000)) {
+      if (transport) transport.dismiss(preview.value); else dismissLocalReceipt(token, preview.value.cartId);
       return;
     }
+    if (transport) return;
     if (
       completedResetInFlightRef.current ||
       !token ||

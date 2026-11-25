@@ -52,6 +52,7 @@ async function PortablePosPage() {
         <PosRapidMobileBridge staffCheckInEnabled={data.defaults.staffCheckInEnabled} services={data.services} staff={data.staff} />
         <div className={styles.engine} data-pos-rapid-engine>
           <PosDeskClient
+            key={`${data.liveDraft?.id ?? "none"}:${data.pairedWorkstation ? "paired" : "legacy"}`}
             holdSharedDraft={portableHoldPosDraft}
             heldTicketLoad={portableLoadServiceRelay}
             heldTicketState={portablePosHeldTicketState}
@@ -69,6 +70,7 @@ async function PortablePosPage() {
               updatePosLiveDraftCustomer: portableUpdatePosLiveDraftCustomer,
             }}
             activeSession={null}
+            pairedWorkstation={data.pairedWorkstation}
             canAdjustStaffTurn={data.canAdjustStaffTurn}
             defaults={data.defaults}
             offlineDraftSyncEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"}

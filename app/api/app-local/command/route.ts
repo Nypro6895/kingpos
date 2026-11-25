@@ -28,6 +28,7 @@ import { runWithAppLocalGetterReadScope } from "@/lib/app-local-getter-read-scop
 import { AuthAvailabilityError } from "@/lib/supabase/auth-rest";
 import { createAppLocalCommandTrace, type AppLocalCommandTrace } from "@/lib/app-local-command-trace";
 import type { AppLocalCommandFailureCode } from "@/lib/app-local-command-trace-protocol";
+import { GET as workstationGET, POST as workstationPOST } from "@/app/api/pos/workstation/route";
 
 export async function POST(request: Request) {
   const trace = createAppLocalCommandTrace(request.headers);
@@ -57,6 +58,18 @@ async function command(request: Request, trace: AppLocalCommandTrace) {
     const input = JSON.parse(new TextDecoder().decode(bytes));
     if (!input || typeof input.name !== "string" || !/^[a-z][a-z0-9.-]{0,79}$/.test(input.name) || !/^[a-f0-9-]{36}$/i.test(input.requestId ?? "") || !isAppLocalScopeId(input.scope) || !input.args || typeof input.args !== "object" || Array.isArray(input.args)) return failure(400, "Invalid form.");
     trace.setCommand(input.name);
+    if (input.name === "portable.workstation") {
+      await requireAppLocalPortableScope(input.scope);
+      if (Object.keys(input.args).some(key => !["method", "input", "role"].includes(key)) || !["GET", "POST"].includes(input.args.method)) return failure(400, "Invalid counter request.");
+      const forwarded = new Headers(request.headers);
+      const url = new URL("/api/pos/workstation", origin);
+      url.searchParams.set("role", input.args.role === "customer" ? "customer" : "staff");
+      const original = input.args.method === "GET"
+        ? await workstationGET(new Request(url, {headers:forwarded}))
+        : await workstationPOST(new Request(url, {method:"POST",headers:forwarded,body:JSON.stringify(input.args.input)}));
+      const result = await original.json();
+      return Response.json(original.ok ? {ok:true,data:result} : {ok:false,error:result.error}, {status:original.status,headers:responseHeaders});
+    }
     if (input.name === APP_LOCAL_GUEST_HIDDEN_POSTS_READ &&
       (Object.keys(input.args).length !== 1 || !Array.isArray(input.args.values) || input.args.values.length !== 0)) {
       return failure(400, "Invalid hidden-post read.");

@@ -8,6 +8,7 @@ import {giftApi} from "./gift-api";
 import {giftPublicLink} from "@/lib/gift-public-link";
 import {giftDismissArgs,giftScreenClosed,giftScreenPrompted,rememberGiftScreen} from "./gift-screen-lifecycle";
 import "./gift-card.css";
+import {usePairedCustomerActions} from "@/app/pos/customer-display/paired-customer-actions-context";
 
 export type GiftCheckout=()=>Promise<GiftReply|null>;
 export function giftLink(kind:"card"|"mobile",token:string){return giftPublicLink(kind,token,typeof location==="undefined"?undefined:location);}
@@ -126,7 +127,8 @@ export function GiftDeliveryReceipt({session,onClose,review=false}:{session:Gift
 }
 
 export function GiftCustomerControl({token,transport,checkout=false,onSession}:{token:string;transport?:GiftTransport;checkout?:boolean;onSession?:(session:GiftSession|null)=>void}) {
-  const api=useMemo(()=>transport??giftApi("display",token),[transport,token]);
+  const paired=usePairedCustomerActions();
+  const api=useMemo<GiftTransport>(()=>transport??(paired?((op,args={})=>paired.command<GiftReply>("gift",{op,args})):giftApi("display",token)),[transport,token,paired]);
   const [session,setSession]=useState<GiftSession>();const [installed,setInstalled]=useState(false);const [open,setOpen]=useState(false);const [error,setError]=useState("");const [busy,setBusy]=useState(false);
   const current=useRef<GiftSession|undefined>(undefined);const actionLock=useRef(false);
   const changed=useRef(onSession);useLayoutEffect(()=>{changed.current=onSession;},[onSession]);

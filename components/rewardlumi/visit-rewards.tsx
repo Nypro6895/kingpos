@@ -5,13 +5,15 @@ import { rewardMoney, type RewardTransport, type RewardView } from "@/types/rewa
 import styles from "./rewardlumi.module.css";
 import { useNativeDialogNavigation, useTransientOverlay } from "@/components/overlay-dismissal";
 import type { RewardOffer } from "@/types/rewardlumi";
+import { usePairedCustomerActions } from "@/app/pos/customer-display/paired-customer-actions-context";
 
 export function VisitRewards({ scope, token, visitId, transport, receipt, onChange, presentation, onAvailabilityChange }: {
   scope: "personal" | "display" | "pos"; token?: string; visitId?: string;
   transport?: RewardTransport; receipt?: unknown; onChange?: (view: RewardView | null) => void;
   presentation?: "checkout"; onAvailabilityChange?: (available: boolean) => void;
 }) {
-  const send = useMemo(() => transport ?? rewardTransport(scope, token), [transport, scope, token]);
+  const paired = usePairedCustomerActions();
+  const send = useMemo<RewardTransport>(() => transport ?? (paired && scope === "display" ? ((op,args={}) => paired.command("rewards",{op,args})) : rewardTransport(scope, token)), [transport, scope, token, paired]);
   const [view, setView] = useState<RewardView | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);

@@ -1,83 +1,22 @@
 import { withExperiencePage } from "@/components/experience-page";
 import { CustomerDisplayClient } from "@/app/pos/customer-display/customer-display-client";
-import {
-  getCustomerDisplayServiceCatalog,
-  getOrCreatePosLiveDraft,
-} from "@/app/pos/actions";
-import {
-  getCurrentPortablePosSession,
-  getPortablePosDeskData,
-} from "@/app/pos/portable/actions";
-import {
-  getCurrentBusinessContext,
-  isSalonManageContext,
-} from "@/lib/current-context";
-import { hasPermission } from "@/lib/permissions";
+import { getCustomerDisplayServiceCatalog } from "@/app/pos/actions";
 import { getPublicPosDisplaySettingsByToken } from "@/lib/pos-settings";
-import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
+import { redirect } from "next/navigation";
 
-type CustomerDisplayPageProps = {
-  searchParams: Promise<{
-    token?: string;
-  }>;
-};
+type CustomerDisplayPageProps = { searchParams: Promise<{token?: string}> };
 
-async function resolveCustomerDisplayToken(explicitToken: string) {
-  const token = explicitToken.trim();
-
-  if (token) {
-    return token;
-  }
-
-  try {
-    const context = await getCurrentBusinessContext();
-
-    if (
-      context.user &&
-      context.currentSalon &&
-      isSalonManageContext(context) &&
-      (await hasPermission(POS_TICKET_PERMISSIONS.manage, context))
-    ) {
-      const liveDraftResult = await getOrCreatePosLiveDraft();
-      return liveDraftResult.ok ? liveDraftResult.data.token : "";
-    }
-  } catch {
-    // Fall through to portable POS context.
-  }
-
-  try {
-    const portableSession = await getCurrentPortablePosSession();
-
-    if (portableSession) {
-      const data = await getPortablePosDeskData();
-      return data.liveDraft?.token ?? "";
-    }
-  } catch {
-    // Public customer display links without an active POS session use defaults.
-  }
-
-  return "";
-}
-
-async function CustomerDisplayPage({
-  searchParams,
-}: CustomerDisplayPageProps) {
-  const { token = "" } = await searchParams;
-  const resolvedToken = await resolveCustomerDisplayToken(token);
-  const [settings, serviceCatalog] = await Promise.all([
-    getPublicPosDisplaySettingsByToken(resolvedToken),
-    getCustomerDisplayServiceCatalog(resolvedToken),
+async function CustomerDisplayPage({searchParams}: CustomerDisplayPageProps) {
+  const token = (await searchParams).token?.trim() ?? "";
+  // Existing Windows opens an explicit draft token. Browser/iPad pairing always
+  // uses its dedicated enrollment; Owner cookies never choose a counter.
+  if (!token) redirect("/pos/portable/display");
+  const [settings,serviceCatalog] = await Promise.all([
+    getPublicPosDisplaySettingsByToken(token),
+    getCustomerDisplayServiceCatalog(token),
   ]);
-
-  return (
-    <main data-customer-display-shell className="h-dvh overflow-hidden bg-zinc-950 text-white">
-      <CustomerDisplayClient
-        serviceCatalog={serviceCatalog}
-        settings={settings}
-        token={resolvedToken}
-      />
-    </main>
-  );
+  return <main data-customer-display-shell className="h-dvh overflow-hidden bg-zinc-950 text-white">
+    <CustomerDisplayClient serviceCatalog={serviceCatalog} settings={settings} token={token}/>
+  </main>;
 }
-
 export default withExperiencePage(CustomerDisplayPage);

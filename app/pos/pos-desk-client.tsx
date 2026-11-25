@@ -72,6 +72,7 @@ import {
   connectLocalReceipt,
   type LocalReceiptPreview,
 } from "@/lib/pos-local-display";
+import { connectPairedStaffReceipt, type StaffReceiptCallbacks } from "@/lib/portable-workstation-client";
 import {
   savePortableOperation,
   listPortableOperations,
@@ -98,7 +99,7 @@ import { useSupplementalKeyboard } from "@/lib/portable-keyboard-preference";
 import { CompactCheckoutAdjustments } from "./compact-checkout-adjustments";
 import { WAITING_CHANGED } from "@/lib/portable-waiting";
 import { isPosConnectionError, posUserMessage } from "@/lib/pos-user-messages";
-import { usePortableDraft } from "@/app/pos/portable/use-portable-draft";
+import { usePortableDraft, portableDraftStates } from "@/app/pos/portable/use-portable-draft";
 import { StaffAvatar } from "@/app/pos/portable/staff-avatar";
 import { desktopDevice } from "@/lib/portable-device-storage";
 import { registerPortableServiceWorker } from "@/lib/portable-service-worker";
@@ -554,6 +555,7 @@ export function PosDeskClient({
   activeSession,
   defaults: initialDefaults,
   offlineDraftSyncEnabled = false,
+  pairedWorkstation = false,
   preferences,
   liveDraft,
   salonLogoUrl,
@@ -579,6 +581,8 @@ export function PosDeskClient({
   activeSession: PosDeskSessionView | null;
   defaults: PosDeskDefaults;
   offlineDraftSyncEnabled?: boolean;
+  /** Server-confirmed enrollment, fixed before the desk is mounted. */
+  pairedWorkstation?: boolean;
   preferences?: PosWorkspacePreferences;
   liveDraft: PosLiveDraftView | null;
   salonLogoUrl?: string | null;
@@ -807,7 +811,7 @@ export function PosDeskClient({
     heldTicketLoad,
   );
   const isPortableSurface = surface === "portable";
-  const localFirstDraft = isPortableSurface && offlineDraftSyncEnabled;
+  const localFirstDraft = isPortableSurface && (offlineDraftSyncEnabled || pairedWorkstation);
   const waitingScope = portableWorkspaceState?.scope;
   const [receiptScan, setReceiptScan] = useState("");
   const [receiptScanBusy, setReceiptScanBusy] = useState(false);
@@ -1307,6 +1311,7 @@ export function PosDeskClient({
     checkpoint: checkpointPortableDraft,
     recoveryKey: portableRecoveryKey,
   } = usePortableDraft({
+    paired: pairedWorkstation,
     scope:
       localFirstDraft && liveDraftToken
         ? `${staffRealtimeSalonId}:${liveDraftToken}`
@@ -1325,6 +1330,31 @@ export function PosDeskClient({
     onVersion: onPortableVersion,
   });
   const pendingLocalTip = useRef<number | null>(null);
+  const workstationDirty = useRef(hasUnsavedDraftWork);
+  const workstationPending = useRef(true);
+  useEffect(() => { workstationDirty.current = hasUnsavedDraftWork; }, [hasUnsavedDraftWork]);
+  useEffect(() => {
+    const scope = portableWorkspaceState?.scope;
+    if (!pairedWorkstation || !scope) { workstationPending.current = false; return; }
+    let active = true;
+    const read = () => { void listPortableOperations(scope).then(items => { if (active) workstationPending.current = items.some(item => item.state === "pending" || item.state === "attention"); }).catch(() => { if (active) workstationPending.current = true; }); };
+    read(); window.addEventListener(PORTABLE_OPERATIONS_CHANGED, read);
+    return () => { active = false; window.removeEventListener(PORTABLE_OPERATIONS_CHANGED, read); };
+  }, [pairedWorkstation, portableWorkspaceState?.scope]);
+  useEffect(() => {
+    if (!isPortableSurface) return;
+    const guard = (event: Event) => {
+      const detail = (event as CustomEvent<{ allowed: boolean; error?: string }>).detail;
+      if (!detail) return;
+      const pending = portableWorkspaceState?.scope ? portableDraftStates.get(portableWorkspaceState.scope)?.pending : false;
+      if (hasUnsavedDraftWork || pending || workstationPending.current || submitLockedRef.current || resetInFlightRef.current) {
+        detail.allowed = false;
+        detail.error = "Finish or save this ticket and wait for pending work to sync before changing the POS workstation.";
+      }
+    };
+    window.addEventListener("kingpos:workstation-can-change", guard);
+    return () => window.removeEventListener("kingpos:workstation-can-change", guard);
+  }, [isPortableSurface, hasUnsavedDraftWork, portableWorkspaceState?.scope]);
   useEffect(() => {
     if (!isPortableSurface) return;
     const receive = (event: Event) => {
@@ -1451,6 +1481,7 @@ export function PosDeskClient({
   const completedLocalReceipt = useRef<LocalReceiptPreview | null>(null);
   const localDisplaySeenAt = useRef(0);
   const localRecovery = useRef(recovery);
+  const pairedReceiptPublisher = useRef<(() => void) | null>(null);
   useEffect(() => {
     localRecovery.current = recovery;
   }, [recovery]);
@@ -1491,13 +1522,19 @@ export function PosDeskClient({
   useEffect(() => {
     if (!localFirstDraft || !portableDraftReady || !liveDraftToken) return;
     localCartId.current ??= crypto.randomUUID();
-    const connection = connectLocalReceipt(liveDraftToken, {
+    const callbacks: StaffReceiptCallbacks & { displayPresent(): void } = {
+      state: () => {
+        const pending = portableWorkspaceState?.scope ? portableDraftStates.get(portableWorkspaceState.scope) : undefined;
+        return { dirty: workstationDirty.current, pending: workstationPending.current || !!pending?.pending || !!pending?.attention, busy: submitLockedRef.current || resetInFlightRef.current };
+      },
       displayPresent: () => {
         localDisplaySeenAt.current = Date.now();
       },
       dismissCompleted: (cartId) => {
-        if (completedLocalReceipt.current?.cartId === cartId)
+        if (completedLocalReceipt.current?.cartId === cartId) {
           completedLocalReceipt.current = null;
+          pairedReceiptPublisher.current?.();
+        }
       },
       customer: (request) => {
         if (request.cartId !== localCartId.current) return undefined;
@@ -1528,6 +1565,7 @@ export function PosDeskClient({
         localRecovery.current = nextRecovery;
         setLiveCustomer(customer);
         setDraft(nextRecovery.draft);
+        pairedReceiptPublisher.current?.();
         return true;
       },
       tip: (request) => {
@@ -1559,9 +1597,23 @@ export function PosDeskClient({
           ...current,
           tipInput: String(request.amount),
         }));
+        pairedReceiptPublisher.current?.();
         return true;
       },
-    });
+    };
+    const connection = connectLocalReceipt(liveDraftToken, callbacks);
+    const paired = pairedWorkstation ? connectPairedStaffReceipt(callbacks) : null;
+    const pairedPublish = () => {
+      if (!paired || submitLockedRef.current || resetInFlightRef.current || !localCartId.current) return;
+      const completed = completedLocalReceipt.current;
+      paired.publish(completed && Date.parse(completed.resetAt!) > Date.now() ? completed : {
+        cartId: localCartId.current,
+        revision: currentPortablePayload.current,
+        payload: JSON.parse(currentPortablePayload.current),
+      });
+    };
+    pairedReceiptPublisher.current = pairedPublish;
+    pairedPublish();
     let lastPublished = "",
       publishedAt = 0;
     const publish = () => {
@@ -1592,13 +1644,22 @@ export function PosDeskClient({
     return () => {
       clearInterval(timer);
       connection.close();
+      paired?.close();
+      if (pairedReceiptPublisher.current === pairedPublish) pairedReceiptPublisher.current = null;
     };
   }, [
     localFirstDraft,
     portableDraftReady,
     liveDraftToken,
     persistLocalPortableDraft,
+    pairedWorkstation,
+    portableWorkspaceState?.scope,
   ]);
+  // Paired devices receive each committed React edit immediately. The existing
+  // Windows BroadcastChannel cadence remains unchanged above.
+  useEffect(() => {
+    pairedReceiptPublisher.current?.();
+  }, [liveDraftPayloadKey, isResetting, isSubmitting, hasUnsavedDraftWork, pairedWorkstation, portableDraftReady]);
 
   const idleResetKey = useMemo(
     () =>

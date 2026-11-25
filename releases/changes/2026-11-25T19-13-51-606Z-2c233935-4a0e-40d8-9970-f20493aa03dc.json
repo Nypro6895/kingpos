@@ -1,0 +1,79 @@
+{
+  "kind": "change",
+  "changeId": "portable-pos-live-test-20261125-r1",
+  "status": "working",
+  "summary": "Integrate frozen Portable paired-device POS onto exact current production for owner-requested live testing before later Store release",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/pos/customer-display/page.tsx",
+    "app/(app)/pos/customer-display/setup/page.tsx",
+    "app/(app)/pos/portable/display/page.tsx",
+    "app/(app)/pos/portable/layout.tsx",
+    "app/(app)/pos/portable/page.tsx",
+    "app/api/app-local/command/route.ts",
+    "app/api/pos/workstation/route.ts",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/customer-display/paired-customer-actions-context.tsx",
+    "app/pos/customer-display/paired-customer-display.tsx",
+    "app/pos/portable/actions.ts",
+    "app/pos/portable/paired-workstation-bridge.tsx",
+    "app/pos/portable/portable-devices.module.css",
+    "app/pos/portable/portable-entry.tsx",
+    "app/pos/portable/portable-workspace-tabs.tsx",
+    "app/pos/portable/use-portable-draft.ts",
+    "app/pos/portable/workstation-devices.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/service-relay/customer-entry-qr.tsx",
+    "app/service-relay/customer-relay.tsx",
+    "components/app-local-portable-workspace.tsx",
+    "components/gift-card/pos-gift-card.tsx",
+    "components/rewardlumi/visit-rewards.tsx",
+    "lib/app-local-portable-http-metadata.ts",
+    "lib/portable-recovery-key.ts",
+    "lib/portable-workstation-client.ts",
+    "lib/portable-workstation-customer-actions.ts",
+    "lib/portable-workstation-protocol.ts",
+    "lib/portable-workstation-server.ts",
+    "types/portable-workstation.ts",
+    "proxy.ts",
+    "supabase/migrations/202611250001_portable_workstations.sql",
+    "tests/helpers/portable-workstation-browser.mjs",
+    "tests/helpers/portable-workstation-fixture.mjs",
+    "tests/helpers/portable-workstation-ui-entry.tsx",
+    "tests/portable-paired-customer-extensions.test.mjs",
+    "tests/portable-paired-devices.browser.test.mjs",
+    "tests/portable-paired-devices.integration.test.mjs",
+    "tests/portable-paired-devices.ui.test.mjs",
+    "tests/portable-paired-recovery.test.mjs",
+    "tests/portable-web-app-install.test.mjs",
+    "tests/portable-workstation-enrollment-loss.test.mjs",
+    "tests/portable-workstation-native-navigation.test.mjs",
+    "docs/portable-paired-devices-20261125.md",
+    "package.json",
+    "package-lock.json"
+  ],
+  "dependencies": [],
+  "source": {
+    "commit": "d180ffffb6c8787380996c3c10febce5bd50ca4c"
+  },
+  "derivedFromEvent": "d845e95d-8a4c-4ab2-b8c8-9c6bdde37c82",
+  "upstreamIosObligationRetained": true,
+  "validation": [
+    {
+      "name": "Exact current production preservation",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/ios-store-privacy-20261116/artifacts/store-followup-20261125-r31/BASELINE-RESULT.json"
+    },
+    {
+      "name": "Assembled POS build and target backend compatibility",
+      "result": "pending"
+    }
+  ],
+  "id": "2c233935-4a0e-40d8-9970-f20493aa03dc",
+  "recordedAt": "2026-11-25T19:13:51.606Z",
+  "worktree": "C:\\Reylumi-worktrees\\pos-live-test-20261125-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

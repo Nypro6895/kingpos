@@ -26,7 +26,7 @@ for (const guide of HELP_GUIDES) for (const screen of guide.evidence.screenshots
   const image = localizedImages[screen.id]?.[language] ?? screen;
   imagePaths.add(image.desktop.src); imagePaths.add(image.mobile.src);
 }
-export const APP_LOCAL_REFERENCE_ASSETS = [...imagePaths].sort();
+export const APP_LOCAL_REFERENCE_ASSETS = [...imagePaths, "/third-party-noble-notices.html"].sort();
 
 /** Actual existing UI modules and their required live props; never fabricated data. */
 export const APP_LOCAL_REFERENCE_MODULES = {

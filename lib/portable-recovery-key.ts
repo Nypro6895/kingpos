@@ -8,12 +8,15 @@ export function isNativePortableDevice(): boolean {
 }
 
 /** Browser tabs stay independent; an installed app must survive a new WebView. */
-export function portableRecoveryStorageKey({ scope, operationScope, tabId, desktop, native, durableNative = false, storage }: {
-  scope: string; operationScope?: string; tabId: string; desktop: boolean; native: boolean; durableNative?: boolean;
+export function portableRecoveryStorageKey({ scope, operationScope, tabId, desktop, native, durableNative = false, paired = false, storage }: {
+  scope: string; operationScope?: string; tabId: string; desktop: boolean; native: boolean; durableNative?: boolean; paired?: boolean;
   storage: Pick<Storage, "getItem" | "setItem">;
 }) {
   if (desktop && operationScope) return PREFIX + operationScope + ":desktop";
   if (durableNative && operationScope) return PREFIX + operationScope + ":native-device";
+  // A paired counter is the same installed workspace after a browser restart.
+  // Its scoped draft identity also separates another counter or a handover.
+  if (paired && !native) return PREFIX + scope + ":paired-device";
   const legacy = PREFIX + scope + ":" + tabId;
   if (!native) return legacy;
   const slot = "kingpos:portable-native-recovery:v1:" + scope;
