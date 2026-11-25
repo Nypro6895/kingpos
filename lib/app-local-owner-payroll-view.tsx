@@ -1,4 +1,5 @@
 "use client";
+import { CHECK_WRITER_PRINTING_AVAILABLE } from "@/lib/check-writer-availability";
 import type { PayrollIssuedChecks } from "@/types/payroll-issued-checks";
 import payrollTheme from "@/app/payroll/payroll-theme.module.css";
 import {ShopMoneyWorkspace} from "@/app/payroll/shop-money-workspace";
@@ -899,7 +900,7 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
         <StaffIncomeTab
           salonId={salonId}
           today={data.today}
-          canPrintChecks={canManageConnection}
+          canPrintChecks={CHECK_WRITER_PRINTING_AVAILABLE && canManageConnection}
           canManage={data.access.canManagePayroll}
           issuedChecks={data.issuedChecks} lines={data.live.lines}
           history={data.history}

@@ -1,3 +1,4 @@
+import { CHECK_WRITER_PRINTING_AVAILABLE, CHECK_WRITER_UNAVAILABLE_MESSAGE } from "@/lib/check-writer-availability";
 import { MARKET_PRICE_DEFAULTS } from "@/lib/market-commerce";
 import type { MarketApp } from "@/app/market/sample-apps";
 
@@ -26,6 +27,9 @@ export function marketAppsWithBankPricing(apps: MarketApp[], catalog: CatalogPri
   const projected = apps.map(app => {
     const plan = plans.get(app.id);
     const old = MARKET_PRICE_DEFAULTS[app.id];
+    if (app.id === "print-check" && !CHECK_WRITER_PRINTING_AVAILABLE) {
+      return { ...app, available: false, price: plan && plan.price_cents > 0 ? monthlyPrice(plan) : app.price, trial: CHECK_WRITER_UNAVAILABLE_MESSAGE, plans: [], workflow: [CHECK_WRITER_UNAVAILABLE_MESSAGE] };
+    }
     if (!plan) return app;
     const name = plan.name?.trim() || app.name, publisher = plan.publisher?.trim() || app.publisher;
     if (app.id === "print-check" && (!plan.fulfillment_ready || plan.price_cents === 0)) return {...app, name, publisher, price:plan.price_cents>0?monthlyPrice(plan):"$4.90 / month", available:false, trial:"5-day free trial · Paid sales are not available yet", plans:[]};

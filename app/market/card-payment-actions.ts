@@ -6,6 +6,7 @@ import { marketServiceClient } from "@/lib/market-payments";
 import { paymentConfig, paymentStripe } from "@/lib/platform-payment";
 import { syncCardSubscription } from "@/lib/market-card";
 import { checkWriterSalesReady } from "@/lib/check-writer-readiness";
+import { CHECK_WRITER_UNAVAILABLE_MESSAGE } from "@/lib/check-writer-availability";
 import { CARD_PLUGINS } from "@/lib/market-card-rules";
 import { applyMarketTaxToCheckout } from "@/lib/market-tax";
 import { revalidatePath } from "next/cache";
@@ -94,7 +95,7 @@ export async function startCardCheckout(
 ): Promise<CheckoutResult> {
   if (pluginId === "print-check" && !checkWriterSalesReady())
     return {
-      message: "Check Writer is being configured. Please try again later.",
+      message: CHECK_WRITER_UNAVAILABLE_MESSAGE,
     };
   return prepareCardCheckout(
     pluginId,

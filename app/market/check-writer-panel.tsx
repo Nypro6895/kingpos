@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useWorkspaceTranslation } from "@/components/workspace-language";
 import { manageCheckWriterSubscription } from "./check-writer-actions";
 import { openMarketPayment } from "@/lib/open-market-payment";
+import { CHECK_WRITER_PRINTING_AVAILABLE, CHECK_WRITER_UNAVAILABLE_MESSAGE } from "@/lib/check-writer-availability";
 export function CheckWriterPanel({
   state,
 }: {
@@ -22,13 +23,18 @@ export function CheckWriterPanel({
     <section>
       <p>{t("Created by Reylumi")}</p>
       <p>{t("$4.90 / month · Per salon")}</p>
-      {state.operationalReady === false && !state.trialReady && (
+      {!CHECK_WRITER_PRINTING_AVAILABLE && (
+        <p role="status">{t(CHECK_WRITER_UNAVAILABLE_MESSAGE)}</p>
+      )}
+      {CHECK_WRITER_PRINTING_AVAILABLE && state.operationalReady === false && !state.trialReady && (
         <p>{t("Check Writer is being configured. Please try again later.")}</p>
       )}
-      {state.trialReady && state.operationalReady === false && <p>{t("Free trial available. Paid purchases are being prepared.")}</p>}
+      {CHECK_WRITER_PRINTING_AVAILABLE && state.trialReady && state.operationalReady === false && <p>{t("Free trial available. Paid purchases are being prepared.")}</p>}
       <p>
         {t(
-          state.active
+          !CHECK_WRITER_PRINTING_AVAILABLE
+            ? "Existing check history is still available."
+            : state.active
             ? "Check Writer is active for this salon."
             : "Start the free trial or activate paid access to create payroll and standalone checks.",
         )}
@@ -38,7 +44,7 @@ export function CheckWriterPanel({
           className="inline-flex min-h-11 items-center rounded-lg bg-teal-700 px-4 text-white"
           href="/check-writer"
         >
-          {t("Open Check Writer")}
+          {t(CHECK_WRITER_PRINTING_AVAILABLE ? "Open Check Writer" : "View check history")}
         </Link>
       )}
       {state.subscribed && (

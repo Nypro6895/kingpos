@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "portable-native-delivery-20261125",
+  "status": "working",
+  "summary": "Retain the authorized deferred Print Check disable in the Portable native update, preserving check history and billing safety",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/(app)/payroll/page.tsx",
+    "app/api/check-writer/pdf/route.ts",
+    "app/api/check-writer/route.ts",
+    "app/check-writer/check-writer.tsx",
+    "app/market/card-checkout-panel.tsx",
+    "app/market/card-payment-actions.ts",
+    "app/market/check-writer-panel.tsx",
+    "app/market/market-client.tsx",
+    "app/market/sample-apps.ts",
+    "app/market/trial-actions.ts",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "lib/app-local-owner-payroll-view.tsx",
+    "lib/check-writer-availability.ts",
+    "lib/check-writer-pdf.ts",
+    "lib/check-writer-readiness.ts",
+    "lib/check-writer-server.ts",
+    "lib/market-catalog-view.ts",
+    "lib/vietnamese-check-writer.json",
+    "next.config.ts",
+    "tests/check-writer-sales-hold.test.mjs",
+    "tests/check-writer-unavailable-api.test.mjs",
+    "tests/check-writer-unavailable-ui.test.mjs"
+  ],
+  "source": {
+    "commit": "921659b992d8fd04d07dec911ba81b4cc0eda538"
+  },
+  "validation": [
+    {
+      "name": "103 preservation and Portable merge",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "5f1a2417-37ea-4121-9dbe-ae889e2241c8",
+  "recordedAt": "2026-11-25T21:14:29.529Z",
+  "worktree": "C:\\Reylumi-worktrees\\portable-native-20261125-r2",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,4 +1,5 @@
 "use client";
+import { CHECK_WRITER_PRINTING_AVAILABLE, CHECK_WRITER_UNAVAILABLE_MESSAGE } from "@/lib/check-writer-availability";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useWorkspaceTranslation } from "@/components/workspace-language";
@@ -147,7 +148,7 @@ export function CheckWriter({
 }: { expectedSalonId?: string } = {}) {
   const t = useWorkspaceTranslation(),
     [state, setState] = useState<State>(),
-    [tab, setTab] = useState("payroll"),
+    [tab, setTab] = useState(CHECK_WRITER_PRINTING_AVAILABLE ? "payroll" : "history"),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [unlocked, setUnlocked] = useState(false),
@@ -191,7 +192,7 @@ export function CheckWriter({
   const generation = useRef(0),
     outputLatch = useRef(false),
     lastRun = useRef<string | undefined>(undefined),
-    currentTab = useRef("payroll");
+    currentTab = useRef(CHECK_WRITER_PRINTING_AVAILABLE ? "payroll" : "history");
   const unlockLayer = useRef<HTMLDivElement>(null);
   useOverlayViewport(unlockLayer, unlockOpen);
   const invalidateView = useCallback(() => {
@@ -362,6 +363,7 @@ export function CheckWriter({
     return false;
   }
   function changeTab(next: string) {
+    if (!CHECK_WRITER_PRINTING_AVAILABLE && next !== "history") return;
     if (pending.current) return;
     currentTab.current = next;
     if (state) {
@@ -586,6 +588,7 @@ export function CheckWriter({
     return (
       <main className={styles.root}>
         <h1>Check Writer</h1>
+          {!CHECK_WRITER_PRINTING_AVAILABLE && <p role="status">{t(CHECK_WRITER_UNAVAILABLE_MESSAGE)}</p>}
         {error ? (
           <p role="alert" className={styles.error}>
             {t(error)}
@@ -616,6 +619,7 @@ export function CheckWriter({
             <Link href="/market">{t("Market")}</Link> / Check Writer
           </p>
           <h1>Check Writer</h1>
+          {!CHECK_WRITER_PRINTING_AVAILABLE && <p role="status">{t(CHECK_WRITER_UNAVAILABLE_MESSAGE)}</p>}
           <p className={styles.muted}>{t("Created by Reylumi")}</p>
         </div>
         <button
@@ -662,7 +666,7 @@ export function CheckWriter({
           {t(error)}
         </p>
       )}
-      {!state.active ? (
+      {CHECK_WRITER_PRINTING_AVAILABLE && !state.active ? (
         <section className={styles.form}>
           <h2>{t("Activate Check Writer")}</h2>
           <p>{t("Activate Check Writer for this salon in Market.")}</p>
@@ -686,7 +690,7 @@ export function CheckWriter({
           ["standalone", "Standalone check"],
           ["history", "History"],
           ["settings", "Check settings"],
-        ].map(([id, label]) => (
+        ].filter(([id]) => CHECK_WRITER_PRINTING_AVAILABLE || id === "history").map(([id, label]) => (
           <button
             key={id}
             disabled={busy}
@@ -702,7 +706,7 @@ export function CheckWriter({
           {t(state.payrollError)}
         </p>
       )}
-      {["payroll", "standalone"].includes(tab) && state.active && (
+      {CHECK_WRITER_PRINTING_AVAILABLE && ["payroll", "standalone"].includes(tab) && state.active && (
         <>
           <div className={styles.workspace}>
             <section className={styles.form}>
@@ -990,7 +994,7 @@ export function CheckWriter({
                   <>
                     <button
                       className={styles.secondary}
-                      disabled={busy || !state.active}
+                      disabled={busy || !state.active || !CHECK_WRITER_PRINTING_AVAILABLE}
                       onClick={() => {
                         if (requireUnlock())
                           void work(() =>
@@ -1028,7 +1032,7 @@ export function CheckWriter({
           ))}
         </section>
       )}
-      {tab === "settings" && formSettings && (
+      {CHECK_WRITER_PRINTING_AVAILABLE && tab === "settings" && formSettings && (
         <section className={`${styles.form} ${styles.settings}`}>
           <h2>{t("Check settings")}</h2>
           <p className={styles.muted}>
@@ -1296,7 +1300,7 @@ export function CheckWriter({
           </form>
         </div>
       )}
-      {printedUrl && (
+      {CHECK_WRITER_PRINTING_AVAILABLE && printedUrl && (
         <div
           className={styles.dialog}
           role="dialog"

@@ -99,9 +99,11 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/vendor/maplibre-gl": ["./node_modules/maplibre-gl/dist/maplibre-gl.js", "./node_modules/maplibre-gl/package.json"],
     "/api/vendor/maplibre-gl/*": ["./node_modules/maplibre-gl/dist/maplibre-gl.js", "./node_modules/maplibre-gl/package.json"],
-    "/api/check-writer": ["./assets/check-writer/*"],
-    "/api/check-writer/pdf": ["./assets/check-writer/*"],
     "/api/security/challenge": ["./app/fonts/GeistMono.ttf", "./app/fonts/Geist-OFL.txt"],
+  },
+  // Print Check is unavailable; retain its font sources without distributing them.
+  outputFileTracingExcludes: {
+    "/*": ["./assets/check-writer/**/*"],
   },
   images: {
     // Local QA Storage is loopback-only; render directly in the isolated browser.

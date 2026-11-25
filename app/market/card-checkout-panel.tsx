@@ -9,6 +9,8 @@ import type { MarketBankBillingState } from "@/types/market-bank-billing";
 import { marketQuote } from "@/lib/market-commerce";
 import { cardMoney, CARD_PLUGINS } from "@/lib/market-card-rules";
 import { openMarketPayment } from "@/lib/open-market-payment";
+import { CHECK_WRITER_PRINTING_AVAILABLE, CHECK_WRITER_UNAVAILABLE_MESSAGE } from "@/lib/check-writer-availability";
+import { WorkspaceText } from "@/components/workspace-language";
 
 import { isReylumiIOSClient } from "@/lib/ios-client";
 import { isMarketCheckoutURL } from "@/lib/market-checkout-url";
@@ -381,12 +383,14 @@ export function CardCheckoutPanel({
         </>
       ) : (
         <p>
-          Paid purchases are being prepared and are not available yet. Free
-          trial access remains available.
+          {pluginId === "print-check" && !CHECK_WRITER_PRINTING_AVAILABLE
+            ? <WorkspaceText text={CHECK_WRITER_UNAVAILABLE_MESSAGE} />
+            : <>Paid purchases are being prepared and are not available yet. Free
+              trial access remains available.</>}
         </p>
       )}
       <div ref={mount} />
-      {!opened && supported && (
+      {!opened && supported && (pluginId !== "print-check" || CHECK_WRITER_PRINTING_AVAILABLE) && (
         <button type="button" disabled={busy || !ready} onClick={buy}>
           {busy
             ? "Preparing secure payment…"

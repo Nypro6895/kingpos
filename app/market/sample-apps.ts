@@ -1,3 +1,4 @@
+import { CHECK_WRITER_PRINTING_AVAILABLE, CHECK_WRITER_UNAVAILABLE_MESSAGE } from "@/lib/check-writer-availability";
 import { additionalSampleApps } from "./additional-sample-apps";
 
 export type MarketApp = {
@@ -123,4 +124,14 @@ sampleApps.push({ id: "booking-policy", name: "Booking Rules", category: "Custom
 for (const app of sampleApps) {
   if (["booking-policy", "booking-deposit", "checkin-receipt", "tax-company", "booksms", "print-check"].includes(app.id)) app.trial = "5-day free trial · No card required";
   if (app.id === "service-relay") app.trial = "Free activation available · No card required";
+}
+
+// Release availability is independent of retained subscription/trial history.
+for (const app of sampleApps) {
+  if (app.id === "print-check" && !CHECK_WRITER_PRINTING_AVAILABLE) {
+    app.available = false;
+    app.trial = CHECK_WRITER_UNAVAILABLE_MESSAGE;
+    app.plans = [];
+    app.workflow = [CHECK_WRITER_UNAVAILABLE_MESSAGE];
+  }
 }

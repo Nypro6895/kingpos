@@ -1,4 +1,8 @@
 import { checkWriterAccessActive } from "./check-writer-access";
+import {
+  assertCheckWriterPrintingAvailable,
+  CHECK_WRITER_PRINTING_AVAILABLE,
+} from "./check-writer-availability";
 import { getContextBusinessDate } from "@/lib/salon-business-clock";
 import "server-only";
 import { createHash } from "node:crypto";
@@ -19,6 +23,7 @@ import { getPayrollPageData } from "@/lib/payroll";
 import { checkDate } from "@/lib/check-writer-rules";
 export const UNLOCK_COOKIE = "reylumi-check-writer-unlock";
 export async function checkWriterContext(paid = false, unlocked = false) {
+  if (paid) assertCheckWriterPrintingAvailable();
   const { client, salonId } = await marketPluginContext();
   const context = await getCurrentBusinessContext();
   const { user, currentSalon } = context;
@@ -196,7 +201,7 @@ export async function checkWriterState(
   }
   return {
     payrollError,
-    operationalReady: checkWriterCryptoReady(),
+    operationalReady: CHECK_WRITER_PRINTING_AVAILABLE && checkWriterCryptoReady(),
     businessDate,
     salonId: ctx.salonId,
     settings: publicSettings,

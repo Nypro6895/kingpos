@@ -1,3 +1,4 @@
+import { CHECK_WRITER_PRINTING_AVAILABLE } from "@/lib/check-writer-availability";
 import type { PayrollIssuedChecks } from "@/types/payroll-issued-checks";
 import { payrollPageLoadPlan } from "@/lib/payroll-page-load-plan";
 import payrollTheme from "@/app/payroll/payroll-theme.module.css";
@@ -917,7 +918,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
   return (
     <PayrollEditBoundary><main data-payroll-page="true" className={`${payrollTheme.surface} ${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
       <h1 className="sr-only"><WorkspaceText text="Payroll" /></h1>
-      {canManageConnection && activeTab === "tools" && <Link className={styles.checkShortcut} href={`/check-writer?start=${data.period.startDate}&end=${data.period.endDate}`}><WorkspaceText text="Print checks" /></Link>}
+      {CHECK_WRITER_PRINTING_AVAILABLE && canManageConnection && activeTab === "tools" && <Link className={styles.checkShortcut} href={`/check-writer?start=${data.period.startDate}&end=${data.period.endDate}`}><WorkspaceText text="Print checks" /></Link>}
       <PayrollLiveRefresh salonId={pageContext.currentSalon.id} />
       <PayrollTabs
         canReconcile={canManageConnection}
@@ -933,7 +934,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
         <StaffIncomeTab
           salonId={pageContext.currentSalon.id}
           today={data.today}
-          canPrintChecks={canManageConnection}
+          canPrintChecks={CHECK_WRITER_PRINTING_AVAILABLE && canManageConnection}
           canManage={data.access.canManagePayroll}
           issuedChecks={data.issuedChecks} lines={data.live.lines}
           history={data.history}

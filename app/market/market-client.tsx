@@ -1,4 +1,5 @@
 "use client";
+import { CHECK_WRITER_PRINTING_AVAILABLE, CHECK_WRITER_UNAVAILABLE_MESSAGE } from "@/lib/check-writer-availability";
 import { CheckWriterPanel } from "./check-writer-panel";
 import { useNativeDialogNavigation } from "@/components/overlay-dismissal";
 import { useTransientOverlay } from "@/components/overlay-dismissal";
@@ -832,7 +833,9 @@ function MarketClientBody({
                     item.plugin_id === selected.id && !item.fulfillment_ready,
                 ) && (
                   <p className={styles.previewNote}>
-                    {MARKET_TRIAL_PLUGINS.some((id) => id === selected.id) ||
+                    {selected.id === "print-check" && !CHECK_WRITER_PRINTING_AVAILABLE
+                      ? <WorkspaceText text={CHECK_WRITER_UNAVAILABLE_MESSAGE} />
+                      : MARKET_TRIAL_PLUGINS.some((id) => id === selected.id) ||
                     selected.id === "vietnamese-language"
                       ? "Free trial available · Paid purchases are being prepared and are not available yet."
                       : "Preview · This plugin is being prepared. Bank payment and activation become available after its integration is ready."}
@@ -926,7 +929,7 @@ function MarketClientBody({
                   <li key={permission}>{permission}</li>
                 ))}
               </ul>
-              {MARKET_TRIAL_PLUGINS.some((id) => id === selected.id) && (
+              {(selected.id !== "print-check" || CHECK_WRITER_PRINTING_AVAILABLE) && MARKET_TRIAL_PLUGINS.some((id) => id === selected.id) && (
                 <MarketTrialPanel
                   key={`${experienceScope}:${selected.id}`}
                   pluginId={selected.id}
@@ -960,7 +963,7 @@ function MarketClientBody({
                     ready={
                       cardReady &&
                       (selected.id !== "print-check" ||
-                        checkWriter.operationalReady === true)
+                        (CHECK_WRITER_PRINTING_AVAILABLE && checkWriter.operationalReady === true))
                     }
                     pluginId={selected.id}
                     pluginName={selected.name}

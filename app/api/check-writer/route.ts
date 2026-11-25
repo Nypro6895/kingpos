@@ -23,6 +23,10 @@ import type {
 } from "@/types/check-writer";
 import { checkPdf } from "@/lib/check-writer-pdf";
 import { readCheckBody } from "@/lib/check-writer-request";
+import {
+  checkWriterActionAvailable,
+  CHECK_WRITER_UNAVAILABLE_MESSAGE,
+} from "@/lib/check-writer-availability";
 const headers = {
   "Cache-Control": "private, no-store, max-age=0",
   Pragma: "no-cache",
@@ -56,6 +60,12 @@ export async function POST(req: Request) {
         { status: 403, headers },
       );
     const body = await readCheckBody(req);
+    if (!checkWriterActionAvailable(body.action)) {
+      return Response.json(
+        { error: CHECK_WRITER_UNAVAILABLE_MESSAGE },
+        { status: 503, headers },
+      );
+    }
     const ctx = await checkWriterContext(
       ![
         "void",

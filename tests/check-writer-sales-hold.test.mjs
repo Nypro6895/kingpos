@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { build } from "esbuild";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-test("checkout stays closed without explicit sales release and valid crypto; no provider or DB call", async () => {
+test("unavailable release blocks Print Check sales even with valid flags and crypto; other plugins retain their context guard", async () => {
   await build({
     entryPoints: ["app/market/card-payment-actions.ts"],
     outfile: "work/check-writer-readiness/sales.cjs",
@@ -53,27 +53,27 @@ test("checkout stays closed without explicit sales release and valid crypto; no 
       if (flag === undefined) delete process.env.CHECK_WRITER_SALES_ENABLED;
       else process.env.CHECK_WRITER_SALES_ENABLED = flag;
       process.env.CHECK_WRITER_ENCRYPTION_KEY = "ab".repeat(32);
-      assert.match(
+      assert.equal(
         (await startCardCheckout("print-check")).message,
-        /being configured/,
+        "Print Check is not available.",
       );
     }
     process.env.CHECK_WRITER_SALES_ENABLED = "true";
     delete process.env.CHECK_WRITER_ENCRYPTION_KEY;
-    assert.match(
+    assert.equal(
       (await startCardCheckout("print-check")).message,
-      /being configured/,
+      "Print Check is not available.",
     );
     assert.equal(globalThis.cwGateCalls, 0);
     process.env.CHECK_WRITER_ENCRYPTION_KEY = "ab".repeat(32);
     assert.equal(
       (await startCardCheckout("print-check")).message,
-      "LOCAL_GATE_PASSED",
+      "Print Check is not available.",
     );
-    assert.equal(globalThis.cwGateCalls, 1);
+    assert.equal(globalThis.cwGateCalls, 0);
     delete process.env.CHECK_WRITER_SALES_ENABLED;
-    await startCardCheckout("booking-policy");
-    assert.equal(globalThis.cwGateCalls, 2);
+    assert.equal((await startCardCheckout("booking-policy")).message, "LOCAL_GATE_PASSED");
+    assert.equal(globalThis.cwGateCalls, 1);
   } finally {
     for (const n of names) {
       if (saved[n] === undefined) delete process.env[n];

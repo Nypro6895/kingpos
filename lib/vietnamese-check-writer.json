@@ -123,5 +123,8 @@
   "Output authorization is missing. Review History before retrying.": "Thiếu quyền xuất check. Kiểm tra lịch sử trước khi thử lại.",
   "Output is used or expired. Prepare a new output from History.": "Lượt xuất đã dùng hoặc hết hạn. Tạo lượt xuất mới từ lịch sử.",
   "This output has been used. Use History and enter a reason for another output.": "Lượt xuất này đã được dùng. Vào lịch sử và nhập lý do để xuất lại.",
-  "Void checks cannot be printed.": "Không thể in check đã hủy."
+  "Void checks cannot be printed.": "Không thể in check đã hủy.",
+  "Print Check is not available.": "Print Check hiện chưa khả dụng.",
+  "Existing check history is still available.": "Bạn vẫn có thể xem lịch sử check hiện có.",
+  "View check history": "Xem lịch sử check"
 }
