@@ -1,0 +1,92 @@
+{
+  "kind": "change",
+  "changeId": "portable-checkin-live-integration-20261125",
+  "status": "ready",
+  "summary": "Production-compatible paired customer check-in repair, with live Safari verifier and existing authorization preserved",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos/customer-display/checkin-receipt-panel.tsx",
+    "app/pos/customer-display/customer-display-client.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "docs/portable-paired-devices-20261125.md",
+    "lib/portable-workstation-client.ts",
+    "lib/portable-workstation-customer-actions.ts",
+    "lib/portable-workstation-server.ts",
+    "releases/changes/2026-11-25T20-51-22-851Z-2337cd80-d409-4cba-9b6c-1ab11260f0b6.json",
+    "releases/changes/2026-11-25T21-00-36-243Z-424bfcc9-4a9f-443e-9392-5cda72f7f091.json",
+    "releases/changes/2026-11-25T21-05-06-529Z-67dd4eac-b5f3-45ef-8761-4949083a1797.json",
+    "tests/helpers/portable-workstation-browser.mjs",
+    "tests/helpers/portable-workstation-fixture.mjs",
+    "tests/portable-paired-checkin.ui.test.mjs",
+    "tests/portable-paired-completion-expiry.test.mjs",
+    "tests/portable-paired-customer-extensions.test.mjs",
+    "tests/portable-workstation-customer-results.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Reylumi-worktrees\\portable-release-20261125-r1\\artifacts\\portable-release-20261125\\frozen-web-r1",
+    "commit": "1634ae622090303e6965d923a7e0847c951bd3d9",
+    "baseCommit": "3c448564acb588695317579f10415ef1d0c371dc",
+    "baselineDeploymentId": "dpl_4rh4iFSpyAPNx4GWnmee9pN9CWTi",
+    "overlaySha256": "725ca01f2a2aac761a315e485ac0b065456248dd46c9fb298dd60f747d8e5e1d"
+  },
+  "fileHashes": {
+    "app/pos/customer-display/checkin-receipt-panel.tsx": "dfa5e8b0e1d5f93580c709c3adb3b2e8f4e5c6e2e79e82b77d7aa8a993a2fd80",
+    "app/pos/customer-display/customer-display-client.tsx": "bb5c5cc41f39508416b23307e3ae71e689ec561903df97e12d3c3a944877470c",
+    "app/pos/pos-desk-client.tsx": "afe3c9bdf5193f7676d0024ae496ac4b649381e99bd4e5cc15c0e0f8e59f508d",
+    "docs/portable-paired-devices-20261125.md": "f262c5fc009cca7202b3c626f88a1d97ca342eef0674cbc15a93aad8d82c8cbc",
+    "lib/portable-workstation-client.ts": "7c41101c9ab579bc1308dcebdf9b8ba2d56ea4b8cb5a032c818aeb7d2de07e31",
+    "lib/portable-workstation-customer-actions.ts": "3b37314c45333b62e30e52903f37f5cfc9a8bd661b0982b282f6faddf5dc1a01",
+    "lib/portable-workstation-server.ts": "639eccbce410161b0aa4eea91afa2ae64f18ab363a9c0b353506b3f7dd7f7eb2",
+    "releases/changes/2026-11-25T20-51-22-851Z-2337cd80-d409-4cba-9b6c-1ab11260f0b6.json": "b9f8f5e40698531fd3ee9789b9fbb950f403e47b76cc14eaeea710a4cd5a066b",
+    "releases/changes/2026-11-25T21-00-36-243Z-424bfcc9-4a9f-443e-9392-5cda72f7f091.json": "678a4c33cb4e68e7eb4476c0c064fbf37c24f9e6456c560d566d78ead3fd0d38",
+    "releases/changes/2026-11-25T21-05-06-529Z-67dd4eac-b5f3-45ef-8761-4949083a1797.json": "21be30ef68d8984578c8a97d9a7efca7effc05521973b525fa6899b2a815a408",
+    "tests/helpers/portable-workstation-browser.mjs": "9c11d89b921256f539c71d1ac04becbfe0b025e8b06e539e960accc9f036ba23",
+    "tests/helpers/portable-workstation-fixture.mjs": "45a7f51e23b48b988515b796ad5c1cbebbb49cd281c64a514442fdbbb9be33e9",
+    "tests/portable-paired-checkin.ui.test.mjs": "d3240c154b0f64a96da21c81a47b9b69ce7ca1ff67d565677c8e4ebc8ccf34f5",
+    "tests/portable-paired-completion-expiry.test.mjs": "06a2d2f1980d35992dbd2ed58d159a29a6ace2396334378cb52e7ae934591f22",
+    "tests/portable-paired-customer-extensions.test.mjs": "ac478d84bf6b8f38742eb4f13be692473c867f038f70004a878ae28c92bfc529",
+    "tests/portable-workstation-customer-results.test.mjs": "0843327132a13fc9af273c8e23f1de05a5a7d57b9a1b46614472ce9b552b3423"
+  },
+  "derivedFromEvent": "424bfcc9-4a9f-443e-9392-5cda72f7f091",
+  "upstreamIosObligationRetained": true,
+  "dependencies": [
+    "portable-customer-checkin-transition-20261125"
+  ],
+  "validation": [
+    {
+      "name": "87 distinct local regression checks on assembled release source, including actual check-in UI/API/SQL, receipt/tip, Owner/native storage, Safari signature fallback and legacy grant preflight",
+      "result": "passed",
+      "evidence": "artifacts/portable-release-20261125/qa/REPORT.md"
+    },
+    {
+      "name": "Actual production-built Next desktop/iPad Employee/Customer entry and initial manifest checks: no unexpected runtime/HTTP/console errors",
+      "result": "passed",
+      "evidence": "artifacts/portable-release-20261125/qa/production-entry-runtime.json"
+    },
+    {
+      "name": "Scoped ESLint, TypeScript, optimized Next build and offline assets",
+      "result": "passed",
+      "evidence": "artifacts/portable-release-20261125/build.log"
+    },
+    {
+      "name": "Exact current production baseline4347content file UID/hash verification and read-only schema/anonymous-denial checks",
+      "result": "passed",
+      "evidence": "artifacts/portable-release-20261125/schema-readonly.json"
+    },
+    {
+      "name": "Windows installed-code native storage/profile-isolation and download compatibility checks",
+      "result": "passed",
+      "evidence": "C:/Reylumi-worktrees/portable-paired-devices-20261125/artifacts/portable-release-20261125/windows/REPORT.md"
+    }
+  ],
+  "acceptanceLimitations": [
+    "Provider realtime, physical two-device/printer acceptance and new native upload"
+  ],
+  "id": "29c31660-ea99-4134-af4f-68ed589d602a",
+  "recordedAt": "2026-11-25T21:11:21.423Z",
+  "worktree": "C:\\Reylumi-worktrees\\portable-release-20261125-r1",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
